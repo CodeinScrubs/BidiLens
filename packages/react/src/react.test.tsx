@@ -1,6 +1,11 @@
+// @vitest-environment jsdom
+import { act, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { BidiCode, BidiIsolate, BidiMessage, BidiText } from './index.js';
+import { BidiCode, BidiIsolate, BidiMessage, BidiText, StreamingBidiMessage, useBidiStream } from './index.js';
+
+(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe('React adapter', () => {
   it('renders the flagship Persian-majority paragraph RTL', () => {
@@ -79,5 +84,43 @@ describe('React adapter', () => {
     expect(html).toContain('data-bidilens-code');
     expect(html).toContain('background-color:black');
     expect(html).toContain('direction:ltr');
+  });
+
+  it('does not append the initial streaming value twice on mount', async () => {
+    const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+    const seen: string[] = [];
+    function Probe() {
+      const { snapshot } = useBidiStream(source);
+      useEffect(() => {
+        seen.push(snapshot.text);
+      }, [snapshot]);
+      return <output>{snapshot.text}</output>;
+    }
+    const container = document.createElement('div');
+    const root = createRoot(container);
+    await act(async () => root.render(<Probe />));
+    expect(seen.at(-1)).toBe(source);
+    expect(container.textContent).toBe(source);
+    expect(seen.every((value) => value === source)).toBe(true);
+    await act(async () => root.unmount());
+  });
+
+  it('finalizes completed streams during SSR and exposes an explicit finish action', async () => {
+    const html = renderToStaticMarkup(<StreamingBidiMessage text={'\u0633\u0644\u0627\u0645'} completed />);
+    expect(html).toContain('dir="rtl"');
+
+    let finish: (() => void) | undefined;
+    function Probe() {
+      const result = useBidiStream('\u0633\u0644\u0627\u0645');
+      finish = result.finish;
+      return <output data-direction={result.snapshot.direction}>{result.snapshot.text}</output>;
+    }
+    const container = document.createElement('div');
+    const root = createRoot(container);
+    await act(async () => root.render(<Probe />));
+    expect(container.querySelector('output')?.dataset.direction).toBe('ltr');
+    await act(async () => finish?.());
+    expect(container.querySelector('output')?.dataset.direction).toBe('rtl');
+    await act(async () => root.unmount());
   });
 });

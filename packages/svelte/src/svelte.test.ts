@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { createBidiMessage } from './index.js';
+import { createBidiMessage, createStreamingBidiMessage } from './index.js';
 
 describe('Svelte adapter', () => {
   it('creates a reactive analysis store', () => {
@@ -39,6 +39,7 @@ describe('Svelte adapter', () => {
     expect(get(flagship).direction).toBe('rtl');
     expect(get(flagship).text).toBe(flagship.getText());
     expect(get(createBidiMessage('https://example.com', { fallback: 'neutral' })).direction).toBe('neutral');
+    expect(get(flagship).isolations).toContainEqual(expect.objectContaining({ text: 'React', direction: 'ltr' }));
   });
 
   it('exposes a Svelte-compatible readable store contract', () => {
@@ -60,5 +61,29 @@ describe('Svelte adapter', () => {
     store.setText('---');
     expect(snapshots).toHaveLength(2);
     expect(get(store).direction).toBe('neutral');
+  });
+
+  it('provides an idiomatic streaming store with push, finish, and reset', () => {
+    const stream = createStreamingBidiMessage();
+    const seen: string[] = [];
+    const unsubscribe = stream.subscribe((snapshot) => seen.push(snapshot.text));
+    expect(stream.push('React ').text).toBe('React ');
+    const settled = stream.push('یک کتابخانه جاوااسکریپت بسیار محبوب است.');
+    expect(settled.direction).toBe('rtl');
+    expect(settled.text).toBe(stream.getText());
+    expect(stream.finish().finished).toBe(true);
+    expect(seen.at(-1)).toBe(stream.getText());
+    expect(stream.reset().text).toBe('');
+    expect(stream.getText()).toBe('');
+    unsubscribe();
+  });
+
+  it('replaces non-prefix streaming text without retaining stale source', () => {
+    const stream = createStreamingBidiMessage();
+    stream.setText('Hello world');
+    const replaced = stream.setText('سلام دنیا');
+    expect(replaced.text).toBe('سلام دنیا');
+    expect(replaced.direction).toBe('rtl');
+    expect(stream.getText()).toBe('سلام دنیا');
   });
 });

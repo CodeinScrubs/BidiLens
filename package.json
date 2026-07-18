@@ -7,36 +7,61 @@
   "type": "module",
   "packageManager": "pnpm@10.27.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0"
   },
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @bidilens/core && npm run build -w @bidilens/dom && npm run build -w @bidilens/markdown && npm run build -w @bidilens/react && npm run build -w @bidilens/vue && npm run build -w @bidilens/svelte && npm run build -w @bidilens/web-component && npm run build -w @bidilens/cli && npm run build -w @bidilens/demo",
+    "build": "pnpm -r --workspace-concurrency=1 run build",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run corpus:check && npm run build",
-    "demo": "npm run dev -w @bidilens/demo",
+    "check": "pnpm run unicode:check && pnpm run typecheck && pnpm run lint && pnpm run test:coverage && pnpm run corpus:check && pnpm run docs:check && pnpm run build",
+    "demo": "pnpm --filter @bidilens/demo run dev",
     "benchmark": "tsx scripts/benchmark.ts",
+    "corpus:generate": "tsx scripts/generate-corpus.ts",
     "corpus:check": "tsx scripts/check-corpus.ts",
-    "test:visual": "playwright test"
+    "docs:check": "tsx scripts/check-docs.ts",
+    "test:visual": "playwright test",
+    "unicode:generate": "tsx scripts/generate-bidi-data.ts",
+    "unicode:download": "tsx scripts/generate-bidi-data.ts --download",
+    "unicode:check": "tsx scripts/generate-bidi-data.ts --check",
+    "release:check": "tsx scripts/release-check.ts",
+    "packages:types": "tsx scripts/check-package-types.ts",
+    "sbom": "pnpm dlx @cyclonedx/cdxgen@12.7.1 -t js --no-install-deps --fail-on-error --spec-version 1.7 --json-pretty -o bidilens-sbom.cdx.json .",
+    "sbom:check": "tsx scripts/check-sbom.ts",
+    "deps:audit": "pnpm audit --audit-level low",
+    "changeset": "changeset",
+    "changeset:status": "changeset status"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
+    "@eslint/js": "^10.0.1",
+    "@arethetypeswrong/cli": "0.18.5",
+    "@changesets/cli": "2.31.1",
     "@playwright/test": "^1.61.1",
+    "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "eslint": "^9.38.0",
-    "globals": "^16.4.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "ajv": "8.20.0",
+    "eslint": "^10.7.0",
+    "fast-check": "^4.3.0",
+    "globals": "^17.7.0",
     "jsdom": "^29.1.1",
+    "markdown-it": "^14.1.0",
     "tsx": "^4.20.6",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.46.2",
     "vitest": "^4.1.10"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "0.28.1"
+    }
   }
 }

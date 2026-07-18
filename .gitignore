@@ -6,6 +6,8 @@ playwright-report/
 .vite/
 .DS_Store
 *.log
+*.tgz
+bidilens-sbom.cdx.json
 .env
 .env.*
 !.env.example

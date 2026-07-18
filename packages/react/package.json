@@ -5,9 +5,12 @@
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
+  "keywords": ["bidi", "rtl", "ltr", "unicode", "react", "ai"],
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "examples"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -15,17 +18,20 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "tsup src/index.tsx --format esm --dts --clean --sourcemap --external react --external react/jsx-runtime"
+    "build": "tsup src/index.tsx --format esm --dts --clean --sourcemap --external react --external react/jsx-runtime",
+    "prepack": "pnpm run build",
+    "example": "node examples/basic.mjs"
   },
   "dependencies": {
     "@bidilens/core": "workspace:*"
   },
   "peerDependencies": {
-    "react": ">=18"
+    "react": ">=18 <20"
   },
   "devDependencies": {
     "@types/react": "^19.2.2",
@@ -35,5 +41,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "engines": { "node": ">=22.12.0" }
 }

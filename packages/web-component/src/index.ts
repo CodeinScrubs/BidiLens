@@ -6,16 +6,12 @@ const HTMLElementBase: typeof HTMLElement = typeof globalThis.HTMLElement === 'u
   ? class {} as unknown as typeof HTMLElement
   : globalThis.HTMLElement;
 
-function escapeHTML(text: string): string {
-  return text.replace(/[&<>"']/gu, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[character] ?? character));
-}
-
 export class BidiMessageElement extends HTMLElementBase {
   static observedAttributes = ['text'];
+  #initialContent: string | null = null;
 
   connectedCallback(): void {
+    if (this.#initialContent === null) this.#initialContent = this.textContent ?? '';
     this.render();
   }
 
@@ -24,7 +20,7 @@ export class BidiMessageElement extends HTMLElementBase {
   }
 
   get text(): string {
-    return this.getAttribute('text') ?? this.textContent ?? '';
+    return this.getAttribute('text') ?? this.#initialContent ?? this.textContent ?? '';
   }
 
   set text(value: string) {
@@ -36,19 +32,24 @@ export class BidiMessageElement extends HTMLElementBase {
     const analysis = analyzeText(source, { fallback: 'ltr' });
     const direction = analysis.direction === 'neutral' ? 'ltr' : analysis.direction;
     const isolations = planInlineIsolation(source, direction);
-    let html = '';
+    const fragment = this.ownerDocument.createDocumentFragment();
     let cursor = 0;
     for (const isolation of isolations) {
-      html += escapeHTML(source.slice(cursor, isolation.start));
+      fragment.append(this.ownerDocument.createTextNode(source.slice(cursor, isolation.start)));
       const tag = isolation.kind === 'code' ? 'code' : 'bdi';
-      html += `<${tag} dir="${isolation.direction}" data-bidilens-isolate="">${escapeHTML(isolation.text)}</${tag}>`;
+      const element = this.ownerDocument.createElement(tag);
+      element.dir = isolation.direction;
+      element.dataset.bidilensIsolate = '';
+      if (isolation.kind === 'code') element.dataset.bidilensCode = '';
+      element.textContent = isolation.text;
+      fragment.append(element);
       cursor = isolation.end;
     }
-    html += escapeHTML(source.slice(cursor));
+    fragment.append(this.ownerDocument.createTextNode(source.slice(cursor)));
     this.dir = direction;
     this.dataset.bidilensBlock = '';
     this.style.unicodeBidi = '';
-    this.innerHTML = html;
+    this.replaceChildren(fragment);
   }
 }
 

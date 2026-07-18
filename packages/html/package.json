@@ -1,0 +1,29 @@
+{
+  "name": "@bidilens/html",
+  "version": "0.1.0",
+  "description": "Safe semantic HTML serialization for mixed RTL/LTR text and AI responses.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "keywords": ["bidi", "rtl", "ltr", "unicode", "html", "ai"],
+  "files": ["dist", "README.md", "LICENSE", "examples"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "prepack": "pnpm run build",
+    "example": "node examples/basic.mjs"
+  },
+  "dependencies": { "@bidilens/core": "workspace:*" },
+  "devDependencies": { "tsup": "^8.5.1" },
+  "engines": { "node": ">=22.12.0" },
+  "publishConfig": { "access": "public" }
+}

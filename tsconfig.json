@@ -27,6 +27,9 @@
       "@bidilens/dom": [
         "./packages/dom/src/index.ts"
       ],
+      "@bidilens/html": [
+        "./packages/html/src/index.ts"
+      ],
       "@bidilens/markdown": [
         "./packages/markdown/src/index.ts"
       ],

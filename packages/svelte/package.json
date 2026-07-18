@@ -4,12 +4,21 @@
   "description": "Svelte store adapter for bidirectional streaming messages.",
   "license": "MIT",
   "type": "module",
-  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "keywords": ["bidi", "rtl", "ltr", "unicode", "svelte", "ai"],
+  "files": ["dist", "README.md", "LICENSE", "examples"],
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "scripts": { "build": "tsup src/index.ts --format esm --dts --clean --sourcemap" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "prepack": "pnpm run build",
+    "example": "node examples/basic.mjs"
+  },
   "dependencies": { "@bidilens/core": "workspace:*" },
-  "peerDependencies": { "svelte": ">=3" },
+  "peerDependencies": { "svelte": ">=4 <6" },
   "devDependencies": { "svelte": "^5.0.0", "tsup": "^8.5.1" },
+  "engines": { "node": ">=22.12.0" },
   "publishConfig": { "access": "public" }
 }

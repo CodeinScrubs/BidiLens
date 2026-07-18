@@ -3,6 +3,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
+import MarkdownIt from 'markdown-it';
 import { markdownItBidi, rehypeBidi, remarkBidi } from './index.js';
 
 async function render(markdown: string): Promise<string> {
@@ -17,24 +18,19 @@ async function render(markdown: string): Promise<string> {
 
 describe('Markdown plugins', () => {
   it('annotates Markdown-It paragraph tokens with content-majority direction', () => {
-    const attributes = new Map<string, string>();
-    const token = { type: 'paragraph_open', attrSet: (name: string, value: string) => attributes.set(name, value) };
-    const inline = { type: 'inline', content: 'React یک کتابخانه است.', attrSet: () => undefined };
-    const md = {
-      renderer: {
-        rules: {},
-      }
-    } as unknown as Parameters<typeof markdownItBidi>[0];
+    const md = new MarkdownIt({ html: false });
     markdownItBidi(md);
-    const renderToken = () => '<p>';
-    md.renderer.rules.paragraph_open!([token, inline], 0, {}, {}, { renderToken });
-    expect(attributes.get('dir')).toBe('rtl');
-    expect(attributes.has('data-bidilens-block')).toBe(true);
+    const html = md.render('React یک کتابخانه است.');
+    expect(html).toContain('<p dir="rtl"');
+    expect(html).toContain('data-bidilens-block=""');
+    expect(html).toContain('class="bidilens-block"');
   });
 
   it('keeps the flagship Persian-majority paragraph RTL despite leading React', async () => {
     const html = await render('React یک کتابخانه جاوااسکریپت بسیار محبوب است.');
     expect(html).toContain('dir="rtl"');
+    expect(html).toContain('<bdi dir="ltr"');
+    expect(html).toContain('>React</bdi>');
   });
 
   it('annotates Persian paragraphs', async () => {
@@ -53,7 +49,7 @@ describe('Markdown plugins', () => {
     const html = await render('فایل `src/index.ts` را باز کن.');
     expect(html).toContain('<p');
     expect(html).toContain('dir="rtl"');
-    expect(html).toContain('<bdi');
+    expect(html).toContain('<code');
     expect(html).toContain('data-bidilens-code');
     expect(html).toContain('src/index.ts');
   });
@@ -78,41 +74,75 @@ describe('Markdown plugins', () => {
       .process('… …'));
     expect(html).toContain('custom-block');
     expect(html).toContain('data-bidilens-block');
-    expect(html).toContain('dir="neutral"');
+    expect(html).not.toContain('dir="neutral"');
+    expect(html).toContain('data-bidilens-direction="neutral"');
     expect(html).toContain('<p');
   });
 
   it('annotates Markdown-It headings with the same policy', () => {
-    const attributes = new Map<string, string>();
-    const tokens = [
-      { type: 'heading_open', attrSet: (name: string, value: string) => attributes.set(name, value) },
-      { type: 'inline', content: 'سلام دنیا', attrSet: () => undefined }
-    ];
-    const md = { renderer: { rules: {} } } as unknown as Parameters<typeof markdownItBidi>[0];
+    const md = new MarkdownIt({ html: false });
     markdownItBidi(md);
-    const self = { renderToken: () => '<h1>' };
-    md.renderer.rules.heading_open!(tokens, 0, {}, {}, self);
-    expect(attributes.get('dir')).toBe('rtl');
-    expect(attributes.get('data-bidilens-block')).toBe('');
-    expect(attributes.size).toBe(2);
+    const html = md.render('# سلام دنیا');
+    expect(html).toContain('<h1 dir="rtl"');
+    expect(html).toContain('data-bidilens-block=""');
+    expect(html).toContain('class="bidilens-block"');
+    expect(html).toContain('>سلام دنیا</h1>');
   });
 
   it('marks Markdown-It inline and fenced code as LTR isolates', () => {
-    const attributes = new Map<string, string>();
-    const md = {
-      renderer: {
-        rules: {
-          code_inline: (tokens: any[], index: number) => tokens[index].content,
-          fence: (tokens: any[], index: number) => tokens[index].content
-        }
-      }
-    } as unknown as Parameters<typeof markdownItBidi>[0];
+    const md = new MarkdownIt({ html: false });
     markdownItBidi(md);
-    const token = { type: 'code_inline', content: 'src/index.ts', attrSet: (name: string, value: string) => attributes.set(name, value) };
-    md.renderer.rules.code_inline!([token], 0, {}, {}, { renderToken: () => '' });
-    expect(attributes.get('dir')).toBe('ltr');
-    expect(attributes.get('data-bidilens-code')).toBe('');
-    expect(md.renderer.rules.fence).toBeDefined();
-    expect(md.renderer.rules.code_inline).toBeDefined();
+    const html = md.render('`src/index.ts`\n\n```ts\nconst value = 1;\n```');
+    expect(html).toContain('<code dir="ltr" data-bidilens-code=""');
+    expect(html).toContain('class="bidilens-code"');
+    expect((html.match(/data-bidilens-code/g) ?? [])).toHaveLength(2);
+    expect(html).toContain('src/index.ts');
+  });
+
+  it('isolates technical and opposite runs in a real Markdown-It render', () => {
+    const md = new MarkdownIt({ html: false });
+    markdownItBidi(md);
+    const flagship = md.render('React یک کتابخانه جاوااسکریپت بسیار محبوب است.');
+    expect(flagship).toContain('<p dir="rtl" data-bidilens-block="" class="bidilens-block">');
+    expect(flagship).toContain('<bdi dir="ltr"');
+    expect(flagship).toContain('>React</bdi>');
+    const english = md.render('The Persian word کتاب means book.');
+    expect(english).toContain('<p dir="ltr"');
+    expect(english).toContain('<bdi dir="rtl"');
+    expect(english).toContain('>کتاب</bdi>');
+  });
+
+  it('escapes raw markup while adding isolation wrappers', () => {
+    const md = new MarkdownIt({ html: false });
+    markdownItBidi(md);
+    const html = md.render('<img src=x onerror=alert(1)> React یک کتابخانه است.');
+    expect(html).not.toContain('<img');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).toContain('dir="rtl"');
+  });
+
+  it('annotates real Markdown-It list items and blockquotes, including tight lists', () => {
+    const md = new MarkdownIt({ html: false });
+    markdownItBidi(md);
+    const html = md.render('- React یک کتابخانه محبوب است.\n- Hello world\n\n> نتیجه نهایی تأیید شد.');
+    expect(html).toContain('<li dir="rtl" data-bidilens-block="" class="bidilens-block">');
+    expect(html).toContain('<li dir="ltr" data-bidilens-block="" class="bidilens-block">');
+    expect(html).toContain('<blockquote dir="rtl" data-bidilens-block="" class="bidilens-block">');
+    expect(html).toContain('<bdi dir="ltr"');
+    expect(html).toContain('>React</bdi>');
+  });
+
+  it('applies Markdown-It custom classes and is idempotent when installed twice', () => {
+    const md = new MarkdownIt({ html: false });
+    const options = { blockClassName: 'custom-block', codeClassName: 'custom-code' };
+    markdownItBidi(md, options);
+    const firstRule = md.renderer.rules.paragraph_open;
+    markdownItBidi(md, options);
+    expect(md.renderer.rules.paragraph_open).toBe(firstRule);
+    const html = md.render('فایل `src/index.ts` را باز کنید.');
+    expect(html).toContain('class="custom-block"');
+    expect(html).toContain('class="custom-code"');
+    expect((html.match(/data-bidilens-block/g) ?? [])).toHaveLength(1);
+    expect((html.match(/data-bidilens-code/g) ?? [])).toHaveLength(1);
   });
 });

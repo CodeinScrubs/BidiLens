@@ -1,169 +1,152 @@
-# BidiLens v0.1.0 Build Report
+# BidiLens 0.1.0 web release-candidate report
 
-**Build date:** 2026-07-18  
-**Status:** working alpha; validation below reflects commands run in this checkout
+**Evidence date:** 2026-07-18
 
-## Delivered system
+**License:** MIT, with Unicode third-party notices
 
-BidiLens is a TypeScript monorepo that supplies the application layer missing from many mixed RTL/LTR interfaces. It delegates visual reordering to standards-compliant browser and operating-system text engines, while adding base-direction detection, semantic isolation, streaming stability, Markdown annotation, DOM integration, React primitives, and security auditing.
+**Publication status:** prepared locally; not published
 
-### Packages
+**Recommendation:** suitable for maintainer-controlled web pilots after the
+external publication gates; not a universal cross-platform production release
 
-| Package | Public API | Built artifact |
+## Mission and architecture
+
+BidiLens preserves the logical model/source string and supplies the missing
+application layer for mixed-direction output:
+
+```text
+source → structural block → Unicode/evidence analysis → isolation plan
+       → framework/markup adapter → native browser/OS bidi renderer
+```
+
+It never reverses stored strings and does not reimplement visual UAX #9
+reordering. The default `content-majority` policy excludes technical tokens,
+selects the dominant natural-language direction, and isolates technical or
+opposite-direction runs.
+
+## Shipped package status
+
+| Surface | Status | Evidence / boundary |
 |---|---|---|
-| `@bidilens/core` | analysis, detection, segmentation, isolation, stream state, control audit | ESM + declarations + source map |
-| `@bidilens/dom` | `applyBidi`, `observeBidi`, `installBidiStyles`, CSS policy | ESM + declarations + source map |
-| `@bidilens/markdown` | `remarkBidi`, `rehypeBidi` | ESM + declarations + source map |
-| `@bidilens/react` | components and hooks for messages, code, isolates, and streams | ESM + declarations + source map |
-| `@bidilens/vue` | Vue 3 `BidiMessage` and `useBidiDirection` | ESM + declarations + source map |
-| `@bidilens/svelte` | reactive `createBidiMessage` store | ESM + declarations + source map |
-| `@bidilens/web-component` | `<bidi-message>` custom element | ESM + declarations + source map |
-| `@bidilens/cli` | `inspect`, `render`, `test`, `audit`/`security-scan`, `sanitize` | executable ESM + declarations + source map |
+| `@bidilens/core` | Complete and tested | Unicode analysis, evidence, isolation, security, streaming, properties; 93.65% lines |
+| `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, styles, observer lifecycle, detached/cross-realm DOM |
+| `@bidilens/html` | Complete and tested | escaped semantic blocks and `<bdi>` isolation, tag validation, source preservation |
+| `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed markdown-it; blocks/lists/tables/quotes/code/XSS |
+| `@bidilens/react` | Complete and tested | SSR-safe components, isolation, direction and stream hooks |
+| `@bidilens/vue` | Complete and tested | Vue component, SSR, analysis and stream composables |
+| `@bidilens/svelte` | Complete and tested | idiomatic analysis and streaming stores |
+| `@bidilens/web-component` | Complete and tested | SSR-safe registration, safe DOM construction, attributes/light-DOM restoration |
+| `@bidilens/terminal` | Complete and tested | ANSI-aware conservative output; emulator shaping remains host-dependent |
+| `@bidilens/cli` | Complete and tested | inspect/render/test/audit/lint/security-scan/sanitize; human/JSON/SARIF; real packed binary |
+| React/Vite demo | Partial (with exact missing functionality) | Production build passes; lacks the requested full bilingual corpus browser, evidence inspector, shareable state, and export workflow |
+| Corpus | Partial (with exact missing functionality) | 722 schema-valid technical/user cases; zero native-speaker-certified templates |
+| VS Code, Electron, PDF | Unsupported (with technical reason) | No implementations exist; hollow packages were rejected and these require host-specific security/print tests |
+| Android, Flutter, React Native, Swift | Unsupported (with technical reason) | No implementations or executable SDK evidence exist in this repository |
+| Upstream AI-product patches | Unsupported (with technical reason) | No current-policy dossiers or patch sets exist; external research/submission was not authorized or fabricated |
 
-### Demonstration application
+## Reproduced validation
 
-The Vite/React demo includes:
-
-- editable mixed Persian/English Markdown;
-- headings, lists, tables, URLs, inline code, and fenced code;
-- real-time direction metrics;
-- model-token streaming simulation;
-- identifier and path isolation examples;
-- hidden Unicode control visualization;
-- responsive light/dark styling.
-
-## Important implementation decisions
-
-### Native UBA, application-level policy
-
-The project does not replace the Unicode Bidirectional Algorithm. It detects the base direction for semantic blocks and then relies on native rendering. This avoids maintaining a second text layout engine and keeps shaping, cursor movement, selection, and line breaking under the platform implementation.
-
-### Direction detector
-
-The core scans Unicode code points and classifies strong characters. RTL classification covers the principal RTL script ranges; other Unicode letters are treated as LTR for base-direction purposes. Numbers, punctuation, whitespace, symbols, and emoji are neutral.
-
-Supported policies:
-
-- `content-majority`: default; excludes technical tokens and chooses the
-  dominant natural-language direction;
-- `first-strong`: compatibility mode matching `dir=auto`-like behavior;
-- `strict-uax9`: explicit first-strong base-direction mode; visual reordering
-  remains the platform engine's responsibility;
-- `majority`: compatibility alias for content-majority;
-- configurable fallback, minimum strong count, and majority threshold.
-
-### Streaming state machine
-
-The stream API prevents direction oscillation while tokens arrive.
-
-- `content-majority` is the default and may transition once from a provisional
-  fallback to the dominant direction as natural-language evidence arrives;
-- `first-strong` locks on the first actual strong character, including when it matches the configured fallback;
-- `sticky-majority` locks on the first non-neutral majority result;
-- `majority` remains dynamic;
-- paragraph snapshots are calculated independently for multiline answers.
-
-### Isolation policy
-
-HTML adapters use explicit semantic `dir` on blocks and `unicode-bidi:isolate` on inline `<bdi>`/code runs. Invisible Unicode isolate controls are available only for plain-text channels. This keeps browser clipboard output clean by default.
-
-### Code policy
-
-`pre`, `code`, `kbd`, `samp`, `var`, paths, versions, and machine identifiers are rendered LTR and isolated. Prose surrounding those elements retains its own direction.
-
-### Security policy
-
-The core and CLI detect:
-
-- LRM/RLM marks;
-- embeddings and their pop control;
-- LTR/RTL overrides;
-- LTR/RTL/first-strong isolates and PDI.
-
-Each finding includes the UTF-16 index, code point, Unicode name, category, and severity. Sanitization is explicit and configurable rather than automatic.
-
-## Validation results
-
-The validation commands listed below completed successfully in this checkout.
-
-| Check | Result |
+| Command / gate | Observed result |
 |---|---|
-| TypeScript strict type-check | passed |
-| ESLint | passed |
-| Vitest | 8 files, 62 tests passed |
-| Core package build | passed |
-| DOM package build | passed |
-| Markdown package build | passed |
-| React package build | passed |
-| Vue package build | passed |
-| Svelte package build | passed |
-| Web-component package build | passed |
-| CLI package build | passed |
-| Demo production build | passed |
-| Direction corpus | 17/17 passed |
-| Playwright visual regression | Chromium, Firefox, and WebKit flagship snapshots passed |
-| CLI inspect smoke test | passed |
-| Playwright visual suite | 6 tests passed (two per Chromium/Firefox/WebKit) |
+| `pnpm run check` | Unicode, strict TypeScript, ESLint, coverage, corpus, docs, 10 package builds and demo build pass |
+| Vitest within `check` | 12 files, 127 tests pass |
+| Coverage | 86.47% statements, 74.79% branches, 89.57% functions, 91.48% lines; core 93.65% lines |
+| `pnpm run corpus:check` | 722/722; 0 native-speaker-reviewed |
+| `pnpm run test:visual` | 18/18 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS; CI aligns pixel comparison to that OS while Linux runs semantic/geometry/package gates |
+| `pnpm -r --if-present run example` | all 10 public package examples run in the workspace |
+| `pnpm run packages:types` | all 10 ESM package layouts pass real ATTW packing; CJS is intentionally unsupported |
+| publint 0.3.21 against every package directory | all 10 packed manifests and published file layouts report `All good!` |
+| `pnpm run deps:audit` | no known vulnerabilities at audit time |
+| `pnpm licenses list --prod` | runtime dependency inventory contains only MIT and ISC licenses; Unicode data is covered separately by the committed third-party notices |
+| `pnpm outdated -r` | only `@types/node` 26 and TypeScript 7 are newer majors; types stay aligned to supported Node 24 and TypeScript 6.0.3 is the newest line accepted by the installed `typescript-eslint` peer range |
+| `pnpm run sbom` + `pnpm run sbom:check` | CycloneDX 1.7; 584 components, 596 dependency relationships |
+| actionlint 1.7.12 | CI and disabled release-preparation workflows pass |
+| Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
+| Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.7, Vue 3.5.40, and Svelte 5 |
+| `pnpm run release:check` | clean-tree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 10 tarballs execute |
 
-Package-size measurements and clean consumer-install checks are release work;
-no package is described as published.
+Visual coverage includes the four-way flagship comparison, geometry, English
+mirror, per-paragraph direction, logical selection in three engines, actual
+Chromium clipboard text, stream settlement, dark mode/zoom, and structured
+Markdown heading/list/blockquote/table/code output.
 
-### Benchmark snapshot
+## Artifact sizes
 
-Benchmark input: a 45,000-character mixed Persian/English/code sample, 500 iterations.
+Aggregate emitted JavaScript, including chunks and before minification/gzip:
 
-| Operation | Total | Average |
+| Package | Bytes | Enforced budget |
 |---|---:|---:|
-| complete text analysis | 10,551.29 ms | 21.1026 ms |
-| directional segmentation | 2,430.88 ms | 4.8618 ms |
+| CLI | 12,811 | 32,768 |
+| Core | 61,646 | 65,536 |
+| DOM | 7,807 | 16,384 |
+| HTML | 3,616 | 12,288 |
+| Markdown | 12,995 | 24,576 |
+| React | 7,274 | 16,384 |
+| Svelte | 1,749 | 8,192 |
+| Terminal | 4,155 | 8,192 |
+| Vue | 3,804 | 12,288 |
+| Web Component | 2,142 | 8,192 |
 
-These numbers are environment-specific and should be tracked comparatively rather than treated as universal limits. Technical-token evidence uses a monotonic range cursor, keeping classification linear in text length plus detected ranges; segmentation is linear in directional runs.
+The release verifier also checks export maps, declarations, licenses, packed
+examples, Unicode notices, rewritten workspace dependencies, strict consumer
+types with `skipLibCheck: false`, runtime imports/assertions, and the installed
+CLI. It executes the exact `examples/basic.mjs` extracted from every tarball
+with the documented host/peer dependencies.
 
-## Repository workflows
+## Performance snapshot
 
-### Local development
+Host: Windows 10.0.19045 x64, Node 24.18.0 LTS, Intel i7-4810MQ 2.80 GHz,
+8 logical CPUs. Selected averages:
 
-```bash
-corepack enable
-pnpm install --frozen-lockfile
-pnpm run check
-pnpm run corpus:check
-pnpm run demo
-```
+- 1 KB / 10 KB / 100 KB / 1 MB analysis: 0.9592 / 8.4134 / 91.4860 /
+  901.4957 ms;
+- 100,000 units streamed in 1,000 chunks: 115.1363 ms incremental versus
+  44,372.7430 ms for full accumulated reparse after every chunk;
+- 10,000 one-character pushes: 23.4943 ms;
+- 500-item deep list: 39.2098 ms analysis;
+- 1,000-row table: 72.2710 ms analysis.
 
-### Security audit in CI
+See the complete [methodology and matrix](PERFORMANCE.md). These are comparative
+local numbers, not a service-level objective.
 
-```bash
-npx bidilens audit src docs --fail-on high
-```
+## Security and supply chain
 
-### Release sequence
+- Hidden/explicit controls are reported, not silently removed.
+- Ordinary Persian ZWNJ prose has dedicated false-positive coverage.
+- Raw plain-text HTML output is escaped; Markdown examples keep raw HTML off.
+- Unicode 17 bidi-class and general-category inputs are checksum-pinned and attributed.
+- Actions are commit-SHA pinned with read-only default permissions.
+- The SBOM generator is version-pinned and its output is independently checked.
+- Runtime Commander and the compatible ESLint/Vite toolchain majors were
+  refreshed during the final audit; incompatible/mismatched major updates are
+  recorded rather than forced through the release candidate.
+- No external penetration test or security audit is claimed.
 
-1. Choose and register the npm scope, or rename package identifiers.
-2. Set repository, homepage, bugs, author, and funding metadata.
-3. Configure npm provenance and GitHub trusted publishing.
-4. Run `pnpm install --frozen-lockfile`, `pnpm run check`, and `pnpm run corpus:check`.
-5. Publish in dependency order: core, DOM, Markdown, React, Vue, Svelte, web-component, CLI.
-6. Deploy `apps/demo/dist` to a static host.
-7. Tag `v0.1.0` and attach the corpus/benchmark results.
+## Sibling-project comparison
 
-## Known v1 boundaries
+The canonical checkout is the strongest reproducible JavaScript/web
+implementation among the local sibling folders: 10 public packages, 12 test
+files, hundreds of assertions, 722 fixtures, current generated Unicode data,
+real three-engine visual evidence, and clean package-consumer gates. Broader
+native/desktop ideas found in sibling documentation are retained in the
+[traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.
 
-The implementation is a working alpha, not a substitute for platform-level text rendering, and has not undergone an external security audit.
+## Release decision
 
-Not yet included:
+The code artifacts are ready for a **maintainer-controlled public web beta**
+once all of these external gates are completed:
 
-- complete Unicode conformance data import and automated Unicode-version generation;
-- screenshot regression beyond the flagship fixture across Chromium, Firefox, and WebKit;
-- terminal, PDF, Android Compose, SwiftUI, Monaco, and CodeMirror adapters;
-- screen-reader laboratory testing;
-- confusable/homoglyph and mixed-script identifier detection;
-- source-language-aware Trojan Source parsing;
-- native Android Compose, Flutter, React Native, and SwiftUI adapters;
-- a claimed npm organization and public GitHub release infrastructure.
+1. prove ownership or rename the `@bidilens` npm scope;
+2. create the canonical public repository and add real repository/homepage/bug
+   metadata and maintainer identity;
+3. configure private security and conduct-reporting channels;
+4. configure trusted publishing/provenance and protected human approval;
+5. perform final name/trademark review;
+6. obtain native-language and accessibility review appropriate to claims.
 
-These are explicitly staged in `docs/ROADMAP.md` rather than hidden behind claims of universal coverage.
-
-## Recommended immediate next milestone
-
-Turn v0.1.0 into a credible public alpha by adding a public issue corpus from real AI interfaces, Playwright screenshots for representative Markdown cases, generated Unicode range data, and one integration pull request against an established open-source AI chat frontend. That evidence will be more persuasive for open-source sponsorship applications than additional unvalidated features.
+Broad production or “all platforms” readiness is **not** claimed because native
+packages, Tier-2 desktop/PDF surfaces, upstream integrations, native-speaker
+certification, accessibility laboratory testing, an external security audit,
+and a real downstream pilot remain absent. Milestone tags beyond `m1` were not
+retroactively fabricated; the final consolidated work is committed, but the
+original stepwise tag history cannot be reconstructed honestly.

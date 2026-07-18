@@ -1,16 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/bidilens/bidilens/schemas/fixture.schema.json",
+  "$id": "urn:bidilens:schema:corpus-fixture:0.1.0",
   "type": "object",
-  "required": ["id", "text", "expected", "tags"],
+  "required": [
+    "id",
+    "description",
+    "text",
+    "words",
+    "expected",
+    "tags",
+    "curation",
+    "nativeSpeakerReviewed"
+  ],
   "additionalProperties": false,
   "properties": {
-    "id": { "type": "string", "minLength": 1 },
-    "description": { "type": "string" },
+    "id": { "type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "description": { "type": "string", "minLength": 1 },
     "text": { "type": "string" },
-    "words": { "type": "array", "items": { "type": "string" } },
+    "words": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
     "expected": { "enum": ["ltr", "rtl", "neutral"] },
     "expectedVisualOrderRightToLeft": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1 }
+    },
+    "expectedVisualOrderLeftToRight": {
       "type": "array",
       "items": { "type": "integer", "minimum": 1 }
     },
@@ -21,12 +38,40 @@
         "required": ["text", "direction", "kind"],
         "additionalProperties": false,
         "properties": {
-          "text": { "type": "string" },
+          "text": { "type": "string", "minLength": 1 },
           "direction": { "enum": ["ltr", "rtl", "auto"] },
-          "kind": { "type": "string" }
+          "kind": { "type": "string", "minLength": 1 }
         }
       }
     },
-    "tags": { "type": "array", "minItems": 1, "items": { "type": "string" } }
-  }
+    "expectedSecurityCodes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "curation": { "enum": ["user-provided", "authored-template-matrix"] },
+    "nativeSpeakerReviewed": { "type": "boolean" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "expected": { "const": "rtl" } }, "required": ["expected"] },
+      "then": {
+        "properties": { "expectedVisualOrderRightToLeft": true },
+        "required": ["expectedVisualOrderRightToLeft"]
+      }
+    },
+    {
+      "if": { "properties": { "expected": { "const": "ltr" } }, "required": ["expected"] },
+      "then": {
+        "properties": { "expectedVisualOrderLeftToRight": true },
+        "required": ["expectedVisualOrderLeftToRight"]
+      }
+    }
+  ]
 }

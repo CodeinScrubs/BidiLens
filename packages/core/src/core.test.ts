@@ -2,24 +2,41 @@ import { describe, expect, it } from 'vitest';
 import {
   BIDI_CONTROLS,
   analyzeText,
+  analyzePlainText,
+  analyzeBlock,
+  collectDirectionEvidence,
+  classifyCharacter,
   createBidiStream,
   detectDirection,
+  detectBaseDirection,
   findBidiControls,
+  scanBidiSecurity,
   isolateText,
   sanitizeBidiControls,
   segmentDirectionalRuns,
+  findDirectionalRuns,
   stripBidiControls,
   findTechnicalTokenRanges,
   planInlineIsolation
 } from './index.js';
 
 describe('direction detection', () => {
+  it('provides specification-oriented aliases with identical behavior', () => {
+    const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+    expect(detectBaseDirection(source)).toBe(detectDirection(source));
+    expect(analyzePlainText(source)).toEqual(analyzeText(source));
+    expect(findDirectionalRuns(source)).toEqual(segmentDirectionalRuns(source));
+  });
+
   it('uses content-majority by default for the flagship Persian sentence', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     const analysis = analyzeText(source);
     expect(analysis.direction).toBe('rtl');
     expect(analysis.firstStrong).toBe('rtl');
     expect(analysis.text).toBe(source);
+    expect(analysis.mixed).toBe(true);
+    expect(analysis.rawCounts.ltr).toBeGreaterThan(0);
+    expect(analysis.counts.ltr).toBe(0);
   });
 
   it('keeps an English-majority sentence LTR when it contains Persian', () => {
@@ -32,8 +49,80 @@ describe('direction detection', () => {
     expect(detectDirection('React یک کتابخانه است.')).toBe('rtl');
   });
 
+  it('recognizes production technical-token categories and trims sentence punctuation', () => {
+    const source = 'Claude از src/index.ts و https://example.com. با ::1، 192.168.1.1 و $NODE_ENV استفاده می‌کند.';
+    const ranges = findTechnicalTokenRanges(source);
+    const values = ranges.map((range) => range.text);
+    expect(values).toContain('Claude');
+    expect(values).toContain('src/index.ts');
+    expect(values).toContain('https://example.com');
+    expect(values).not.toContain('https://example.com.');
+    expect(values).toContain('::1');
+    expect(values).toContain('192.168.1.1');
+    expect(values).toContain('$NODE_ENV');
+    expect(ranges.find((range) => range.text === 'src/index.ts')?.kind).toBe('path');
+    expect(findTechnicalTokenRanges('پیوند https://example.com، سپس ادامه دهید.')
+      .map((range) => range.text)).toContain('https://example.com');
+  });
+
+  it('recognizes absolute paths after punctuation without swallowing delimiters', () => {
+    const source = 'Open (C:\\Users\\dev\\app.ts), then check [/usr/local/bin/node].';
+    const values = findTechnicalTokenRanges(source).map((range) => range.text);
+    expect(values).toContain('C:\\Users\\dev\\app.ts');
+    expect(values).toContain('/usr/local/bin/node');
+    expect(values).not.toContain('C:\\Users\\dev\\app.ts),');
+    expect(values).not.toContain('/usr/local/bin/node].');
+  });
+
+  it('rejects invalid IP candidates while isolating commands, dates, and HTML fragments', () => {
+    const source = 'pnpm run build در 2026-07-18 اجرا شد؛ <span dir="ltr">ok</span> و 999.1.1.1 معتبر نیست.';
+    const ranges = findTechnicalTokenRanges(source);
+    expect(ranges).toContainEqual(expect.objectContaining({ text: 'pnpm run build', kind: 'command' }));
+    expect(ranges).toContainEqual(expect.objectContaining({ text: '2026-07-18', kind: 'number' }));
+    expect(ranges).toContainEqual(expect.objectContaining({ text: '<span dir="ltr">', kind: 'html' }));
+    expect(ranges).toContainEqual(expect.objectContaining({ text: '</span>', kind: 'html' }));
+    expect(ranges).not.toContainEqual(expect.objectContaining({ text: '999.1.1.1', kind: 'number' }));
+  });
+
   it('retains configurable first-strong behavior for compatibility', () => {
     expect(detectDirection('English سلام.', { strategy: 'first-strong' })).toBe('ltr');
+    expect(detectDirection('React یک کتابخانه است.', { strategy: 'strict-uax9' })).toBe('ltr');
+    expect(detectDirection('React یک کتابخانه است.', { strategy: 'first-strong' })).toBe('ltr');
+  });
+
+  it('supports explicit and inherited base-direction policies', () => {
+    expect(detectDirection('سلام', { strategy: 'ltr' })).toBe('ltr');
+    expect(detectDirection('Hello', { strategy: 'rtl' })).toBe('rtl');
+    expect(detectDirection('Hello', { strategy: 'inherit', inheritedDirection: 'rtl' })).toBe('rtl');
+  });
+
+  it('exposes auditable natural and technical evidence with dual offsets', () => {
+    const source = '😀 React یک کتابخانه است.';
+    const block = analyzeBlock(source);
+    const react = block.evidence.find((item) => item.text === 'React')!;
+    const persian = block.evidence.find((item) => item.reason === 'natural-language')!;
+    expect(block.direction).toBe('rtl');
+    expect(block.policy).toBe('content-majority');
+    expect(react.excluded).toBe(true);
+    expect(react.technicalKind).toBe('identifier');
+    expect(react.sourceRange.utf16).toEqual({ start: 3, end: 8 });
+    expect(react.sourceRange.codePoint).toEqual({ start: 2, end: 7 });
+    expect(persian.direction).toBe('rtl');
+    expect(block.isolations).toContainEqual(expect.objectContaining({ text: 'React', direction: 'ltr' }));
+    expect(block.warnings).toEqual([]);
+    expect(collectDirectionEvidence('React', { strategy: 'first-strong' })[0]?.excluded).toBe(false);
+  });
+
+  it('uses the pinned Unicode 17 letter data for new scripts and strategy-consistent evidence', () => {
+    const sideticLetter = '\u{10940}';
+    expect(classifyCharacter(sideticLetter)).toBe('rtl');
+    expect(detectDirection(sideticLetter, { fallback: 'neutral' })).toBe('rtl');
+    expect(analyzeBlock(sideticLetter).evidence).toEqual([
+      expect.objectContaining({ text: sideticLetter, direction: 'rtl', excluded: false })
+    ]);
+    expect(analyzeBlock(sideticLetter, { strategy: 'strict-uax9' }).evidence).toEqual([
+      expect.objectContaining({ text: sideticLetter, direction: 'rtl', excluded: false })
+    ]);
   });
 
   it('detects Persian and English', () => {
@@ -105,6 +194,26 @@ describe('streaming', () => {
     expect(() => stream.push(' more')).toThrow('Cannot push after finish()');
   });
 
+  it('does not lock the English mirror case to RTL on one leading Persian word', () => {
+    const stream = createBidiStream({ fallback: 'ltr' });
+    const leading = stream.push('کتاب');
+    expect(leading.direction).toBe('ltr');
+    expect(leading.locked).toBe(false);
+    const settled = stream.push(' is a common Persian word in this English sentence.');
+    expect(settled.direction).toBe('ltr');
+    expect(settled.locked).toBe(true);
+    expect(stream.finish().direction).toBe('ltr');
+  });
+
+  it('analyzes Latin evidence symmetrically when the provisional fallback is RTL', () => {
+    const stream = createBidiStream({ fallback: 'rtl' });
+    expect(stream.push('Hello').locked).toBe(false);
+    const settled = stream.push(' world from the browser.');
+    expect(settled.direction).toBe('ltr');
+    expect(settled.locked).toBe(true);
+    expect(stream.finish().direction).toBe('ltr');
+  });
+
   it('locks after the first strong character', () => {
     const stream = createBidiStream({ strategy: 'first-strong', fallback: 'ltr' });
     expect(stream.push('...').direction).toBe('ltr');
@@ -127,6 +236,70 @@ describe('streaming', () => {
     expect(snapshot.paragraphs.map((paragraph) => paragraph.index)).toEqual([0, 1]);
     expect(snapshot.paragraphs[0]?.completed).toBe(true);
   });
+
+  it('is invariant across one-chunk, code-unit, and deterministic random chunking', () => {
+    const source = 'React یک کتابخانه است. 😀\r\nThe word کتاب means book.\nשלום v2.1';
+    const expected = analyzeText(source, { fallback: 'ltr' });
+    const chunkings: string[][] = [[source], Array.from({ length: source.length }, (_, index) => source.slice(index, index + 1))];
+    for (let seed = 1; seed <= 12; seed += 1) {
+      const chunks: string[] = [];
+      let cursor = 0;
+      let state = seed;
+      while (cursor < source.length) {
+        state = (state * 1103515245 + 12345) & 0x7fffffff;
+        const size = 1 + (state % 7);
+        chunks.push(source.slice(cursor, cursor + size));
+        cursor += size;
+      }
+      chunkings.push(chunks);
+    }
+    for (const chunks of chunkings) {
+      const stream = createBidiStream();
+      for (const chunk of chunks) stream.push(chunk);
+      const final = stream.finish();
+      expect(final.text).toBe(source);
+      expect(final.direction).toBe(expected.paragraphs.at(-1)?.direction);
+      expect(final.paragraphs.map((paragraph) => paragraph.text)).toEqual(expected.paragraphs.map((paragraph) => paragraph.text));
+      expect(final.paragraphs.map((paragraph) => paragraph.direction)).toEqual(expected.paragraphs.map((paragraph) => paragraph.direction));
+      expect(final.finished).toBe(true);
+    }
+  });
+
+  it('makes the live lock decision independent of caller chunk boundaries', () => {
+    const source = '\u0633\u0644\u0627\u0645\u0633\u0644\u0627\u0645 hello world this is a long english sentence with many words';
+    const oneChunk = createBidiStream().push(source);
+    const codePointStream = createBidiStream();
+    for (const character of source) codePointStream.push(character);
+    const codePoints = codePointStream.snapshot();
+    expect({ direction: oneChunk.direction, locked: oneChunk.locked })
+      .toEqual({ direction: codePoints.direction, locked: codePoints.locked });
+  });
+
+  it('settles exactly at the configured strong-evidence threshold', () => {
+    const snapshot = createBidiStream().push('سلام دنیا');
+    expect(snapshot.direction).toBe('rtl');
+    expect(snapshot.locked).toBe(true);
+  });
+
+  it('keeps completed paragraph snapshots protected from caller mutation', () => {
+    const stream = createBidiStream();
+    const first = stream.push('Hello\nسلام');
+    first.paragraphs[0]!.text = 'tampered';
+    expect(stream.snapshot().paragraphs[0]?.text).toBe('Hello');
+  });
+
+  it('keeps one-character neutral streaming and dense isolation planning within linear-time budgets', () => {
+    const stream = createBidiStream();
+    const streamStart = performance.now();
+    for (let index = 0; index < 8_000; index += 1) stream.push('.');
+    expect(stream.finish().text).toHaveLength(8_000);
+    expect(performance.now() - streamStart).toBeLessThan(3_000);
+
+    const source = 'سلام React '.repeat(8_000);
+    const isolationStart = performance.now();
+    expect(planInlineIsolation(source, 'rtl')).toHaveLength(8_000);
+    expect(performance.now() - isolationStart).toBeLessThan(3_000);
+  }, 10_000);
 });
 
 describe('security', () => {
@@ -136,5 +309,30 @@ describe('security', () => {
     expect(findings).toHaveLength(2);
     expect(findings[0]?.risk).toBe('high');
     expect(sanitizeBidiControls(input).text).toBe('safeevil');
+  });
+
+  it('detects unbalanced controls and Trojan-Source-style overrides', () => {
+    const report = scanBidiSecurity(`safe${BIDI_CONTROLS.RLO}evil`, { mode: 'strict' });
+    expect(report.safe).toBe(false);
+    expect(report.shouldBlock).toBe(true);
+    expect(report.findings.map((finding) => finding.code)).toContain('BIDI_OVERRIDE_CONTROL');
+    expect(report.findings.map((finding) => finding.code)).toContain('BIDI_UNCLOSED_EMBEDDING');
+    expect(report.findings[0]?.sourceRange.utf16.start).toBe(4);
+  });
+
+  it('has no findings for ordinary Persian with ZWNJ and combining marks', () => {
+    const report = scanBidiSecurity('می\u200Cخواهم دربارهٔ کتاب‌ها بخوانم.');
+    expect(report.controls).toHaveLength(0);
+    expect(report.findings).toHaveLength(0);
+    expect(report.safe).toBe(true);
+  });
+
+  it('reports unmatched pops and hidden zero-width spaces with dual offsets', () => {
+    const report = scanBidiSecurity(`😀a\u200B${BIDI_CONTROLS.PDI}`);
+    expect(report.findings.map((finding) => finding.code)).toContain('HIDDEN_ZERO_WIDTH_SPACE');
+    expect(report.findings.map((finding) => finding.code)).toContain('BIDI_UNMATCHED_PDI');
+    const hidden = report.findings.find((finding) => finding.code === 'HIDDEN_ZERO_WIDTH_SPACE')!;
+    expect(hidden.sourceRange.utf16.start).toBe(3);
+    expect(hidden.sourceRange.codePoint.start).toBe(2);
   });
 });

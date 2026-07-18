@@ -4,12 +4,20 @@
   "description": "Framework-independent custom element for bidirectional AI messages.",
   "license": "MIT",
   "type": "module",
-  "sideEffects": false,
-  "files": ["dist", "README.md"],
+  "sideEffects": ["./dist/index.js"],
+  "keywords": ["bidi", "rtl", "ltr", "unicode", "web-component", "ai"],
+  "files": ["dist", "README.md", "LICENSE", "examples"],
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "scripts": { "build": "tsup src/index.ts --format esm --dts --clean --sourcemap" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "prepack": "pnpm run build",
+    "example": "node examples/basic.mjs"
+  },
   "dependencies": { "@bidilens/core": "workspace:*" },
-  "devDependencies": { "tsup": "^8.5.1" },
+  "devDependencies": { "jsdom": "^29.1.1", "tsup": "^8.5.1" },
+  "engines": { "node": ">=22.12.0" },
   "publishConfig": { "access": "public" }
 }

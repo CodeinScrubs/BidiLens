@@ -74,4 +74,17 @@ describe('BidiMessageElement', () => {
     expect(element.hasAttribute('data-bidilens-block')).toBe(true);
     expect(element.style.unicodeBidi).toBe('');
   });
+
+  it('restores initial light-DOM source when the text attribute is removed', () => {
+    const element = document.createElement('bidi-message') as BidiMessageElement;
+    element.textContent = 'Hello original';
+    document.body.append(element);
+    element.text = 'سلام دنیا';
+    expect(element.textContent).toBe('سلام دنیا');
+    expect(element.dir).toBe('rtl');
+    element.removeAttribute('text');
+    expect(element.text).toBe('Hello original');
+    expect(element.textContent).toBe('Hello original');
+    expect(element.dir).toBe('ltr');
+  });
 });

@@ -1,11 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { analyzeText, findBidiControls, visibleBidiControls } from '@bidilens/core';
 import { rehypeBidi, remarkBidi } from '@bidilens/markdown';
-import { BidiCode, BidiIsolate, StreamingBidiMessage } from '@bidilens/react';
+import { BidiCode, BidiIsolate, BidiMessage, StreamingBidiMessage } from '@bidilens/react';
+
+const FLAGSHIP = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 
 const SAMPLE = `# پاسخ ترکیبی
+
+${FLAGSHIP}
 
 این پروژه مشکل mixed RTL/LTR را در چت‌های هوش مصنوعی حل می‌کند.
 
@@ -76,7 +80,11 @@ export function App() {
               {streaming ? 'Streaming…' : 'Simulate stream'}
             </button>
           </div>
-          <textarea value={markdown} onChange={(event) => setMarkdown(event.target.value)} dir="auto" />
+          <textarea
+            value={markdown}
+            onChange={(event) => setMarkdown(event.target.value)}
+            dir={analysis.direction === 'neutral' ? 'ltr' : analysis.direction}
+          />
         </article>
 
         <article className="panel preview-panel">
@@ -98,14 +106,31 @@ export function App() {
         <div className="panel-title">
           <div>
             <span>Streaming message</span>
-            <small>First-strong locks direction and prevents layout flicker.</small>
+            <small>Content-majority settles after enough natural-language evidence.</small>
           </div>
         </div>
         <StreamingBidiMessage
           className="stream-output"
           text={streamed || '...'}
-          streamOptions={{ strategy: 'first-strong', fallback: 'ltr' }}
+          streamOptions={{ strategy: 'content-majority', fallback: 'ltr' }}
         />
+      </section>
+
+      <section className="panel comparison-panel">
+        <div className="panel-title">
+          <div>
+            <span>Flagship comparison</span>
+            <small>The same immutable source rendered with four base-direction policies.</small>
+          </div>
+        </div>
+        <div className="comparison-grid">
+          <Comparison label="Browser default"><p>{FLAGSHIP}</p></Comparison>
+          <Comparison label="Naive global RTL"><p dir="rtl">{FLAGSHIP}</p></Comparison>
+          <Comparison label="dir=auto"><p dir="auto">{FLAGSHIP}</p></Comparison>
+          <Comparison label="BidiLens content-majority">
+            <BidiMessage as="p" text={FLAGSHIP} />
+          </Comparison>
+        </div>
       </section>
 
       <section className="panel examples">
@@ -124,6 +149,15 @@ export function App() {
         )}
       </section>
     </main>
+  );
+}
+
+function Comparison({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="comparison-case">
+      <strong>{label}</strong>
+      {children}
+    </div>
   );
 }
 

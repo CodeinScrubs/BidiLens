@@ -121,10 +121,15 @@ export function planInlineIsolation(
 
   if (options.isolateOppositeRuns === false) return isolations.sort((a, b) => a.start - b.start);
 
+  let technicalIndex = 0;
   for (const run of segmentDirectionalRuns(text)) {
     if (run.direction === 'neutral' || run.direction === blockDirection) continue;
+    while (technicalIndex < technical.length && technical[technicalIndex]!.end <= run.start) {
+      technicalIndex += 1;
+    }
     let cursor = run.start;
-    for (const range of technical) {
+    for (let index = technicalIndex; index < technical.length; index += 1) {
+      const range = technical[index]!;
       if (range.end <= cursor) continue;
       if (range.start >= run.end) break;
       const partEnd = Math.min(range.start, run.end);

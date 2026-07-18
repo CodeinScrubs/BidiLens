@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ref } from 'vue';
-import { BidiIsolate, BidiMessage, useBidiDirection } from './index.js';
+import { createSSRApp, h, ref } from 'vue';
+import { renderToString } from '@vue/server-renderer';
+import { BidiIsolate, BidiMessage, useBidiDirection, useBidiStream } from './index.js';
 
 describe('Vue adapter', () => {
   it('exports real Vue component definitions', () => {
@@ -59,5 +60,55 @@ describe('Vue adapter', () => {
     source.value = 'API در دسترس است.';
     expect(direction.value).toBe('rtl');
     expect(typeof direction.value).toBe('string');
+  });
+
+  it('streams appended refs without duplicating the initial source', () => {
+    const source = ref('React ');
+    const stream = useBidiStream(source);
+    expect(stream.snapshot.value.text).toBe('React ');
+    expect(stream.snapshot.value.direction).toBe('ltr');
+    source.value += 'یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+    expect(stream.snapshot.value.text).toBe(source.value);
+    expect(stream.snapshot.value.direction).toBe('rtl');
+    expect(stream.snapshot.value.locked).toBe(true);
+    const final = stream.finish();
+    expect(final.finished).toBe(true);
+    expect(final.direction).toBe('rtl');
+  });
+
+  it('resets a stream when a reactive source is replaced', () => {
+    const source = ref('Hello world');
+    const stream = useBidiStream(source);
+    source.value = 'سلام دنیا';
+    expect(stream.snapshot.value.text).toBe('سلام دنیا');
+    expect(stream.snapshot.value.direction).toBe('rtl');
+    const reset = stream.reset();
+    expect(reset.text).toBe('');
+    expect(reset.finished).toBe(false);
+  });
+
+  it('SSR-renders the flagship with semantic block and inline directions', async () => {
+    const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+    const app = createSSRApp({ render: () => h(BidiMessage, { text: source, as: 'article', className: 'message' }) });
+    const html = await renderToString(app);
+    expect(html).toContain('<article dir="rtl" class="message" data-bidilens-block');
+    expect(html).toContain('<bdi dir="ltr" data-bidilens-isolate');
+    expect(html).toContain('data-bidilens-kind="identifier"');
+    expect(html).toContain('>React</bdi>');
+    expect(html).toContain('text-align:start');
+  });
+
+  it('uses inherited direction for a neutral SSR block and renders isolate slots', async () => {
+    const app = createSSRApp({
+      render: () => h('section', [
+        h(BidiMessage, { text: '---', fallback: 'neutral', inheritedDirection: 'rtl' }),
+        h(BidiIsolate, { direction: 'ltr' }, { default: () => 'v2.1.0' })
+      ])
+    });
+    const html = await renderToString(app);
+    expect(html).toContain('<p dir="rtl"');
+    expect(html).not.toContain('dir="neutral"');
+    expect(html).toContain('<bdi dir="ltr">v2.1.0</bdi>');
+    expect(html).toContain('data-bidilens-block');
   });
 });

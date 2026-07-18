@@ -1,12 +1,21 @@
 # @bidilens/web-component
 
-A framework-independent `<bidi-message>` custom element. It uses the same
-content-majority policy as the core package, preserves the source string, and
-wraps technical ranges with semantic `bdi`/`code` elements.
+An SSR-import-safe `<bidi-message>` custom element that preserves logical
+source order and constructs semantic isolation nodes without `innerHTML`.
+
+```bash
+npm install @bidilens/web-component
+```
 
 ```html
-<bidi-message>React یک کتابخانه جاوااسکریپت بسیار محبوب است.</bidi-message>
+<bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 <script type="module">
-  import '@bidilens/web-component';
+  import '@bidilens/web-component'; // registers <bidi-message> in browsers
 </script>
 ```
+
+For explicit registries, import `defineBidiMessageElement`. The package marks
+its registration entry as a package side effect so bundlers retain documented
+side-effect imports. Run `pnpm --filter @bidilens/web-component example` after
+building; the Node example's browser harness requires
+`npm install --save-dev jsdom`.

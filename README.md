@@ -1,75 +1,104 @@
 # BidiLens
 
-BidiLens is a standards-first, open-source toolkit for mixed right-to-left and left-to-right text in AI chat interfaces, Markdown renderers, streaming responses, developer tools, and cross-platform web applications.
+BidiLens is an offline, standards-first toolkit for mixed right-to-left and
+left-to-right text in AI chat, Markdown, streaming interfaces, web
+applications, terminal tools, and security pipelines.
 
-The default direction policy is **content-majority**. For example,
-`React یک کتابخانه جاوااسکریپت بسیار محبوب است.` is treated as RTL because
-the natural-language content is predominantly Persian; the leading technical
-identifier does not incorrectly force the paragraph to LTR. The source string
-remains unchanged and the browser's bidi engine performs visual ordering.
+It preserves source order. It does not reverse strings or replace the Unicode
+Bidirectional Algorithm. Instead, it supplies the application layer that host
+renderers often omit: per-block base direction, semantic inline isolation,
+stable streaming state, and explicit bidi-control auditing.
 
-It does **not** reimplement the Unicode Bidirectional Algorithm. Browsers and native text engines already do that. BidiLens supplies the missing application layer around them:
+## The failure this project fixes
 
-- deterministic paragraph direction detection;
-- safe isolation for untrusted or user-generated strings;
-- stable direction during token streaming;
-- Markdown AST and rendered HTML annotation;
-- DOM post-processing and mutation observation;
-- React primitives for chat/message UIs;
-- Unicode bidi-control auditing for source and content security;
-- a multilingual conformance corpus and regression tests.
+```text
+React یک کتابخانه جاوااسکریپت بسیار محبوب است.
+```
+
+This is Persian-majority prose, so its paragraph base is RTL even though its
+first strong character is Latin. `dir="auto"` chooses LTR here. BidiLens's
+default `content-majority` policy excludes the technical identifier `React`
+from natural-language evidence, chooses RTL, and isolates `React` as an LTR
+inline run. The logical source string remains unchanged.
+
+The mirror case stays LTR:
+
+```text
+The Persian word کتاب means “book”.
+```
+
+## What is implemented
+
+- generated, pinned Unicode 17.0.0 bidi-class and natural-letter lookup data;
+- content-majority, first-strong, strict first-strong, explicit, inherited,
+  and neutral-fallback direction policies;
+- technical-token recognition for code, URLs, email, paths, packages, model
+  names, versions, commands, hashes, addresses, dates, times, and numbers;
+- UTF-16 and code-point evidence/range reporting;
+- semantic inline-isolation plans without source mutation;
+- chunk-invariant, paragraph-aware streaming with bounded re-analysis;
+- audit/warn/strict security modes and SARIF-compatible diagnostics;
+- safe HTML, DOM, unified/remark/rehype, markdown-it, React, Vue, Svelte, and
+  Web Component adapters;
+- a conservative terminal adapter and a scriptable CLI;
+- 722 schema-validated direction fixtures plus property-based random chunking;
+- Chromium, Firefox, and WebKit visual regression coverage.
 
 ## Packages
 
 | Package | Purpose |
 |---|---|
-| `@bidilens/core` | Direction analysis, isolation, segmentation, streaming, security |
-| `@bidilens/dom` | DOM annotation, CSS policy, MutationObserver integration |
-| `@bidilens/markdown` | remark and rehype plugins |
-| `@bidilens/react` | React components and hooks |
-| `@bidilens/vue` | Vue 3 component and composable |
-| `@bidilens/svelte` | Svelte-compatible reactive store |
+| `@bidilens/core` | Analysis, evidence, isolation, streaming, and security |
+| `@bidilens/dom` | DOM annotation, restoration, CSS policy, and observation |
+| `@bidilens/html` | XSS-safe semantic HTML serialization |
+| `@bidilens/markdown` | unified/remark/rehype and markdown-it plugins |
+| `@bidilens/react` | SSR-safe components and streaming hooks |
+| `@bidilens/vue` | Vue 3 component and composables |
+| `@bidilens/svelte` | Svelte analysis and streaming stores |
 | `@bidilens/web-component` | Framework-independent `<bidi-message>` element |
-| `@bidilens/cli` | Audit, inspect, and sanitize files |
+| `@bidilens/terminal` | ANSI-aware plain-text formatting and diagnostics |
+| `@bidilens/cli` | Inspect, render, corpus-test, audit, SARIF, and sanitize |
 
-## Install
+All public packages are ESM-only, require maintained Node.js 22.12 or newer for
+server-side use, include declarations, a package README, license, and runnable example.
+Browser packages target current standards-based browsers. The packages are
+prepared but **not published from this checkout**.
 
-```bash
-npm install @bidilens/core @bidilens/dom
-```
+## Consumer install
 
-For Markdown:
-
-```bash
-npm install @bidilens/markdown unified remark-parse remark-rehype rehype-stringify
-```
-
-For React:
+After the maintainer publishes and owns the `@bidilens` npm scope:
 
 ```bash
-npm install @bidilens/react react
+npm install @bidilens/core @bidilens/html
 ```
+
+Framework and Markdown peers are installed by the consuming application. See
+each package README for its exact command and supported peer range.
 
 ## Core usage
 
 ```ts
-import {
-  analyzeText,
-  createBidiStream,
-  isolateText,
-  findBidiControls
-} from '@bidilens/core';
+import { analyzeBlock, createBidiStream } from '@bidilens/core';
 
-const analysis = analyzeText('نسخه v2.1 is ready');
-// analysis.direction === 'rtl'
+const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+const analysis = analyzeBlock(source);
 
-const isolated = isolateText('علی', 'neutral');
-const controls = findBidiControls(sourceCode);
+console.log(analysis.direction); // rtl
+console.log(analysis.isolations[0]?.text); // React
 
-const stream = createBidiStream({ strategy: 'first-strong', fallback: 'ltr' });
-stream.push('...');
-stream.push('سلام');
-console.log(stream.snapshot().direction); // rtl
+const stream = createBidiStream();
+stream.push('React ');
+stream.push('یک کتابخانه جاوااسکریپت بسیار محبوب است.');
+console.log(stream.finish().direction); // rtl
+```
+
+## Safe HTML usage
+
+```ts
+import { renderBidiHtml } from '@bidilens/html';
+
+const result = renderBidiHtml(userText);
+// result.html contains escaped source plus semantic dir/bdi markup.
 ```
 
 ## Markdown usage
@@ -90,47 +119,49 @@ const html = String(await unified()
   .process(markdown));
 ```
 
-## React usage
-
-```tsx
-import { BidiMessage, BidiIsolate } from '@bidilens/react';
-
-export function Message({ text }: { text: string }) {
-  return (
-    <BidiMessage text={text}>
-      {text} — <BidiIsolate>build/main.ts</BidiIsolate>
-    </BidiMessage>
-  );
-}
-```
-
 ## CLI
 
 ```bash
-npx bidilens inspect --text "سلام version 2"
-npx bidilens audit src docs --fail-on high
-npx bidilens sanitize suspicious.txt --output cleaned.txt
+npx @bidilens/cli inspect --text "سلام version 2"
+npx @bidilens/cli render --text "React یک کتابخانه محبوب است."
+npx @bidilens/cli audit src docs --fail-on high --sarif
+npx @bidilens/cli sanitize suspicious.txt --output cleaned.txt
 ```
 
-## Design principles
+Sanitization is opt-in. The default security path reports hidden controls and
+does not alter source.
 
-1. **Standards first.** Use semantic `dir`, `<bdi>`, and CSS `unicode-bidi` isolation rather than visual hacks.
-2. **Paragraph scope.** Direction is decided per semantic block, not globally for an entire chat transcript.
-3. **Code remains LTR.** Code, paths, terminals, hashes, and machine identifiers are isolated from prose.
-4. **Streaming is stable.** A message does not oscillate between directions as tokens arrive.
-5. **Security is visible.** Hidden bidi controls can be detected, surfaced, or removed deliberately.
-6. **Copy/paste remains clean.** DOM isolation is preferred over injecting invisible control characters into displayed content.
-
-## Repository commands
+## Reproduce the release evidence
 
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run check
-pnpm run demo
-pnpm run benchmark
-pnpm run corpus:check
 pnpm run test:visual
+pnpm run packages:types
+pnpm run deps:audit
+pnpm run release:check
+pnpm run sbom
+pnpm run sbom:check
 ```
 
-See `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, and `docs/ROADMAP.md` for the complete v1 design.
+`release:check` builds and packs every public package, inspects tarball
+contents, installs all tarballs into a temporary consumer, compiles with
+`skipLibCheck: false`, and runs real imports/assertions. It requires a clean
+worktree unless `--allow-dirty` is explicitly used during development.
+
+## Honest scope
+
+The implemented web/JavaScript packages are release-candidate quality, not a
+guarantee about every proprietary renderer. Native Android, Flutter, React
+Native, SwiftUI, Electron, VS Code, PDF, screen-reader laboratory validation,
+and downstream product patches are not shipped in this repository. Registry
+ownership, a public repository URL, private security contact, provenance, and
+release credentials are also external prerequisites.
+
+See [limitations](docs/LIMITATIONS.md), [architecture](docs/ARCHITECTURE.md),
+[security](docs/SECURITY.md), [publishing](docs/PUBLISHING.md), the
+[accessibility checklist](docs/ACCESSIBILITY.md), [migration guide](docs/MIGRATION.md),
+[FAQ](docs/FAQ.md), [build report](docs/V1_BUILD_REPORT.md),
+[sibling-project comparison](docs/PROJECT_COMPARISON.md), and
+[roadmap](docs/ROADMAP.md).

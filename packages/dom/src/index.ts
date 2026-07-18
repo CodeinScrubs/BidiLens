@@ -1,4 +1,4 @@
-import { detectDirection, type DetectionOptions, type Direction } from '@bidilens/core';
+import { detectDirection, planInlineIsolation, type DetectionOptions, type Direction } from '@bidilens/core';
 
 export const BIDILENS_CSS = `
 [data-bidilens-block] {
@@ -38,6 +38,8 @@ export interface ApplyBidiOptions extends DetectionOptions {
   markAttribute?: string;
   skipSelector?: string;
   onAnnotated?: (element: HTMLElement, direction: Direction) => void;
+  /** Wrap technical and opposite-direction text runs in semantic bdi nodes. */
+  isolateInline?: boolean;
 }
 
 export interface ApplyBidiResult {
@@ -46,26 +48,91 @@ export interface ApplyBidiResult {
   rtl: number;
   ltr: number;
   neutral: number;
+  isolated: number;
+}
+
+interface OriginalElementState {
+  attributes: Map<string, string | null>;
+}
+
+const originalStates = new WeakMap<HTMLElement, OriginalElementState>();
+
+function rememberState(element: HTMLElement, attributes: readonly string[]): void {
+  let state = originalStates.get(element);
+  if (!state) {
+    state = { attributes: new Map([['style', element.getAttribute('style')]]) };
+    originalStates.set(element, state);
+  }
+  for (const attribute of attributes) {
+    if (!state.attributes.has(attribute)) state.attributes.set(attribute, element.getAttribute(attribute));
+  }
 }
 
 function isHTMLElement(value: Element): value is HTMLElement {
-  return value instanceof HTMLElement;
+  const constructor = value.ownerDocument.defaultView?.HTMLElement;
+  return constructor ? value instanceof constructor : value.nodeType === 1;
 }
 
-function textForDirection(element: HTMLElement): string {
-  if (element.matches(DEFAULT_CODE_SELECTOR)) return element.textContent ?? '';
+function textForDirection(element: HTMLElement, codeSelector: string): string {
+  if (element.matches(codeSelector)) return element.textContent ?? '';
   const clone = element.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll(DEFAULT_CODE_SELECTOR).forEach((node) => node.remove());
+  clone.querySelectorAll(codeSelector).forEach((node) => node.remove());
   return clone.textContent ?? element.textContent ?? '';
 }
 
 function annotateCode(root: ParentNode, selector: string): void {
   root.querySelectorAll(selector).forEach((node) => {
     if (!isHTMLElement(node)) return;
+    rememberState(node, ['dir', 'data-bidilens-code']);
     node.dir = 'ltr';
     node.dataset.bidilensCode = '';
     node.style.unicodeBidi = 'isolate';
   });
+}
+
+function isolateInlineText(
+  element: HTMLElement,
+  direction: 'ltr' | 'rtl',
+  blockSelector: string,
+  codeSelector: string
+): number {
+  const documentRef = element.ownerDocument;
+  const showText = documentRef.defaultView?.NodeFilter.SHOW_TEXT ?? 4;
+  const walker = documentRef.createTreeWalker(element, showText);
+  const textNodes: Text[] = [];
+  let current: Node | null;
+  while ((current = walker.nextNode()) !== null) {
+    if (current.nodeType !== 3) continue;
+    const parent = current.parentElement;
+    if (!parent || parent.closest('[data-bidilens-isolate],bdi,script,style,textarea')) continue;
+    if (parent.closest(codeSelector)) continue;
+    if (parent.closest(blockSelector) !== element) continue;
+    textNodes.push(current as Text);
+  }
+
+  let isolated = 0;
+  for (const node of textNodes) {
+    const source = node.data;
+    const plans = planInlineIsolation(source, direction);
+    if (!plans.length) continue;
+    const fragment = documentRef.createDocumentFragment();
+    let cursor = 0;
+    for (const plan of plans) {
+      fragment.append(documentRef.createTextNode(source.slice(cursor, plan.start)));
+      const isolate = documentRef.createElement('bdi');
+      isolate.dir = plan.direction;
+      isolate.dataset.bidilensIsolate = '';
+      isolate.dataset.bidilensKind = plan.kind;
+      isolate.dataset.bidilensDomGenerated = '';
+      isolate.textContent = plan.text;
+      fragment.append(isolate);
+      cursor = plan.end;
+      isolated += 1;
+    }
+    fragment.append(documentRef.createTextNode(source.slice(cursor)));
+    node.replaceWith(fragment);
+  }
+  return isolated;
 }
 
 export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): ApplyBidiResult {
@@ -74,17 +141,18 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
   const markAttribute = options.markAttribute ?? 'data-bidilens-block';
   const candidates = [...root.querySelectorAll(blockSelector)];
 
-  if (options.includeRoot && root instanceof HTMLElement && root.matches(blockSelector)) {
-    candidates.unshift(root);
+  if (options.includeRoot && root.nodeType === 1) {
+    const element = root as Element;
+    if (isHTMLElement(element) && element.matches(blockSelector)) candidates.unshift(element);
   }
 
   annotateCode(root, codeSelector);
 
-  const result: ApplyBidiResult = { scanned: 0, annotated: 0, rtl: 0, ltr: 0, neutral: 0 };
+  const result: ApplyBidiResult = { scanned: 0, annotated: 0, rtl: 0, ltr: 0, neutral: 0, isolated: 0 };
 
   for (const candidate of candidates) {
     if (!isHTMLElement(candidate)) continue;
-    if (options.skipSelector && candidate.matches(options.skipSelector)) continue;
+    if (options.skipSelector && candidate.closest(options.skipSelector)) continue;
     if (candidate.matches(codeSelector)) continue;
 
     result.scanned += 1;
@@ -94,8 +162,9 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
     if (options.majorityThreshold !== undefined) detection.majorityThreshold = options.majorityThreshold;
     if (options.inheritedDirection !== undefined) detection.inheritedDirection = options.inheritedDirection;
     if (options.excludeTechnicalTokens !== undefined) detection.excludeTechnicalTokens = options.excludeTechnicalTokens;
-    const direction = detectDirection(textForDirection(candidate), detection);
+    const direction = detectDirection(textForDirection(candidate, codeSelector), detection);
 
+    rememberState(candidate, ['dir', markAttribute]);
     candidate.setAttribute(markAttribute, '');
     if (direction === 'neutral') {
       candidate.removeAttribute('dir');
@@ -108,12 +177,43 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
       candidate.style.unicodeBidi = '';
       if (direction === 'rtl') result.rtl += 1;
       else result.ltr += 1;
+      if (options.isolateInline ?? true) {
+        result.isolated += isolateInlineText(candidate, direction, blockSelector, codeSelector);
+      }
     }
     result.annotated += 1;
     options.onAnnotated?.(candidate, direction);
   }
 
   return result;
+}
+
+export interface RestoreBidiOptions {
+  /** Restore the root element itself in addition to descendants. */
+  includeRoot?: boolean;
+}
+
+/** Restores attributes/styles and unwraps only nodes generated by applyBidi. */
+export function restoreBidi(root: ParentNode, options: RestoreBidiOptions = {}): number {
+  const generated = [...root.querySelectorAll<HTMLElement>('[data-bidilens-dom-generated]')];
+  for (const isolate of generated) isolate.replaceWith(isolate.ownerDocument.createTextNode(isolate.textContent ?? ''));
+
+  const elements: HTMLElement[] = [...root.querySelectorAll('*')].filter(isHTMLElement);
+  if (options.includeRoot && root.nodeType === 1 && isHTMLElement(root as Element)) elements.unshift(root as HTMLElement);
+  let restored = 0;
+  for (const element of elements) {
+    const state = originalStates.get(element);
+    if (!state) continue;
+    for (const [attribute, value] of state.attributes) {
+      if (value === null) element.removeAttribute(attribute);
+      else element.setAttribute(attribute, value);
+    }
+    originalStates.delete(element);
+    restored += 1;
+  }
+  if (root.nodeType === 1) (root as Element).normalize();
+  else root.normalize();
+  return restored;
 }
 
 export interface ObserveBidiOptions extends ApplyBidiOptions {
@@ -138,7 +238,9 @@ export function observeBidi(root: HTMLElement, options: ObserveBidiOptions = {})
     return lastResult;
   };
 
-  const observer = new MutationObserver(() => {
+  const Observer = root.ownerDocument.defaultView?.MutationObserver ?? globalThis.MutationObserver;
+  if (!Observer) throw new Error('MutationObserver is unavailable in this DOM environment.');
+  const observer = new Observer(() => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(flush, options.debounceMs ?? 16);
   });

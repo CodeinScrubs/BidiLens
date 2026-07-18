@@ -1,8 +1,8 @@
 name: Rendering bug
- description: Report a bidi rendering or detection regression
- title: "[bug] "
- labels: [bug]
- body:
+description: Report a bidi rendering or detection regression
+title: "[bug] "
+labels: [bug]
+body:
   - type: textarea
     id: sample
     attributes:

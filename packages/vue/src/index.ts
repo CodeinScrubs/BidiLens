@@ -1,11 +1,58 @@
-import { computed, defineComponent, h, type PropType, type Ref } from 'vue';
-import { analyzeText, planInlineIsolation, type DetectionOptions, type Direction } from '@bidilens/core';
+import { computed, defineComponent, h, shallowRef, watch, type PropType, type Ref } from 'vue';
+import {
+  analyzeText,
+  createBidiStream,
+  planInlineIsolation,
+  type BidiStreamOptions,
+  type BidiStreamSnapshot,
+  type DetectionOptions,
+  type Direction
+} from '@bidilens/core';
 
-export function useBidiDirection(source: Ref<string> | (() => string) | string, options: DetectionOptions = {}) {
-  return computed(() => {
-    const text = typeof source === 'string' ? source : typeof source === 'function' ? source() : source.value;
-    return analyzeText(text, options).direction;
-  });
+type TextSource = Ref<string> | (() => string) | string;
+
+function readSource(source: TextSource): string {
+  return typeof source === 'string' ? source : typeof source === 'function' ? source() : source.value;
+}
+
+export function useBidiDirection(source: TextSource, options: DetectionOptions = {}) {
+  return computed(() => analyzeText(readSource(source), options).direction);
+}
+
+export interface VueBidiStream {
+  snapshot: Readonly<Ref<BidiStreamSnapshot>>;
+  reset: () => BidiStreamSnapshot;
+  finish: () => BidiStreamSnapshot;
+}
+
+export function useBidiStream(source: TextSource, options: BidiStreamOptions = {}): VueBidiStream {
+  let stream = createBidiStream(options);
+  let previous = '';
+  const snapshot = shallowRef(stream.snapshot());
+  watch(
+    () => readSource(source),
+    (text) => {
+      if (text.startsWith(previous)) snapshot.value = stream.push(text.slice(previous.length));
+      else {
+        stream = createBidiStream(options);
+        snapshot.value = text ? stream.push(text) : stream.snapshot();
+      }
+      previous = text;
+    },
+    { immediate: true, flush: 'sync' }
+  );
+  return {
+    snapshot,
+    reset: () => {
+      previous = '';
+      snapshot.value = stream.reset();
+      return snapshot.value;
+    },
+    finish: () => {
+      snapshot.value = stream.finish();
+      return snapshot.value;
+    }
+  };
 }
 
 export const BidiMessage = defineComponent({
@@ -30,16 +77,29 @@ export const BidiMessage = defineComponent({
       if (props.minimumStrongCharacters !== undefined) detectionOptions.minimumStrongCharacters = props.minimumStrongCharacters;
       if (props.majorityThreshold !== undefined) detectionOptions.majorityThreshold = props.majorityThreshold;
       const analysis = analyzeText(props.text, detectionOptions);
-      const direction: Direction = analysis.direction === 'neutral' ? 'ltr' : analysis.direction;
+      const direction: Direction = analysis.direction === 'neutral'
+        ? (props.inheritedDirection ?? 'ltr')
+        : analysis.direction;
       const children = [] as ReturnType<typeof h>[];
       let cursor = 0;
       for (const isolation of planInlineIsolation(props.text, direction)) {
         if (cursor < isolation.start) children.push(h('span', props.text.slice(cursor, isolation.start)));
-        children.push(h('bdi', { dir: isolation.direction, 'data-bidilens-isolate': '' }, isolation.text));
+        const tag = isolation.kind === 'code' ? 'code' : 'bdi';
+        children.push(h(tag, {
+          dir: isolation.direction,
+          'data-bidilens-isolate': '',
+          'data-bidilens-kind': isolation.kind,
+          ...(isolation.kind === 'code' ? { 'data-bidilens-code': '' } : {})
+        }, isolation.text));
         cursor = isolation.end;
       }
       if (cursor < props.text.length) children.push(h('span', props.text.slice(cursor)));
-      return h(props.as, { dir: direction, class: props.className, style: { textAlign: 'start' } }, children);
+      return h(props.as, {
+        dir: direction,
+        class: props.className,
+        'data-bidilens-block': '',
+        style: { textAlign: 'start' }
+      }, children);
     };
   }
 });

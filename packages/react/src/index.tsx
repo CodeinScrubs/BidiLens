@@ -11,6 +11,7 @@ import {
   createElement,
   forwardRef,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -20,6 +21,8 @@ import {
   type PropsWithChildren,
   type ReactNode
 } from 'react';
+
+const useIsomorphicLayoutEffect = typeof globalThis.window === 'undefined' ? useEffect : useLayoutEffect;
 
 export interface UseBidiDirectionOptions extends DetectionOptions {
   fallback?: Direction;
@@ -162,38 +165,91 @@ export const BidiCode = forwardRef<HTMLElement, PropsWithChildren<BidiCodeProps>
 export interface UseBidiStreamResult {
   snapshot: BidiStreamSnapshot;
   reset: () => void;
+  finish: () => void;
 }
 
-export function useBidiStream(text: string, options: BidiStreamOptions = {}): UseBidiStreamResult {
-  const optionsKey = JSON.stringify(options);
-  const streamRef = useRef(createBidiStream(options));
-  const previousTextRef = useRef('');
-  const [snapshot, setSnapshot] = useState(() => streamRef.current.snapshot());
+function bidiStreamOptionsKey(options: BidiStreamOptions): string {
+  return JSON.stringify([
+    options.strategy ?? null,
+    options.fallback ?? null,
+    options.majorityThreshold ?? null,
+    options.lockAfterStrongCharacters ?? null,
+    options.lockMargin ?? null,
+    options.paragraphSeparator?.source ?? null,
+    options.paragraphSeparator?.flags ?? null
+  ]);
+}
 
-  useEffect(() => {
-    streamRef.current = createBidiStream(options);
-    previousTextRef.current = '';
-    setSnapshot(streamRef.current.push(text));
-    // optionsKey intentionally represents the serializable option surface.
-  }, [optionsKey]);
+export function useBidiStream(
+  text: string,
+  options: BidiStreamOptions = {},
+  completed = false
+): UseBidiStreamResult {
+  const optionsKey = bidiStreamOptionsKey(options);
+  const stateRef = useRef<{
+    stream: ReturnType<typeof createBidiStream>;
+    previousText: string;
+    optionsKey: string;
+    snapshot: BidiStreamSnapshot;
+    completed: boolean;
+  } | null>(null);
+  if (stateRef.current === null) {
+    const stream = createBidiStream(options);
+    let initial = text ? stream.push(text) : stream.snapshot();
+    if (completed) initial = stream.finish();
+    stateRef.current = {
+      stream,
+      previousText: text,
+      optionsKey,
+      snapshot: initial,
+      completed
+    };
+  }
+  const [snapshot, setSnapshot] = useState(() => stateRef.current!.snapshot);
 
-  useEffect(() => {
-    const previous = previousTextRef.current;
-    if (text.startsWith(previous)) {
-      const chunk = text.slice(previous.length);
-      setSnapshot(streamRef.current.push(chunk));
-    } else {
-      streamRef.current.reset();
-      setSnapshot(streamRef.current.push(text));
+  useIsomorphicLayoutEffect(() => {
+    const state = stateRef.current!;
+    if (state.optionsKey !== optionsKey || (state.completed && (text !== state.previousText || !completed))) {
+      const stream = createBidiStream(options);
+      let next = text ? stream.push(text) : stream.snapshot();
+      if (completed) next = stream.finish();
+      stateRef.current = { stream, previousText: text, optionsKey, snapshot: next, completed };
+      setSnapshot(next);
+      return;
     }
-    previousTextRef.current = text;
-  }, [text]);
+    const previous = state.previousText;
+    let next = state.snapshot;
+    if (text !== previous) {
+      if (text.startsWith(previous)) {
+        const chunk = text.slice(previous.length);
+        next = state.stream.push(chunk);
+      } else {
+        state.stream.reset();
+        next = text ? state.stream.push(text) : state.stream.snapshot();
+      }
+      state.previousText = text;
+    }
+    if (completed && !state.completed) next = state.stream.finish();
+    state.completed = completed;
+    state.snapshot = next;
+    setSnapshot(next);
+  }, [text, optionsKey, completed]);
 
   return {
     snapshot,
     reset: () => {
-      previousTextRef.current = '';
-      setSnapshot(streamRef.current.reset());
+      const state = stateRef.current!;
+      state.previousText = '';
+      state.completed = false;
+      state.snapshot = state.stream.reset();
+      setSnapshot(state.snapshot);
+    },
+    finish: () => {
+      const state = stateRef.current!;
+      if (state.snapshot.finished) return;
+      state.completed = true;
+      state.snapshot = state.stream.finish();
+      setSnapshot(state.snapshot);
     }
   };
 }
@@ -201,13 +257,14 @@ export function useBidiStream(text: string, options: BidiStreamOptions = {}): Us
 export interface StreamingBidiMessageProps extends Omit<BidiMessageProps, 'text' | 'forceDirection'> {
   text: string;
   streamOptions?: BidiStreamOptions;
+  completed?: boolean;
 }
 
 export const StreamingBidiMessage = forwardRef<HTMLElement, StreamingBidiMessageProps>(function StreamingBidiMessage(
-  { text, streamOptions, children, ...props },
+  { text, streamOptions, completed = false, children, ...props },
   ref
 ) {
-  const { snapshot } = useBidiStream(text, streamOptions);
+  const { snapshot } = useBidiStream(text, streamOptions, completed);
   return (
     <BidiMessage {...props} ref={ref} text={text} forceDirection={snapshot.direction}>
       {children ?? text}

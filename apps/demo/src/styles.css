@@ -47,14 +47,19 @@ textarea { display: block; width: 100%; min-height: 560px; border: 0; resize: ve
 .markdown-body pre code { background: transparent; padding: 0; }
 .markdown-body table { border-collapse: collapse; width: 100%; }
 .markdown-body th, .markdown-body td { border: 1px solid #dfe4ec; padding: 8px 10px; text-align: start; }
-.stream-panel, .examples { margin-top: 18px; }
+.stream-panel, .comparison-panel, .examples { margin-top: 18px; }
 .stream-output { min-height: 140px; padding: 22px; white-space: pre-wrap; text-align: start; }
+.comparison-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 16px; }
+.comparison-case { min-width: 0; border: 1px solid #dfe4ec; border-radius: 12px; padding: 14px; }
+.comparison-case > strong { display: block; color: #758198; font-size: 0.78rem; }
+.comparison-case p { min-height: 72px; margin: 10px 0 0; padding: 10px; border-radius: 8px; background: #f7f9fc; text-align: start; }
 .sample-line { margin: 0; padding: 28px; font-size: 1.2rem; text-align: start; }
 .sample-line code { background: #eef1f6; border-radius: 6px; padding: 0.18em 0.42em; }
 .control-warning { margin: 0 20px 20px; overflow: auto; background: #fff4d8; padding: 14px; border-radius: 10px; }
 
 @media (max-width: 900px) {
   .hero, .grid { grid-template-columns: 1fr; }
+  .comparison-grid { grid-template-columns: 1fr 1fr; }
   .hero h1 { font-size: clamp(2.4rem, 11vw, 4rem); }
 }
 
@@ -66,5 +71,7 @@ textarea { display: block; width: 100%; min-height: 560px; border: 0; resize: ve
   textarea { background: #101726; color: #e8edf8; }
   button { background: #e8edf8; color: #101726; }
   .markdown-body code, .sample-line code { background: #232e44; }
+  .comparison-case { border-color: #263149; }
+  .comparison-case p { background: #101726; }
   .control-warning { background: #3b3217; }
 }

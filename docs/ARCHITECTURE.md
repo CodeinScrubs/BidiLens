@@ -1,64 +1,116 @@
 # Architecture
 
-## Objective
+## Boundary
 
-BidiLens provides the application-level behavior that browsers, Markdown pipelines, and AI streaming clients usually leave to ad hoc CSS. The system is layered so applications can adopt only what they need.
+BidiLens chooses semantic base direction and isolation structure. It does not
+perform glyph reordering, shaping, line breaking, cursor movement, or bracket
+mirroring; the host's Unicode Bidirectional Algorithm implementation remains
+responsible for those operations.
 
-## Layer 1: Core analysis
+```text
+source string
+  -> technical-token ranges
+  -> Unicode bidi evidence
+  -> per-block direction + confidence
+  -> inline isolation + security plans
+  -> adapter-specific semantic output
+  -> browser / OS text engine
+```
 
-`@bidilens/core` operates on Unicode strings and has no DOM dependency.
+The source string is immutable throughout this flow.
 
-- `analyzeText` counts strong RTL and LTR characters, records first-strong direction, and returns confidence.
-- `detectDirection` defaults to `content-majority`: technical tokens are
-  excluded from evidence, then the dominant natural-language script wins.
-  `first-strong`, `strict-uax9`, and explicit fallback policies remain
-  available for compatibility and host-specific needs.
-- `segmentDirectionalRuns` partitions mixed text into directional spans for plain-text exports or custom renderers.
-- `isolateText` uses Unicode isolate controls when markup is unavailable.
-- `findBidiControls` identifies embeddings, overrides, marks, and isolates with severity metadata.
+## Core analysis
 
-The detector intentionally does not claim to implement UAX #9. It chooses a base direction; the platform text engine performs reordering.
+`@bidilens/core` has no DOM dependency and exposes four related levels:
 
-## Layer 2: Streaming state
+- `detectDirection` returns the block base direction;
+- `analyzeText` returns counts, confidence, paragraphs, and isolation ranges;
+- `collectDirectionEvidence` records UTF-16 and code-point evidence ranges;
+- `analyzeBlock` combines evidence, isolation, and security findings.
 
-`BidiStream` solves direction flicker while model tokens arrive.
-
-- `first-strong` locks after the first strong character.
-- `majority` updates continuously and is useful for analytics or completed content.
-- `sticky-majority` may change once from fallback/neutral and then remains stable.
-- completed paragraphs are emitted independently, allowing per-paragraph direction in long answers.
-
-## Layer 3: Markup adapters
-
-`@bidilens/markdown` supplies both AST-time and rendered-tree integration.
-
-- `remarkBidi` annotates block nodes before Markdown-to-HTML conversion.
-- `rehypeBidi` inspects final element text and applies semantic `dir` attributes.
-- code, preformatted content, keyboard input, samples, and machine-readable identifiers are forced LTR and isolated.
-
-`@bidilens/dom` applies the same policy to arbitrary HTML and can observe streaming mutations.
-
-## Layer 4: Framework primitives
-
-`@bidilens/react` exposes low-level components rather than imposing a chat design system:
-
-- `BidiMessage` for semantic message blocks;
-- `BidiText` for polymorphic text containers;
-- `BidiIsolate` for names, paths, versions, and inline entities;
-- `useBidiDirection` and `useBidiStream` hooks.
+Unicode strong classes and natural-letter membership come from generated
+binary-search range tables pinned to `DerivedBidiClass.txt` and
+`DerivedGeneralCategory.txt` 17.0.0. Both source files, SHA-256 values, the
+generator, and generated output are committed so normal builds remain offline
+and do not inherit the host JavaScript runtime's Unicode version.
 
 ## Direction policy
 
-The default policy is content-majority with a neutral fallback. This is the
-important distinction from `dir=auto`: a Persian-majority paragraph beginning
-with `React` remains RTL. Technical tokens such as URLs, package names, paths,
-versions, and inline code do not decide the paragraph direction. `first-strong`
-is available when matching a host's legacy behavior is required.
+The default `content-majority` policy:
 
-## Copy and paste
+1. identifies technical ranges;
+2. removes those ranges from natural-language evidence;
+3. counts Unicode `L` versus `R`/`AL` strong code points;
+4. chooses the dominant side when thresholds are met;
+5. resolves ambiguity with first-strong after exclusions and then fallback.
 
-Displayed HTML should use `dir`, `<bdi>`, and `unicode-bidi:isolate`. Unicode control insertion is reserved for plain-text channels because invisible controls can leak into clipboard content, logs, source code, search indexes, and model context.
+This deliberately differs from `dir="auto"` for a Persian-majority paragraph
+beginning with `React`. Available alternatives include `first-strong`,
+`strict-uax9`, explicit `ltr`/`rtl`, and `inherit`. The name `strict-uax9`
+means strict first-strong base-direction selection; it does not claim a second
+implementation of the complete UAX #9 reordering algorithm.
 
-## Extension points
+Technical recognition is deterministic and deliberately conservative. It
+includes code spans, URLs, email, paths, packages, identifiers, model/product
+tokens, versions, commands, environment variables, hashes, IP addresses,
+phones, dates, times, and numeric expressions. Domain-specific false positives
+can be controlled through options.
 
-All adapters accept selectors or node-type policies. Applications can override direction for domain-specific blocks, ignore hidden accessibility text, and attach analytics without forking the detector.
+## Streaming
+
+The core streaming state machine stores completed paragraphs separately from
+the current open paragraph. Completed snapshots are copied and never mutated.
+The open paragraph can move once from provisional fallback to a locked
+direction after configurable evidence and margin thresholds.
+
+Batch reconciliation occurs at `finish()`. Exponential evidence checkpoints
+avoid rescanning a long neutral or incomplete technical token after every
+single-character push, while property tests cover random boundaries, CRLF
+splits, surrogate pairs, Markdown fences, and URLs.
+
+Framework streaming APIs are adapters over the same state machine:
+
+- React `useBidiStream`;
+- Vue `useBidiStream`;
+- Svelte `createStreamingBidiMessage`.
+
+## Markup adapters
+
+- `@bidilens/html` escapes untrusted text and serializes `<p dir>` plus `<bdi>`
+  isolation without `innerHTML` input paths.
+- `@bidilens/dom` annotates semantic blocks, replaces eligible text ranges
+  with DOM-created `<bdi>` nodes, supports idempotence/restoration, and can
+  observe mutations.
+- `@bidilens/markdown` supports both unified (`remarkBidi`, `rehypeBidi`) and
+  markdown-it. Raw HTML is not trusted or interpreted by the plugin.
+- React, Vue, Svelte, and the Web Component consume core analysis directly.
+  The Web Component builds nodes rather than interpolating HTML.
+
+Code-like elements stay LTR and isolated. Block direction is computed for
+paragraphs, headings, list items, blockquotes, and table cells rather than once
+for an entire response.
+
+## Plain text and terminals
+
+Markup is preferred whenever it exists. `@bidilens/terminal` preserves plain
+text by default and can emit an annotated diagnostic view. Unicode isolate
+insertion is opt-in because invisible controls can leak into logs, clipboard
+content, prompts, and source files, and because terminal emulator support is
+not uniform.
+
+## Security
+
+The scanner has `off`, `audit`, `warn`, and `strict` modes. Findings include
+dual offsets, code, severity, message, and remediation. It recognizes
+directional marks, embeddings/overrides, isolates/pops, deprecated formatting
+controls, unbalanced stacks, cross-isolate formatting, and hidden U+200B.
+Ordinary Persian ZWNJ and Arabic/Hebrew combining marks are explicitly tested
+as non-findings.
+
+## Complexity
+
+Core classification and directional-run planning are linear in code points
+plus recognized technical ranges. Inline-isolation planning uses a monotonic
+range cursor. Streaming re-analysis uses evidence checkpoints instead of
+full-document analysis per token. Performance budgets are regression guards,
+not universal latency promises; see `docs/PERFORMANCE.md`.

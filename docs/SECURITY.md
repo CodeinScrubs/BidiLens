@@ -1,22 +1,64 @@
-# Bidi Security Model
+# Bidi security model
 
-## Threats
+## Assets and trust boundaries
 
-1. **Trojan Source-style visual reordering** in code, diffs, prompts, configuration, or logs.
-2. **Direction leakage** where untrusted text changes punctuation placement outside its intended span.
-3. **Clipboard contamination** caused by invisible controls injected into rendered content.
-4. **Prompt ambiguity** where visual and logical orders differ before text is sent to a model.
-5. **Identifier spoofing** involving mixed scripts, which is adjacent to but distinct from bidi control attacks.
+BidiLens can process untrusted chat messages, Markdown, filenames, source-like
+text, logs, and model output. The scanner is offline and deterministic. It
+does not execute input, fetch links, or infer intent.
 
-## Controls
+## Threats addressed
 
-- Prefer semantic HTML isolation over inserted controls.
-- Treat LRO, RLO, LRE, RLE, and PDF as high-risk in source-like content.
-- Show visible names and indexes for controls in diagnostics.
-- Make destructive sanitization explicit and preserve an audit report.
-- Force code and machine identifiers to LTR with isolation.
-- Never use CSS reversal (`direction: rtl` plus manual string reversal) as a repair.
+1. directional overrides or embeddings that make logical and visual code
+   order diverge;
+2. unbalanced or cross-boundary formatting stacks;
+3. isolate/mark controls hidden in identifiers, links, filenames, or prompts;
+4. zero-width spaces disguising machine-readable tokens;
+5. direction leakage from untrusted inline content into neighboring text;
+6. clipboard contamination caused by inserting invisible controls in markup
+   channels.
+
+## Scanner modes
+
+- `off`: do not scan;
+- `audit`: return all findings without a blocking recommendation;
+- `warn`: recommend blocking high-severity findings;
+- `strict`: recommend blocking any finding.
+
+Each finding contains a stable code, severity, human message, remediation,
+UTF-16 range, code-point range, and control metadata when applicable. The CLI
+can emit human, JSON, or SARIF results with UTF-16 line/column semantics.
+
+Detected categories include ALM/LRM/RLM, LRE/RLE/LRO/RLO/PDF,
+LRI/RLI/FSI/PDI, deprecated U+206A–U+206F formatting controls, unmatched
+pops/openers, formatting that crosses an isolate boundary, and U+200B.
+
+## Secure defaults
+
+- source is preserved and scanning never strips characters;
+- sanitization requires an explicit command or API call;
+- HTML serialization escapes source before inserting semantic markup;
+- the Web Component builds DOM nodes and does not assign untrusted HTML;
+- Markdown examples keep dangerous raw HTML disabled;
+- markup adapters prefer `<bdi>`/`dir` to invisible control insertion;
+- terminal isolate insertion is opt-in and carries a warning;
+- recursive CLI scanning skips symbolic links.
+
+## False-positive policy
+
+Ordinary Persian ZWNJ (U+200C), Arabic/Hebrew combining marks, emoji ZWJ
+sequences, and normal RTL letters are not security findings. Dedicated core
+tests and corpus cases enforce this. U+200B is treated separately because it is
+not the Persian joining control and can disguise machine tokens.
 
 ## Non-goals
 
-BidiLens v1 does not implement full confusable detection, script-mixing policy, source-language parsing, or malware scanning. These can be integrated later through the audit result API.
+The scanner is not a full compiler, malware detector, confusable/homoglyph
+engine, language identifier, or source-language-aware Trojan Source parser.
+It cannot decide whether every control is malicious. Host applications should
+combine structured findings with file type, syntax, user trust, and review
+policy.
+
+## Responsible disclosure
+
+The repository-level `SECURITY.md` records the current reporting channel. A
+private reporting channel must exist before public publication.

@@ -11,7 +11,10 @@ export type DetectionStrategy =
   | 'semantic-dominant'
   | 'first-strong'
   | 'strict-uax9'
-  | 'majority';
+  | 'majority'
+  | 'inherit'
+  | 'ltr'
+  | 'rtl';
 
 export interface DetectionOptions {
   strategy?: DetectionStrategy;
@@ -45,6 +48,8 @@ export interface TextAnalysis {
   firstStrong: Direction;
   confidence: number;
   counts: StrongCharacterCounts;
+  /** Strong natural-language counts before technical-token exclusion. */
+  rawCounts: StrongCharacterCounts;
   paragraphs: ParagraphAnalysis[];
   mixed: boolean;
 }
@@ -64,6 +69,10 @@ export type InlineIsolationKind =
   | 'version'
   | 'hash'
   | 'identifier'
+  | 'number'
+  | 'command'
+  | 'math'
+  | 'html'
   | 'opposite-direction-run';
 
 export interface InlineIsolation {
@@ -74,13 +83,17 @@ export interface InlineIsolation {
   kind: InlineIsolationKind;
 }
 
-export type StreamStrategy = 'content-majority' | 'first-strong' | 'majority' | 'sticky-majority';
+export type StreamStrategy = 'content-majority' | 'semantic-dominant' | 'first-strong' | 'majority' | 'sticky-majority';
 
 export interface BidiStreamOptions {
   strategy?: StreamStrategy;
   fallback?: Direction;
   paragraphSeparator?: RegExp;
   majorityThreshold?: number;
+  /** Evidence required before the default live direction locks. */
+  lockAfterStrongCharacters?: number;
+  /** Minimum winning character margin required before locking. */
+  lockMargin?: number;
 }
 
 export interface StreamParagraph {
@@ -95,6 +108,7 @@ export interface BidiStreamSnapshot {
   direction: Direction;
   changed: boolean;
   locked: boolean;
+  finished: boolean;
   paragraphs: StreamParagraph[];
   currentParagraph: StreamParagraph;
 }
@@ -106,6 +120,51 @@ export interface BidiControlFinding {
   codePoint: string;
   name: string;
   index: number;
+  end: number;
+  codePointIndex: number;
   risk: BidiControlRisk;
-  category: 'mark' | 'embedding' | 'override' | 'isolate' | 'pop';
+  category: 'mark' | 'embedding' | 'override' | 'isolate' | 'pop' | 'deprecated';
+}
+
+export type BidiSecurityMode = 'off' | 'audit' | 'warn' | 'strict';
+export type BidiSecuritySeverity = 'info' | 'warning' | 'high';
+
+export interface BidiSourceRange {
+  /** Half-open UTF-16 offsets, matching JavaScript String indices. */
+  utf16: { start: number; end: number };
+  /** Half-open Unicode code-point offsets. */
+  codePoint: { start: number; end: number };
+}
+
+export interface BidiSecurityFinding {
+  code: string;
+  severity: BidiSecuritySeverity;
+  message: string;
+  sourceRange: BidiSourceRange;
+  remediation: string;
+  control?: BidiControlFinding;
+}
+
+export interface BidiSecurityReport {
+  mode: BidiSecurityMode;
+  safe: boolean;
+  shouldBlock: boolean;
+  controls: BidiControlFinding[];
+  findings: BidiSecurityFinding[];
+}
+
+export interface DirectionEvidence {
+  text: string;
+  direction: ResolvedDirection;
+  excluded: boolean;
+  reason: 'natural-language' | 'technical-token';
+  sourceRange: BidiSourceRange;
+  technicalKind?: Exclude<InlineIsolationKind, 'opposite-direction-run'>;
+}
+
+export interface BlockAnalysis extends TextAnalysis {
+  policy: DetectionStrategy;
+  evidence: DirectionEvidence[];
+  isolations: InlineIsolation[];
+  warnings: BidiSecurityFinding[];
 }

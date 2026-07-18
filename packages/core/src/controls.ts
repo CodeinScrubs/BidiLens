@@ -1,6 +1,7 @@
 import type { Direction } from './types.js';
 
 export const BIDI_CONTROLS = Object.freeze({
+  ALM: '\u061C',
   LRM: '\u200E',
   RLM: '\u200F',
   LRE: '\u202A',
@@ -14,7 +15,7 @@ export const BIDI_CONTROLS = Object.freeze({
   PDI: '\u2069'
 });
 
-const ALL_CONTROLS_RE = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+const ALL_CONTROLS_RE = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u206F]/g;
 
 export function isolateText(text: string, direction: Direction = 'neutral'): string {
   const opener = direction === 'ltr'

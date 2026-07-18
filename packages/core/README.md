@@ -1,22 +1,31 @@
 # @bidilens/core
 
-Framework-independent Unicode direction analysis and security utilities.
+Framework-independent Unicode direction analysis, inline-isolation planning,
+streaming state, and bidi security auditing. Runtime analysis is offline and
+uses generated Unicode 17.0.0 bidi-class and natural-letter data rather than
+the host runtime's potentially older Unicode property tables.
 
-The default detector is `content-majority`. It removes technical tokens from
-direction evidence before counting Unicode strong characters, so this remains
-RTL even though it starts with Latin text:
-
-```ts
-import { analyzeText, planInlineIsolation } from '@bidilens/core';
-
-const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
-const result = analyzeText(source);
-// result.direction === 'rtl'
-// result.text === source (logical order is unchanged)
-
-const isolations = planInlineIsolation(source, 'rtl');
-// React is planned as an LTR identifier isolation.
+```bash
+npm install @bidilens/core
 ```
 
-Use `{ strategy: 'first-strong' }` only when compatibility with a host's
-legacy `dir="auto"` behavior is explicitly required.
+```ts
+import { analyzeText, planInlineIsolation, scanBidiSecurity } from '@bidilens/core';
+
+const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+const analysis = analyzeText(source);
+// analysis.direction === 'rtl'
+// analysis.text === source
+
+const isolations = planInlineIsolation(source, 'rtl');
+// React is an LTR identifier isolation.
+
+const security = scanBidiSecurity(source, { mode: 'strict' });
+```
+
+The default `content-majority` policy excludes technical tokens before
+counting natural-language evidence. Use `first-strong` or `strict-uax9` only
+when compatibility with first-strong host behavior is required.
+
+Run the packaged example after building with
+`pnpm --filter @bidilens/core example`.
