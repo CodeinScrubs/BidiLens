@@ -95,6 +95,9 @@ The validation commands listed below completed successfully in this checkout.
 | DOM package build | passed |
 | Markdown package build | passed |
 | React package build | passed |
+| Vue package build | passed |
+| Svelte package build | passed |
+| Web-component package build | passed |
 | CLI package build | passed |
 | Demo production build | passed |
 | Direction corpus | 17/17 passed |
