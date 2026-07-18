@@ -90,7 +90,7 @@ The validation commands listed below completed successfully in this checkout.
 |---|---|
 | TypeScript strict type-check | passed |
 | ESLint | passed |
-| Vitest | 7 files, 61 tests passed |
+| Vitest | 8 files, 62 tests passed |
 | Core package build | passed |
 | DOM package build | passed |
 | Markdown package build | passed |
