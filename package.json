@@ -1,0 +1,39 @@
+{
+  "name": "bidilens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standards-first bidirectional text tooling for AI chat, Markdown, streaming UIs, and developer tools.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @bidilens/core && npm run build -w @bidilens/dom && npm run build -w @bidilens/markdown && npm run build -w @bidilens/react && npm run build -w @bidilens/cli && npm run build -w @bidilens/demo",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run corpus:check && npm run build",
+    "demo": "npm run dev -w @bidilens/demo",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "corpus:check": "tsx scripts/check-corpus.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "^9.38.0",
+    "globals": "^16.4.0",
+    "tsx": "^4.20.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.46.2",
+    "vitest": "^4.1.10",
+    "jsdom": "^29.1.1"
+  }
+}

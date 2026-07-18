@@ -1,0 +1,20 @@
+import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@bidilens/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
+      '@bidilens/dom': fileURLToPath(new URL('./packages/dom/src/index.ts', import.meta.url)),
+      '@bidilens/markdown': fileURLToPath(new URL('./packages/markdown/src/index.ts', import.meta.url)),
+      '@bidilens/react': fileURLToPath(new URL('./packages/react/src/index.tsx', import.meta.url))
+    }
+  },
+  test: {
+    include: ['packages/**/*.test.ts', 'packages/**/*.test.tsx'],
+    coverage: {
+      reporter: ['text', 'html'],
+      include: ['packages/*/src/**/*.{ts,tsx}']
+    }
+  }
+});

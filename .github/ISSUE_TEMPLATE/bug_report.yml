@@ -1,0 +1,29 @@
+name: Rendering bug
+ description: Report a bidi rendering or detection regression
+ title: "[bug] "
+ labels: [bug]
+ body:
+  - type: textarea
+    id: sample
+    attributes:
+      label: Minimal text sample
+      description: Paste the exact logical-order text in a code block.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options: [Core, Markdown, DOM, React, CLI, Demo, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, runtime, and OS

@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+    "skipLibCheck": true,
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
+    "paths": {
+      "@bidilens/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@bidilens/dom": [
+        "./packages/dom/src/index.ts"
+      ],
+      "@bidilens/markdown": [
+        "./packages/markdown/src/index.ts"
+      ],
+      "@bidilens/react": [
+        "./packages/react/src/index.tsx"
+      ]
+    },
+    "ignoreDeprecations": "6.0"
+  },
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "scripts/**/*.ts",
+    "vitest.config.ts"
+  ],
+  "exclude": [
+    "**/dist/**",
+    "**/node_modules/**"
+  ]
+}

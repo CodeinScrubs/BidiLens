@@ -1,0 +1,162 @@
+# BidiLens v0.1.0 Build Report
+
+**Build date:** 2026-07-18  
+**Status:** validated production-oriented v1 source release
+
+## Delivered system
+
+BidiLens is a TypeScript monorepo that supplies the application layer missing from many mixed RTL/LTR interfaces. It delegates visual reordering to standards-compliant browser and operating-system text engines, while adding base-direction detection, semantic isolation, streaming stability, Markdown annotation, DOM integration, React primitives, and security auditing.
+
+### Packages
+
+| Package | Public API | Built artifact |
+|---|---|---|
+| `@bidilens/core` | analysis, detection, segmentation, isolation, stream state, control audit | ESM + declarations + source map |
+| `@bidilens/dom` | `applyBidi`, `observeBidi`, `installBidiStyles`, CSS policy | ESM + declarations + source map |
+| `@bidilens/markdown` | `remarkBidi`, `rehypeBidi` | ESM + declarations + source map |
+| `@bidilens/react` | components and hooks for messages, code, isolates, and streams | ESM + declarations + source map |
+| `@bidilens/cli` | `inspect`, `audit`, `sanitize` | executable ESM + declarations + source map |
+
+### Demonstration application
+
+The Vite/React demo includes:
+
+- editable mixed Persian/English Markdown;
+- headings, lists, tables, URLs, inline code, and fenced code;
+- real-time direction metrics;
+- model-token streaming simulation;
+- identifier and path isolation examples;
+- hidden Unicode control visualization;
+- responsive light/dark styling.
+
+## Important implementation decisions
+
+### Native UBA, application-level policy
+
+The project does not replace the Unicode Bidirectional Algorithm. It detects the base direction for semantic blocks and then relies on native rendering. This avoids maintaining a second text layout engine and keeps shaping, cursor movement, selection, and line breaking under the platform implementation.
+
+### Direction detector
+
+The core scans Unicode code points and classifies strong characters. RTL classification covers the principal RTL script ranges; other Unicode letters are treated as LTR for base-direction purposes. Numbers, punctuation, whitespace, symbols, and emoji are neutral.
+
+Supported policies:
+
+- `first-strong`: deterministic default suitable for chat messages and `dir=auto`-like behavior;
+- `majority`: useful for completed content and analysis;
+- configurable fallback, minimum strong count, and majority threshold.
+
+### Streaming state machine
+
+The stream API prevents direction oscillation while tokens arrive.
+
+- `first-strong` locks on the first actual strong character, including when it matches the configured fallback;
+- `sticky-majority` locks on the first non-neutral majority result;
+- `majority` remains dynamic;
+- paragraph snapshots are calculated independently for multiline answers.
+
+### Isolation policy
+
+HTML adapters prefer semantic `dir`, `<bdi>`, and `unicode-bidi:isolate`/`plaintext`. Invisible Unicode isolate controls are available only for plain-text channels. This keeps browser clipboard output clean by default.
+
+### Code policy
+
+`pre`, `code`, `kbd`, `samp`, `var`, paths, versions, and machine identifiers are rendered LTR and isolated. Prose surrounding those elements retains its own direction.
+
+### Security policy
+
+The core and CLI detect:
+
+- LRM/RLM marks;
+- embeddings and their pop control;
+- LTR/RTL overrides;
+- LTR/RTL/first-strong isolates and PDI.
+
+Each finding includes the UTF-16 index, code point, Unicode name, category, and severity. Sanitization is explicit and configurable rather than automatic.
+
+## Validation results
+
+All validation commands completed successfully in the delivered tree.
+
+| Check | Result |
+|---|---|
+| TypeScript strict type-check | passed |
+| ESLint | passed |
+| Vitest | 4 files, 17 tests passed |
+| Core package build | passed |
+| DOM package build | passed |
+| Markdown package build | passed |
+| React package build | passed |
+| CLI package build | passed |
+| Demo production build | passed |
+| Direction corpus | 16/16 passed |
+| CLI inspect smoke test | passed |
+| npm pack dry run | passed for all five packages |
+
+### Publish package sizes
+
+| Package | Compressed | Unpacked | Files |
+|---|---:|---:|---:|
+| `@bidilens/core` | 10,160 B | 45,469 B | 5 |
+| `@bidilens/dom` | 3,959 B | 14,200 B | 5 |
+| `@bidilens/markdown` | 3,494 B | 13,141 B | 5 |
+| `@bidilens/react` | 4,193 B | 16,063 B | 5 |
+| `@bidilens/cli` | 4,561 B | 14,935 B | 5 |
+
+### Benchmark snapshot
+
+Benchmark input: a 45,000-character mixed Persian/English/code sample, 500 iterations.
+
+| Operation | Total | Average |
+|---|---:|---:|
+| complete text analysis | 3,294.57 ms | 6.5891 ms |
+| directional segmentation | 2,158.72 ms | 4.3174 ms |
+
+These numbers are environment-specific and should be tracked comparatively rather than treated as universal limits. The benchmark found and prompted removal of an initial quadratic neutral-run resolver; the delivered implementation is linear in the number of directional runs.
+
+## Repository workflows
+
+### Local development
+
+```bash
+npm install
+npm run check
+npm run corpus:check
+npm run demo
+```
+
+### Security audit in CI
+
+```bash
+npx bidilens audit src docs --fail-on high
+```
+
+### Release sequence
+
+1. Choose and register the npm scope, or rename package identifiers.
+2. Set repository, homepage, bugs, author, and funding metadata.
+3. Configure npm provenance and GitHub trusted publishing.
+4. Run `npm ci`, `npm run check`, and `npm run corpus:check`.
+5. Publish in dependency order: core, DOM, Markdown, React, CLI.
+6. Deploy `apps/demo/dist` to a static host.
+7. Tag `v0.1.0` and attach the corpus/benchmark results.
+
+## Known v1 boundaries
+
+The implementation is a substantial working v1, but it is not a substitute for platform-level text rendering and has not undergone an external security audit.
+
+Not yet included:
+
+- complete Unicode conformance data import and automated Unicode-version generation;
+- screenshot regression runs across Chromium, Firefox, and WebKit;
+- terminal, PDF, Android Compose, SwiftUI, Monaco, and CodeMirror adapters;
+- screen-reader laboratory testing;
+- confusable/homoglyph and mixed-script identifier detection;
+- source-language-aware Trojan Source parsing;
+- framework adapters for Vue and Svelte;
+- a claimed npm organization and public GitHub release infrastructure.
+
+These are explicitly staged in `docs/ROADMAP.md` rather than hidden behind claims of universal coverage.
+
+## Recommended immediate next milestone
+
+Turn v0.1.0 into a credible public alpha by adding a public issue corpus from real AI interfaces, Playwright screenshots for representative Markdown cases, generated Unicode range data, and one integration pull request against an established open-source AI chat frontend. That evidence will be more persuasive for open-source sponsorship applications than additional unvalidated features.

@@ -1,0 +1,29 @@
+{
+  "name": "@bidilens/cli",
+  "version": "0.1.0",
+  "description": "CLI for inspecting direction and auditing hidden Unicode bidi controls.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "bin": {
+    "bidilens": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
+  },
+  "dependencies": {
+    "@bidilens/core": "0.1.0",
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

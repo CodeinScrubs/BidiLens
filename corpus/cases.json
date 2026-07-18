@@ -1,0 +1,98 @@
+[
+  {
+    "id": "en-basic",
+    "text": "The deployment completed successfully.",
+    "expected": "ltr",
+    "tags": ["english", "plain"]
+  },
+  {
+    "id": "fa-basic",
+    "text": "این نسخه با موفقیت منتشر شد.",
+    "expected": "rtl",
+    "tags": ["persian", "plain"]
+  },
+  {
+    "id": "ar-basic",
+    "text": "تم نشر الإصدار بنجاح.",
+    "expected": "rtl",
+    "tags": ["arabic", "plain"]
+  },
+  {
+    "id": "he-basic",
+    "text": "הגרסה פורסמה בהצלחה.",
+    "expected": "rtl",
+    "tags": ["hebrew", "plain"]
+  },
+  {
+    "id": "fa-leading-neutral",
+    "text": "(نسخه جدید) اکنون آماده است.",
+    "expected": "rtl",
+    "tags": ["persian", "punctuation"]
+  },
+  {
+    "id": "fa-code",
+    "text": "فایل src/index.ts را باز کن.",
+    "expected": "rtl",
+    "tags": ["persian", "code", "path"]
+  },
+  {
+    "id": "en-arabic-name",
+    "text": "The reviewer was علی رضایی and the result passed.",
+    "expected": "ltr",
+    "tags": ["english", "name", "mixed"]
+  },
+  {
+    "id": "fa-english-version",
+    "text": "نسخه v2.1 is ready و می‌توان آن را نصب کرد.",
+    "expected": "rtl",
+    "tags": ["persian", "version", "mixed"]
+  },
+  {
+    "id": "url-only",
+    "text": "https://example.com/a/b?q=1",
+    "expected": "ltr",
+    "tags": ["url", "identifier"]
+  },
+  {
+    "id": "numbers-neutral",
+    "text": "2026-07-18 14:30",
+    "expected": "neutral",
+    "tags": ["numbers", "neutral"]
+  },
+  {
+    "id": "emoji-fa",
+    "text": "✅ عملیات با موفقیت انجام شد",
+    "expected": "rtl",
+    "tags": ["emoji", "persian"]
+  },
+  {
+    "id": "markdown-list-fa",
+    "text": "- مرحله اول\n- مرحله دوم",
+    "expected": "rtl",
+    "tags": ["markdown", "list", "persian"]
+  },
+  {
+    "id": "urdu-basic",
+    "text": "یہ نیا ورژن تیار ہے۔",
+    "expected": "rtl",
+    "tags": ["urdu"]
+  },
+  {
+    "id": "kurdish-sorani",
+    "text": "ئەم وەشانە نوێیە ئامادەیە.",
+    "expected": "rtl",
+    "tags": ["kurdish", "sorani"]
+  },
+  {
+    "id": "devanagari",
+    "text": "यह संस्करण तैयार है।",
+    "expected": "ltr",
+    "tags": ["hindi", "devanagari"]
+  },
+  {
+    "id": "chinese",
+    "text": "此版本已准备就绪。",
+    "expected": "ltr",
+    "tags": ["chinese", "cjk"]
+  }
+]

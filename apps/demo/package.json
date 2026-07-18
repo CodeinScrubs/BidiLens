@@ -1,0 +1,23 @@
+{
+  "name": "@bidilens/demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@bidilens/core": "0.1.0",
+    "@bidilens/markdown": "0.1.0",
+    "@bidilens/react": "0.1.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "vite": "^8.1.5"
+  }
+}

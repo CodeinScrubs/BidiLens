@@ -1,0 +1,28 @@
+{
+  "name": "@bidilens/dom",
+  "version": "0.1.0",
+  "description": "DOM annotation and streaming mutation support for bidirectional text.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist", "README.md"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
+  },
+  "dependencies": {
+    "@bidilens/core": "0.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1"
+  },
+  "publishConfig": { "access": "public" }
+}
