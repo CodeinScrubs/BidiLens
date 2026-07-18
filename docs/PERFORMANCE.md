@@ -31,22 +31,22 @@ Average milliseconds per operation:
 
 | UTF-16 units | Iterations | Analyze | Segment | Isolate | Security |
 |---:|---:|---:|---:|---:|---:|
-| 1,024 | 1,000 | 0.9592 | 0.1239 | 0.2872 | 0.0378 |
-| 10,240 | 100 | 8.4134 | 0.8395 | 2.3145 | 0.3207 |
-| 102,400 | 10 | 91.4860 | 18.0829 | 35.4891 | 3.4501 |
-| 1,048,576 | 1 | 901.4957 | 211.2197 | 363.8350 | 43.0481 |
+| 1,024 | 1,000 | 1.0391 | 0.1243 | 0.2961 | 0.0367 |
+| 10,240 | 100 | 8.5716 | 0.9234 | 2.3767 | 0.3251 |
+| 102,400 | 10 | 99.4084 | 18.9249 | 35.6918 | 3.1792 |
+| 1,048,576 | 1 | 869.9294 | 199.0513 | 459.5628 | 32.6089 |
 
 ## Streaming and structured workloads
 
 | Workload | Measurement |
 |---|---:|
-| 100,000 units / 1,000 chunks, incremental | 115.1363 ms average (5 iterations) |
-| Same input, full accumulated reparse after each chunk | 44,372.7430 ms (1 iteration) |
-| 10,000 one-character pushes | 23.4943 ms average (5 iterations) |
-| 500-item / 20-indent-level list, 42,999 units, analyze | 39.2098 ms average |
-| Same deep list, isolation / security | 11.7556 / 1.0592 ms average |
-| 1,000-row table, 70,826 units, analyze | 72.2710 ms average |
-| Same table, isolation / security | 19.5558 / 1.9473 ms average |
+| 100,000 units / 1,000 chunks, incremental | 102.0627 ms average (5 iterations) |
+| Same input, full accumulated reparse after each chunk | 56,853.5192 ms (1 iteration) |
+| 10,000 one-character pushes | 28.8889 ms average (5 iterations) |
+| 500-item / 20-indent-level list, 42,999 units, analyze | 43.6502 ms average |
+| Same deep list, isolation / security | 11.7461 / 1.2562 ms average |
+| 1,000-row table, 70,826 units, analyze | 79.3424 ms average |
+| Same table, isolation / security | 22.6197 / 1.9844 ms average |
 
 The incremental comparison demonstrates the cost avoided by not reparsing the
 whole accumulated response after every chunk. It does not imply that every host
@@ -61,8 +61,8 @@ will achieve the same ratio.
 - the default separator uses incremental paragraph state;
 - open content uses chunk-independent, exponentially spaced source-length and
   strong-evidence checkpoints;
-- property tests cover one-character, random, token-like, CRLF, surrogate,
-  URL, and Markdown-fence chunk boundaries;
+- property tests cover one-character, random, token-like, CRLF, UTF-16
+  surrogate-half, URL, and Markdown-fence chunk boundaries;
 - a unit alarm permits 8,000 single-character pushes and dense isolation
   planning to finish within three seconds on the CI machine;
 - release checks enforce aggregate emitted-JavaScript budgets, including

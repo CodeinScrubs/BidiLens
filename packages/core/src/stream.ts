@@ -48,6 +48,7 @@ export class BidiStream {
   #lastChanged = false;
   #finished = false;
   #pendingCarriageReturn = false;
+  #pendingHighSurrogate: string | null = null;
   #analysisDue = false;
   #nextAnalysisLength = 1;
   #strongCharacters = 0;
@@ -87,6 +88,7 @@ export class BidiStream {
     this.#lastChanged = false;
     this.#finished = false;
     this.#pendingCarriageReturn = false;
+    this.#pendingHighSurrogate = null;
     this.#analysisDue = false;
     this.#nextAnalysisLength = 1;
     this.#strongCharacters = 0;
@@ -97,6 +99,7 @@ export class BidiStream {
   /** Finalizes the open paragraph and reconciles it with batch analysis. */
   finish(): BidiStreamSnapshot {
     if (!this.#finished && this.#pendingCarriageReturn) this.#consumeDefaultSeparators('', true);
+    this.#flushPendingHighSurrogate();
     const previous = this.#direction;
     this.#direction = detectForStrategy(this.#currentText, this.#strategy, this.#fallback, this.#threshold);
     this.#locked = this.#direction !== 'neutral';
@@ -127,28 +130,55 @@ export class BidiStream {
 
   #appendCurrent(value: string): void {
     if (!value) return;
-    for (const character of value) {
-      this.#currentText += character;
-      if (this.#strategy === 'first-strong' && !this.#locked) {
-        const actual = classifyBidiStrongCharacter(character);
-        if (actual !== 'neutral') {
-          this.#direction = actual;
-          this.#locked = true;
+    for (let index = 0; index < value.length; index += 1) {
+      const character = value[index]!;
+      const codeUnit = value.charCodeAt(index);
+
+      if (this.#pendingHighSurrogate !== null) {
+        if (codeUnit >= 0xdc00 && codeUnit <= 0xdfff) {
+          this.#currentText += character;
+          const pair = `${this.#pendingHighSurrogate}${character}`;
+          this.#pendingHighSurrogate = null;
+          this.#processCharacter(pair);
+          continue;
         }
-        continue;
+        this.#flushPendingHighSurrogate();
       }
-      // Schedule by source position, not by push() boundaries. This guarantees
-      // identical live decisions for one large chunk and any subdivision of it.
-      const strongDirection = classifyBidiStrongCharacter(character);
-      if (strongDirection !== 'neutral') this.#strongCharacters += 1;
-      if (/\s/u.test(character) || strongDirection !== 'neutral') {
-        this.#analysisDue = true;
-      }
-      this.#updateLiveDirection();
+
+      this.#currentText += character;
+      if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) this.#pendingHighSurrogate = character;
+      else this.#processCharacter(character);
     }
   }
 
+  #flushPendingHighSurrogate(): void {
+    if (this.#pendingHighSurrogate === null) return;
+    const character = this.#pendingHighSurrogate;
+    this.#pendingHighSurrogate = null;
+    this.#processCharacter(character);
+  }
+
+  #processCharacter(character: string): void {
+    if (this.#strategy === 'first-strong' && !this.#locked) {
+      const actual = classifyBidiStrongCharacter(character);
+      if (actual !== 'neutral') {
+        this.#direction = actual;
+        this.#locked = true;
+      }
+      return;
+    }
+    // Schedule by source position, not by push() boundaries. This guarantees
+    // identical live decisions for one large chunk and any subdivision of it.
+    const strongDirection = classifyBidiStrongCharacter(character);
+    if (strongDirection !== 'neutral') this.#strongCharacters += 1;
+    if (/\s/u.test(character) || strongDirection !== 'neutral') {
+      this.#analysisDue = true;
+    }
+    this.#updateLiveDirection();
+  }
+
   #completeCurrentParagraph(): void {
+    this.#flushPendingHighSurrogate();
     this.#completedParagraphs.push({
       text: this.#currentText,
       direction: detectForStrategy(this.#currentText, this.#strategy, this.#fallback, this.#threshold),
@@ -156,6 +186,7 @@ export class BidiStream {
       index: this.#completedParagraphs.length
     });
     this.#currentText = '';
+    this.#pendingHighSurrogate = null;
     this.#direction = this.#fallback;
     this.#locked = false;
     this.#analysisDue = false;
@@ -190,6 +221,7 @@ export class BidiStream {
     const combined = `${this.#currentText}${chunk}`;
     const separator = normalizedSeparator(this.#separator);
     this.#currentText = '';
+    this.#pendingHighSurrogate = null;
     this.#direction = this.#fallback;
     this.#locked = false;
     this.#analysisDue = false;

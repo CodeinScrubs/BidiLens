@@ -66,7 +66,11 @@ direction after configurable evidence and margin thresholds.
 Batch reconciliation occurs at `finish()`. Exponential evidence checkpoints
 avoid rescanning a long neutral or incomplete technical token after every
 single-character push, while property tests cover random boundaries, CRLF
-splits, surrogate pairs, Markdown fences, and URLs.
+splits, surrogate pairs, Markdown fences, and URLs. A trailing UTF-16 high
+surrogate remains visible in the logical snapshot but is not classified until
+its low half, a non-low successor, paragraph completion, or `finish()` arrives;
+this keeps live decisions invariant even when callers split a supplementary
+Unicode character between code units.
 
 Framework streaming APIs are adapters over the same state machine:
 

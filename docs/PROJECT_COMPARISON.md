@@ -12,9 +12,9 @@ those folders and do not treat README claims as proof.
 | `v1-Her` | 7 | 7 | 57 | 0 / 0 | 2 |
 | `v1.1-Her` | 9 | 9 | 67 | 0 / 0 | 2 |
 | `v1.2-Her` | 9 | 9 | 67 | 0 / 0 | 2 |
-| canonical BidiLens checkout | 10 | 12 | 556 | 1 / 36 | 722 |
+| canonical BidiLens checkout | 10 | 12 | 569 | 1 / 36 | 722 |
 
-Static assertion counts are only a depth signal; the canonical total is 592
+Static assertion counts are only a depth signal; the canonical total is 605
 across package and visual tests. The canonical checkout also runs those tests,
 coverage thresholds, examples, the three-browser visual suite,
 dependency audit, Unicode reproducibility, tarball inspection, and isolated
@@ -42,7 +42,7 @@ not delivered evidence.
 | Vue and Svelte adapters | Implemented idiomatically with stream APIs |
 | Sibling `BidiMarkdown` framework wrappers | Replaced by composition with the real AST-based Markdown package; the sibling wrappers only split plain-text blocks despite their name and therefore were not copied |
 | Framework-independent custom element | Implemented with DOM node construction and side-effect metadata |
-| Chunk-boundary-invariant streaming | Implemented for final and live decisions with source-position checkpoints, property tests, and completed-paragraph immutability |
+| Chunk-boundary-invariant streaming | Implemented for final and live decisions with source-position checkpoints, pending-surrogate handling, UTF-16 boundary properties, and completed-paragraph immutability |
 | Trojan-Source-style scanner | Implemented with balance/cross-isolate checks, modes, dual offsets, and SARIF |
 | Conservative terminal behavior | Implemented with complete ECMA-48 CSI/string-control masking; control insertion remains opt-in |
 | CLI inspection/audit/render/test/sanitize | Implemented with deterministic directory filtering, unconditional explicit-file scans, and symlink skipping |

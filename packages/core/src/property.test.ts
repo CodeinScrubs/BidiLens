@@ -96,6 +96,46 @@ describe('property-based invariants', () => {
     ), { numRuns: 300, endOnFailure: true });
   });
 
+  it('keeps live first-strong state invariant across arbitrary UTF-16 boundaries', () => {
+    const sourceArbitrary = fc.array(fc.constantFrom(
+      '\u{10940}',
+      '\u{10400}',
+      'سلام',
+      'React',
+      '.',
+      ' ',
+      '\n',
+      '\r\n',
+      '\u2029'
+    ), { minLength: 1, maxLength: 24 }).map((parts) => parts.join(''));
+
+    fc.assert(fc.property(
+      sourceArbitrary,
+      fc.array(fc.nat(), { maxLength: 50 }),
+      fc.constantFrom<'ltr' | 'rtl'>('ltr', 'rtl'),
+      (source, boundaryValues, fallback) => {
+        const options = { strategy: 'first-strong' as const, fallback };
+        const expected = createBidiStream(options).push(source);
+        const actualStream = createBidiStream(options);
+        for (const chunk of splitsFor(source, boundaryValues)) actualStream.push(chunk);
+        const actual = actualStream.snapshot();
+
+        expect(actual.text).toBe(source);
+        expect({
+          direction: actual.direction,
+          locked: actual.locked,
+          currentParagraph: actual.currentParagraph,
+          paragraphs: actual.paragraphs
+        }).toEqual({
+          direction: expected.direction,
+          locked: expected.locked,
+          currentParagraph: expected.currentParagraph,
+          paragraphs: expected.paragraphs
+        });
+      }
+    ), { numRuns: 300, endOnFailure: true });
+  });
+
   it('sanitization is idempotent and removes every recognized bidi control by default', () => {
     fc.assert(fc.property(fc.string({ maxLength: 300 }), (source) => {
       const once = sanitizeBidiControls(source).text;

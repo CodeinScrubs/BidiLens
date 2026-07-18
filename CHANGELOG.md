@@ -15,8 +15,8 @@ been published from this checkout.
   directional runs, semantic isolation plans, and specification-oriented API
   aliases.
 - Added paragraph-aware, chunk-invariant streaming with stable settlement,
-  completed-block immutability, random-boundary properties, and incremental
-  checkpoints.
+  completed-block immutability, random UTF-16-boundary properties,
+  supplementary-character buffering, and incremental checkpoints.
 
 ### Security
 
@@ -37,7 +37,7 @@ been published from this checkout.
 
 - Added 722 schema-validated corpus fixtures, with fixture #001 representing
   the user flagship and native-review status recorded explicitly.
-- Added 127 unit/property tests with enforced coverage thresholds and 18
+- Added 130 unit/property tests with enforced coverage thresholds and 18
   visual tests across Chromium, Firefox, and WebKit.
 - Added package-local examples/readmes/licenses, ESM type-layout checks,
   aggregate bundle budgets, tarball inspection, clean-consumer install,

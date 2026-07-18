@@ -92,7 +92,7 @@ jobs:
   visual:
     # The committed pixel baselines were captured with Windows Arial. Keep
     # screenshot comparison on that OS; Linux behavior is still exercised by
-    # the semantic, geometry, build, and packed-consumer jobs above.
+    # the semantic, build, and packed-consumer jobs above.
     name: Visual on Windows (${{ matrix.browser }})
     runs-on: windows-latest
     strategy:

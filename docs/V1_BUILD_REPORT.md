@@ -28,7 +28,7 @@ opposite-direction runs.
 
 | Surface | Status | Evidence / boundary |
 |---|---|---|
-| `@bidilens/core` | Complete and tested | Unicode analysis, evidence, isolation, security, streaming, properties; 93.65% lines |
+| `@bidilens/core` | Complete and tested | Unicode analysis, evidence, isolation, security, streaming, properties; 94.10% lines |
 | `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, styles, observer lifecycle, detached/cross-realm DOM |
 | `@bidilens/html` | Complete and tested | escaped semantic blocks and `<bdi>` isolation, tag validation, source preservation |
 | `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed markdown-it; blocks/lists/tables/quotes/code/XSS |
@@ -49,10 +49,10 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, coverage, corpus, docs, 10 package builds and demo build pass |
-| Vitest within `check` | 12 files, 127 tests pass |
-| Coverage | 86.47% statements, 74.79% branches, 89.57% functions, 91.48% lines; core 93.65% lines |
+| Vitest within `check` | 12 files, 130 tests pass |
+| Coverage | 86.89% statements, 75.15% branches, 90.61% functions, 91.71% lines; core 94.10% lines |
 | `pnpm run corpus:check` | 722/722; 0 native-speaker-reviewed |
-| `pnpm run test:visual` | 18/18 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS; CI aligns pixel comparison to that OS while Linux runs semantic/geometry/package gates |
+| `pnpm run test:visual` | 18/18 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
 | `pnpm -r --if-present run example` | all 10 public package examples run in the workspace |
 | `pnpm run packages:types` | all 10 ESM package layouts pass real ATTW packing; CJS is intentionally unsupported |
 | publint 0.3.21 against every package directory | all 10 packed manifests and published file layouts report `All good!` |
@@ -77,7 +77,7 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 | Package | Bytes | Enforced budget |
 |---|---:|---:|
 | CLI | 12,811 | 32,768 |
-| Core | 61,646 | 65,536 |
+| Core | 62,722 | 65,536 |
 | DOM | 7,807 | 16,384 |
 | HTML | 3,616 | 12,288 |
 | Markdown | 12,995 | 24,576 |
@@ -98,13 +98,13 @@ with the documented host/peer dependencies.
 Host: Windows 10.0.19045 x64, Node 24.18.0 LTS, Intel i7-4810MQ 2.80 GHz,
 8 logical CPUs. Selected averages:
 
-- 1 KB / 10 KB / 100 KB / 1 MB analysis: 0.9592 / 8.4134 / 91.4860 /
-  901.4957 ms;
-- 100,000 units streamed in 1,000 chunks: 115.1363 ms incremental versus
-  44,372.7430 ms for full accumulated reparse after every chunk;
-- 10,000 one-character pushes: 23.4943 ms;
-- 500-item deep list: 39.2098 ms analysis;
-- 1,000-row table: 72.2710 ms analysis.
+- 1 KB / 10 KB / 100 KB / 1 MB analysis: 1.0391 / 8.5716 / 99.4084 /
+  869.9294 ms;
+- 100,000 units streamed in 1,000 chunks: 102.0627 ms incremental versus
+  56,853.5192 ms for full accumulated reparse after every chunk;
+- 10,000 one-character pushes: 28.8889 ms;
+- 500-item deep list: 43.6502 ms analysis;
+- 1,000-row table: 79.3424 ms analysis.
 
 See the complete [methodology and matrix](PERFORMANCE.md). These are comparative
 local numbers, not a service-level objective.

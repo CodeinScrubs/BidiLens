@@ -229,6 +229,51 @@ describe('streaming', () => {
     expect(snapshot.locked).toBe(true);
   });
 
+  it('keeps live first-strong direction invariant when a supplementary character is split', () => {
+    const source = '\u{10940}';
+    const oneChunk = createBidiStream({ strategy: 'first-strong', fallback: 'ltr' }).push(source);
+    const splitStream = createBidiStream({ strategy: 'first-strong', fallback: 'ltr' });
+    const pending = splitStream.push(source.slice(0, 1));
+    const split = splitStream.push(source.slice(1));
+
+    expect(pending.currentParagraph.text).toBe(source.slice(0, 1));
+    expect(pending.locked).toBe(false);
+    expect({ direction: split.direction, locked: split.locked })
+      .toEqual({ direction: oneChunk.direction, locked: oneChunk.locked });
+  });
+
+  it('handles a pending high surrogate across finish, reset, and paragraph boundaries', () => {
+    const source = '\u{10940}';
+    const high = source.slice(0, 1);
+    const low = source.slice(1);
+    const options = { strategy: 'first-strong' as const, fallback: 'ltr' as const };
+
+    const finishing = createBidiStream(options);
+    expect(finishing.push(high).locked).toBe(false);
+    expect(finishing.finish()).toMatchObject({ text: high, direction: 'ltr', locked: true, finished: true });
+
+    const resetting = createBidiStream(options);
+    resetting.push(high);
+    resetting.reset();
+    const lowOnly = resetting.push(low);
+    const lowReference = createBidiStream(options).push(low);
+    expect(lowOnly.currentParagraph.text).toBe(low);
+    expect({ direction: lowOnly.direction, locked: lowOnly.locked })
+      .toEqual({ direction: lowReference.direction, locked: lowReference.locked });
+
+    const defaultSeparator = createBidiStream(options);
+    defaultSeparator.push(high);
+    const defaultSnapshot = defaultSeparator.push(`${low}\nA`);
+    expect(defaultSnapshot.paragraphs[0]).toMatchObject({ text: source, direction: 'rtl', completed: true });
+    expect(defaultSnapshot.currentParagraph).toMatchObject({ text: 'A', direction: 'ltr' });
+
+    const customSeparator = createBidiStream({ ...options, paragraphSeparator: /\|/g });
+    customSeparator.push(high);
+    const customSnapshot = customSeparator.push(`${low}|A`);
+    expect(customSnapshot.paragraphs[0]).toMatchObject({ text: source, direction: 'rtl', completed: true });
+    expect(customSnapshot.currentParagraph).toMatchObject({ text: 'A', direction: 'ltr' });
+  });
+
   it('does not expose capturing separator groups as paragraphs', () => {
     const stream = createBidiStream({ paragraphSeparator: /(\n)/g });
     const snapshot = stream.push('Hello\nسلام');

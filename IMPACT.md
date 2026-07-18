@@ -7,7 +7,7 @@
 - 722 schema-validated direction fixtures with numbered logical words;
 - 0 fixtures currently certified by a native-language reviewer;
 - property-based stream/source/range checks;
-- 127 unit/property tests with 91.48% overall and 93.65% core line coverage;
+- 130 unit/property tests with 91.71% overall and 94.10% core line coverage;
 - 18 visual checks spanning Chromium, Firefox, and WebKit, including structured
   Markdown and real Chromium clipboard verification;
 - reproducible Unicode 17.0.0 source and generated tables;
