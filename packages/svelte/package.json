@@ -1,0 +1,15 @@
+{
+  "name": "@bidilens/svelte",
+  "version": "0.1.0",
+  "description": "Svelte store adapter for bidirectional streaming messages.",
+  "license": "MIT",
+  "type": "module",
+  "files": ["dist", "README.md"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": { "build": "tsup src/index.ts --format esm --dts --clean --sourcemap" },
+  "dependencies": { "@bidilens/core": "workspace:*" },
+  "peerDependencies": { "svelte": ">=3" },
+  "devDependencies": { "svelte": "^5.0.0", "tsup": "^8.5.1" },
+  "publishConfig": { "access": "public" }
+}

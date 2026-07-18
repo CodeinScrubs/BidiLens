@@ -119,3 +119,40 @@ export function rehypeBidi(options: MarkdownBidiOptions = {}) {
     });
   };
 }
+
+interface MarkdownItToken {
+  type: string;
+  content?: string;
+  attrSet: (name: string, value: string) => void;
+}
+
+interface MarkdownItLike {
+  renderer: {
+    rules: Record<string, (tokens: MarkdownItToken[], index: number, options: unknown, env: unknown, self: { renderToken: (...args: unknown[]) => string }) => string>;
+  };
+}
+
+/** Markdown-It adapter with the same content-majority policy as the AST plugins. */
+export function markdownItBidi(md: MarkdownItLike, options: MarkdownBidiOptions = {}): void {
+  const original = md.renderer.rules.paragraph_open;
+  md.renderer.rules.paragraph_open = (tokens, index, renderOptions, env, self) => {
+    const content = tokens[index + 1]?.content ?? '';
+    const direction = detectWithOptions(content, options);
+    tokens[index]?.attrSet('dir', direction);
+    tokens[index]?.attrSet('data-bidilens-block', '');
+    return original
+      ? original(tokens, index, renderOptions, env, self)
+      : self.renderToken(tokens, index, renderOptions, env, self);
+  };
+
+  const originalHeading = md.renderer.rules.heading_open;
+  md.renderer.rules.heading_open = (tokens, index, renderOptions, env, self) => {
+    const content = tokens[index + 1]?.content ?? '';
+    const direction = detectWithOptions(content, options);
+    tokens[index]?.attrSet('dir', direction);
+    tokens[index]?.attrSet('data-bidilens-block', '');
+    return originalHeading
+      ? originalHeading(tokens, index, renderOptions, env, self)
+      : self.renderToken(tokens, index, renderOptions, env, self);
+  };
+}

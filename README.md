@@ -27,6 +27,9 @@ It does **not** reimplement the Unicode Bidirectional Algorithm. Browsers and na
 | `@bidilens/dom` | DOM annotation, CSS policy, MutationObserver integration |
 | `@bidilens/markdown` | remark and rehype plugins |
 | `@bidilens/react` | React components and hooks |
+| `@bidilens/vue` | Vue 3 component and composable |
+| `@bidilens/svelte` | Svelte-compatible reactive store |
+| `@bidilens/web-component` | Framework-independent `<bidi-message>` element |
 | `@bidilens/cli` | Audit, inspect, and sanitize files |
 
 ## Install
@@ -126,6 +129,7 @@ npm run check
 npm run demo
 npm run benchmark
 npm run corpus:check
+npm run test:visual
 ```
 
 See `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, and `docs/ROADMAP.md` for the complete v1 design.

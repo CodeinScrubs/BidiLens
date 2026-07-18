@@ -1,7 +1,7 @@
 # BidiLens v0.1.0 Build Report
 
 **Build date:** 2026-07-18  
-**Status:** validated production-oriented v1 source release
+**Status:** working alpha; validation below reflects commands run in this checkout
 
 ## Delivered system
 
@@ -15,7 +15,10 @@ BidiLens is a TypeScript monorepo that supplies the application layer missing fr
 | `@bidilens/dom` | `applyBidi`, `observeBidi`, `installBidiStyles`, CSS policy | ESM + declarations + source map |
 | `@bidilens/markdown` | `remarkBidi`, `rehypeBidi` | ESM + declarations + source map |
 | `@bidilens/react` | components and hooks for messages, code, isolates, and streams | ESM + declarations + source map |
-| `@bidilens/cli` | `inspect`, `audit`, `sanitize` | executable ESM + declarations + source map |
+| `@bidilens/vue` | Vue 3 `BidiMessage` and `useBidiDirection` | ESM + declarations + source map |
+| `@bidilens/svelte` | reactive `createBidiMessage` store | ESM + declarations + source map |
+| `@bidilens/web-component` | `<bidi-message>` custom element | ESM + declarations + source map |
+| `@bidilens/cli` | `inspect`, `render`, `test`, `audit`/`security-scan`, `sanitize` | executable ESM + declarations + source map |
 
 ### Demonstration application
 
@@ -81,32 +84,26 @@ Each finding includes the UTF-16 index, code point, Unicode name, category, and 
 
 ## Validation results
 
-All validation commands completed successfully in the delivered tree.
+The validation commands listed below completed successfully in this checkout.
 
 | Check | Result |
 |---|---|
 | TypeScript strict type-check | passed |
 | ESLint | passed |
-| Vitest | 4 files, 17 tests passed |
+| Vitest | 7 files, 48 tests passed |
 | Core package build | passed |
 | DOM package build | passed |
 | Markdown package build | passed |
 | React package build | passed |
 | CLI package build | passed |
 | Demo production build | passed |
-| Direction corpus | 16/16 passed |
+| Direction corpus | 17/17 passed |
+| Playwright visual regression | Chromium, Firefox, and WebKit flagship snapshots passed |
 | CLI inspect smoke test | passed |
-| npm pack dry run | passed for all five packages |
+| Playwright visual suite | 3 tests passed (one per Chromium/Firefox/WebKit) |
 
-### Publish package sizes
-
-| Package | Compressed | Unpacked | Files |
-|---|---:|---:|---:|
-| `@bidilens/core` | 10,160 B | 45,469 B | 5 |
-| `@bidilens/dom` | 3,959 B | 14,200 B | 5 |
-| `@bidilens/markdown` | 3,494 B | 13,141 B | 5 |
-| `@bidilens/react` | 4,193 B | 16,063 B | 5 |
-| `@bidilens/cli` | 4,561 B | 14,935 B | 5 |
+Package-size measurements and clean consumer-install checks are release work;
+no package is described as published.
 
 ### Benchmark snapshot
 
@@ -142,23 +139,23 @@ npx bidilens audit src docs --fail-on high
 2. Set repository, homepage, bugs, author, and funding metadata.
 3. Configure npm provenance and GitHub trusted publishing.
 4. Run `npm ci`, `npm run check`, and `npm run corpus:check`.
-5. Publish in dependency order: core, DOM, Markdown, React, CLI.
+5. Publish in dependency order: core, DOM, Markdown, React, Vue, Svelte, web-component, CLI.
 6. Deploy `apps/demo/dist` to a static host.
 7. Tag `v0.1.0` and attach the corpus/benchmark results.
 
 ## Known v1 boundaries
 
-The implementation is a substantial working v1, but it is not a substitute for platform-level text rendering and has not undergone an external security audit.
+The implementation is a working alpha, not a substitute for platform-level text rendering, and has not undergone an external security audit.
 
 Not yet included:
 
 - complete Unicode conformance data import and automated Unicode-version generation;
-- screenshot regression runs across Chromium, Firefox, and WebKit;
+- screenshot regression beyond the flagship fixture across Chromium, Firefox, and WebKit;
 - terminal, PDF, Android Compose, SwiftUI, Monaco, and CodeMirror adapters;
 - screen-reader laboratory testing;
 - confusable/homoglyph and mixed-script identifier detection;
 - source-language-aware Trojan Source parsing;
-- framework adapters for Vue and Svelte;
+- native Android Compose, Flutter, React Native, and SwiftUI adapters;
 - a claimed npm organization and public GitHub release infrastructure.
 
 These are explicitly staged in `docs/ROADMAP.md` rather than hidden behind claims of universal coverage.

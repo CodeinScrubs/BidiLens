@@ -42,7 +42,9 @@
     "apps/**/*.ts",
     "apps/**/*.tsx",
     "scripts/**/*.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "tests/**/*.ts"
   ],
   "exclude": [
     "**/dist/**",

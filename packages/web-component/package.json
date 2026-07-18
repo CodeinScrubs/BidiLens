@@ -1,0 +1,15 @@
+{
+  "name": "@bidilens/web-component",
+  "version": "0.1.0",
+  "description": "Framework-independent custom element for bidirectional AI messages.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist", "README.md"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": { "build": "tsup src/index.ts --format esm --dts --clean --sourcemap" },
+  "dependencies": { "@bidilens/core": "workspace:*" },
+  "devDependencies": { "tsup": "^8.5.1" },
+  "publishConfig": { "access": "public" }
+}

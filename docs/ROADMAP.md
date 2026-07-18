@@ -13,9 +13,9 @@
 
 ## v1.1
 
-- Browser screenshot regression suite with Playwright
+- Browser screenshot regression suite with Playwright (flagship fixture complete)
 - React Markdown integration package
-- Vue and Svelte adapters
+- Vue and Svelte adapters (initial adapters complete; broader framework corpus remains)
 - Editor decorations for Monaco and CodeMirror
 - Corpus imports from public Unicode bidi test data
 
