@@ -47,6 +47,8 @@ describe('direction detection', () => {
 
   it('supports neutral fallback', () => {
     expect(detectDirection('2026-07-18', { fallback: 'neutral' })).toBe('neutral');
+    expect(detectDirection('2026-07-18', { inheritedDirection: 'rtl' })).toBe('rtl');
+    expect(detectDirection('React یک', { excludeTechnicalTokens: false })).toBe('ltr');
   });
 
   it('analyzes paragraphs independently', () => {
@@ -67,6 +69,13 @@ describe('isolation and segmentation', () => {
   it('isolates technical URLs inside RTL prose', () => {
     const plans = planInlineIsolation('برای مستندات https://example.com مراجعه کنید.', 'rtl');
     expect(plans).toContainEqual(expect.objectContaining({ text: 'https://example.com', direction: 'ltr', kind: 'url' }));
+  });
+
+  it('isolates natural-language runs adjacent to technical tokens', () => {
+    const plans = planInlineIsolation('שלום React library', 'rtl');
+    expect(plans).toContainEqual(expect.objectContaining({ text: 'React', kind: 'identifier' }));
+    expect(plans).toContainEqual(expect.objectContaining({ text: 'library', direction: 'ltr', kind: 'opposite-direction-run' }));
+    expect(plans.every((plan, index) => index === 0 || plans[index - 1]!.end <= plan.start)).toBe(true);
   });
 
   it('wraps text with isolates', () => {
@@ -109,6 +118,14 @@ describe('streaming', () => {
     const snapshot = stream.push('Hello');
     expect(snapshot.direction).toBe('ltr');
     expect(snapshot.locked).toBe(true);
+  });
+
+  it('does not expose capturing separator groups as paragraphs', () => {
+    const stream = createBidiStream({ paragraphSeparator: /(\n)/g });
+    const snapshot = stream.push('Hello\nسلام');
+    expect(snapshot.paragraphs.map((paragraph) => paragraph.text)).toEqual(['Hello', 'سلام']);
+    expect(snapshot.paragraphs.map((paragraph) => paragraph.index)).toEqual([0, 1]);
+    expect(snapshot.paragraphs[0]?.completed).toBe(true);
   });
 });
 

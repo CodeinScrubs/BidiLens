@@ -14,11 +14,22 @@ export const BidiMessage = defineComponent({
     text: { type: String, required: true },
     as: { type: String, default: 'p' },
     className: { type: String, default: 'bidilens-block' },
-    fallback: { type: String as PropType<'ltr' | 'rtl' | 'neutral'>, default: 'ltr' }
+    fallback: { type: String as PropType<'ltr' | 'rtl' | 'neutral'>, default: 'ltr' },
+    strategy: { type: String as PropType<DetectionOptions['strategy']>, default: undefined },
+    inheritedDirection: { type: String as PropType<'ltr' | 'rtl'>, default: undefined },
+    excludeTechnicalTokens: { type: Boolean, default: undefined },
+    minimumStrongCharacters: { type: Number, default: undefined },
+    majorityThreshold: { type: Number, default: undefined }
   },
   setup(props) {
     return () => {
-      const analysis = analyzeText(props.text, { fallback: props.fallback });
+      const detectionOptions: DetectionOptions = { fallback: props.fallback };
+      if (props.strategy !== undefined) detectionOptions.strategy = props.strategy;
+      if (props.inheritedDirection !== undefined) detectionOptions.inheritedDirection = props.inheritedDirection;
+      if (props.excludeTechnicalTokens !== undefined) detectionOptions.excludeTechnicalTokens = props.excludeTechnicalTokens;
+      if (props.minimumStrongCharacters !== undefined) detectionOptions.minimumStrongCharacters = props.minimumStrongCharacters;
+      if (props.majorityThreshold !== undefined) detectionOptions.majorityThreshold = props.majorityThreshold;
+      const analysis = analyzeText(props.text, detectionOptions);
       const direction: Direction = analysis.direction === 'neutral' ? 'ltr' : analysis.direction;
       const children = [] as ReturnType<typeof h>[];
       let cursor = 0;
@@ -28,7 +39,7 @@ export const BidiMessage = defineComponent({
         cursor = isolation.end;
       }
       if (cursor < props.text.length) children.push(h('span', props.text.slice(cursor)));
-      return h(props.as, { dir: direction, class: props.className, style: { textAlign: 'start', unicodeBidi: 'plaintext' } }, children);
+      return h(props.as, { dir: direction, class: props.className, style: { textAlign: 'start' } }, children);
     };
   }
 });

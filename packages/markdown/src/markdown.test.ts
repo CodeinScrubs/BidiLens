@@ -96,4 +96,23 @@ describe('Markdown plugins', () => {
     expect(attributes.get('data-bidilens-block')).toBe('');
     expect(attributes.size).toBe(2);
   });
+
+  it('marks Markdown-It inline and fenced code as LTR isolates', () => {
+    const attributes = new Map<string, string>();
+    const md = {
+      renderer: {
+        rules: {
+          code_inline: (tokens: any[], index: number) => tokens[index].content,
+          fence: (tokens: any[], index: number) => tokens[index].content
+        }
+      }
+    } as unknown as Parameters<typeof markdownItBidi>[0];
+    markdownItBidi(md);
+    const token = { type: 'code_inline', content: 'src/index.ts', attrSet: (name: string, value: string) => attributes.set(name, value) };
+    md.renderer.rules.code_inline!([token], 0, {}, {}, { renderToken: () => '' });
+    expect(attributes.get('dir')).toBe('ltr');
+    expect(attributes.get('data-bidilens-code')).toBe('');
+    expect(md.renderer.rules.fence).toBeDefined();
+    expect(md.renderer.rules.code_inline).toBeDefined();
+  });
 });

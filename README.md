@@ -63,7 +63,7 @@ import {
 const analysis = analyzeText('نسخه v2.1 is ready');
 // analysis.direction === 'rtl'
 
-const isolated = isolateText('علی', 'auto');
+const isolated = isolateText('علی', 'neutral');
 const controls = findBidiControls(sourceCode);
 
 const stream = createBidiStream({ strategy: 'first-strong', fallback: 'ltr' });
@@ -124,12 +124,13 @@ npx bidilens sanitize suspicious.txt --output cleaned.txt
 ## Repository commands
 
 ```bash
-npm install
-npm run check
-npm run demo
-npm run benchmark
-npm run corpus:check
-npm run test:visual
+corepack enable
+pnpm install --frozen-lockfile
+pnpm run check
+pnpm run demo
+pnpm run benchmark
+pnpm run corpus:check
+pnpm run test:visual
 ```
 
 See `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, and `docs/ROADMAP.md` for the complete v1 design.

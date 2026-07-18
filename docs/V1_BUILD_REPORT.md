@@ -65,7 +65,7 @@ The stream API prevents direction oscillation while tokens arrive.
 
 ### Isolation policy
 
-HTML adapters prefer semantic `dir`, `<bdi>`, and `unicode-bidi:isolate`/`plaintext`. Invisible Unicode isolate controls are available only for plain-text channels. This keeps browser clipboard output clean by default.
+HTML adapters use explicit semantic `dir` on blocks and `unicode-bidi:isolate` on inline `<bdi>`/code runs. Invisible Unicode isolate controls are available only for plain-text channels. This keeps browser clipboard output clean by default.
 
 ### Code policy
 
@@ -90,7 +90,7 @@ The validation commands listed below completed successfully in this checkout.
 |---|---|
 | TypeScript strict type-check | passed |
 | ESLint | passed |
-| Vitest | 7 files, 48 tests passed |
+| Vitest | 7 files, 61 tests passed |
 | Core package build | passed |
 | DOM package build | passed |
 | Markdown package build | passed |
@@ -100,7 +100,7 @@ The validation commands listed below completed successfully in this checkout.
 | Direction corpus | 17/17 passed |
 | Playwright visual regression | Chromium, Firefox, and WebKit flagship snapshots passed |
 | CLI inspect smoke test | passed |
-| Playwright visual suite | 3 tests passed (one per Chromium/Firefox/WebKit) |
+| Playwright visual suite | 6 tests passed (two per Chromium/Firefox/WebKit) |
 
 Package-size measurements and clean consumer-install checks are release work;
 no package is described as published.
@@ -111,20 +111,21 @@ Benchmark input: a 45,000-character mixed Persian/English/code sample, 500 itera
 
 | Operation | Total | Average |
 |---|---:|---:|
-| complete text analysis | 3,294.57 ms | 6.5891 ms |
-| directional segmentation | 2,158.72 ms | 4.3174 ms |
+| complete text analysis | 10,551.29 ms | 21.1026 ms |
+| directional segmentation | 2,430.88 ms | 4.8618 ms |
 
-These numbers are environment-specific and should be tracked comparatively rather than treated as universal limits. The benchmark found and prompted removal of an initial quadratic neutral-run resolver; the delivered implementation is linear in the number of directional runs.
+These numbers are environment-specific and should be tracked comparatively rather than treated as universal limits. Technical-token evidence uses a monotonic range cursor, keeping classification linear in text length plus detected ranges; segmentation is linear in directional runs.
 
 ## Repository workflows
 
 ### Local development
 
 ```bash
-npm install
-npm run check
-npm run corpus:check
-npm run demo
+corepack enable
+pnpm install --frozen-lockfile
+pnpm run check
+pnpm run corpus:check
+pnpm run demo
 ```
 
 ### Security audit in CI
@@ -138,7 +139,7 @@ npx bidilens audit src docs --fail-on high
 1. Choose and register the npm scope, or rename package identifiers.
 2. Set repository, homepage, bugs, author, and funding metadata.
 3. Configure npm provenance and GitHub trusted publishing.
-4. Run `npm ci`, `npm run check`, and `npm run corpus:check`.
+4. Run `pnpm install --frozen-lockfile`, `pnpm run check`, and `pnpm run corpus:check`.
 5. Publish in dependency order: core, DOM, Markdown, React, Vue, Svelte, web-component, CLI.
 6. Deploy `apps/demo/dist` to a static host.
 7. Tag `v0.1.0` and attach the corpus/benchmark results.

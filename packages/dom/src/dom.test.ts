@@ -10,7 +10,7 @@ describe('DOM adapter', () => {
     expect(paragraph.dir).toBe('rtl');
     expect(paragraph.getAttribute('dir')).toBe('rtl');
     expect(paragraph.hasAttribute('data-bidilens-block')).toBe(true);
-    expect(paragraph.style.unicodeBidi).toBe('plaintext');
+    expect(paragraph.style.unicodeBidi).toBe('');
   });
 
   it('annotates prose and isolates code', () => {
@@ -42,7 +42,8 @@ describe('DOM adapter', () => {
     const second = installBidiStyles(document);
     expect(first).toBe(second);
     expect(document.querySelectorAll('style[data-bidilens-styles]')).toHaveLength(1);
-    expect(first.textContent).toContain('unicode-bidi: plaintext');
+    expect(first.textContent).not.toContain('unicode-bidi: plaintext');
+    expect(first.textContent).toContain('unicode-bidi: isolate');
     expect(first.textContent).toContain('[data-bidilens-code]');
   });
 

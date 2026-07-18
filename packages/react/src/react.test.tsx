@@ -10,6 +10,9 @@ describe('React adapter', () => {
       </BidiMessage>
     );
     expect(html).toContain('dir="rtl"');
+    expect(html).toContain('<bdi');
+    expect(html).toContain('>React</bdi>');
+    expect(html).not.toContain('unicode-bidi:plaintext');
   });
 
   it('renders RTL message semantics', () => {

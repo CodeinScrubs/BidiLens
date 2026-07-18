@@ -48,6 +48,20 @@ function mergeAdjacent(runs: DirectionalRun[]): DirectionalRun[] {
   return merged;
 }
 
+function trimNeutralBoundaries(text: string, start: number, end: number): { start: number; end: number } {
+  while (start < end) {
+    const character = text.slice(start).match(/^./su)?.[0];
+    if (!character || classifyCharacter(character) !== 'neutral') break;
+    start += character.length;
+  }
+  while (end > start) {
+    const character = text.slice(0, end).match(/.$/su)?.[0];
+    if (!character || classifyCharacter(character) !== 'neutral') break;
+    end -= character.length;
+  }
+  return { start, end };
+}
+
 export function segmentDirectionalRuns(text: string): DirectionalRun[] {
   if (!text) return [];
   const runs: DirectionalRun[] = [];
@@ -107,19 +121,36 @@ export function planInlineIsolation(
 
   if (options.isolateOppositeRuns === false) return isolations.sort((a, b) => a.start - b.start);
 
-  const overlapsTechnical = (start: number, end: number): boolean =>
-    technical.some((range) => start < range.end && end > range.start);
-
   for (const run of segmentDirectionalRuns(text)) {
     if (run.direction === 'neutral' || run.direction === blockDirection) continue;
-    if (overlapsTechnical(run.start, run.end)) continue;
-    isolations.push({
-      text: run.text,
-      direction: run.direction,
-      start: run.start,
-      end: run.end,
-      kind: 'opposite-direction-run'
-    });
+    let cursor = run.start;
+    for (const range of technical) {
+      if (range.end <= cursor) continue;
+      if (range.start >= run.end) break;
+      const partEnd = Math.min(range.start, run.end);
+      if (cursor < partEnd) {
+        const trimmed = trimNeutralBoundaries(text, cursor, partEnd);
+        if (trimmed.start < trimmed.end) isolations.push({
+          text: text.slice(trimmed.start, trimmed.end),
+          direction: run.direction,
+          start: trimmed.start,
+          end: trimmed.end,
+          kind: 'opposite-direction-run'
+        });
+      }
+      cursor = Math.max(cursor, range.end);
+      if (cursor >= run.end) break;
+    }
+    if (cursor < run.end) {
+      const trimmed = trimNeutralBoundaries(text, cursor, run.end);
+      if (trimmed.start < trimmed.end) isolations.push({
+        text: text.slice(trimmed.start, trimmed.end),
+        direction: run.direction,
+        start: trimmed.start,
+        end: trimmed.end,
+        kind: 'opposite-direction-run'
+      });
+    }
   }
 
   return isolations.sort((a, b) => a.start - b.start || a.end - b.end);

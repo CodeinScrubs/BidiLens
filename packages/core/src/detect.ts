@@ -32,7 +32,7 @@ const KNOWN_TECHNICAL_TOKENS = new Set([
 function normalizeOptions(options: DetectionOptions = {}): Required<DetectionOptions> {
   return {
     strategy: options.strategy ?? DEFAULT_OPTIONS.strategy,
-    fallback: options.fallback ?? DEFAULT_OPTIONS.fallback,
+    fallback: options.fallback ?? options.inheritedDirection ?? DEFAULT_OPTIONS.fallback,
     inheritedDirection: options.inheritedDirection ?? DEFAULT_OPTIONS.inheritedDirection,
     minimumStrongCharacters: Math.max(1, options.minimumStrongCharacters ?? DEFAULT_OPTIONS.minimumStrongCharacters),
     majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? DEFAULT_OPTIONS.majorityThreshold)),
@@ -106,10 +106,6 @@ export function findTechnicalTokenRanges(text: string): TechnicalTokenRange[] {
   return merged;
 }
 
-function isInRange(index: number, ranges: readonly TechnicalTokenRange[]): boolean {
-  return ranges.some((range) => index >= range.start && index < range.end);
-}
-
 export function countStrongCharacters(
   text: string,
   options: DetectionOptions = {}
@@ -120,9 +116,20 @@ export function countStrongCharacters(
   let rtl = 0;
   let firstStrong: Direction = 'neutral';
   let index = 0;
+  let technicalIndex = 0;
 
   for (const character of text) {
-    if (!isInRange(index, technicalTokens)) {
+    // Technical ranges are sorted and merged, so advance one cursor instead
+    // of rescanning every range for every code point. This keeps detection
+    // linear even for long transcripts containing many URLs/identifiers.
+    while (technicalIndex < technicalTokens.length && index >= technicalTokens[technicalIndex]!.end) {
+      technicalIndex += 1;
+    }
+    const technicalRange = technicalTokens[technicalIndex];
+    const isTechnical = technicalRange !== undefined
+      && index >= technicalRange.start
+      && index < technicalRange.end;
+    if (!isTechnical) {
       const direction = classifyCharacter(character);
       if (direction === 'ltr') ltr += 1;
       if (direction === 'rtl') rtl += 1;

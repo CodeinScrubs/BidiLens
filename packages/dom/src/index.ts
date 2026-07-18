@@ -3,7 +3,6 @@ import { detectDirection, type DetectionOptions, type Direction } from '@bidilen
 export const BIDILENS_CSS = `
 [data-bidilens-block] {
   text-align: start;
-  unicode-bidi: plaintext;
 }
 [data-bidilens-isolate],
 bdi {
@@ -93,6 +92,8 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
     if (options.strategy !== undefined) detection.strategy = options.strategy;
     if (options.minimumStrongCharacters !== undefined) detection.minimumStrongCharacters = options.minimumStrongCharacters;
     if (options.majorityThreshold !== undefined) detection.majorityThreshold = options.majorityThreshold;
+    if (options.inheritedDirection !== undefined) detection.inheritedDirection = options.inheritedDirection;
+    if (options.excludeTechnicalTokens !== undefined) detection.excludeTechnicalTokens = options.excludeTechnicalTokens;
     const direction = detectDirection(textForDirection(candidate), detection);
 
     candidate.setAttribute(markAttribute, '');
@@ -101,7 +102,10 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
       result.neutral += 1;
     } else {
       candidate.dir = direction;
-      candidate.style.unicodeBidi = 'plaintext';
+      // `unicode-bidi: plaintext` re-runs first-strong detection in the
+      // browser and can override the content-majority decision above.
+      // Explicit `dir` is the block base direction; isolate inline runs.
+      candidate.style.unicodeBidi = '';
       if (direction === 'rtl') result.rtl += 1;
       else result.ltr += 1;
     }

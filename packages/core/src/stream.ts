@@ -109,8 +109,20 @@ export class BidiStream {
   }
 
   #splitParagraphs(): string[] {
-    const separator = new RegExp(this.#separator.source, this.#separator.flags.includes('g') ? this.#separator.flags : `${this.#separator.flags}g`);
-    return this.#text.split(separator);
+    const flags = this.#separator.flags.replace('y', '').includes('g')
+      ? this.#separator.flags.replace('y', '')
+      : `${this.#separator.flags.replace('y', '')}g`;
+    const separator = new RegExp(this.#separator.source, flags);
+    const parts: string[] = [];
+    let start = 0;
+    let match: RegExpExecArray | null;
+    while ((match = separator.exec(this.#text)) !== null) {
+      parts.push(this.#text.slice(start, match.index));
+      start = match.index + match[0].length;
+      if (match[0].length === 0) separator.lastIndex += 1;
+    }
+    parts.push(this.#text.slice(start));
+    return parts;
   }
 
   #currentParagraphText(): string {

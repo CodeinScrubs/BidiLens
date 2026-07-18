@@ -22,6 +22,7 @@ const HAST_BLOCK_TAGS = new Set([
 const HAST_CODE_TAGS = new Set(['pre', 'code', 'kbd', 'samp', 'var']);
 
 function mdastText(node: Content | MdastRoot): string {
+  if (node.type === 'code' || node.type === 'inlineCode') return '';
   if ('value' in node && typeof node.value === 'string') return node.value;
   if ('children' in node && Array.isArray(node.children)) {
     return node.children.map((child) => mdastText(child as Content)).join('');
@@ -48,6 +49,8 @@ function detectWithOptions(text: string, options: MarkdownBidiOptions): Directio
   };
   if (options.minimumStrongCharacters !== undefined) detection.minimumStrongCharacters = options.minimumStrongCharacters;
   if (options.majorityThreshold !== undefined) detection.majorityThreshold = options.majorityThreshold;
+  if (options.inheritedDirection !== undefined) detection.inheritedDirection = options.inheritedDirection;
+  if (options.excludeTechnicalTokens !== undefined) detection.excludeTechnicalTokens = options.excludeTechnicalTokens;
   return detectDirection(text, detection);
 }
 
@@ -138,7 +141,7 @@ export function markdownItBidi(md: MarkdownItLike, options: MarkdownBidiOptions 
   md.renderer.rules.paragraph_open = (tokens, index, renderOptions, env, self) => {
     const content = tokens[index + 1]?.content ?? '';
     const direction = detectWithOptions(content, options);
-    tokens[index]?.attrSet('dir', direction);
+    if (direction !== 'neutral' || options.annotateNeutral) tokens[index]?.attrSet('dir', direction);
     tokens[index]?.attrSet('data-bidilens-block', '');
     return original
       ? original(tokens, index, renderOptions, env, self)
@@ -149,10 +152,20 @@ export function markdownItBidi(md: MarkdownItLike, options: MarkdownBidiOptions 
   md.renderer.rules.heading_open = (tokens, index, renderOptions, env, self) => {
     const content = tokens[index + 1]?.content ?? '';
     const direction = detectWithOptions(content, options);
-    tokens[index]?.attrSet('dir', direction);
+    if (direction !== 'neutral' || options.annotateNeutral) tokens[index]?.attrSet('dir', direction);
     tokens[index]?.attrSet('data-bidilens-block', '');
     return originalHeading
       ? originalHeading(tokens, index, renderOptions, env, self)
       : self.renderToken(tokens, index, renderOptions, env, self);
   };
+
+  for (const ruleName of ['code_inline', 'code_block', 'fence']) {
+    const originalCodeRule = md.renderer.rules[ruleName];
+    if (!originalCodeRule) continue;
+    md.renderer.rules[ruleName] = (tokens, index, renderOptions, env, self) => {
+      tokens[index]?.attrSet('dir', 'ltr');
+      tokens[index]?.attrSet('data-bidilens-code', '');
+      return originalCodeRule(tokens, index, renderOptions, env, self);
+    };
+  }
 }

@@ -40,6 +40,25 @@ async function collectFiles(inputs: string[]): Promise<string[]> {
   return files;
 }
 
+async function readCorpus(explicitPath?: string): Promise<Array<{ id: string; text: string; expected: string }>> {
+  const candidates = explicitPath
+    ? [resolve(explicitPath)]
+    : [
+      resolve('corpus/cases.json'),
+      new URL('../corpus/cases.json', import.meta.url),
+      new URL('../../../corpus/cases.json', import.meta.url)
+    ];
+  let lastError: unknown;
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(await readFile(candidate, 'utf8')) as Array<{ id: string; text: string; expected: string }>;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw new Error(`Unable to locate corpus/cases.json. Pass --corpus <path>. ${String(lastError)}`);
+}
+
 function parseRisk(value: string): BidiControlRisk {
   if (value === 'low' || value === 'medium' || value === 'high') return value;
   throw new Error(`Invalid risk level: ${value}`);
@@ -160,8 +179,9 @@ program.command('audit')
 program.command('test')
   .description('Run the direction conformance corpus')
   .option('--json', 'emit failures as JSON')
-  .action(async (options: { json?: boolean }) => {
-    const corpus = JSON.parse(await readFile(resolve('corpus/cases.json'), 'utf8')) as Array<{ id: string; text: string; expected: string }>;
+  .option('--corpus <path>', 'corpus JSON path; defaults to the bundled corpus or repository corpus')
+  .action(async (options: { json?: boolean; corpus?: string }) => {
+    const corpus = await readCorpus(options.corpus);
     const failures = corpus.flatMap((item) => {
       const actual = analyzeText(item.text, { strategy: 'content-majority', fallback: 'neutral' }).direction;
       return actual === item.expected ? [] : [{ id: item.id, expected: item.expected, actual }];

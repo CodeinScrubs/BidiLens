@@ -6,7 +6,8 @@
   "type": "module",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "corpus"
   ],
   "bin": {
     "bidilens": "./dist/index.js"

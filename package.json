@@ -5,6 +5,7 @@
   "description": "Standards-first bidirectional text tooling for AI chat, Markdown, streaming UIs, and developer tools.",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=20"
   },

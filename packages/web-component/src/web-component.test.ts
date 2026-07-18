@@ -20,7 +20,7 @@ describe('BidiMessageElement', () => {
     document.body.append(element);
     expect(element.dir).toBe('rtl');
     expect(element.dataset.bidilensBlock).toBe('');
-    expect(element.style.unicodeBidi).toBe('plaintext');
+    expect(element.style.unicodeBidi).toBe('');
   });
 
   it('isolates the leading identifier and preserves textContent', () => {
@@ -72,6 +72,6 @@ describe('BidiMessageElement', () => {
     expect(element.dir).toBe('rtl');
     expect(element.tagName.toLowerCase()).toBe('bidi-message');
     expect(element.hasAttribute('data-bidilens-block')).toBe(true);
-    expect(element.style.unicodeBidi).toBe('plaintext');
+    expect(element.style.unicodeBidi).toBe('');
   });
 });

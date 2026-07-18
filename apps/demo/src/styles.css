@@ -41,14 +41,14 @@ button:disabled { opacity: 0.55; cursor: wait; }
 .panel-title small { display: block; margin-top: 4px; color: #758198; }
 textarea { display: block; width: 100%; min-height: 560px; border: 0; resize: vertical; padding: 20px; outline: none; line-height: 1.75; background: #fbfcfe; color: inherit; }
 .markdown-body { min-height: 560px; padding: 20px 26px; line-height: 1.75; }
-.markdown-body [data-bidilens-block] { text-align: start; unicode-bidi: plaintext; }
+.markdown-body [data-bidilens-block] { text-align: start; }
 .markdown-body pre { overflow: auto; background: #131a2a; color: #edf2ff; border-radius: 12px; padding: 16px; direction: ltr; text-align: left; }
 .markdown-body code { direction: ltr; unicode-bidi: isolate; background: #eef1f6; border-radius: 6px; padding: 0.15em 0.35em; }
 .markdown-body pre code { background: transparent; padding: 0; }
 .markdown-body table { border-collapse: collapse; width: 100%; }
 .markdown-body th, .markdown-body td { border: 1px solid #dfe4ec; padding: 8px 10px; text-align: start; }
 .stream-panel, .examples { margin-top: 18px; }
-.stream-output { min-height: 140px; padding: 22px; white-space: pre-wrap; text-align: start; unicode-bidi: plaintext; }
+.stream-output { min-height: 140px; padding: 22px; white-space: pre-wrap; text-align: start; }
 .sample-line { margin: 0; padding: 28px; font-size: 1.2rem; text-align: start; }
 .sample-line code { background: #eef1f6; border-radius: 6px; padding: 0.18em 0.42em; }
 .control-warning { margin: 0 20px 20px; overflow: auto; background: #fff4d8; padding: 14px; border-radius: 10px; }

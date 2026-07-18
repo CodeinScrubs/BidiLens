@@ -41,7 +41,7 @@ export class BidiMessageElement extends HTMLElement {
     html += escapeHTML(source.slice(cursor));
     this.dir = direction;
     this.dataset.bidilensBlock = '';
-    this.style.unicodeBidi = 'plaintext';
+    this.style.unicodeBidi = '';
     this.innerHTML = html;
   }
 }
