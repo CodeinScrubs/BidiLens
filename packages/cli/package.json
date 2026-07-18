@@ -17,7 +17,7 @@
     "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
   },
   "dependencies": {
-    "@bidilens/core": "0.1.0",
+    "@bidilens/core": "workspace:*",
     "commander": "^15.0.0"
   },
   "devDependencies": {

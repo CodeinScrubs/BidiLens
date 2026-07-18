@@ -9,7 +9,10 @@ BidiLens provides the application-level behavior that browsers, Markdown pipelin
 `@bidilens/core` operates on Unicode strings and has no DOM dependency.
 
 - `analyzeText` counts strong RTL and LTR characters, records first-strong direction, and returns confidence.
-- `detectDirection` supports `first-strong` and `majority` policies.
+- `detectDirection` defaults to `content-majority`: technical tokens are
+  excluded from evidence, then the dominant natural-language script wins.
+  `first-strong`, `strict-uax9`, and explicit fallback policies remain
+  available for compatibility and host-specific needs.
 - `segmentDirectionalRuns` partitions mixed text into directional spans for plain-text exports or custom renderers.
 - `isolateText` uses Unicode isolate controls when markup is unavailable.
 - `findBidiControls` identifies embeddings, overrides, marks, and isolates with severity metadata.
@@ -46,7 +49,11 @@ The detector intentionally does not claim to implement UAX #9. It chooses a base
 
 ## Direction policy
 
-The default policy is first-strong with an LTR fallback. This aligns with common `dir=auto` behavior while remaining deterministic in environments that cannot inspect computed direction. Majority mode is available for completed paragraphs with leading neutral characters or quoted metadata.
+The default policy is content-majority with a neutral fallback. This is the
+important distinction from `dir=auto`: a Persian-majority paragraph beginning
+with `React` remains RTL. Technical tokens such as URLs, package names, paths,
+versions, and inline code do not decide the paragraph direction. `first-strong`
+is available when matching a host's legacy behavior is required.
 
 ## Copy and paste
 

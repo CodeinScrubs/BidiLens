@@ -1,6 +1,7 @@
 import { classifyCharacter } from './classify.js';
 import { isolateText } from './controls.js';
-import type { Direction, DirectionalRun } from './types.js';
+import { findTechnicalTokenRanges } from './detect.js';
+import type { Direction, DirectionalRun, InlineIsolation } from './types.js';
 
 function resolveNeutralRuns(runs: DirectionalRun[]): DirectionalRun[] {
   const previousStrong: Direction[] = new Array(runs.length).fill('neutral');
@@ -83,4 +84,43 @@ export function isolateDirectionalRuns(text: string): string {
   return segmentDirectionalRuns(text)
     .map((run) => isolateText(run.text, run.direction))
     .join('');
+}
+
+/**
+ * Plans semantic inline boundaries without changing the stored source text.
+ * Technical ranges are isolated first; opposite natural-language runs are
+ * then isolated only when they differ from the block's base direction.
+ */
+export function planInlineIsolation(
+  text: string,
+  blockDirection: Exclude<Direction, 'neutral'>,
+  options: { excludeTechnicalTokens?: boolean; isolateOppositeRuns?: boolean } = {}
+): InlineIsolation[] {
+  const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text);
+  const isolations: InlineIsolation[] = technical.map((range) => ({
+    text: range.text,
+    direction: 'ltr',
+    start: range.start,
+    end: range.end,
+    kind: range.kind
+  }));
+
+  if (options.isolateOppositeRuns === false) return isolations.sort((a, b) => a.start - b.start);
+
+  const overlapsTechnical = (start: number, end: number): boolean =>
+    technical.some((range) => start < range.end && end > range.start);
+
+  for (const run of segmentDirectionalRuns(text)) {
+    if (run.direction === 'neutral' || run.direction === blockDirection) continue;
+    if (overlapsTechnical(run.start, run.end)) continue;
+    isolations.push({
+      text: run.text,
+      direction: run.direction,
+      start: run.start,
+      end: run.end,
+      kind: 'opposite-direction-run'
+    });
+  }
+
+  return isolations.sort((a, b) => a.start - b.start || a.end - b.end);
 }

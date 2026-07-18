@@ -6,6 +6,7 @@ type Case = {
   id: string;
   text: string;
   expected: 'ltr' | 'rtl' | 'neutral';
+  expectedVisualOrderRightToLeft?: number[];
 };
 
 const path = resolve('corpus/cases.json');
@@ -13,7 +14,7 @@ const cases = JSON.parse(await readFile(path, 'utf8')) as Case[];
 let failed = 0;
 
 for (const item of cases) {
-  const actual = detectDirection(item.text, { strategy: 'first-strong', fallback: 'neutral' });
+  const actual = detectDirection(item.text, { strategy: 'content-majority', fallback: 'neutral' });
   if (actual !== item.expected) {
     failed += 1;
     console.error(`${item.id}: expected ${item.expected}, received ${actual}`);

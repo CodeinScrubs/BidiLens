@@ -16,6 +16,11 @@ async function render(markdown: string): Promise<string> {
 }
 
 describe('Markdown plugins', () => {
+  it('keeps the flagship Persian-majority paragraph RTL despite leading React', async () => {
+    const html = await render('React یک کتابخانه جاوااسکریپت بسیار محبوب است.');
+    expect(html).toContain('dir="rtl"');
+  });
+
   it('annotates Persian paragraphs', async () => {
     const html = await render('سلام دنیا');
     expect(html).toContain('dir="rtl"');

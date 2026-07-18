@@ -1,12 +1,26 @@
 export type Direction = 'ltr' | 'rtl' | 'neutral';
 export type ResolvedDirection = Exclude<Direction, 'neutral'>;
-export type DetectionStrategy = 'first-strong' | 'majority';
+/**
+ * `content-majority` is the default because a block's base direction belongs
+ * to its natural-language prose, not necessarily to its first token. The
+ * `semantic-dominant` spelling is retained as an explicit alias for callers
+ * that prefer the terminology used in the specification.
+ */
+export type DetectionStrategy =
+  | 'content-majority'
+  | 'semantic-dominant'
+  | 'first-strong'
+  | 'strict-uax9'
+  | 'majority';
 
 export interface DetectionOptions {
   strategy?: DetectionStrategy;
   fallback?: Direction;
+  inheritedDirection?: ResolvedDirection;
   minimumStrongCharacters?: number;
   majorityThreshold?: number;
+  /** Exclude inline technical tokens from natural-language evidence. */
+  excludeTechnicalTokens?: boolean;
 }
 
 export interface StrongCharacterCounts {
@@ -42,7 +56,25 @@ export interface DirectionalRun {
   end: number;
 }
 
-export type StreamStrategy = 'first-strong' | 'majority' | 'sticky-majority';
+export type InlineIsolationKind =
+  | 'code'
+  | 'url'
+  | 'email'
+  | 'path'
+  | 'version'
+  | 'hash'
+  | 'identifier'
+  | 'opposite-direction-run';
+
+export interface InlineIsolation {
+  text: string;
+  direction: ResolvedDirection;
+  start: number;
+  end: number;
+  kind: InlineIsolationKind;
+}
+
+export type StreamStrategy = 'content-majority' | 'first-strong' | 'majority' | 'sticky-majority';
 
 export interface BidiStreamOptions {
   strategy?: StreamStrategy;

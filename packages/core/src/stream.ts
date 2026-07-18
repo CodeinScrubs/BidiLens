@@ -26,9 +26,10 @@ export class BidiStream {
   #direction: Direction;
   #locked = false;
   #lastChanged = false;
+  #finished = false;
 
   constructor(options: BidiStreamOptions = {}) {
-    this.#strategy = options.strategy ?? 'first-strong';
+    this.#strategy = options.strategy ?? 'content-majority';
     this.#fallback = options.fallback ?? 'ltr';
     this.#separator = options.paragraphSeparator ?? DEFAULT_SEPARATOR;
     this.#threshold = options.majorityThreshold ?? 0.5;
@@ -36,6 +37,7 @@ export class BidiStream {
   }
 
   push(chunk: string): BidiStreamSnapshot {
+    if (this.#finished) throw new Error('Cannot push after finish().');
     if (!chunk) return this.snapshot();
     this.#text += chunk;
     const currentText = this.#currentParagraphText();
@@ -71,6 +73,13 @@ export class BidiStream {
     this.#direction = this.#fallback;
     this.#locked = false;
     this.#lastChanged = false;
+    this.#finished = false;
+    return this.snapshot();
+  }
+
+  /** Marks the stream complete while preserving the logical source text. */
+  finish(): BidiStreamSnapshot {
+    this.#finished = true;
     return this.snapshot();
   }
 
@@ -111,4 +120,9 @@ export class BidiStream {
 
 export function createBidiStream(options: BidiStreamOptions = {}): BidiStream {
   return new BidiStream(options);
+}
+
+/** Naming aligned with Markdown/chat integrations in the public specification. */
+export function createBidiMarkdownStream(options: BidiStreamOptions = {}): BidiStream {
+  return createBidiStream(options);
 }

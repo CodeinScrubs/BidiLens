@@ -22,7 +22,7 @@
     "build": "tsup src/index.tsx --format esm --dts --clean --sourcemap --external react --external react/jsx-runtime"
   },
   "dependencies": {
-    "@bidilens/core": "0.1.0"
+    "@bidilens/core": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18"

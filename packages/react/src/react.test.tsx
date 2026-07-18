@@ -3,6 +3,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { BidiCode, BidiIsolate, BidiMessage } from './index.js';
 
 describe('React adapter', () => {
+  it('renders the flagship Persian-majority paragraph RTL', () => {
+    const html = renderToStaticMarkup(
+      <BidiMessage text="React یک کتابخانه جاوااسکریپت بسیار محبوب است.">
+        React یک کتابخانه جاوااسکریپت بسیار محبوب است.
+      </BidiMessage>
+    );
+    expect(html).toContain('dir="rtl"');
+  });
+
   it('renders RTL message semantics', () => {
     const html = renderToStaticMarkup(
       <BidiMessage text="سلام دنیا">سلام دنیا</BidiMessage>

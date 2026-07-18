@@ -43,7 +43,7 @@ function appendClassName(properties: Record<string, unknown>, className: string)
 
 function detectWithOptions(text: string, options: MarkdownBidiOptions): Direction {
   const detection: DetectionOptions = {
-    strategy: options.strategy ?? 'first-strong',
+    strategy: options.strategy ?? 'content-majority',
     fallback: options.fallback ?? 'ltr'
   };
   if (options.minimumStrongCharacters !== undefined) detection.minimumStrongCharacters = options.minimumStrongCharacters;

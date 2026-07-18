@@ -9,6 +9,7 @@ import {
   highestControlRisk,
   sanitizeBidiControls,
   visibleBidiControls,
+  planInlineIsolation,
   type BidiControlRisk
 } from '@bidilens/core';
 
@@ -58,7 +59,7 @@ program.command('inspect')
   .action(async (options: { text?: string; file?: string; json?: boolean }) => {
     if (!options.text && !options.file) throw new Error('Provide --text or --file.');
     const text = options.file ? await readFile(resolve(options.file), 'utf8') : options.text!;
-    const analysis = analyzeText(text, { strategy: 'first-strong', fallback: 'neutral' });
+    const analysis = analyzeText(text, { strategy: 'content-majority', fallback: 'neutral' });
     const controls = findBidiControls(text);
     const report = { analysis, controls, visible: controls.length ? visibleBidiControls(text) : text };
     if (options.json) console.log(JSON.stringify(report, null, 2));
@@ -72,12 +73,46 @@ program.command('inspect')
     }
   });
 
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/gu, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[character] ?? character));
+}
+
+program.command('render')
+  .description('Render plain text as semantic direction-aware HTML')
+  .option('-t, --text <text>', 'text to render')
+  .option('-f, --file <path>', 'file to render')
+  .option('--json', 'emit analysis and HTML as JSON')
+  .action(async (options: { text?: string; file?: string; json?: boolean }) => {
+    if (!options.text && !options.file) throw new Error('Provide --text or --file.');
+    const text = options.file ? await readFile(resolve(options.file), 'utf8') : options.text!;
+    const analysis = analyzeText(text, { strategy: 'content-majority', fallback: 'ltr' });
+    const direction = analysis.direction === 'neutral' ? 'ltr' : analysis.direction;
+    const isolations = planInlineIsolation(text, direction);
+    let content = '';
+    let cursor = 0;
+    for (const isolation of isolations) {
+      content += escapeHtml(text.slice(cursor, isolation.start));
+      const value = escapeHtml(isolation.text);
+      const tag = isolation.kind === 'code' ? 'code' : 'bdi';
+      content += `<${tag} dir="${isolation.direction}" data-bidilens-isolate="">${value}</${tag}>`;
+      cursor = isolation.end;
+    }
+    content += escapeHtml(text.slice(cursor));
+    const html = `<p dir="${direction}" data-bidilens-block="">${content}</p>`;
+    if (options.json) console.log(JSON.stringify({ analysis, html }, null, 2));
+    else console.log(html);
+  });
+
 program.command('audit')
+  .alias('security-scan')
   .description('Audit files for hidden bidi controls')
   .argument('<paths...>', 'files or directories')
   .option('--json', 'emit JSON')
+  .option('--sarif', 'emit SARIF 2.1.0')
   .option('--fail-on <risk>', 'minimum risk that exits non-zero', parseRisk, 'high')
-  .action(async (paths: string[], options: { json?: boolean; failOn: BidiControlRisk }) => {
+  .action(async (paths: string[], options: { json?: boolean; sarif?: boolean; failOn: BidiControlRisk }) => {
     const files = await collectFiles(paths);
     const reports = [] as Array<{
       file: string;
@@ -95,7 +130,21 @@ program.command('audit')
       if (highestRisk && (RISK_ORDER[highestRisk] ?? 0) >= (RISK_ORDER[options.failOn] ?? 0)) shouldFail = true;
     }
 
-    if (options.json) console.log(JSON.stringify({ scanned: files.length, reports }, null, 2));
+    if (options.sarif) {
+      console.log(JSON.stringify({
+        version: '2.1.0',
+        $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
+        runs: [{
+          tool: { driver: { name: 'bidilens', informationUri: 'https://github.com/bidilens/bidilens' } },
+          results: reports.flatMap((report) => report.findings.map((finding) => ({
+            ruleId: finding.category,
+            level: finding.risk === 'high' ? 'error' : finding.risk === 'medium' ? 'warning' : 'note',
+            message: { text: `${finding.name} (${finding.codePoint})` },
+            locations: [{ physicalLocation: { artifactLocation: { uri: report.file }, region: { startColumn: finding.index + 1 } } }]
+          })))
+        }]
+      }, null, 2));
+    } else if (options.json) console.log(JSON.stringify({ scanned: files.length, reports }, null, 2));
     else if (!reports.length) console.log(`No bidi controls found in ${files.length} files.`);
     else {
       for (const report of reports) {
@@ -106,6 +155,20 @@ program.command('audit')
       }
     }
     if (shouldFail) process.exitCode = 2;
+  });
+
+program.command('test')
+  .description('Run the direction conformance corpus')
+  .option('--json', 'emit failures as JSON')
+  .action(async (options: { json?: boolean }) => {
+    const corpus = JSON.parse(await readFile(resolve('corpus/cases.json'), 'utf8')) as Array<{ id: string; text: string; expected: string }>;
+    const failures = corpus.flatMap((item) => {
+      const actual = analyzeText(item.text, { strategy: 'content-majority', fallback: 'neutral' }).direction;
+      return actual === item.expected ? [] : [{ id: item.id, expected: item.expected, actual }];
+    });
+    if (options.json) console.log(JSON.stringify({ total: corpus.length, failures }, null, 2));
+    else console.log(`Corpus: ${corpus.length - failures.length}/${corpus.length} passed`);
+    if (failures.length) process.exitCode = 1;
   });
 
 program.command('sanitize')

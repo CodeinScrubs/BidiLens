@@ -41,14 +41,20 @@ The core scans Unicode code points and classifies strong characters. RTL classif
 
 Supported policies:
 
-- `first-strong`: deterministic default suitable for chat messages and `dir=auto`-like behavior;
-- `majority`: useful for completed content and analysis;
+- `content-majority`: default; excludes technical tokens and chooses the
+  dominant natural-language direction;
+- `first-strong`: compatibility mode matching `dir=auto`-like behavior;
+- `strict-uax9`: explicit first-strong base-direction mode; visual reordering
+  remains the platform engine's responsibility;
+- `majority`: compatibility alias for content-majority;
 - configurable fallback, minimum strong count, and majority threshold.
 
 ### Streaming state machine
 
 The stream API prevents direction oscillation while tokens arrive.
 
+- `content-majority` is the default and may transition once from a provisional
+  fallback to the dominant direction as natural-language evidence arrives;
 - `first-strong` locks on the first actual strong character, including when it matches the configured fallback;
 - `sticky-majority` locks on the first non-neutral majority result;
 - `majority` remains dynamic;

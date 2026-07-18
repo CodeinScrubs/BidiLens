@@ -2,6 +2,12 @@
 
 BidiLens is a standards-first, open-source toolkit for mixed right-to-left and left-to-right text in AI chat interfaces, Markdown renderers, streaming responses, developer tools, and cross-platform web applications.
 
+The default direction policy is **content-majority**. For example,
+`React یک کتابخانه جاوااسکریپت بسیار محبوب است.` is treated as RTL because
+the natural-language content is predominantly Persian; the leading technical
+identifier does not incorrectly force the paragraph to LTR. The source string
+remains unchanged and the browser's bidi engine performs visual ordering.
+
 It does **not** reimplement the Unicode Bidirectional Algorithm. Browsers and native text engines already do that. BidiLens supplies the missing application layer around them:
 
 - deterministic paragraph direction detection;

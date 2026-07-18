@@ -8,9 +8,9 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@bidilens/core": "0.1.0",
-    "@bidilens/markdown": "0.1.0",
-    "@bidilens/react": "0.1.0",
+    "@bidilens/core": "workspace:*",
+    "@bidilens/markdown": "workspace:*",
+    "@bidilens/react": "workspace:*",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-markdown": "^10.1.0",

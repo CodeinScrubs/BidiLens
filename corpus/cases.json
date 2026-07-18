@@ -1,4 +1,12 @@
-[
+[{
+    "id": "fa-flagship-001",
+    "text": "React یک کتابخانه جاوااسکریپت بسیار محبوب است.",
+    "words": ["React", "یک", "کتابخانه", "جاوااسکریپت", "بسیار", "محبوب", "است", "."],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [1, 2, 3, 4, 5, 6, 7, 8],
+    "expectedIsolations": [{ "text": "React", "direction": "ltr", "kind": "identifier" }],
+    "tags": ["fa", "flagship", "leading-latin"]
+  },
   {
     "id": "en-basic",
     "text": "The deployment completed successfully.",
@@ -50,7 +58,7 @@
   {
     "id": "url-only",
     "text": "https://example.com/a/b?q=1",
-    "expected": "ltr",
+    "expected": "neutral",
     "tags": ["url", "identifier"]
   },
   {

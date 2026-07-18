@@ -3,6 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { applyBidi, installBidiStyles } from './index.js';
 
 describe('DOM adapter', () => {
+  it('assigns RTL to Persian-majority prose that starts with React', () => {
+    document.body.innerHTML = '<p id="flagship">React یک کتابخانه جاوااسکریپت بسیار محبوب است.</p>';
+    const paragraph = document.querySelector<HTMLElement>('#flagship')!;
+    applyBidi(paragraph.parentElement!);
+    expect(paragraph.dir).toBe('rtl');
+  });
+
   it('annotates prose and isolates code', () => {
     document.body.innerHTML = `
       <article id="message">

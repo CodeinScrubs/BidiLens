@@ -19,7 +19,7 @@
     "build": "tsup src/index.ts --format esm --dts --clean --sourcemap"
   },
   "dependencies": {
-    "@bidilens/core": "0.1.0",
+    "@bidilens/core": "workspace:*",
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
