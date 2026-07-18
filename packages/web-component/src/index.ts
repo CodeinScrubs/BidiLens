@@ -1,12 +1,18 @@
 import { analyzeText, planInlineIsolation } from '@bidilens/core';
 
+// Keep importing the package safe in SSR/Node environments. Browser custom
+// element registration still uses the real HTMLElement constructor below.
+const HTMLElementBase: typeof HTMLElement = typeof globalThis.HTMLElement === 'undefined'
+  ? class {} as unknown as typeof HTMLElement
+  : globalThis.HTMLElement;
+
 function escapeHTML(text: string): string {
   return text.replace(/[&<>"']/gu, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[character] ?? character));
 }
 
-export class BidiMessageElement extends HTMLElement {
+export class BidiMessageElement extends HTMLElementBase {
   static observedAttributes = ['text'];
 
   connectedCallback(): void {
