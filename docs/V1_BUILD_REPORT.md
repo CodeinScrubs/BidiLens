@@ -50,7 +50,7 @@ opposite-direction runs.
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, coverage, corpus, docs, 10 package builds and demo build pass |
 | Vitest within `check` | 12 files, 130 tests pass |
-| Coverage | 86.89% statements, 75.15% branches, 90.61% functions, 91.71% lines; core 94.10% lines |
+| Coverage (two consecutive seeded runs) | 86.89% statements, 75.15% branches, 90.61% functions, 91.71% lines; core 94.10% lines |
 | `pnpm run corpus:check` | 722/722; 0 native-speaker-reviewed |
 | `pnpm run test:visual` | 18/18 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
 | `pnpm -r --if-present run example` | all 10 public package examples run in the workspace |
@@ -117,6 +117,8 @@ local numbers, not a service-level objective.
 - Unicode 17 bidi-class and general-category inputs are checksum-pinned and attributed.
 - Actions are commit-SHA pinned with read-only default permissions.
 - The SBOM generator is version-pinned and its output is independently checked.
+- Property-test seeds are pinned; consecutive coverage runs produce identical
+  counts and percentages while failure output retains fast-check replay data.
 - Runtime Commander and the compatible ESLint/Vite toolchain majors were
   refreshed during the final audit; incompatible/mismatched major updates are
   recorded rather than forced through the release candidate.

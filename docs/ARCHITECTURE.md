@@ -65,8 +65,8 @@ direction after configurable evidence and margin thresholds.
 
 Batch reconciliation occurs at `finish()`. Exponential evidence checkpoints
 avoid rescanning a long neutral or incomplete technical token after every
-single-character push, while property tests cover random boundaries, CRLF
-splits, surrogate pairs, Markdown fences, and URLs. A trailing UTF-16 high
+single-character push, while deterministically seeded property tests cover
+random boundaries, CRLF splits, surrogate pairs, Markdown fences, and URLs. A trailing UTF-16 high
 surrogate remains visible in the logical snapshot but is not classified until
 its low half, a non-low successor, paragraph completion, or `finish()` arrives;
 this keeps live decisions invariant even when callers split a supplementary

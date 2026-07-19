@@ -38,7 +38,8 @@ been published from this checkout.
 - Added 722 schema-validated corpus fixtures, with fixture #001 representing
   the user flagship and native-review status recorded explicitly.
 - Added 130 unit/property tests with enforced coverage thresholds and 18
-  visual tests across Chromium, Firefox, and WebKit.
+  visual tests across Chromium, Firefox, and WebKit; property seeds make
+  coverage evidence reproducible across consecutive runs.
 - Added package-local examples/readmes/licenses, ESM type-layout checks,
   aggregate bundle budgets, tarball inspection, clean-consumer install,
   strict declaration checking, runtime imports, installed CLI execution, and

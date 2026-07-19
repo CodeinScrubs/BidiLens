@@ -11,7 +11,7 @@ import {
   stripBidiControls
 } from './index.js';
 
-const propertyParameters = { numRuns: 500, endOnFailure: true } as const;
+const propertyParameters = { numRuns: 500, endOnFailure: true, seed: 0x51d10001 } as const;
 
 function splitsFor(text: string, values: readonly number[]): string[] {
   if (!text) return [''];
@@ -93,7 +93,7 @@ describe('property-based invariants', () => {
         expect(final.direction).toBe(batch.paragraphs.at(-1)?.direction);
         expect(final.finished).toBe(true);
       }
-    ), { numRuns: 300, endOnFailure: true });
+    ), { numRuns: 300, endOnFailure: true, seed: 0x51d10002 });
   });
 
   it('keeps live first-strong state invariant across arbitrary UTF-16 boundaries', () => {
@@ -133,7 +133,7 @@ describe('property-based invariants', () => {
           paragraphs: expected.paragraphs
         });
       }
-    ), { numRuns: 300, endOnFailure: true });
+    ), { numRuns: 300, endOnFailure: true, seed: 0x51d10003 });
   });
 
   it('sanitization is idempotent and removes every recognized bidi control by default', () => {
