@@ -26,13 +26,28 @@ engine.
 ## Provenance and review status
 
 The corpus is generated from committed, authored phrase/token matrices in
-`scripts/generate-corpus.ts`. It covers Persian, Arabic, Hebrew, Urdu, Pashto,
-Kurdish Sorani, English, technical-token placement, structured Markdown,
-Unicode edge cases, and neutral content. Each item records its `curation`
-origin and whether a native speaker has reviewed it.
+`scripts/generate-corpus.ts` plus 196 substantive, technically reviewed seed strings from
+the local `v1.3-Her` comparison project. Those seeds live in
+`corpus/v1.3-her-seeds`, retain their Apache-2.0 notice, and are tagged
+`v1.3-her-review`. It covers Persian, Arabic, Hebrew, Urdu, Pashto, Kurdish
+Sorani, English, technical-token placement, structured Markdown, Unicode edge
+cases, and neutral content. Each item records its `curation` origin and whether
+a native speaker has reviewed it. Imported cases use the explicit
+`imported-comparison-corpus` curation value rather than being presented as
+canonical authored templates.
 
-The current non-English template cases have technical review but have **not**
-been certified by native speakers. The repository reports that distinction in
+The imported text and descriptive tags come from the sibling, but its policy
+outputs are not treated as an oracle. Canonical expectations were recomputed
+and then frozen: 16 of 196 directions differ from the sibling labels. Thirteen
+are technical-only inputs for which BidiLens returns `neutral` instead of
+inventing an LTR language direction, one is a raw fenced-code string whose
+Persian literal is visible to the plain-text analyzer, and two are genuinely
+mixed sentences where content-majority differs from the sibling expectation.
+Structured Markdown consumers should use the Markdown adapter, which forces
+code and math nodes to LTR independently of plain-text analysis.
+
+The current non-English template and imported-seed cases have technical review
+but have **not** been certified by native speakers. The repository reports that distinction in
 the corpus command instead of treating generated volume as linguistic proof.
 Native review is a release-quality improvement target, not a hidden claim.
 

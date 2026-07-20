@@ -55,7 +55,7 @@
       "uniqueItems": true,
       "items": { "type": "string", "minLength": 1 }
     },
-    "curation": { "enum": ["user-provided", "authored-template-matrix"] },
+    "curation": { "enum": ["user-provided", "authored-template-matrix", "imported-comparison-corpus"] },
     "nativeSpeakerReviewed": { "type": "boolean" }
   },
   "allOf": [

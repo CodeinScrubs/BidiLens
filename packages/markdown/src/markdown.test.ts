@@ -5,6 +5,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
 import MarkdownIt from 'markdown-it';
 import { markdownItBidi, rehypeBidi, remarkBidi } from './index.js';
+import type { Root as MdastRoot } from 'mdast';
 
 async function render(markdown: string): Promise<string> {
   return String(await unified()
@@ -43,6 +44,38 @@ describe('Markdown plugins', () => {
     const html = await render('```ts\nconst x = 1;\n```');
     expect(html).toContain('dir="ltr"');
     expect(html).toContain('data-bidilens-code');
+  });
+
+  it('forces display and inline math nodes to LTR without using their symbols as prose evidence', () => {
+    const tree = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'text', value: 'نتیجه فرمول ' },
+            { type: 'inlineMath', value: 'E = mc^2' },
+            { type: 'text', value: ' درست است.' }
+          ]
+        },
+        { type: 'math', value: '\\int_0^\\infty e^{-x^2} dx' }
+      ]
+    } as unknown as MdastRoot;
+
+    remarkBidi()(tree);
+
+    const paragraph = tree.children[0]!;
+    const inlineMath = 'children' in paragraph ? paragraph.children[1]! : undefined;
+    const displayMath = tree.children[1]!;
+    expect(paragraph.data?.hProperties).toMatchObject({ dir: 'rtl' });
+    expect(inlineMath?.data?.hProperties).toMatchObject({
+      dir: 'ltr',
+      'data-bidilens-math': ''
+    });
+    expect(displayMath.data?.hProperties).toMatchObject({
+      dir: 'ltr',
+      'data-bidilens-math': ''
+    });
   });
 
   it('handles mixed prose and inline code', async () => {

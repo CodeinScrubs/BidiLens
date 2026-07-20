@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If BidiLens supports your research or product, cite this repository."
+title: "BidiLens: standards-first bidirectional text infrastructure for AI interfaces"
+type: software
+authors:
+  - family-names: "SalehiRad"
+    given-names: "Shayan"
+    alias: "CodeinScrubs"
+repository-code: "https://github.com/CodeinScrubs/BidiLens"
+url: "https://github.com/CodeinScrubs/BidiLens"
+license: MIT
+version: 0.1.0
+keywords:
+  - bidirectional text
+  - RTL
+  - Unicode
+  - Persian
+  - AI interfaces

@@ -12,10 +12,10 @@ export default defineConfig({
     }
   },
   test: {
-    include: ['packages/**/*.test.ts', 'packages/**/*.test.tsx'],
+    include: ['packages/**/*.test.ts', 'packages/**/*.test.tsx', 'action/**/*.test.ts'],
     coverage: {
       reporter: ['text', 'html'],
-      include: ['packages/*/src/**/*.{ts,tsx}'],
+      include: ['packages/*/src/**/*.{ts,tsx}', 'action/src/**/*.{ts,tsx}'],
       thresholds: {
         lines: 80,
         statements: 75,

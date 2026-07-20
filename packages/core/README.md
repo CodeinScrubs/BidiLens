@@ -10,7 +10,7 @@ npm install @bidilens/core
 ```
 
 ```ts
-import { analyzeText, planInlineIsolation, scanBidiSecurity } from '@bidilens/core';
+import { analyzeText, createBidiStream, planInlineIsolation, scanBidiSecurity } from '@bidilens/core';
 
 const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 const analysis = analyzeText(source);
@@ -21,6 +21,10 @@ const isolations = planInlineIsolation(source, 'rtl');
 // React is an LTR identifier isolation.
 
 const security = scanBidiSecurity(source, { mode: 'strict' });
+
+const stream = createBidiStream();
+stream.push('old response');
+stream.reset(source); // clear and analyze replacement text atomically
 ```
 
 The default `content-majority` policy excludes technical tokens before

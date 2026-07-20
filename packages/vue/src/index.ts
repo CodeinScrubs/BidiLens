@@ -26,7 +26,7 @@ export interface VueBidiStream {
 }
 
 export function useBidiStream(source: TextSource, options: BidiStreamOptions = {}): VueBidiStream {
-  let stream = createBidiStream(options);
+  const stream = createBidiStream(options);
   let previous = '';
   const snapshot = shallowRef(stream.snapshot());
   watch(
@@ -34,8 +34,7 @@ export function useBidiStream(source: TextSource, options: BidiStreamOptions = {
     (text) => {
       if (text.startsWith(previous)) snapshot.value = stream.push(text.slice(previous.length));
       else {
-        stream = createBidiStream(options);
-        snapshot.value = text ? stream.push(text) : stream.snapshot();
+        snapshot.value = stream.reset(text);
       }
       previous = text;
     },

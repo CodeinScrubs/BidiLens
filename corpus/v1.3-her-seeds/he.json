@@ -1,0 +1,504 @@
+[
+  {
+    "id": "v13-he-ai-response-001",
+    "description": "Reviewed v1.3-Her seed: AI greeting Hebrew",
+    "text": "שלום! איך אוכל לעזור?",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-ai-response-002",
+    "description": "Reviewed v1.3-Her seed: AI install Hebrew",
+    "text": "הרץ `npm install @bidiguard/react` ואז `npm start`.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install @bidiguard/react`",
+        "direction": "ltr",
+        "kind": "code"
+      },
+      {
+        "text": "`npm start`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "he",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-email-001",
+    "description": "Reviewed v1.3-Her seed: Email",
+    "text": "שלח לי מייל ל test@example.com",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "test@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "he",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-email-002",
+    "description": "Reviewed v1.3-Her seed: Formal email",
+    "text": "יש לפנות ל support@service.com",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "support@service.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "he",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-everyday-prose-001",
+    "description": "Reviewed v1.3-Her seed: Hebrew greeting",
+    "text": "שלום עולם",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "prose",
+      "greeting",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-everyday-prose-002",
+    "description": "Reviewed v1.3-Her seed: Hebrew question",
+    "text": "מה שלומך היום?",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "prose",
+      "question",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-everyday-prose-003",
+    "description": "Reviewed v1.3-Her seed: Hebrew exclamation",
+    "text": "מעולה!",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-everyday-prose-004",
+    "description": "Reviewed v1.3-Her seed: Hebrew long",
+    "text": "אנחנו עובדים על פרויקט חדש שיעזור למשתמשים בכל העולם.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "prose",
+      "long",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-everyday-prose-005",
+    "description": "Reviewed v1.3-Her seed: Hebrew statement",
+    "text": "זהו משפט פשוט.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-everyday-prose-006",
+    "description": "Reviewed v1.3-Her seed: Hebrew polite",
+    "text": "תודה רבה לך.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-inline-code-001",
+    "description": "Reviewed v1.3-Her seed: npm install",
+    "text": "הפקודה `npm install` מתקינה את החבילות.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "he",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-inline-code-002",
+    "description": "Reviewed v1.3-Her seed: shell command",
+    "text": "נא להריץ `node index.js` בשביל התחלה.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`node index.js`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "he",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-inline-code-003",
+    "description": "Reviewed v1.3-Her seed: arrow fn",
+    "text": "קוד `const greet = (n) => 'hi ' + n;` מחזיר ברכה.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`const greet = (n) => 'hi ' + n;`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "he",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-markdown-blockquote-001",
+    "description": "Reviewed v1.3-Her seed: Blockquote Hebrew",
+    "text": "> ציטוט",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "markdown",
+      "blockquote",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-markdown-bold-001",
+    "description": "Reviewed v1.3-Her seed: Bold Hebrew",
+    "text": "**טקסט מודגש**",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "markdown",
+      "bold",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-markdown-heading-001",
+    "description": "Reviewed v1.3-Her seed: H1 Hebrew",
+    "text": "# כותרת ראשית",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "markdown",
+      "heading",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-markdown-list-001",
+    "description": "Reviewed v1.3-Her seed: Bullet Hebrew",
+    "text": "- פריט ראשון",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "he",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-markdown-list-002",
+    "description": "Reviewed v1.3-Her seed: Numbered Hebrew",
+    "text": "1. פריט ראשון",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "1",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "he",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-mixed-en-he-001",
+    "description": "Reviewed v1.3-Her seed: HTTP token",
+    "text": "HTTP בקשה נכשלה",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "HTTP",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "he",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-mixed-en-he-002",
+    "description": "Reviewed v1.3-Her seed: Docker",
+    "text": "אנחנו משתמשים ב- Docker container",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "אנחנו משתמשים ב",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "he",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-mixed-en-he-003",
+    "description": "Reviewed v1.3-Her seed: React 19",
+    "text": "פיתחנו עם React 19 את המערכת.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "React",
+        "direction": "ltr",
+        "kind": "identifier"
+      },
+      {
+        "text": "19",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "he",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-mixed-en-he-004",
+    "description": "Reviewed v1.3-Her seed: TypeScript",
+    "text": "הקוד כתוב ב TypeScript.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "TypeScript",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "he",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-numeral-001",
+    "description": "Reviewed v1.3-Her seed: Date",
+    "text": "התאריך הוא 14 במאי 2026.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "14",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "2026",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "he",
+      "numerals",
+      "date",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-numeral-002",
+    "description": "Reviewed v1.3-Her seed: Price",
+    "text": "המחיר הוא 99 שקלים.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "99",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "he",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-numeral-003",
+    "description": "Reviewed v1.3-Her seed: Version",
+    "text": "הגרסה החדשה היא 2.0",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "2.0",
+        "direction": "ltr",
+        "kind": "version"
+      }
+    ],
+    "tags": [
+      "he",
+      "numerals",
+      "version",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-path-001",
+    "description": "Reviewed v1.3-Her seed: Unix path",
+    "text": "הקובץ נמצא ב /usr/local/bin",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "/usr/local/bin",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "he",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-path-002",
+    "description": "Reviewed v1.3-Her seed: Relative",
+    "text": "התיקייה ב ./src/index.ts",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "./src/index.ts",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "he",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-url-001",
+    "description": "Reviewed v1.3-Her seed: URL trailing",
+    "text": "בקרו אותנו בכתובת https://example.com",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "he",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-url-002",
+    "description": "Reviewed v1.3-Her seed: github URL",
+    "text": "הפרויקט נמצא בכתובת https://github.com/he/lib",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://github.com/he/lib",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "he",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-he-url-003",
+    "description": "Reviewed v1.3-Her seed: docs URL",
+    "text": "תיעוד מלא ב https://docs.example.org/he",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://docs.example.org/he",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "he",
+      "url",
+      "v1.3-her-review"
+    ]
+  }
+]

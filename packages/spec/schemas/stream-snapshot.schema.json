@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:bidilens:schema:0.1:stream-snapshot",
+  "title": "BidiLens BidiStreamSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["text", "direction", "changed", "locked", "finished", "paragraphs", "currentParagraph"],
+  "properties": {
+    "text": { "type": "string" },
+    "direction": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/direction" },
+    "changed": { "type": "boolean" },
+    "locked": { "type": "boolean" },
+    "finished": { "type": "boolean" },
+    "paragraphs": { "type": "array", "items": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/streamParagraph" } },
+    "currentParagraph": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/streamParagraph" }
+  }
+}

@@ -79,7 +79,8 @@ export class BidiStream {
     return this.snapshot();
   }
 
-  reset(): BidiStreamSnapshot {
+  /** Clears the session and optionally analyzes replacement source in one step. */
+  reset(initialText = ''): BidiStreamSnapshot {
     this.#text = '';
     this.#currentText = '';
     this.#completedParagraphs = [];
@@ -93,7 +94,7 @@ export class BidiStream {
     this.#nextAnalysisLength = 1;
     this.#strongCharacters = 0;
     this.#nextStrongAnalysisCount = 1;
-    return this.snapshot();
+    return initialText ? this.push(initialText) : this.snapshot();
   }
 
   /** Finalizes the open paragraph and reconciles it with batch analysis. */

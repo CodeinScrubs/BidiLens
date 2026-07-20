@@ -19,7 +19,7 @@ type Case = {
   expectedSecurityCodes?: string[];
   words?: string[];
   tags: string[];
-  curation: 'user-provided' | 'authored-template-matrix';
+  curation: 'user-provided' | 'authored-template-matrix' | 'imported-comparison-corpus';
   nativeSpeakerReviewed: boolean;
 };
 

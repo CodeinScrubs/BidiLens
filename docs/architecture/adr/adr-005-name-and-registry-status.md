@@ -1,8 +1,8 @@
-# ADR-005: Provisional BidiLens name and registry status
+# ADR-005: BidiLens repository identity and provisional registry status
 
 ## Status
 
-Provisional; external ownership is unresolved.
+Accepted for the GitHub source identity; npm and other registries remain unresolved.
 
 ## Context
 
@@ -15,21 +15,24 @@ ecosystem.
 The collision audit was repeated on 2026-07-18 against the npm registry search
 and package endpoint, PyPI JSON API, pub.dev package API, crates.io API, Maven
 Central search, and GitHub repository search. Each returned either HTTP 404 or
-zero exact `bidilens` results at that time. The local checkout has no Git remote
-and the local npm client is not authenticated, so this is collision evidence,
-not ownership evidence.
+zero exact `bidilens` results at that time. On 2026-07-20, the maintainer
+created the canonical public repository at
+`https://github.com/CodeinScrubs/BidiLens`. The local npm client is not
+authenticated, so registry searches remain collision evidence, not ownership
+evidence.
 
 ## Decision
 
-- Keep BidiLens and `@bidilens/*` for local release preparation.
-- Do not add fabricated repository URLs, badges, authors, or organization
-  metadata.
-- Treat npm scope ownership, public repository creation, trademark review, and
-  final cross-registry collision checks as external publication gates.
+- Use `CodeinScrubs/BidiLens` as the canonical source, issue, and documentation
+  identity and record its real maintainer metadata.
+- Keep `@bidilens/*` for package release preparation, without implying that the
+  npm scope is owned or that any package is published.
+- Treat npm scope ownership, trademark review, and final cross-registry
+  collision checks as external package-publication gates.
 - Rename all packages atomically if the human maintainer cannot prove control.
 
 ## Consequences
 
-Artifacts can be built and tested locally, but they are not publishable by an
-unidentified automation agent. Documentation must say “prepared, not
-published” until a human completes the gates.
+Source can be distributed under MIT from the canonical GitHub repository.
+Package artifacts remain “prepared, not published” until the maintainer proves
+registry control and completes provenance and release approval.

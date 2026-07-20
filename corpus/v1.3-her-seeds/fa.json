@@ -1,0 +1,842 @@
+[
+  {
+    "id": "v13-fa-ai-response-001",
+    "description": "Reviewed v1.3-Her seed: AI greeting",
+    "text": "سلام! چطور می‌توانم کمکتان کنم؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-ai-response-002",
+    "description": "Reviewed v1.3-Her seed: AI install",
+    "text": "برای نصب `npm install @bidiguard/react` را اجرا کنید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install @bidiguard/react`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "fa",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-ai-response-003",
+    "description": "Reviewed v1.3-Her seed: AI error with URL",
+    "text": "برای رفع این خطا به https://docs.example.com/error مراجعه کنید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://docs.example.com/error",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "ai-response",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-email-001",
+    "description": "Reviewed v1.3-Her seed: Email",
+    "text": "مرا به test@example.com ایمیل بزن.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "test@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "fa",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-email-002",
+    "description": "Reviewed v1.3-Her seed: Formal",
+    "text": "لطفاً به support@service.ir پیام دهید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "support@service.ir",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "fa",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-email-003",
+    "description": "Reviewed v1.3-Her seed: Two emails",
+    "text": "با info@example.com یا sales@example.com تماس بگیرید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "info@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      },
+      {
+        "text": "sales@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "fa",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-001",
+    "description": "Reviewed v1.3-Her seed: Greeting",
+    "text": "سلام دنیا!",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "greeting",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-002",
+    "description": "Reviewed v1.3-Her seed: Weather",
+    "text": "امروز هوا خیلی خوب است.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-003",
+    "description": "Reviewed v1.3-Her seed: Polite",
+    "text": "لطفاً صبر کنید.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-004",
+    "description": "Reviewed v1.3-Her seed: Question",
+    "text": "آیا این درست است؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "question",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-005",
+    "description": "Reviewed v1.3-Her seed: Exclamation",
+    "text": "چه عالی!",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-006",
+    "description": "Reviewed v1.3-Her seed: Longer",
+    "text": "این پروژه با موفقیت ساخته می‌شود و همه چیز خوب پیش می‌رود.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "long",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-007",
+    "description": "Reviewed v1.3-Her seed: Comma",
+    "text": "سلام، حالت چطوره؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-008",
+    "description": "Reviewed v1.3-Her seed: Statement",
+    "text": "این یک جمله ساده است.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-009",
+    "description": "Reviewed v1.3-Her seed: Tech",
+    "text": "ما در حال توسعه یک ابزار جدید برای پردازش متن‌های دوزبانه هستیم.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "tech",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-everyday-prose-010",
+    "description": "Reviewed v1.3-Her seed: Farewell",
+    "text": "خداحافظ، تا بعد!",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-inline-code-001",
+    "description": "Reviewed v1.3-Her seed: Inline code intro",
+    "text": "`npm install` را اجرا کنید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "fa",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-inline-code-002",
+    "description": "Reviewed v1.3-Her seed: Inline code mid",
+    "text": "برای شروع دستور `npm run dev` را بزنید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm run dev`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "fa",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-inline-code-003",
+    "description": "Reviewed v1.3-Her seed: Two inline codes",
+    "text": "برای نصب `react-markdown` اجرا کنید: `npm install react-markdown`",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`react-markdown`",
+        "direction": "ltr",
+        "kind": "code"
+      },
+      {
+        "text": "`npm install react-markdown`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "fa",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-inline-code-004",
+    "description": "Reviewed v1.3-Her seed: Inline code with Persian literal",
+    "text": "دستور `console.log(\"سلام\")` درست کار می‌کند.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`console.log(\"سلام\")`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "fa",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-inline-code-005",
+    "description": "Reviewed v1.3-Her seed: Identifier",
+    "text": "متغیر `counter` را تعریف کنید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`counter`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "fa",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-markdown-blockquote-001",
+    "description": "Reviewed v1.3-Her seed: Blockquote",
+    "text": "> نقل قول",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "markdown",
+      "blockquote",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-markdown-bold-001",
+    "description": "Reviewed v1.3-Her seed: Bold",
+    "text": "**متن پررنگ**",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "markdown",
+      "bold",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-markdown-heading-001",
+    "description": "Reviewed v1.3-Her seed: H1",
+    "text": "# عنوان فارسی",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "markdown",
+      "heading",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-markdown-heading-002",
+    "description": "Reviewed v1.3-Her seed: H2",
+    "text": "## زیرعنوان",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "markdown",
+      "heading",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-markdown-italic-001",
+    "description": "Reviewed v1.3-Her seed: Italic",
+    "text": "*متن کج*",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "markdown",
+      "italic",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-markdown-list-001",
+    "description": "Reviewed v1.3-Her seed: Bullet",
+    "text": "- آیتم اول",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-markdown-list-002",
+    "description": "Reviewed v1.3-Her seed: Numbered",
+    "text": "1. مورد اول",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "1",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "fa",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-mixed-en-fa-001",
+    "description": "Reviewed v1.3-Her seed: English brand in Persian",
+    "text": "Next.js یک فریمورک عالی است.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "Next.js",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "fa",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-mixed-en-fa-002",
+    "description": "Reviewed v1.3-Her seed: React version",
+    "text": "ما از React 19 استفاده می‌کنیم.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "React",
+        "direction": "ltr",
+        "kind": "identifier"
+      },
+      {
+        "text": "19",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "fa",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-mixed-en-fa-003",
+    "description": "Reviewed v1.3-Her seed: TypeScript",
+    "text": "با استفاده از TypeScript امنیت بیشتری داریم.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "TypeScript",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "fa",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-mixed-en-fa-004",
+    "description": "Reviewed v1.3-Her seed: EN fragment",
+    "text": "این ویژگی است new feature از نسخه ۲.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "new feature",
+        "direction": "ltr",
+        "kind": "opposite-direction-run"
+      },
+      {
+        "text": "۲",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "fa",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-mixed-en-fa-005",
+    "description": "Reviewed v1.3-Her seed: Mixed EN+URL",
+    "text": "برای نصب از npm package با آدرس https://npmjs.com/package/foo استفاده کنید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "npm package",
+        "direction": "ltr",
+        "kind": "command"
+      },
+      {
+        "text": "https://npmjs.com/package/foo",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "mixed-en",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-multi-block-001",
+    "description": "Reviewed v1.3-Her seed: Two blocks",
+    "text": "پاراگراف اول.\n\nپاراگراف دوم.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "multi-block",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-path-001",
+    "description": "Reviewed v1.3-Her seed: Unix path",
+    "text": "فایل config.json در /home/user/project قرار دارد.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "config.json",
+        "direction": "ltr",
+        "kind": "identifier"
+      },
+      {
+        "text": "/home/user/project",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "fa",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-path-002",
+    "description": "Reviewed v1.3-Her seed: Windows path",
+    "text": "فایل در مسیر C:\\\\Users\\\\Shayan قرار دارد.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "C:\\\\Users\\\\Shayan",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "fa",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-path-003",
+    "description": "Reviewed v1.3-Her seed: Relative path",
+    "text": "به پوشه ./src/components برو.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "./src/components",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "fa",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-persian-numeral-001",
+    "description": "Reviewed v1.3-Her seed: Price",
+    "text": "قیمت آن ۱۰۰۰ تومان است.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "۱۰۰۰",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "fa",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-persian-numeral-002",
+    "description": "Reviewed v1.3-Her seed: Date",
+    "text": "تاریخ امروز ۱۴۰۴/۰۴/۲۵ است.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "۱۴۰۴",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "۰۴",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "۲۵",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "fa",
+      "numerals",
+      "date",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-persian-numeral-003",
+    "description": "Reviewed v1.3-Her seed: Percent",
+    "text": "تخفیف ۲۰٪ ارائه شده است.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "۲۰",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "fa",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-persian-numeral-004",
+    "description": "Reviewed v1.3-Her seed: Large number",
+    "text": "این محصول ۹۹٬۰۰۰ تومان قیمت دارد.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "۹۹",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "۰۰۰",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "fa",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-url-001",
+    "description": "Reviewed v1.3-Her seed: URL trailing",
+    "text": "سایت ما را ببینید: https://example.com",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-url-002",
+    "description": "Reviewed v1.3-Her seed: URL with path",
+    "text": "مستندات در آدرس https://docs.example.com/api/v2 پیدا می‌شود.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://docs.example.com/api/v2",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-url-003",
+    "description": "Reviewed v1.3-Her seed: URL with query",
+    "text": "لطفاً به این لینک سر بزنید: https://github.com/x/y?q=hello",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://github.com/x/y?q=hello",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-url-004",
+    "description": "Reviewed v1.3-Her seed: Long URL",
+    "text": "مسیر کامل https://very-long.example.com/some/deep/path/to/resource?param1=value1&param2=value2 است.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://very-long.example.com/some/deep/path/to/resource?param1=value1&param2=value2",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "url",
+      "long",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-url-005",
+    "description": "Reviewed v1.3-Her seed: URL mid-sentence",
+    "text": "برای اطلاعات بیشتر به https://news.example.org مراجعه کنید.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://news.example.org",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-zwnj-001",
+    "description": "Reviewed v1.3-Her seed: ZWNJ می‌شود",
+    "text": "این پروژه با موفقیت ساخته می‌شود.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "zwnj",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-zwnj-002",
+    "description": "Reviewed v1.3-Her seed: ZWNJ می‌رود",
+    "text": "همه چیز خوب پیش می‌رود.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "zwnj",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-zwnj-003",
+    "description": "Reviewed v1.3-Her seed: Multiple ZWNJ",
+    "text": "می‌توانید این کار را انجام دهید.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "fa",
+      "zwnj",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-fa-zwnj-004",
+    "description": "Reviewed v1.3-Her seed: ZWNJ + URL",
+    "text": "به سایت می‌رویم: https://example.com.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "fa",
+      "zwnj",
+      "url",
+      "v1.3-her-review"
+    ]
+  }
+]

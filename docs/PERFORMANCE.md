@@ -7,6 +7,7 @@ universal latency guarantee.
 
 ```bash
 pnpm run benchmark
+pnpm run benchmark:ci # also writes benchmarks/results/latest.json
 pnpm run test:coverage
 pnpm run release:check
 ```
@@ -15,6 +16,10 @@ The benchmark reports JSON, uses UTF-16 code-unit lengths, warms each operation
 once, and then measures fixed iterations. The naïve full-reparse comparison is
 run once without an additional warmup because the same analyzer is already
 warmed by the batch matrix.
+
+The manual/weekly benchmark workflow uploads that JSON for the exact commit as
+a 30-day artifact. Benchmarks remain non-gating because shared CI hardware is
+not stable enough for a universal latency threshold.
 
 ## Environment
 

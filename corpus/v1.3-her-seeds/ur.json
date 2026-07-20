@@ -1,0 +1,494 @@
+[
+  {
+    "id": "v13-ur-ai-response-001",
+    "description": "Reviewed v1.3-Her seed: AI greeting Urdu",
+    "text": "ہیلو! کیا حال ہے؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-ai-response-002",
+    "description": "Reviewed v1.3-Her seed: AI install Urdu",
+    "text": "`npm install @bidiguard/react` چلائیں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install @bidiguard/react`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ur",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-email-001",
+    "description": "Reviewed v1.3-Her seed: Email",
+    "text": "مجھے test@example.com ای میل بھیجیں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "test@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "ur",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-email-002",
+    "description": "Reviewed v1.3-Her seed: Formal email",
+    "text": "support@service.com پر رابطہ کریں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "support@service.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "ur",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-everyday-prose-001",
+    "description": "Reviewed v1.3-Her seed: Urdu greeting",
+    "text": "ہیلو دنیا!",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "prose",
+      "greeting",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-everyday-prose-002",
+    "description": "Reviewed v1.3-Her seed: Urdu question",
+    "text": "آپ کیا چاہتے ہیں؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "prose",
+      "question",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-everyday-prose-003",
+    "description": "Reviewed v1.3-Her seed: Urdu statement",
+    "text": "یہ ایک ٹیسٹ ہے.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-everyday-prose-004",
+    "description": "Reviewed v1.3-Her seed: Urdu polite",
+    "text": "شکریہ بہت زیادہ.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-everyday-prose-005",
+    "description": "Reviewed v1.3-Her seed: Urdu long",
+    "text": "ہم ایک نیا پروجیکٹ تیار کر رہے ہیں جو دنیا بھر میں مددگار ہوگا۔",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "prose",
+      "long",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-everyday-prose-006",
+    "description": "Reviewed v1.3-Her seed: Urdu exclamation",
+    "text": "یہ بہت اچھا ہے!",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-inline-code-001",
+    "description": "Reviewed v1.3-Her seed: Code block mid",
+    "text": "کوڈ `const x = 1;` ٹھیک ہے۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`const x = 1;`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ur",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-inline-code-002",
+    "description": "Reviewed v1.3-Her seed: npm install",
+    "text": "`npm install` چلائیں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ur",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-inline-code-003",
+    "description": "Reviewed v1.3-Her seed: console.log",
+    "text": "کوڈ `console.log(\"hi\")` چلائیں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`console.log(\"hi\")`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ur",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-markdown-blockquote-001",
+    "description": "Reviewed v1.3-Her seed: Blockquote Urdu",
+    "text": "> نقل",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "markdown",
+      "blockquote",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-markdown-bold-001",
+    "description": "Reviewed v1.3-Her seed: Bold Urdu",
+    "text": "**بولڈ**",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "markdown",
+      "bold",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-markdown-heading-001",
+    "description": "Reviewed v1.3-Her seed: H1 Urdu",
+    "text": "# عنوان",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "markdown",
+      "heading",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-markdown-list-001",
+    "description": "Reviewed v1.3-Her seed: Bullet Urdu",
+    "text": "- پہلا آئٹم",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ur",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-markdown-list-002",
+    "description": "Reviewed v1.3-Her seed: Numbered Urdu",
+    "text": "1. پہلا آئٹم",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "1",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ur",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-mixed-en-ur-001",
+    "description": "Reviewed v1.3-Her seed: English name",
+    "text": "میرا نام John ہے۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "John",
+        "direction": "ltr",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "ur",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-mixed-en-ur-002",
+    "description": "Reviewed v1.3-Her seed: React",
+    "text": "ہم React استعمال کرتے ہیں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "React",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "ur",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-mixed-en-ur-003",
+    "description": "Reviewed v1.3-Her seed: TypeScript",
+    "text": "ہم TypeScript استعمال کر رہے ہیں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "TypeScript",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "ur",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-mixed-en-ur-004",
+    "description": "Reviewed v1.3-Her seed: Node.js",
+    "text": "Node.js بہت اچھا ہے۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "Node.js",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "ur",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-numeral-001",
+    "description": "Reviewed v1.3-Her seed: Price",
+    "text": "قیمت 99 ڈالر ہے۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "99",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ur",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-numeral-002",
+    "description": "Reviewed v1.3-Her seed: Date",
+    "text": "تاریخ 14 مئی 2026 ہے۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "14",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "2026",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ur",
+      "numerals",
+      "date",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-numeral-003",
+    "description": "Reviewed v1.3-Her seed: Version",
+    "text": "ورژن 2.0 ہے۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "2.0",
+        "direction": "ltr",
+        "kind": "version"
+      }
+    ],
+    "tags": [
+      "ur",
+      "numerals",
+      "version",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-path-001",
+    "description": "Reviewed v1.3-Her seed: Unix path",
+    "text": "فائل /usr/bin میں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "/usr/bin",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "ur",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-path-002",
+    "description": "Reviewed v1.3-Her seed: Relative path",
+    "text": "فائل ./src/index.ts میں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "./src/index.ts",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "ur",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-url-001",
+    "description": "Reviewed v1.3-Her seed: URL trailing",
+    "text": "ہماری ویب سائٹ https://example.com پر جائیں۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ur",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-url-002",
+    "description": "Reviewed v1.3-Her seed: github URL",
+    "text": "پروجیکٹ https://github.com/ur/lib پر۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://github.com/ur/lib",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ur",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ur-url-003",
+    "description": "Reviewed v1.3-Her seed: docs URL",
+    "text": "دستاویزات https://docs.example.org/ur پر۔",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://docs.example.org/ur",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ur",
+      "url",
+      "v1.3-her-review"
+    ]
+  }
+]

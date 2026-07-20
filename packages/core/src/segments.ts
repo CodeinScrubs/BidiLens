@@ -3,6 +3,29 @@ import { isolateText } from './controls.js';
 import { findTechnicalTokenRanges } from './detect.js';
 import type { Direction, DirectionalRun, InlineIsolation } from './types.js';
 
+function attachSourceRanges(text: string, isolations: Omit<InlineIsolation, 'sourceRange'>[]): InlineIsolation[] {
+  const codePointAtUtf16 = new Uint32Array(text.length + 1);
+  let utf16Offset = 0;
+  let codePointOffset = 0;
+  for (const character of text) {
+    codePointAtUtf16[utf16Offset] = codePointOffset;
+    if (character.length === 2) codePointAtUtf16[utf16Offset + 1] = codePointOffset;
+    utf16Offset += character.length;
+    codePointOffset += 1;
+    codePointAtUtf16[utf16Offset] = codePointOffset;
+  }
+  return isolations.map((isolation) => ({
+    ...isolation,
+    sourceRange: {
+      utf16: { start: isolation.start, end: isolation.end },
+      codePoint: {
+        start: codePointAtUtf16[isolation.start]!,
+        end: codePointAtUtf16[isolation.end]!
+      }
+    }
+  }));
+}
+
 function resolveNeutralRuns(runs: DirectionalRun[]): DirectionalRun[] {
   const previousStrong: Direction[] = new Array(runs.length).fill('neutral');
   const nextStrong: Direction[] = new Array(runs.length).fill('neutral');
@@ -111,7 +134,7 @@ export function planInlineIsolation(
   options: { excludeTechnicalTokens?: boolean; isolateOppositeRuns?: boolean } = {}
 ): InlineIsolation[] {
   const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text);
-  const isolations: InlineIsolation[] = technical.map((range) => ({
+  const isolations: Omit<InlineIsolation, 'sourceRange'>[] = technical.map((range) => ({
     text: range.text,
     direction: 'ltr',
     start: range.start,
@@ -119,7 +142,9 @@ export function planInlineIsolation(
     kind: range.kind
   }));
 
-  if (options.isolateOppositeRuns === false) return isolations.sort((a, b) => a.start - b.start);
+  if (options.isolateOppositeRuns === false) {
+    return attachSourceRanges(text, isolations.sort((a, b) => a.start - b.start));
+  }
 
   let technicalIndex = 0;
   for (const run of segmentDirectionalRuns(text)) {
@@ -158,5 +183,5 @@ export function planInlineIsolation(
     }
   }
 
-  return isolations.sort((a, b) => a.start - b.start || a.end - b.end);
+  return attachSourceRanges(text, isolations.sort((a, b) => a.start - b.start || a.end - b.end));
 }

@@ -1,0 +1,36 @@
+name: Native-language corpus review
+description: Correct or certify a fixture in a language you read fluently.
+title: "[language review]: "
+labels: [corpus, language-review]
+body:
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options: [Persian, Arabic, Hebrew, Urdu, Pashto, Kurdish Sorani, Other]
+    validations:
+      required: true
+  - type: input
+    id: fixtures
+    attributes:
+      label: Fixture IDs
+      description: List the exact corpus IDs you reviewed.
+      placeholder: fa-flagship-001
+    validations:
+      required: true
+  - type: textarea
+    id: review
+    attributes:
+      label: Review and corrections
+      description: Check grammar, word numbering, expected direction, isolation, and punctuation behavior.
+    validations:
+      required: true
+  - type: checkboxes
+    id: declaration
+    attributes:
+      label: Reviewer declaration
+      options:
+        - label: I read this language fluently enough to review these examples.
+          required: true
+        - label: I inspected the exact logical source rather than only a screenshot.
+          required: true

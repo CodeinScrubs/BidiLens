@@ -16,10 +16,12 @@ technical steering committee, or paid support program is implied.
 
 ## Maintainer identity
 
-The canonical public repository and maintainer identities are not configured
-in this checkout. They must be recorded before publication. This document will
-then list maintainers, nomination/removal rules, security roles, and conflict
-resolution using real identities rather than placeholders.
+The bootstrap maintainer is Shayan SalehiRad
+([`@CodeinScrubs`](https://github.com/CodeinScrubs)). CODEOWNERS records the
+current review boundary. Additional maintainers may be nominated after a
+sustained record of reviewed technical or language contributions. Changes to
+maintainership are public governance decisions; security or conduct details
+remain private.
 
 ## Conduct
 

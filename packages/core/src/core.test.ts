@@ -155,6 +155,15 @@ describe('isolation and segmentation', () => {
     expect(source).toBe('React یک کتابخانه جاوااسکریپت بسیار محبوب است.');
   });
 
+  it('reports isolation ranges in UTF-16 and Unicode code-point offsets', () => {
+    const plans = planInlineIsolation('😀 React یک کتابخانه است.', 'rtl');
+    expect(plans[0]?.text).toBe('React');
+    expect(plans[0]?.sourceRange.utf16).toEqual({ start: 3, end: 8 });
+    expect(plans[0]?.sourceRange.codePoint).toEqual({ start: 2, end: 7 });
+    expect(plans[0]?.start).toBe(plans[0]?.sourceRange.utf16.start);
+    expect(plans[0]?.end).toBe(plans[0]?.sourceRange.utf16.end);
+  });
+
   it('isolates technical URLs inside RTL prose', () => {
     const plans = planInlineIsolation('برای مستندات https://example.com مراجعه کنید.', 'rtl');
     expect(plans).toContainEqual(expect.objectContaining({ text: 'https://example.com', direction: 'ltr', kind: 'url' }));
@@ -274,6 +283,20 @@ describe('streaming', () => {
     expect(customSnapshot.currentParagraph).toMatchObject({ text: 'A', direction: 'ltr' });
   });
 
+  it('can reset directly to replacement text without leaking finished state', () => {
+    const stream = createBidiStream();
+    stream.push('Hello world');
+    stream.finish();
+    const replacement = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+    const snapshot = stream.reset(replacement);
+
+    expect(snapshot.text).toBe(replacement);
+    expect(snapshot.currentParagraph.text).toBe(replacement);
+    expect(snapshot.direction).toBe('rtl');
+    expect(snapshot.finished).toBe(false);
+    expect(stream.push(' و کاربردی است.').text).toBe(`${replacement} و کاربردی است.`);
+  });
+
   it('does not expose capturing separator groups as paragraphs', () => {
     const stream = createBidiStream({ paragraphSeparator: /(\n)/g });
     const snapshot = stream.push('Hello\nسلام');
@@ -348,6 +371,24 @@ describe('streaming', () => {
 });
 
 describe('security', () => {
+  const benignMultilingualText = [
+    ['fa', 'سلام دنیا! امروز هوا خیلی خوب است.'],
+    ['fa', 'لطفاً فایل config.json را در مسیر /home/user/project ذخیره کن.'],
+    ['fa', 'می\u200Cخواهم دربارهٔ کتاب‌ها بخوانم.'],
+    ['ar', 'مرحبا بك في موقعنا الإلكتروني. هل تحتاج إلى مساعدة؟'],
+    ['ar', 'يستخدم المشروع React 19 لبناء الواجهة الجديدة.'],
+    ['he', 'שלום עולם! היום יום יפה.'],
+    ['he', 'אנחנו משתמשים ב-Docker כדי להריץ את היישום.'],
+    ['ur', 'ہیلو دنیا! آج کا دن بہت اچھا ہے۔'],
+    ['ur', 'ہم React استعمال کرتے ہیں اور قیمت 99 ڈالر ہے۔'],
+    ['sd', 'اڄ موسم تمام سٺو آهي ۽ اسين ڪم جاري رکنداسين.'],
+    ['ps', 'نوې نسخه په بریالیتوب خپره شوه.'],
+    ['ckb', 'وەشانی نوێ بە سەرکەوتوویی بڵاوکرایەوە.'],
+    ['mixed', 'The word سلام means peace in Persian.'],
+    ['mixed', 'برای نصب `react-markdown` دستور `npm install react-markdown` را اجرا کنید.'],
+    ['emoji', '😀 این یک پیام عادی و امن است.']
+  ] as const;
+
   it('finds and sanitizes overrides', () => {
     const input = `safe${BIDI_CONTROLS.RLO}evil${BIDI_CONTROLS.PDF}`;
     const findings = findBidiControls(input);
@@ -370,6 +411,15 @@ describe('security', () => {
     expect(report.controls).toHaveLength(0);
     expect(report.findings).toHaveLength(0);
     expect(report.safe).toBe(true);
+  });
+
+  it.each(benignMultilingualText)('has no false positives for ordinary %s text', (_language, text) => {
+    for (const mode of ['off', 'audit', 'warn', 'strict'] as const) {
+      const report = scanBidiSecurity(text, { mode });
+      expect(report.controls).toHaveLength(0);
+      expect(report.findings).toHaveLength(0);
+      expect(report.safe).toBe(true);
+    }
   });
 
   it('reports unmatched pops and hidden zero-width spaces with dual offsets', () => {

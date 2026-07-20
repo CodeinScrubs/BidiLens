@@ -3,6 +3,11 @@
 Thank you for improving BidiLens. Correctness claims must be backed by source,
 tests, corpus fixtures, or reproducible commands.
 
+Questions and early design proposals belong in
+[GitHub Discussions](https://github.com/CodeinScrubs/BidiLens/discussions).
+Reproducible bugs, feature requests, and language reviews use the repository's
+structured issue forms. See [SUPPORT.md](SUPPORT.md) for routing guidance.
+
 ## Development
 
 ```bash

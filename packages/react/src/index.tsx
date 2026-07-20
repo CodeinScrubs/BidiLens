@@ -54,6 +54,7 @@ function renderIsolatedText(text: string, direction: Exclude<Direction, 'neutral
       key: `${isolation.start}-${isolation.end}-${index}`,
       dir: isolation.direction,
       'data-bidilens-isolate': '',
+      'data-bidilens-kind': isolation.kind,
       ...(isolation.kind === 'code' ? { 'data-bidilens-code': '' } : {})
     }, isolation.text));
     cursor = isolation.end;
@@ -224,8 +225,7 @@ export function useBidiStream(
         const chunk = text.slice(previous.length);
         next = state.stream.push(chunk);
       } else {
-        state.stream.reset();
-        next = text ? state.stream.push(text) : state.stream.snapshot();
+        next = state.stream.reset(text);
       }
       state.previousText = text;
     }

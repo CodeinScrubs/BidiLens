@@ -75,6 +75,9 @@ describe('Svelte adapter', () => {
     expect(seen.at(-1)).toBe(stream.getText());
     expect(stream.reset().text).toBe('');
     expect(stream.getText()).toBe('');
+    const replacement = stream.reset('سلام دنیا');
+    expect(replacement.text).toBe('سلام دنیا');
+    expect(stream.getText()).toBe('سلام دنیا');
     unsubscribe();
   });
 

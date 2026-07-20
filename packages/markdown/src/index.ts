@@ -30,11 +30,19 @@ type MdastBidiData = NonNullable<(Content | MdastRoot)['data']> & {
 
 type MdastBidiNode = (Content | MdastRoot) & { data?: MdastBidiData };
 
-function mdastText(node: Content | MdastRoot): string {
-  if (node.type === 'code' || node.type === 'inlineCode') return '';
+type MdastMathNode = {
+  type: 'math' | 'inlineMath';
+  value: string;
+  data?: MdastBidiData;
+};
+
+type ExtendedMdastBidiNode = MdastBidiNode | MdastMathNode;
+
+function mdastText(node: ExtendedMdastBidiNode): string {
+  if (node.type === 'code' || node.type === 'inlineCode' || node.type === 'math' || node.type === 'inlineMath') return '';
   if ('value' in node && typeof node.value === 'string') return node.value;
   if ('children' in node && Array.isArray(node.children)) {
-    return node.children.map((child) => mdastText(child as Content)).join('');
+    return node.children.map((child) => mdastText(child as ExtendedMdastBidiNode)).join('');
   }
   if (node.type === 'image') return node.alt ?? '';
   return '';
@@ -69,7 +77,16 @@ export function remarkBidi(options: MarkdownBidiOptions = {}) {
 
   return (tree: MdastRoot): void => {
     visit(tree, (visitedNode) => {
-      const node = visitedNode as MdastBidiNode;
+      const node = visitedNode as ExtendedMdastBidiNode;
+      if (node.type === 'math' || node.type === 'inlineMath') {
+        node.data ??= {};
+        node.data.hProperties ??= {};
+        node.data.hProperties.dir = 'ltr';
+        node.data.hProperties['data-bidilens-math'] = '';
+        appendClassName(node.data.hProperties, codeClassName);
+        return;
+      }
+
       if (node.type === 'code') {
         node.data ??= {};
         node.data.hProperties ??= {};

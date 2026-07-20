@@ -46,7 +46,7 @@ export interface SvelteBidiStreamStore {
   push: (chunk: string) => BidiStreamSnapshot;
   setText: (text: string) => BidiStreamSnapshot;
   finish: () => BidiStreamSnapshot;
-  reset: () => BidiStreamSnapshot;
+  reset: (initialText?: string) => BidiStreamSnapshot;
   getText: () => string;
 }
 
@@ -71,15 +71,14 @@ export function createStreamingBidiMessage(options: BidiStreamOptions = {}): Sve
         return publish(chunk ? stream.push(chunk) : stream.snapshot());
       }
       source = text;
-      stream.reset();
-      return publish(text ? stream.push(text) : stream.snapshot());
+      return publish(stream.reset(text));
     },
     finish() {
       return publish(stream.finish());
     },
-    reset() {
-      source = '';
-      return publish(stream.reset());
+    reset(initialText = '') {
+      source = initialText;
+      return publish(stream.reset(initialText));
     },
     getText() {
       return source;

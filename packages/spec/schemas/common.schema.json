@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:bidilens:schema:0.1:common",
+  "title": "BidiLens common value types",
+  "$defs": {
+    "direction": { "enum": ["ltr", "rtl", "neutral"] },
+    "resolvedDirection": { "enum": ["ltr", "rtl"] },
+    "offsetRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sourceRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["utf16", "codePoint"],
+      "properties": {
+        "utf16": { "$ref": "#/$defs/offsetRange" },
+        "codePoint": { "$ref": "#/$defs/offsetRange" }
+      }
+    },
+    "strongCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ltr", "rtl", "total"],
+      "properties": {
+        "ltr": { "type": "integer", "minimum": 0 },
+        "rtl": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "start", "end", "direction", "firstStrong", "confidence", "counts"],
+      "properties": {
+        "text": { "type": "string" },
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 },
+        "direction": { "$ref": "#/$defs/direction" },
+        "firstStrong": { "$ref": "#/$defs/direction" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "counts": { "$ref": "#/$defs/strongCounts" }
+      }
+    },
+    "directionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "direction", "excluded", "reason", "sourceRange"],
+      "properties": {
+        "text": { "type": "string" },
+        "direction": { "$ref": "#/$defs/resolvedDirection" },
+        "excluded": { "type": "boolean" },
+        "reason": { "enum": ["natural-language", "technical-token"] },
+        "sourceRange": { "$ref": "#/$defs/sourceRange" },
+        "technicalKind": { "$ref": "#/$defs/technicalKind" }
+      }
+    },
+    "technicalKind": {
+      "enum": ["code", "url", "email", "path", "version", "hash", "identifier", "number", "command", "math", "html"]
+    },
+    "isolationKind": {
+      "enum": ["code", "url", "email", "path", "version", "hash", "identifier", "number", "command", "math", "html", "opposite-direction-run"]
+    },
+    "inlineIsolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "direction", "start", "end", "sourceRange", "kind"],
+      "properties": {
+        "text": { "type": "string" },
+        "direction": { "$ref": "#/$defs/resolvedDirection" },
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 },
+        "sourceRange": { "$ref": "#/$defs/sourceRange" },
+        "kind": { "$ref": "#/$defs/isolationKind" }
+      }
+    },
+    "controlFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["character", "codePoint", "name", "index", "end", "codePointIndex", "risk", "category"],
+      "properties": {
+        "character": { "type": "string" },
+        "codePoint": { "type": "string", "pattern": "^U\\+[0-9A-F]{4,6}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "index": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 },
+        "codePointIndex": { "type": "integer", "minimum": 0 },
+        "risk": { "enum": ["low", "medium", "high"] },
+        "category": { "enum": ["mark", "embedding", "override", "isolate", "pop", "deprecated"] }
+      }
+    },
+    "securityFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "message", "sourceRange", "remediation"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["info", "warning", "high"] },
+        "message": { "type": "string", "minLength": 1 },
+        "sourceRange": { "$ref": "#/$defs/sourceRange" },
+        "remediation": { "type": "string", "minLength": 1 },
+        "control": { "$ref": "#/$defs/controlFinding" }
+      }
+    },
+    "streamParagraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "direction", "completed", "index"],
+      "properties": {
+        "text": { "type": "string" },
+        "direction": { "$ref": "#/$defs/direction" },
+        "completed": { "type": "boolean" },
+        "index": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

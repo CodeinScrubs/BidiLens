@@ -1,0 +1,47 @@
+name: BidiLens conformance and security
+description: Audit source files for bidi controls or run the BidiLens direction corpus.
+author: CodeinScrubs
+
+inputs:
+  command:
+    description: "audit scans files; test runs a conformance corpus"
+    required: false
+    default: audit
+  paths:
+    description: "Newline-separated files/directories for audit"
+    required: false
+    default: "."
+  corpus:
+    description: "Corpus JSON for test; defaults to this action's canonical corpus"
+    required: false
+    default: ""
+  mode:
+    description: "Security mode: off, audit, warn, or strict"
+    required: false
+    default: audit
+  fail-on:
+    description: "Minimum finding risk that fails audit: low, medium, or high"
+    required: false
+    default: high
+  format:
+    description: "Output format: human, json, or sarif (SARIF is audit-only)"
+    required: false
+    default: human
+  sarif-file:
+    description: "Workspace-relative SARIF path when format is sarif"
+    required: false
+    default: bidilens.sarif
+
+outputs:
+  exit-code:
+    description: "BidiLens CLI exit code"
+  report:
+    description: "Workspace-relative SARIF report path, or empty for other formats"
+
+runs:
+  using: node24
+  main: dist/index.cjs
+
+branding:
+  icon: align-left
+  color: purple

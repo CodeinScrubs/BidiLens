@@ -1,0 +1,36 @@
+name: Feature or integration request
+description: Propose a direction policy, adapter, platform integration, or corpus improvement.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Mixed-direction problem
+      description: Include an exact logical source string and explain what the host currently renders incorrectly.
+      placeholder: Paste the source without manually reversing any characters.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Target environment
+      description: Name the framework, renderer, browser/OS, terminal, or platform and its relevant versions.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected semantic output
+      description: Describe the intended block direction, isolated runs, source preservation, and copy behavior.
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope confirmation
+      options:
+        - label: I understand BidiLens preserves logical source order and does not reverse strings.
+          required: true
+        - label: I searched existing issues and the documented limitations/roadmap.
+          required: true

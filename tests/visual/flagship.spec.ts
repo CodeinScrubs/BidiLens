@@ -5,6 +5,12 @@ import MarkdownIt from 'markdown-it';
 import { createBidiStream } from '../../packages/core/src/index.js';
 import { renderBidiHtml } from '../../packages/html/src/index.js';
 import { markdownItBidi } from '../../packages/markdown/src/index.js';
+import {
+  expectBidiBlock,
+  expectLogicalClipboard,
+  expectLogicalSelection,
+  expectTokenAtBaseStart
+} from '../../packages/playwright/src/index.js';
 
 const FLAGSHIP = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 
@@ -25,8 +31,11 @@ test.describe('flagship mixed-direction rendering', () => {
     await page.goto(pathToFileURL(resolve('tests/visual/flagship.html')).href);
     await replaceToolkitFixture(page);
     const toolkit = page.locator('[data-case="toolkit"]');
-    await expect(toolkit).toHaveAttribute('dir', 'rtl');
-    await expect(toolkit.locator('bdi')).toHaveAttribute('dir', 'ltr');
+    await expectBidiBlock(toolkit, {
+      text: FLAGSHIP,
+      direction: 'rtl',
+      isolations: [{ text: 'React', direction: 'ltr', kind: 'identifier', tagName: 'bdi' }]
+    });
     await expect(toolkit).toHaveScreenshot('flagship-toolkit.png');
     await expect(page.locator('[data-case="auto"]')).toHaveScreenshot('flagship-auto.png');
   });
@@ -47,6 +56,7 @@ test.describe('flagship mixed-direction rendering', () => {
     expect(paragraphBox).not.toBeNull();
     expect(firstBox).not.toBeNull();
     expect(firstBox!.x).toBeGreaterThan(paragraphBox!.x + paragraphBox!.width / 2);
+    await expectTokenAtBaseStart(paragraph, 'React', 'rtl');
     await expect(paragraph).toHaveCSS('direction', 'rtl');
     await expect(first).toHaveCSS('direction', 'ltr');
   });
@@ -65,19 +75,10 @@ test.describe('flagship mixed-direction rendering', () => {
     await page.setContent(rendered.html);
     const block = page.locator('[data-bidilens-block]');
     await expect(block).toHaveText(FLAGSHIP);
-    const selection = await block.evaluate((element) => {
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      const current = window.getSelection();
-      current?.removeAllRanges();
-      current?.addRange(range);
-      return { selected: current?.toString(), logical: element.textContent };
-    });
-    expect(selection.logical).toBe(FLAGSHIP);
-    expect(selection.selected).toBe(FLAGSHIP);
+    await expectLogicalSelection(block, FLAGSHIP);
+    expect(await block.evaluate((element) => element.textContent)).toBe(FLAGSHIP);
     if (browserName === 'chromium') {
-      await page.keyboard.press('Control+C');
-      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(FLAGSHIP);
+      await expectLogicalClipboard(page, block, FLAGSHIP);
     }
   });
 

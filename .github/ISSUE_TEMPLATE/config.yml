@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Integration questions and design discussion
+    url: https://github.com/CodeinScrubs/BidiLens/discussions
+    about: Ask for help or discuss an integration before filing a defect.
+  - name: Private security report
+    url: https://github.com/CodeinScrubs/BidiLens/security/advisories/new
+    about: Report suspected vulnerabilities without disclosing details publicly.

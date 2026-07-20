@@ -12,10 +12,11 @@ sponsorship applications. It is not an application claim.
 - comparisons with sibling attempts are documented with reproducible local
   file counts;
 - unsupported platforms and external prerequisites are explicitly listed.
+- the canonical source and maintainer identity are public at
+  `CodeinScrubs/BidiLens` with reproducible CI configured.
 
 ## Evidence to obtain before applying
 
-- canonical public repository and real maintainer identities;
 - native-speaker-reviewed corpus samples;
 - at least one accepted downstream issue or merged integration;
 - users or maintainers willing to describe the bug and result;

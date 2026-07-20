@@ -19,6 +19,14 @@ Terms: `https://www.unicode.org/terms_of_use.html`
 The vendored source retains its upstream header. BidiLens's MIT license applies
 to original project code and does not replace the Unicode data terms.
 
+## v1.3-Her conformance seed text
+
+The BidiLens corpus adapts 196 non-empty conformance strings from the local
+`v1.3-Her` BidiKit AI comparison project. The seed data was distributed under
+Apache License 2.0. Its license text is retained at
+`corpus/v1.3-her-seeds/LICENSE-APACHE-2.0.txt` and in the CLI corpus payload.
+The imported fixtures remain explicitly marked as not native-speaker-certified.
+
 ## JavaScript dependencies
 
 Runtime and development dependencies retain their own licenses. Exact versions

@@ -14,6 +14,7 @@ const message = createBidiMessage('React یک کتابخانه است.');
 const stream = createStreamingBidiMessage();
 stream.push('React ');
 stream.push('یک کتابخانه است.');
+stream.reset('یک پاسخ تازه.');
 ```
 
 Both APIs implement the standard Svelte readable-store subscription contract.

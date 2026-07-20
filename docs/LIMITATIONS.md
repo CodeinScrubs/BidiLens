@@ -37,7 +37,8 @@ parsing.
 - Android, Flutter, React Native, SwiftUI, Electron, VS Code, and PDF packages
   are not implemented in this repository;
 - no external security audit or downstream production pilot has occurred;
-- no package has been published from this checkout.
+- source is public on GitHub, but no npm package or production deployment is
+  claimed.
 
 ## Compatibility
 

@@ -1,6 +1,8 @@
 import { cpus, platform, release } from 'node:os';
 import process from 'node:process';
 import { performance } from 'node:perf_hooks';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import {
   analyzeText,
   createBidiStream,
@@ -90,7 +92,7 @@ function structuredMeasurement(text: string, iterations: number): object {
   };
 }
 
-console.log(JSON.stringify({
+const report = JSON.stringify({
   environment: {
     node: process.version,
     platform: `${platform()} ${release()}`,
@@ -128,4 +130,18 @@ console.log(JSON.stringify({
       ...structuredMeasurement(largeTable, 5)
     }
   }
-}, null, 2));
+}, null, 2);
+
+console.log(report);
+
+const outputIndex = process.argv.indexOf('--output');
+if (outputIndex >= 0) {
+  const outputArgument = process.argv[outputIndex + 1];
+  if (!outputArgument || outputArgument.startsWith('-')) {
+    throw new Error('--output requires a file path.');
+  }
+  const outputPath = resolve(outputArgument);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, `${report}\n`, 'utf8');
+  console.error(`Benchmark report written to ${outputPath}`);
+}

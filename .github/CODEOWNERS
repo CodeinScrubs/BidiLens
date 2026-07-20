@@ -1,0 +1,9 @@
+# Bootstrap ownership. Expand this file when maintainership grows.
+* @CodeinScrubs
+
+# Security and release surfaces require maintainer review.
+/.github/ @CodeinScrubs
+/action/ @CodeinScrubs
+/packages/core/ @CodeinScrubs
+/packages/spec/ @CodeinScrubs
+/SECURITY.md @CodeinScrubs

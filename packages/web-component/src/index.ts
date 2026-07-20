@@ -40,6 +40,7 @@ export class BidiMessageElement extends HTMLElementBase {
       const element = this.ownerDocument.createElement(tag);
       element.dir = isolation.direction;
       element.dataset.bidilensIsolate = '';
+      element.dataset.bidilensKind = isolation.kind;
       if (isolation.kind === 'code') element.dataset.bidilensCode = '';
       element.textContent = isolation.text;
       fragment.append(element);

@@ -1,0 +1,50 @@
+{
+  "name": "@bidilens/spec",
+  "version": "0.1.0",
+  "description": "Versioned language-neutral JSON Schemas for BidiLens analysis, security, and streaming output.",
+  "license": "MIT",
+  "author": { "name": "Shayan SalehiRad", "url": "https://github.com/CodeinScrubs" },
+  "repository": { "type": "git", "url": "git+https://github.com/CodeinScrubs/BidiLens.git", "directory": "packages/spec" },
+  "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
+  "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
+  "type": "module",
+  "sideEffects": false,
+  "keywords": ["bidi", "rtl", "unicode", "json-schema", "conformance"],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schemas/common.schema.json": "./schemas/common.schema.json",
+    "./schemas/block-analysis.schema.json": "./schemas/block-analysis.schema.json",
+    "./schemas/security-report.schema.json": "./schemas/security-report.schema.json",
+    "./schemas/stream-snapshot.schema.json": "./schemas/stream-snapshot.schema.json",
+    "./schemas/index.schema.json": "./schemas/index.schema.json"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "prepack": "pnpm run build",
+    "example": "node examples/basic.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@bidilens/core": "workspace:*",
+    "ajv": "8.20.0",
+    "tsup": "^8.5.1"
+  }
+}

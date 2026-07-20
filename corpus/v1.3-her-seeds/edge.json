@@ -1,0 +1,390 @@
+[
+  {
+    "id": "v13-edge-brackets-001",
+    "description": "Reviewed v1.3-Her seed: EN bracket around Persian",
+    "text": "Hello (سلام) world",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "سلام",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "edge",
+      "brackets",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-brackets-002",
+    "description": "Reviewed v1.3-Her seed: Persian bracket around EN",
+    "text": "متن (test) دیگر",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "test",
+        "direction": "ltr",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "edge",
+      "brackets",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-brackets-003",
+    "description": "Reviewed v1.3-Her seed: Square bracket around URL",
+    "text": "See [https://example.com] now",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "edge",
+      "brackets",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-emoji-rtl-001",
+    "description": "Reviewed v1.3-Her seed: Emoji first then Persian",
+    "text": "🚀 سلام دنیا",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "edge",
+      "emoji",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-emoji-rtl-002",
+    "description": "Reviewed v1.3-Her seed: Persian then emoji",
+    "text": "سلام دنیا 🌍",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "edge",
+      "emoji",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-emoji-rtl-003",
+    "description": "Reviewed v1.3-Her seed: Emoji in middle of Arabic",
+    "text": "مرحبا 🌟 بك",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "edge",
+      "emoji",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-fence-code-001",
+    "description": "Reviewed v1.3-Her seed: Fence with Persian literal",
+    "text": "```\nconsole.log(\"سلام\")\n```",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "``",
+        "direction": "ltr",
+        "kind": "code"
+      },
+      {
+        "text": "console.log",
+        "direction": "ltr",
+        "kind": "identifier"
+      },
+      {
+        "text": "``",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "edge",
+      "fence",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-filename-001",
+    "description": "Reviewed v1.3-Her seed: Filename + extension",
+    "text": "data.json",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "data.json",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "edge",
+      "filename",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-long-url-001",
+    "description": "Reviewed v1.3-Her seed: Very long URL",
+    "text": "https://example.com/path/to/some/very/deep/resource/that/keeps/going/on?param1=value1&param2=value2&param3=value3",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com/path/to/some/very/deep/resource/that/keeps/going/on?param1=value1&param2=value2&param3=value3",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "edge",
+      "url",
+      "long",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-mixed-numerals-001",
+    "description": "Reviewed v1.3-Her seed: ASCII + Persian",
+    "text": "Date: 2026/04/25 یا ۱۴۰۴/۰۴/۲۵",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "2026/04/25",
+        "direction": "ltr",
+        "kind": "path"
+      },
+      {
+        "text": "یا",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      },
+      {
+        "text": "۱۴۰۴",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "۰۴",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "۲۵",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "edge",
+      "mixed-numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-mixed-numerals-002",
+    "description": "Reviewed v1.3-Her seed: ASCII + Arabic",
+    "text": "Time: 9:00am یا ٩:٠٠ صباحاً",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "Time",
+        "direction": "ltr",
+        "kind": "opposite-direction-run"
+      },
+      {
+        "text": "9:00am",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "٩",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "٠٠",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "edge",
+      "mixed-numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-numbers-only-001",
+    "description": "Reviewed v1.3-Her seed: ASCII digits",
+    "text": "1234567890",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "1234567890",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "edge",
+      "numbers",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-punctuation-only-001",
+    "description": "Reviewed v1.3-Her seed: Punctuation",
+    "text": "!@#$%^&*()",
+    "expected": "neutral",
+    "expectedIsolations": [],
+    "tags": [
+      "edge",
+      "punctuation",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-pure-code-001",
+    "description": "Reviewed v1.3-Her seed: Only inline code",
+    "text": "`const x = 1;`",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "`const x = 1;`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "edge",
+      "code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-pure-email-001",
+    "description": "Reviewed v1.3-Her seed: Only email",
+    "text": "user@example.com",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "user@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "edge",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-pure-path-001",
+    "description": "Reviewed v1.3-Her seed: Only path",
+    "text": "/usr/local/bin/node",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "/usr/local/bin/node",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "edge",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-pure-url-001",
+    "description": "Reviewed v1.3-Her seed: Only URL",
+    "text": "https://example.com",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "edge",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-pure-url-002",
+    "description": "Reviewed v1.3-Her seed: URL with port",
+    "text": "http://localhost:8080/api/v1",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "http://localhost:8080/api/v1",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "edge",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-version-mixed-001",
+    "description": "Reviewed v1.3-Her seed: Version string",
+    "text": "v2.0.1-alpha.2",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "v2.0.1-alpha.2",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "edge",
+      "version",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-zwnj-legit-001",
+    "description": "Reviewed v1.3-Her seed: ZWNJ alone",
+    "text": "این درست می‌شه.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "edge",
+      "zwnj",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-edge-zwnj-legit-002",
+    "description": "Reviewed v1.3-Her seed: Multiple ZWNJ words",
+    "text": "می‌تونیم، می‌خوام، می‌کنیم",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "edge",
+      "zwnj",
+      "v1.3-her-review"
+    ]
+  }
+]

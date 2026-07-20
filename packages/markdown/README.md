@@ -1,7 +1,7 @@
 # @bidilens/markdown
 
 Direction and isolation plugins for unified/remark/rehype and Markdown-It.
-Code stays LTR; prose direction is computed per semantic block.
+Code and math stay LTR; prose direction is computed per semantic block.
 
 ```bash
 npm install @bidilens/markdown unified remark-parse remark-rehype rehype-stringify
@@ -39,5 +39,8 @@ const html = md.render(markdown);
 ```
 
 Raw source HTML remains escaped when the host parser's HTML option is off.
+Remark-compatible `math` and `inlineMath` nodes receive explicit LTR metadata
+and are excluded from surrounding prose evidence; math rendering itself stays
+the responsibility of the host's chosen math plugin.
 The packed example uses the declared optional `markdown-it` peer; run it with
 `pnpm --filter @bidilens/markdown example` after building.

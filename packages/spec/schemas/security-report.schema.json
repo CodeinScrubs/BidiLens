@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:bidilens:schema:0.1:security-report",
+  "title": "BidiLens BidiSecurityReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "safe", "shouldBlock", "controls", "findings"],
+  "properties": {
+    "mode": { "enum": ["off", "audit", "warn", "strict"] },
+    "safe": { "type": "boolean" },
+    "shouldBlock": { "type": "boolean" },
+    "controls": { "type": "array", "items": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/controlFinding" } },
+    "findings": { "type": "array", "items": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/securityFinding" } }
+  }
+}

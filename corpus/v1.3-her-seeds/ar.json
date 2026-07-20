@@ -1,0 +1,678 @@
+[
+  {
+    "id": "v13-ar-ai-response-001",
+    "description": "Reviewed v1.3-Her seed: AI Arabic greeting",
+    "text": "مرحبا! كيف يمكنني مساعدتك اليوم؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "ai-response",
+      "greeting",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-ai-response-002",
+    "description": "Reviewed v1.3-Her seed: AI install Arabic",
+    "text": "قم بتشغيل `npm install @bidiguard/react` ثم `npm start`.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install @bidiguard/react`",
+        "direction": "ltr",
+        "kind": "code"
+      },
+      {
+        "text": "`npm start`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ar",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-ai-response-003",
+    "description": "Reviewed v1.3-Her seed: AI with URL",
+    "text": "يمكنك العثور على المزيد في https://docs.example.com/ar",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://docs.example.com/ar",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ar",
+      "ai-response",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-ai-response-004",
+    "description": "Reviewed v1.3-Her seed: AI error Arabic",
+    "text": "حدث خطأ: هذا عادةً بسبب مشكلة في الشبكة.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "ai-response",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-arabic-numeral-001",
+    "description": "Reviewed v1.3-Her seed: Arabic numerals price",
+    "text": "السعر هو ٩٩ دولاراً شامل الضريبة.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "٩٩",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ar",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-arabic-numeral-002",
+    "description": "Reviewed v1.3-Her seed: Arabic date",
+    "text": "التاريخ هو ١٤/٥/٢٠٢٦.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "١٤",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "٥",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "٢٠٢٦",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ar",
+      "numerals",
+      "date",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-arabic-numeral-003",
+    "description": "Reviewed v1.3-Her seed: Arabic percent",
+    "text": "نسبة الإكمال ٧٥٪",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "٧٥",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ar",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-arabic-numeral-004",
+    "description": "Reviewed v1.3-Her seed: Large Arabic numeral",
+    "text": "عدد المستخدمين ١٢٬٣٤٥ شخصاً.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "١٢٬٣٤٥",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ar",
+      "numerals",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-email-001",
+    "description": "Reviewed v1.3-Her seed: Email",
+    "text": "راسلني على test@example.com.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "test@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "ar",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-email-002",
+    "description": "Reviewed v1.3-Her seed: Formal email",
+    "text": "للاستفسار راسلنا على help@service.com",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "help@service.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "ar",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-email-003",
+    "description": "Reviewed v1.3-Her seed: Two emails",
+    "text": "تواصل مع info@x.com أو sales@x.com",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "info@x.com",
+        "direction": "ltr",
+        "kind": "email"
+      },
+      {
+        "text": "sales@x.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ],
+    "tags": [
+      "ar",
+      "email",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-001",
+    "description": "Reviewed v1.3-Her seed: Arabic greeting",
+    "text": "مرحبا بك في موقعنا.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "greeting",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-002",
+    "description": "Reviewed v1.3-Her seed: Arabic question",
+    "text": "هل تحتاج إلى مساعدة؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "question",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-003",
+    "description": "Reviewed v1.3-Her seed: Arabic exclamation",
+    "text": "رائع جدا!",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-004",
+    "description": "Reviewed v1.3-Her seed: Arabic weather",
+    "text": "الجو حار اليوم.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-005",
+    "description": "Reviewed v1.3-Her seed: Arabic thanks",
+    "text": "شكرا جزيلا لك.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-006",
+    "description": "Reviewed v1.3-Her seed: Arabic statement",
+    "text": "هذا الاختبار بسيط.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-007",
+    "description": "Reviewed v1.3-Her seed: Arabic question+comma",
+    "text": "ما اسمك، ومن أين أنت؟",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "question",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-everyday-prose-008",
+    "description": "Reviewed v1.3-Her seed: Arabic long",
+    "text": "نحن نعمل على تطوير نظام جديد سيساعد الناس في كافة أنحاء العالم.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "prose",
+      "long",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-inline-code-001",
+    "description": "Reviewed v1.3-Her seed: Code block mid",
+    "text": "الكود `const x = 1;` يعمل بشكل صحيح.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`const x = 1;`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ar",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-inline-code-002",
+    "description": "Reviewed v1.3-Her seed: npm install",
+    "text": "قم بتشغيل `npm install` لتثبيت الحزم.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm install`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ar",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-inline-code-003",
+    "description": "Reviewed v1.3-Her seed: Multi cmd",
+    "text": "الأمر `npm run build && npm run test` يفحص المشروع.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`npm run build && npm run test`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ar",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-inline-code-004",
+    "description": "Reviewed v1.3-Her seed: Code with Persian",
+    "text": "النص `print(\"سلام\")` يطبع التحية.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "`print(\"سلام\")`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "ar",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-markdown-blockquote-001",
+    "description": "Reviewed v1.3-Her seed: Blockquote Arabic",
+    "text": "> اقتباس عربي",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "markdown",
+      "blockquote",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-markdown-bold-001",
+    "description": "Reviewed v1.3-Her seed: Bold Arabic",
+    "text": "**نص عريض**",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "markdown",
+      "bold",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-markdown-heading-001",
+    "description": "Reviewed v1.3-Her seed: H1 Arabic",
+    "text": "# عنوان رئيسي",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "markdown",
+      "heading",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-markdown-list-001",
+    "description": "Reviewed v1.3-Her seed: Bullet Arabic",
+    "text": "- عنصر قائمة",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-markdown-list-002",
+    "description": "Reviewed v1.3-Her seed: Numbered Arabic",
+    "text": "1. العنصر الأول",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "1",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ],
+    "tags": [
+      "ar",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-mixed-en-ar-001",
+    "description": "Reviewed v1.3-Her seed: English in Arabic",
+    "text": "نستخدم Node.js في الخادم.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "Node.js",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "ar",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-mixed-en-ar-002",
+    "description": "Reviewed v1.3-Her seed: React 19",
+    "text": "نستخدم React 19 من Facebook.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "React",
+        "direction": "ltr",
+        "kind": "identifier"
+      },
+      {
+        "text": "19",
+        "direction": "ltr",
+        "kind": "number"
+      },
+      {
+        "text": "Facebook",
+        "direction": "ltr",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "ar",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-mixed-en-ar-003",
+    "description": "Reviewed v1.3-Her seed: TypeScript",
+    "text": "المشروع مكتوب بـ TypeScript بالكامل.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "TypeScript",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "ar",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-mixed-en-ar-004",
+    "description": "Reviewed v1.3-Her seed: English phrase",
+    "text": "هذا ال feature الجديد رائع جداً.",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "feature",
+        "direction": "ltr",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "ar",
+      "mixed-en",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-multi-block-001",
+    "description": "Reviewed v1.3-Her seed: Two Arabic blocks",
+    "text": "الفقرة الأولى.\n\nالفقرة الثانية.",
+    "expected": "rtl",
+    "expectedIsolations": [],
+    "tags": [
+      "ar",
+      "multi-block",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-path-001",
+    "description": "Reviewed v1.3-Her seed: Unix path",
+    "text": "الملف موجود في /usr/bin/node",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "/usr/bin/node",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "ar",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-path-002",
+    "description": "Reviewed v1.3-Her seed: Project path",
+    "text": "الكود موجود في ./src/lib/utils",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "./src/lib/utils",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "ar",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-path-003",
+    "description": "Reviewed v1.3-Her seed: Home path",
+    "text": "ملفاتك في /home/user/docs",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "/home/user/docs",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ],
+    "tags": [
+      "ar",
+      "path",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-url-001",
+    "description": "Reviewed v1.3-Her seed: URL trailing",
+    "text": "زر موقعنا على https://example.com",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ar",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-url-002",
+    "description": "Reviewed v1.3-Her seed: github URL",
+    "text": "المشروع متاح على https://github.com/open-source/library",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://github.com/open-source/library",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ar",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-url-003",
+    "description": "Reviewed v1.3-Her seed: docs URL",
+    "text": "للحصول على المساعدة راجع https://docs.example.org/ar",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "https://docs.example.org/ar",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ar",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-ar-url-004",
+    "description": "Reviewed v1.3-Her seed: localhost",
+    "text": "الخدمة تعمل على http://localhost:3000",
+    "expected": "rtl",
+    "expectedIsolations": [
+      {
+        "text": "http://localhost:3000",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "ar",
+      "url",
+      "v1.3-her-review"
+    ]
+  }
+]

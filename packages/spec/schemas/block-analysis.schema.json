@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:bidilens:schema:0.1:block-analysis",
+  "title": "BidiLens BlockAnalysis",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["text", "direction", "firstStrong", "confidence", "counts", "rawCounts", "paragraphs", "mixed", "policy", "evidence", "isolations", "warnings"],
+  "properties": {
+    "text": { "type": "string" },
+    "direction": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/direction" },
+    "firstStrong": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/direction" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "counts": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/strongCounts" },
+    "rawCounts": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/strongCounts" },
+    "paragraphs": { "type": "array", "items": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/paragraph" } },
+    "mixed": { "type": "boolean" },
+    "policy": { "enum": ["content-majority", "semantic-dominant", "first-strong", "strict-uax9", "majority", "inherit", "ltr", "rtl"] },
+    "evidence": { "type": "array", "items": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/directionEvidence" } },
+    "isolations": { "type": "array", "items": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/inlineIsolation" } },
+    "warnings": { "type": "array", "items": { "$ref": "urn:bidilens:schema:0.1:common#/$defs/securityFinding" } }
+  }
+}

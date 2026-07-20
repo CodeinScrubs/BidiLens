@@ -1,5 +1,9 @@
 node_modules/
 dist/
+!action/dist/
+!action/dist/index.cjs
+!action/dist/index.cjs.map
+!action/dist/index.cjs.LEGAL.txt
 coverage/
 test-results/
 playwright-report/
@@ -8,6 +12,7 @@ playwright-report/
 *.log
 *.tgz
 bidilens-sbom.cdx.json
+benchmarks/results/*.json
 .env
 .env.*
 !.env.example

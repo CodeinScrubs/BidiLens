@@ -14,9 +14,14 @@ been published from this checkout.
 - Added technical-token exclusion, dual UTF-16/code-point evidence ranges,
   directional runs, semantic isolation plans, and specification-oriented API
   aliases.
+- Added versioned language-neutral JSON Schemas for block analysis, security
+  reports, and stream snapshots, with dual-offset isolation ranges.
 - Added paragraph-aware, chunk-invariant streaming with stable settlement,
   completed-block immutability, random UTF-16-boundary properties,
   supplementary-character buffering, and incremental checkpoints.
+- Added atomic `reset(initialText)` replacement across core, React, Vue, and
+  Svelte streaming adapters so regeneration cannot expose a transient empty
+  state.
 
 ### Security
 
@@ -31,17 +36,27 @@ been published from this checkout.
 - Added safe HTML, restorable/observable DOM, unified/remark/rehype,
   markdown-it, React, Vue, Svelte, Web Component, and terminal packages.
 - Added per-structural-block Markdown direction, LTR code policy, inline
-  isolation, XSS-safe rendering, SSR behavior, and framework streaming APIs.
+  isolation, math-node LTR policy, XSS-safe rendering, SSR behavior, and
+  framework streaming APIs.
+- Added a tested single-file Web Component entry for no-build/CDN pages while
+  retaining a deduplicatable normal bundler entry.
+- Added reusable Playwright assertions for block direction, ordered isolation,
+  logical selection/clipboard text, and base-start token geometry; the visual
+  suite now consumes the same public helper API.
 
 ### Evidence and release engineering
 
-- Added 722 schema-validated corpus fixtures, with fixture #001 representing
-  the user flagship and native-review status recorded explicitly.
-- Added 130 unit/property tests with enforced coverage thresholds and 18
-  visual tests across Chromium, Firefox, and WebKit; property seeds make
+- Added 918 schema-validated corpus fixtures, with fixture #001 representing
+  the user flagship, 196 attributed `v1.3-Her` seeds, and native-review status
+  recorded explicitly.
+- Added 179 unit/property/action tests with enforced coverage thresholds and 24
+  visual/browser tests across Chromium, Firefox, and WebKit; property seeds make
   coverage evidence reproducible across consecutive runs.
+- Added strict-mode false-positive regressions for ordinary Persian, Arabic,
+  Hebrew, Urdu, Sindhi, Pashto, Kurdish Sorani, mixed prose, and emoji.
 - Added package-local examples/readmes/licenses, ESM type-layout checks,
-  aggregate bundle budgets, tarball inspection, clean-consumer install,
+  an executable anti-hollow package-depth gate, aggregate bundle budgets,
+  tarball inspection, clean-consumer install,
   strict declaration checking, runtime imports, installed CLI execution, and
   execution of every exact packed example in the isolated consumer.
 - Set the production runtime floor to maintained Node.js 22.12+, test Node 22
@@ -50,3 +65,12 @@ been published from this checkout.
 - Added CycloneDX 1.7 generation/validation, dependency audit, Changesets,
   actionlint-validated GitHub Actions, publishing gates, English/Persian docs,
   accessibility guidance, benchmark matrices, and honest limitations.
+- Added Windows/macOS quality jobs, machine-readable weekly benchmark
+  artifacts, an opt-in Pages demo deployment, mixed-script presets,
+  adjustable streaming, policy/security controls, live four-way input,
+  AST/evidence/isolation/security inspection, an offline searchable 918-case
+  corpus asset, logical-copy verification, semantic HTML/JSON export,
+  shareable state, explicit theme, and English/Persian UI.
+- Added a bundled Node 24 GitHub Action for source audits and corpus tests with
+  JSON/SARIF output, real exit propagation, workspace-contained reports,
+  generated-artifact smoke tests, and explicit third-party notices.

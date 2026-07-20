@@ -3,16 +3,25 @@
   "version": "0.1.0",
   "description": "Framework-independent custom element for bidirectional AI messages.",
   "license": "MIT",
+  "author": { "name": "Shayan SalehiRad", "url": "https://github.com/CodeinScrubs" },
+  "repository": { "type": "git", "url": "git+https://github.com/CodeinScrubs/BidiLens.git", "directory": "packages/web-component" },
+  "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
+  "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
   "type": "module",
-  "sideEffects": ["./dist/index.js"],
+  "sideEffects": ["./dist/index.js", "./dist/standalone.js"],
   "keywords": ["bidi", "rtl", "ltr", "unicode", "web-component", "ai"],
   "files": ["dist", "README.md", "LICENSE", "examples"],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" } },
+  "unpkg": "./dist/standalone.js",
+  "jsdelivr": "./dist/standalone.js",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" },
+    "./standalone": { "types": "./dist/standalone.d.ts", "import": "./dist/standalone.js", "default": "./dist/standalone.js" }
+  },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "build": "node scripts/build.mjs",
     "prepack": "pnpm run build",
     "example": "node examples/basic.mjs"
   },

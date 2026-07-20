@@ -2,21 +2,18 @@
 
 ## Supported versions
 
-No BidiLens package has been published from this checkout. Once `0.1.x` is
-published, the latest patch release will receive security fixes; earlier
-pre-release snapshots will not be supported.
+The source repository is public, but no BidiLens package has been published to
+npm yet. Once `0.1.x` packages are published, the latest patch release will
+receive security fixes; earlier pre-release snapshots will not be supported.
 
 ## Reporting a vulnerability
 
-A private reporting channel is **not configured in this local repository**.
-Before public publication, the maintainer must create the public repository,
-enable GitHub Private Vulnerability Reporting (or document another monitored
-private address), and replace this paragraph with the exact channel and
-response expectations.
-
-Until that channel exists, do not disclose a suspected vulnerability in a
-public issue. This missing private contact is an explicit publication blocker,
-not something the project silently pretends is configured.
+Use [GitHub Private Vulnerability Reporting](https://github.com/CodeinScrubs/BidiLens/security/advisories/new).
+Do not disclose a suspected vulnerability in a public issue. The bootstrap
+maintainer aims to acknowledge a complete report within seven calendar days,
+provide a status update within fourteen days, and coordinate disclosure after
+a fix or documented risk decision. These are response targets, not a paid
+support SLA.
 
 Include a minimal reproduction, affected package/version, expected impact,
 whether untrusted content is required, and any suggested remediation.

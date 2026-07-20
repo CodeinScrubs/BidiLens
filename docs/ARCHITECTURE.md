@@ -19,6 +19,14 @@ source string
 
 The source string is immutable throughout this flow.
 
+`@bidilens/spec` defines the language-neutral boundary for this flow. Its
+versioned JSON Schemas describe block analysis, security reports, and stream
+snapshots using stable URN identifiers. Both evidence and isolation ranges
+carry half-open UTF-16 and Unicode code-point offsets; the legacy top-level
+`start`/`end` isolation offsets remain equivalent to the UTF-16 pair for
+JavaScript ergonomics. The schema tests validate real core output so the
+cross-language contract cannot silently drift from the implementation.
+
 ## Core analysis
 
 `@bidilens/core` has no DOM dependency and exposes four related levels:
@@ -78,6 +86,11 @@ Framework streaming APIs are adapters over the same state machine:
 - Vue `useBidiStream`;
 - Svelte `createStreamingBidiMessage`.
 
+Each adapter's reset operation replaces the current source atomically through
+`reset(initialText)`. It does not emit a transient empty snapshot before the
+replacement text, which matters when an AI response is regenerated or a view
+is reused for a different conversation.
+
 ## Markup adapters
 
 - `@bidilens/html` escapes untrusted text and serializes `<p dir>` plus `<bdi>`
@@ -89,6 +102,13 @@ Framework streaming APIs are adapters over the same state machine:
   markdown-it. Raw HTML is not trusted or interpreted by the plugin.
 - React, Vue, Svelte, and the Web Component consume core analysis directly.
   The Web Component builds nodes rather than interpolating HTML.
+
+The Web Component has two deliberate distribution modes. Its normal entry
+leaves `@bidilens/core` external so application bundlers can deduplicate it.
+Its `standalone`/CDN entry bundles core into one browser-loadable module for
+no-build pages and is minified with a source map. The duplication in the
+standalone artifact is an intentional installation tradeoff, not a second
+implementation of direction policy.
 
 Code-like elements stay LTR and isolated. Block direction is computed for
 paragraphs, headings, list items, blockquotes, and table cells rather than once

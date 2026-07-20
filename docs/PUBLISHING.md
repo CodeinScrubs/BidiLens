@@ -1,24 +1,36 @@
 # Publishing checklist
 
-This checkout prepares artifacts but does not publish them. A human maintainer
-must complete every external prerequisite and approve the release.
+The canonical source is published at
+[`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
+checklist concerns package and release publication; source availability alone
+does not mean npm artifacts exist.
+
+## Completed repository prerequisites
+
+- canonical public repository and real package source/homepage/issue metadata;
+- identified bootstrap maintainer and CODEOWNERS;
+- GitHub Private Vulnerability Reporting and least-privilege workflow defaults;
+- MIT project license plus Unicode and imported-corpus notices;
+- inactive, human-controlled release preparation workflow.
 
 ## External prerequisites
 
-- create the canonical public repository and set its real URL;
 - verify ownership of the `@bidilens` npm organization/scope, or rename every
   package before release;
-- add real `repository`, `homepage`, `bugs`, author/maintainer, and optional
-  funding metadata to every public package;
-- enable a monitored private vulnerability-reporting channel;
 - configure npm trusted publishing/provenance and least-privilege CI
   permissions;
 - protect the release environment and require human approval;
 - complete native-speaker corpus review appropriate for the release claim;
 - decide whether the ESM-only boundary is acceptable for target adopters.
 
-Do not invent placeholder URLs or identities to make metadata validators
-green. Missing real-world identity is safer than publishing false metadata.
+A public `npm view @bidilens/core` lookup returned E404 on 2026-07-20. That
+means no public package was visible at the time of this audit; it does **not**
+reserve the scope, prove organization ownership, or rule out a private package.
+The maintainer must claim/control the scope immediately before publication or
+perform a complete, reviewed rename.
+
+Do not invent registry ownership, package URLs, or adoption to make validators
+green. The GitHub repository is real; the npm scope is still unverified.
 
 ## Reproducible local gate
 
@@ -58,5 +70,17 @@ secrets exist. Once configured:
 6. create a signed/annotated `v0.1.0` tag only for the exact published commit;
 7. record real package URLs and checksums in the release notes.
 
-Nothing in this document authorizes the automated creation of accounts,
-publishing, tagging, or external pull requests.
+Nothing in this document authorizes npm publication, release tagging, or
+external integration pull requests without a separate maintainer decision.
+
+## Optional public demo
+
+The manual `pages.yml` workflow builds the React demo with relative asset URLs
+and deploys it through GitHub Pages. It remains inert until a maintainer sets
+the repository variable `BIDILENS_PAGES_ENABLED=true` and manually dispatches
+the workflow. Review the public repository identity, Pages environment, and
+content before enabling it.
+
+The separate weekly/manual benchmark workflow writes a machine-readable JSON
+artifact for the exact commit and retains it for 30 days. It is evidence for
+regression comparison, not a cross-machine performance guarantee.

@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { findTechnicalTokenRanges } from '../packages/core/src/index.js';
 
@@ -15,7 +15,7 @@ interface Fixture {
   expectedIsolations?: Array<{ text: string; direction: 'ltr' | 'rtl' | 'auto'; kind: string }>;
   expectedSecurityCodes?: string[];
   tags: string[];
-  curation: 'user-provided' | 'authored-template-matrix';
+  curation: 'user-provided' | 'authored-template-matrix' | 'imported-comparison-corpus';
   nativeSpeakerReviewed: boolean;
 }
 
@@ -23,6 +23,15 @@ interface Phrase {
   language: string;
   text: string;
   nativeSpeakerReviewed?: boolean;
+}
+
+interface ReviewedSiblingSeed {
+  id: string;
+  description: string;
+  text: string;
+  expected: Direction;
+  expectedIsolations: NonNullable<Fixture['expectedIsolations']>;
+  tags: string[];
 }
 
 const rtlPhrases: Phrase[] = [
@@ -249,6 +258,32 @@ for (const [id, text, expected, tags] of structuredCases) {
   ));
 }
 
+const siblingSeedDirectory = resolve('corpus', 'v1.3-her-seeds');
+const siblingSeedFiles = (await readdir(siblingSeedDirectory))
+  .filter((file) => file.endsWith('.json'))
+  .sort();
+let siblingSeedCount = 0;
+for (const file of siblingSeedFiles) {
+  const seeds = JSON.parse(await readFile(resolve(siblingSeedDirectory, file), 'utf8')) as ReviewedSiblingSeed[];
+  for (const seed of seeds) {
+    fixtures.push(makeFixture(
+      seed.id,
+      seed.description,
+      seed.text,
+      seed.expected,
+      seed.tags,
+      {
+        curation: 'imported-comparison-corpus',
+        expectedIsolations: seed.expectedIsolations
+      }
+    ));
+    siblingSeedCount += 1;
+  }
+}
+if (siblingSeedCount !== 196) {
+  throw new Error(`Expected 196 reviewed v1.3-Her seeds; received ${siblingSeedCount}.`);
+}
+
 for (const [index, token] of technicalTokens.entries()) {
   fixtures.push(makeFixture(
     `neutral-technical-${String(index + 1).padStart(2, '0')}`,
@@ -279,4 +314,8 @@ const cliCorpus = resolve('packages', 'cli', 'corpus', 'cases.json');
 await mkdir(resolve('packages', 'cli', 'corpus'), { recursive: true });
 await writeFile(rootCorpus, serialized, 'utf8');
 await writeFile(cliCorpus, serialized, 'utf8');
+await copyFile(
+  resolve(siblingSeedDirectory, 'LICENSE-APACHE-2.0.txt'),
+  resolve('packages', 'cli', 'corpus', 'LICENSE-APACHE-2.0.txt')
+);
 console.log(`Generated ${fixtures.length} deterministic corpus fixtures in both release locations.`);

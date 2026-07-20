@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:bidilens:schema:0.1:index",
+  "title": "Any BidiLens v0.1 output",
+  "oneOf": [
+    { "$ref": "urn:bidilens:schema:0.1:block-analysis" },
+    { "$ref": "urn:bidilens:schema:0.1:security-report" },
+    { "$ref": "urn:bidilens:schema:0.1:stream-snapshot" }
+  ]
+}

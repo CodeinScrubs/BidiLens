@@ -1,0 +1,38 @@
+{
+  "name": "@bidilens/playwright",
+  "version": "0.1.0",
+  "description": "Reusable Playwright assertions for mixed RTL/LTR rendering, isolation, selection, and clipboard invariants.",
+  "license": "MIT",
+  "author": { "name": "Shayan SalehiRad", "url": "https://github.com/CodeinScrubs" },
+  "repository": { "type": "git", "url": "git+https://github.com/CodeinScrubs/BidiLens.git", "directory": "packages/playwright" },
+  "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
+  "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
+  "type": "module",
+  "sideEffects": false,
+  "keywords": ["bidi", "rtl", "ltr", "unicode", "playwright", "testing"],
+  "files": ["dist", "README.md", "LICENSE", "examples"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
+    "prepack": "pnpm run build",
+    "example": "node examples/basic.mjs"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.50.0 <2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "tsup": "^8.5.1"
+  },
+  "engines": { "node": ">=22.12.0" },
+  "publishConfig": { "access": "public" }
+}

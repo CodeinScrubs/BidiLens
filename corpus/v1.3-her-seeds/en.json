@@ -1,0 +1,434 @@
+[
+  {
+    "id": "v13-en-embedded-rtl-001",
+    "description": "Reviewed v1.3-Her seed: Persian word",
+    "text": "The word سلام means hello.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "سلام",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "en",
+      "embedded-rtl",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-embedded-rtl-002",
+    "description": "Reviewed v1.3-Her seed: Arabic phrase",
+    "text": "They say مرحبا when greeting.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "مرحبا",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "en",
+      "embedded-rtl",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-embedded-rtl-003",
+    "description": "Reviewed v1.3-Her seed: Hebrew word",
+    "text": "The word שלום is peace.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "שלום",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "en",
+      "embedded-rtl",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-embedded-rtl-004",
+    "description": "Reviewed v1.3-Her seed: Urdu word",
+    "text": "We say ہیلو for hello in Urdu.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "ہیلو",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "en",
+      "embedded-rtl",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-embedded-rtl-005",
+    "description": "Reviewed v1.3-Her seed: Full Arabic phrase",
+    "text": "He said مرحبا بك and left.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "مرحبا بك",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "en",
+      "embedded-rtl",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-everyday-prose-001",
+    "description": "Reviewed v1.3-Her seed: Pure English",
+    "text": "This is a test.",
+    "expected": "ltr",
+    "expectedIsolations": [],
+    "tags": [
+      "en",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-everyday-prose-002",
+    "description": "Reviewed v1.3-Her seed: Greeting",
+    "text": "Hello world.",
+    "expected": "ltr",
+    "expectedIsolations": [],
+    "tags": [
+      "en",
+      "prose",
+      "greeting",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-everyday-prose-003",
+    "description": "Reviewed v1.3-Her seed: Long",
+    "text": "We are building a bidirectional toolkit for AI chat interfaces.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "AI",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ],
+    "tags": [
+      "en",
+      "prose",
+      "long",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-everyday-prose-004",
+    "description": "Reviewed v1.3-Her seed: Question",
+    "text": "What time is it?",
+    "expected": "ltr",
+    "expectedIsolations": [],
+    "tags": [
+      "en",
+      "prose",
+      "question",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-everyday-prose-005",
+    "description": "Reviewed v1.3-Her seed: Exclamation",
+    "text": "Awesome!",
+    "expected": "ltr",
+    "expectedIsolations": [],
+    "tags": [
+      "en",
+      "prose",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-inline-code-001",
+    "description": "Reviewed v1.3-Her seed: npm install",
+    "text": "Run `npm install` to start.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "`npm install`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "en",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-inline-code-002",
+    "description": "Reviewed v1.3-Her seed: git clone",
+    "text": "Run `git clone https://example.org/repo`.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "`git clone https://example.org/repo`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "en",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-inline-code-003",
+    "description": "Reviewed v1.3-Her seed: Multi cmd",
+    "text": "Run `npm run build && npm test`.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "`npm run build && npm test`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "en",
+      "markdown",
+      "inline-code",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-markdown-bold-001",
+    "description": "Reviewed v1.3-Her seed: Bold English",
+    "text": "**Bold text here**",
+    "expected": "ltr",
+    "expectedIsolations": [],
+    "tags": [
+      "en",
+      "markdown",
+      "bold",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-markdown-heading-001",
+    "description": "Reviewed v1.3-Her seed: H1 English",
+    "text": "# Project Title",
+    "expected": "ltr",
+    "expectedIsolations": [],
+    "tags": [
+      "en",
+      "markdown",
+      "heading",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-markdown-list-001",
+    "description": "Reviewed v1.3-Her seed: Bullet English",
+    "text": "- First item",
+    "expected": "ltr",
+    "expectedIsolations": [],
+    "tags": [
+      "en",
+      "markdown",
+      "list",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-mixed-001",
+    "description": "Reviewed v1.3-Her seed: EN with URL + RTL",
+    "text": "Click https://example.com to read about سلام meaning.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      },
+      {
+        "text": "سلام",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "en",
+      "mixed",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-mixed-002",
+    "description": "Reviewed v1.3-Her seed: EN heading with embedded Hebrew",
+    "text": "# Welcome to שלום world",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "שלום",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ],
+    "tags": [
+      "en",
+      "markdown",
+      "heading",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-mixed-003",
+    "description": "Reviewed v1.3-Her seed: EN list with URLs",
+    "text": "- See https://react.dev for docs",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "https://react.dev",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "en",
+      "markdown",
+      "list",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-technical-001",
+    "description": "Reviewed v1.3-Her seed: Pure URL",
+    "text": "https://example.com/foo/bar?baz=1",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com/foo/bar?baz=1",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "en",
+      "technical",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-technical-002",
+    "description": "Reviewed v1.3-Her seed: Code with Persian literal",
+    "text": "`console.log(\"سلام\")`",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "`console.log(\"سلام\")`",
+        "direction": "ltr",
+        "kind": "code"
+      }
+    ],
+    "tags": [
+      "en",
+      "technical",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-technical-003",
+    "description": "Reviewed v1.3-Her seed: Version string",
+    "text": "version 2.0.1",
+    "expected": "neutral",
+    "expectedIsolations": [
+      {
+        "text": "version",
+        "direction": "ltr",
+        "kind": "identifier"
+      },
+      {
+        "text": "2.0.1",
+        "direction": "ltr",
+        "kind": "version"
+      }
+    ],
+    "tags": [
+      "en",
+      "technical",
+      "version",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-url-001",
+    "description": "Reviewed v1.3-Her seed: URL trailing",
+    "text": "Visit https://example.com for info.",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "https://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "en",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-url-002",
+    "description": "Reviewed v1.3-Her seed: Deep URL",
+    "text": "See https://docs.example.org/api/v2/endpoints",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "https://docs.example.org/api/v2/endpoints",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "en",
+      "url",
+      "v1.3-her-review"
+    ]
+  },
+  {
+    "id": "v13-en-url-003",
+    "description": "Reviewed v1.3-Her seed: Localhost",
+    "text": "Server is on http://localhost:3000",
+    "expected": "ltr",
+    "expectedIsolations": [
+      {
+        "text": "http://localhost:3000",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ],
+    "tags": [
+      "en",
+      "url",
+      "v1.3-her-review"
+    ]
+  }
+]

@@ -8,26 +8,38 @@ import process from 'node:process';
 interface PackageManifest {
   name: string;
   version: string;
+  author?: string | { name?: string; url?: string };
+  repository?: string | { type?: string; url?: string; directory?: string };
+  homepage?: string;
+  bugs?: string | { url?: string };
   files?: string[];
   bin?: Record<string, string>;
   exports?: unknown;
   scripts?: Record<string, string>;
   dependencies?: Record<string, string>;
   engines?: { node?: string };
+  unpkg?: string;
+  jsdelivr?: string;
+  sideEffects?: boolean | string[];
 }
 
 const root = process.cwd();
 const allowDirty = process.argv.includes('--allow-dirty');
+const CANONICAL_REPOSITORY = 'git+https://github.com/CodeinScrubs/BidiLens.git';
+const CANONICAL_HOMEPAGE = 'https://github.com/CodeinScrubs/BidiLens#readme';
+const CANONICAL_ISSUES = 'https://github.com/CodeinScrubs/BidiLens/issues';
 const DIST_BUDGETS = new Map<string, number>([
   ['@bidilens/core', 64 * 1024],
   ['@bidilens/dom', 16 * 1024],
   ['@bidilens/html', 12 * 1024],
   ['@bidilens/markdown', 24 * 1024],
+  ['@bidilens/playwright', 16 * 1024],
   ['@bidilens/react', 16 * 1024],
+  ['@bidilens/spec', 24 * 1024],
   ['@bidilens/svelte', 8 * 1024],
   ['@bidilens/terminal', 8 * 1024],
   ['@bidilens/vue', 12 * 1024],
-  ['@bidilens/web-component', 8 * 1024],
+  ['@bidilens/web-component', 80 * 1024],
   ['@bidilens/cli', 32 * 1024]
 ]);
 
@@ -94,13 +106,35 @@ async function validatePackageSources(packages: Awaited<ReturnType<typeof packag
     assert(manifest.version === '0.1.0', `${manifest.name}: version must be aligned at 0.1.0.`);
     assert(manifest.engines?.node === '>=22.12.0', `${manifest.name}: supported Node floor must be >=22.12.0.`);
     assert(manifest.exports !== undefined, `${manifest.name}: exports map is required.`);
+    assert(typeof manifest.author === 'object'
+      && manifest.author.name === 'Shayan SalehiRad'
+      && manifest.author.url === 'https://github.com/CodeinScrubs', `${manifest.name}: real maintainer metadata is required.`);
+    assert(typeof manifest.repository === 'object'
+      && manifest.repository.type === 'git'
+      && manifest.repository.url === CANONICAL_REPOSITORY
+      && manifest.repository.directory === `packages/${basename(directory)}`, `${manifest.name}: canonical repository metadata is invalid.`);
+    assert(manifest.homepage === CANONICAL_HOMEPAGE, `${manifest.name}: canonical homepage metadata is invalid.`);
+    assert(typeof manifest.bugs === 'object' && manifest.bugs.url === CANONICAL_ISSUES, `${manifest.name}: canonical issue URL is invalid.`);
     assert(manifest.files?.includes('dist'), `${manifest.name}: dist must be in files.`);
     assert(manifest.files?.includes('LICENSE'), `${manifest.name}: LICENSE must be packed.`);
     if (manifest.name === '@bidilens/core') {
       assert(manifest.files?.includes('THIRD_PARTY_NOTICES.md'), `${manifest.name}: Unicode notice must be packed.`);
     }
     if (manifest.name === '@bidilens/cli') {
+      assert(manifest.files?.includes('THIRD_PARTY_NOTICES.md'), `${manifest.name}: corpus notice must be packed.`);
+    }
+    if (manifest.name === '@bidilens/cli') {
       assert(manifest.bin?.bidilens === './dist/bin.js', `${manifest.name}: bidilens executable must target dist/bin.js.`);
+    }
+    if (manifest.name === '@bidilens/web-component') {
+      assert(manifest.unpkg === './dist/standalone.js', `${manifest.name}: unpkg must select the bundled standalone entry.`);
+      assert(manifest.jsdelivr === './dist/standalone.js', `${manifest.name}: jsdelivr must select the bundled standalone entry.`);
+      assert(Array.isArray(manifest.sideEffects)
+        && manifest.sideEffects.includes('./dist/index.js')
+        && manifest.sideEffects.includes('./dist/standalone.js'), `${manifest.name}: both auto-registration entries must be retained as side effects.`);
+    }
+    if (manifest.name === '@bidilens/spec') {
+      assert(manifest.files?.includes('schemas'), `${manifest.name}: language-neutral schemas must be packed.`);
     }
     assert(manifest.files?.includes('examples'), `${manifest.name}: runnable examples must be packed.`);
     assert(manifest.scripts?.prepack, `${manifest.name}: prepack must build from a clean checkout.`);
@@ -121,7 +155,22 @@ async function inspectTarball(tarball: string, manifest: PackageManifest): Promi
     assert(entries.includes('package/THIRD_PARTY_NOTICES.md'), `${manifest.name}: tarball is missing Unicode attribution.`);
   }
   if (manifest.name === '@bidilens/cli') {
+    assert(entries.includes('package/THIRD_PARTY_NOTICES.md'), `${manifest.name}: tarball is missing corpus attribution.`);
+    assert(entries.includes('package/corpus/LICENSE-APACHE-2.0.txt'), `${manifest.name}: tarball is missing the imported corpus license.`);
+  }
+  if (manifest.name === '@bidilens/cli') {
     assert(entries.includes('package/dist/bin.js'), `${manifest.name}: tarball is missing the executable entry.`);
+  }
+  if (manifest.name === '@bidilens/web-component') {
+    assert(entries.includes('package/dist/standalone.js'), `${manifest.name}: tarball is missing the standalone browser entry.`);
+    assert(entries.includes('package/dist/standalone.d.ts'), `${manifest.name}: tarball is missing standalone declarations.`);
+    const standalone = await command('tar', ['-xOf', tarball, 'package/dist/standalone.js']);
+    assert(!/["']@bidilens\//u.test(standalone), `${manifest.name}: standalone browser entry contains a bare @bidilens import.`);
+  }
+  if (manifest.name === '@bidilens/spec') {
+    for (const schema of ['common', 'block-analysis', 'security-report', 'stream-snapshot', 'index']) {
+      assert(entries.includes(`package/schemas/${schema}.schema.json`), `${manifest.name}: tarball is missing ${schema}.schema.json.`);
+    }
   }
   assert(entries.includes('package/examples/basic.mjs'), `${manifest.name}: tarball is missing examples/basic.mjs.`);
   const packedManifest = JSON.parse(await command('tar', ['-xOf', tarball, 'package/package.json'])) as PackageManifest;
@@ -153,6 +202,7 @@ async function verifyConsumer(tarballs: Map<string, string>, consumer: string): 
     [...tarballs].map(([name, tarball]) => [name, fileDependency(tarball)])
   );
   Object.assign(dependencies, {
+    '@playwright/test': '1.61.1',
     '@vue/server-renderer': '3.5.40',
     jsdom: '29.1.1',
     'markdown-it': '14.3.0',
@@ -195,11 +245,14 @@ import { analyzeBlock, createBidiStream } from '@bidilens/core';
 import { applyBidi } from '@bidilens/dom';
 import { renderBidiHtml } from '@bidilens/html';
 import { markdownItBidi, rehypeBidi, remarkBidi } from '@bidilens/markdown';
+import { expectBidiBlock, expectLogicalSelection, expectTokenAtBaseStart } from '@bidilens/playwright';
 import { BidiMessage as ReactBidiMessage, useBidiStream as useReactBidiStream } from '@bidilens/react';
+import { schemaIds, schemas } from '@bidilens/spec';
 import { createBidiMessage, createStreamingBidiMessage } from '@bidilens/svelte';
 import { formatTerminalText } from '@bidilens/terminal';
 import { BidiMessage as VueBidiMessage, useBidiDirection, useBidiStream as useVueBidiStream } from '@bidilens/vue';
 import { BidiMessageElement, defineBidiMessageElement } from '@bidilens/web-component';
+import { defineBidiMessageElement as defineStandaloneBidiMessageElement } from '@bidilens/web-component/standalone';
 import { runCli } from '@bidilens/cli';
 
 const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
@@ -211,7 +264,9 @@ createStreamingBidiMessage().push(source);
 formatTerminalText(source);
 useBidiDirection(source);
 void [applyBidi, markdownItBidi, rehypeBidi, remarkBidi, ReactBidiMessage, useReactBidiStream,
-  VueBidiMessage, useVueBidiStream, BidiMessageElement, defineBidiMessageElement, runCli];
+  VueBidiMessage, useVueBidiStream, BidiMessageElement, defineBidiMessageElement,
+  defineStandaloneBidiMessageElement, expectBidiBlock, expectLogicalSelection,
+  expectTokenAtBaseStart, runCli, schemaIds, schemas];
 `);
   await writeFile(resolve(consumer, 'index.mjs'), `
 import { strict as assert } from 'node:assert';
@@ -219,18 +274,23 @@ import { analyzeBlock, createBidiStream } from '@bidilens/core';
 import { renderBidiHtml } from '@bidilens/html';
 import { formatTerminalText } from '@bidilens/terminal';
 import { createBidiMessage } from '@bidilens/svelte';
+import { schemaIds, schemas } from '@bidilens/spec';
 import { get } from 'svelte/store';
 await import('@bidilens/dom');
 await import('@bidilens/markdown');
+await import('@bidilens/playwright');
 await import('@bidilens/react');
 await import('@bidilens/vue');
 await import('@bidilens/web-component');
+await import('@bidilens/web-component/standalone');
 await import('@bidilens/cli');
 const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 assert.equal(analyzeBlock(source).direction, 'rtl');
 assert.equal(renderBidiHtml(source).blocks[0].direction, 'rtl');
 assert.equal(formatTerminalText(source).text, source);
 assert.equal(get(createBidiMessage(source)).direction, 'rtl');
+assert.equal(schemas.length, 5);
+assert.match(schemaIds.blockAnalysis, /block-analysis/);
 const stream = createBidiStream();
 for (const character of source) stream.push(character);
 assert.equal(stream.finish().direction, 'rtl');
@@ -265,6 +325,7 @@ async function main(): Promise<void> {
   const packages = await packageManifests();
   await validatePackageSources(packages);
   await command('pnpm', ['run', 'build']);
+  await command('pnpm', ['run', 'action:check']);
   await validateBuiltSizes(packages);
 
   const temporary = await mkdtemp(join(tmpdir(), 'bidilens-release-check-'));
@@ -289,7 +350,7 @@ async function main(): Promise<void> {
     await rm(temporary, { recursive: true, force: true });
   }
   console.log(`Release artifacts verified for ${packages.length} packages with a clean TypeScript/runtime/CLI consumer and all packed examples executed.`);
-  console.warn('External publication still requires a real repository URL, npm scope ownership, provenance configuration, credentials, and a human release decision.');
+  console.warn('npm publication still requires @bidilens scope ownership, provenance configuration, credentials, and a human release decision.');
 }
 
 await main();

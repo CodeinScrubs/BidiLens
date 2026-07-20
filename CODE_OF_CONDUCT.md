@@ -28,7 +28,9 @@ permanently exclude a participant, proportionate to impact and repeated
 behavior. Enforcement decisions should be documented privately, avoid
 retaliation, and allow recusal when a maintainer is involved.
 
-A private conduct-reporting channel is not configured in this local checkout.
-The public repository owner must configure and name a monitored private channel
-before inviting public participation. Until then, do not include sensitive
-personal details in a public issue. Security reports follow [SECURITY.md](SECURITY.md).
+For misconduct occurring in this repository, use GitHub's private
+[Report Abuse](https://support.github.com/contact/report-abuse) flow and include
+links to the relevant content. Do not put sensitive personal details in a
+public issue. Security reports follow [SECURITY.md](SECURITY.md). The project
+will document an additional maintainer-controlled private conduct channel if
+community activity expands beyond GitHub.

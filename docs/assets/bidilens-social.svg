@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title description">
+  <title id="title">BidiLens</title>
+  <desc id="description">Standards-first mixed RTL and LTR text infrastructure for AI interfaces.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#080b18"/>
+      <stop offset="0.55" stop-color="#151337"/>
+      <stop offset="1" stop-color="#082d3b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="640" rx="36" fill="url(#background)"/>
+  <circle cx="1040" cy="95" r="180" fill="#8b5cf6" opacity="0.12" filter="url(#glow)"/>
+  <circle cx="170" cy="600" r="210" fill="#22d3ee" opacity="0.10" filter="url(#glow)"/>
+
+  <g transform="translate(92 112)">
+    <rect width="190" height="190" rx="48" fill="#11152c" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M42 62h99l-19-19m19 19-19 19" fill="none" stroke="#22d3ee" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M148 128H49l19 19m-19-19 19-19" fill="none" stroke="#a78bfa" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="95" cy="95" r="12" fill="#f8fafc"/>
+  </g>
+
+  <text x="330" y="215" fill="#f8fafc" font-family="Segoe UI, Arial, sans-serif" font-size="92" font-weight="750" letter-spacing="-3">BidiLens</text>
+  <rect x="334" y="245" width="420" height="8" rx="4" fill="url(#accent)"/>
+  <text x="334" y="314" fill="#cbd5e1" font-family="Segoe UI, Arial, sans-serif" font-size="34">Mixed-direction text, structurally correct.</text>
+
+  <g transform="translate(92 392)">
+    <rect width="1096" height="132" rx="24" fill="#0b1022" stroke="#334155"/>
+    <text x="42" y="58" fill="#94a3b8" font-family="Consolas, monospace" font-size="25">content-majority  •  semantic isolation  •  streaming  •  security</text>
+    <foreignObject x="42" y="66" width="1006" height="45">
+      <div xmlns="http://www.w3.org/1999/xhtml" dir="rtl" style="color:#f8fafc;font:30px 'Segoe UI',Tahoma,Arial,sans-serif;text-align:right;white-space:nowrap">React یک کتابخانه جاوااسکریپت بسیار محبوب است.</div>
+    </foreignObject>
+    <rect x="40" y="114" width="1008" height="4" rx="2" fill="url(#accent)" opacity="0.72"/>
+  </g>
+  <text x="92" y="584" fill="#94a3b8" font-family="Segoe UI, Arial, sans-serif" font-size="22">Unicode 17.0 • source-preserving • offline • MIT licensed</text>
+</svg>

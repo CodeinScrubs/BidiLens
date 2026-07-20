@@ -30,6 +30,7 @@ describe('BidiMessageElement', () => {
     document.body.append(element);
     expect(element.querySelector('bdi')?.textContent).toBe('React');
     expect(element.querySelector('bdi')?.dir).toBe('ltr');
+    expect((element.querySelector('bdi') as HTMLElement | null)?.dataset.bidilensKind).toBe('identifier');
     expect(element.textContent).toBe(source);
   });
 
@@ -48,6 +49,7 @@ describe('BidiMessageElement', () => {
     expect(element.dir).toBe('rtl');
     expect(element.querySelector('bdi')?.textContent).toBe('https://example.com');
     expect(element.querySelector('bdi')?.dir).toBe('ltr');
+    expect((element.querySelector('bdi') as HTMLElement | null)?.dataset.bidilensKind).toBe('url');
     expect(element.textContent).toBe('برای مستندات https://example.com مراجعه کنید.');
   });
 

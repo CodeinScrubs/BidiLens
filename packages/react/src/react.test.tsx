@@ -17,6 +17,7 @@ describe('React adapter', () => {
     expect(html).toContain('dir="rtl"');
     expect(html).toContain('<bdi');
     expect(html).toContain('>React</bdi>');
+    expect(html).toContain('data-bidilens-kind="identifier"');
     expect(html).not.toContain('unicode-bidi:plaintext');
   });
 

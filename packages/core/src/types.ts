@@ -78,8 +78,11 @@ export type InlineIsolationKind =
 export interface InlineIsolation {
   text: string;
   direction: ResolvedDirection;
+  /** Legacy half-open UTF-16 offsets retained for ergonomic JS consumers. */
   start: number;
   end: number;
+  /** Language-neutral dual offsets for cross-platform implementations. */
+  sourceRange: BidiSourceRange;
   kind: InlineIsolationKind;
 }
 
