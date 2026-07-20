@@ -39,5 +39,5 @@ jobs:
           if-no-files-found: error
 
       # Publication is intentionally absent. Add trusted publishing only after
-      # real repository metadata, npm scope ownership, provenance, a private
-      # security channel, and a protected human-approved environment exist.
+      # @bidilens npm scope ownership, provenance configuration, and a protected
+      # human-approved release environment exist.
