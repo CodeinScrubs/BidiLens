@@ -57,11 +57,12 @@ describe('BidiLens GitHub Action', () => {
 
   it('uses the action-owned canonical corpus by default', () => {
     const inputs = readActionInputs({ INPUT_COMMAND: 'test', INPUT_FORMAT: 'json' });
+    const actionPath = resolve(tmpdir(), 'bidilens-action', 'action');
     const args = buildCliArguments(inputs, {
-      GITHUB_ACTION_PATH: 'C:/actions/bidilens/action'
+      GITHUB_ACTION_PATH: actionPath
     });
     expect(args.slice(0, 4)).toEqual(['node', 'bidilens', 'test', '--corpus']);
-    expect(args[4]?.replaceAll('\\', '/')).toBe('C:/actions/bidilens/corpus/cases.json');
+    expect(args[4]).toBe(resolve(actionPath, '..', 'corpus', 'cases.json'));
     expect(args.at(-1)).toBe('--json');
   });
 

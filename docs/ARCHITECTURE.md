@@ -80,6 +80,13 @@ its low half, a non-low successor, paragraph completion, or `finish()` arrives;
 this keeps live decisions invariant even when callers split a supplementary
 Unicode character between code units.
 
+The optimized default newline separator completes paragraphs incrementally.
+Custom JavaScript regular expressions are evaluated once at `finish()` because
+an arbitrary match may depend on future input through lookarounds, anchors, or
+an extendable match. Before finalization, the unresolved custom-separated
+source remains one open paragraph. This explicit tradeoff preserves arbitrary
+chunk-boundary invariance and linear append behavior.
+
 Framework streaming APIs are adapters over the same state machine:
 
 - React `useBidiStream`;

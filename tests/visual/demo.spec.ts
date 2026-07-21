@@ -67,6 +67,11 @@ test('exercises the offline bilingual playground, controls, corpus, copy, and ex
   await search.fill('fa-flagship-001');
   await expect(page.locator('.corpus-case')).toHaveCount(1);
   await expect(page.locator('.corpus-case')).toContainText('fa-flagship-001');
+  await expectBidiBlock(page.locator('.corpus-case p'), {
+    text: FLAGSHIP,
+    direction: 'rtl',
+    isolations: [{ text: 'React', direction: 'ltr', kind: 'identifier', tagName: 'bdi' }]
+  });
   await page.locator('.corpus-case').getByRole('button', { name: 'Load' }).click();
   await expect(input).toHaveValue(FLAGSHIP);
 

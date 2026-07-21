@@ -73,6 +73,9 @@ will achieve the same ratio.
 - release checks enforce aggregate emitted-JavaScript budgets, including
   code-split chunks.
 
-A custom arbitrary paragraph-separator regular expression may require more
-open-paragraph work than the optimized default. Benchmark custom separators in
-the consuming application.
+The default newline separator is recognized incrementally. An arbitrary custom
+paragraph-separator regular expression is buffered and evaluated once by
+`finish()`. This preserves chunk-boundary invariance for future-sensitive
+lookarounds, anchors, and extendable matches without reparsing the accumulated
+paragraph after every chunk. Applications that require live custom boundaries
+should split those boundaries upstream and feed the default paragraph stream.

@@ -52,7 +52,7 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
-| Vitest within `check` | 15 files, 179 tests pass |
+| Vitest within `check` | 15 files, 182 tests pass |
 | Coverage (seeded run) | 88.12% statements, 77.66% branches, 90.68% functions, 92.56% lines; core 95.15%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 918/918; 0 native-speaker-reviewed |
 | `pnpm run test:visual` | 24/24 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS, including real standalone-module loading and the bilingual playground's controls/corpus/copy/theme/exports; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |

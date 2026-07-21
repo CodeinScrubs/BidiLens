@@ -367,7 +367,7 @@ export function App() {
 
       <section className="panel corpus-panel">
         <div className="panel-title"><div><span>{t.corpus}</span><small>{t.corpusHelp}</small></div><input className="corpus-search" aria-label={t.corpusSearch} placeholder={t.corpusSearch} value={corpusQuery} onChange={(event) => setCorpusQuery(event.target.value)} /></div>
-        <div className="corpus-results">{filteredCorpus.map((fixture) => <article key={fixture.id} className="corpus-case"><div><strong>{fixture.id}</strong><span className={`direction-badge ${fixture.expected}`}>{fixture.expected}</span></div><p dir="auto">{fixture.text}</p><small>{fixture.description} · {fixture.tags.join(', ')}{fixture.nativeSpeakerReviewed ? ` · ${t.reviewed}` : ''}</small><button className="secondary" onClick={() => setMarkdown(fixture.text)}>{t.load}</button></article>)}</div>
+        <div className="corpus-results">{filteredCorpus.map((fixture) => <article key={fixture.id} className="corpus-case"><div><strong>{fixture.id}</strong><span className={`direction-badge ${fixture.expected}`}>{fixture.expected}</span></div><BidiMessage as="p" text={fixture.text} forceDirection={fixture.expected} fallback="neutral" /><small>{fixture.description} · {fixture.tags.join(', ')}{fixture.nativeSpeakerReviewed ? ` · ${t.reviewed}` : ''}</small><button className="secondary" onClick={() => setMarkdown(fixture.text)}>{t.load}</button></article>)}</div>
       </section>
 
       <section className="panel examples">

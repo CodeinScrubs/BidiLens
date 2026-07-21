@@ -58,7 +58,7 @@ export class BidiStream {
     this.#strategy = options.strategy ?? 'content-majority';
     this.#fallback = options.fallback ?? 'ltr';
     this.#separator = options.paragraphSeparator ?? DEFAULT_SEPARATOR;
-    this.#usesDefaultSeparator = this.#separator.source === DEFAULT_SEPARATOR_SOURCE;
+    this.#usesDefaultSeparator = options.paragraphSeparator === undefined;
     this.#threshold = Math.min(1, Math.max(0.5, options.majorityThreshold ?? 0.5));
     // A single short opposite-language word should remain provisional. Eight
     // strong characters and a margin of three settle the flagship promptly
@@ -74,7 +74,7 @@ export class BidiStream {
     const previous = this.#direction;
     this.#text += chunk;
     if (this.#usesDefaultSeparator) this.#consumeDefaultSeparators(chunk, false);
-    else this.#consumeCustomSeparators(chunk);
+    else this.#appendCurrent(chunk);
     this.#lastChanged = previous !== this.#direction;
     return this.snapshot();
   }
@@ -99,7 +99,10 @@ export class BidiStream {
 
   /** Finalizes the open paragraph and reconciles it with batch analysis. */
   finish(): BidiStreamSnapshot {
-    if (!this.#finished && this.#pendingCarriageReturn) this.#consumeDefaultSeparators('', true);
+    if (!this.#finished) {
+      if (this.#pendingCarriageReturn) this.#consumeDefaultSeparators('', true);
+      if (!this.#usesDefaultSeparator) this.#finalizeCustomSeparators();
+    }
     this.#flushPendingHighSurrogate();
     const previous = this.#direction;
     this.#direction = detectForStrategy(this.#currentText, this.#strategy, this.#fallback, this.#threshold);
@@ -218,8 +221,8 @@ export class BidiStream {
     this.#appendCurrent(combined.slice(start));
   }
 
-  #consumeCustomSeparators(chunk: string): void {
-    const combined = `${this.#currentText}${chunk}`;
+  #finalizeCustomSeparators(): void {
+    const combined = this.#currentText;
     const separator = normalizedSeparator(this.#separator);
     this.#currentText = '';
     this.#pendingHighSurrogate = null;
@@ -235,7 +238,12 @@ export class BidiStream {
       this.#appendCurrent(combined.slice(start, match.index));
       this.#completeCurrentParagraph();
       start = match.index + match[0].length;
-      if (match[0].length === 0) separator.lastIndex += 1;
+      if (match[0].length === 0) {
+        const codePoint = combined.codePointAt(separator.lastIndex);
+        const unicodeSets = (separator as RegExp & { readonly unicodeSets?: boolean }).unicodeSets === true;
+        const unicodeAware = separator.unicode || unicodeSets;
+        separator.lastIndex += unicodeAware && codePoint !== undefined && codePoint > 0xffff ? 2 : 1;
+      }
     }
     this.#appendCurrent(combined.slice(start));
   }

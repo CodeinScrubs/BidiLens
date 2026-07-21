@@ -94,9 +94,9 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
-| Arbitrary chunk-boundary invariance | Complete for direction/text stream | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits and paragraph separators |
+| Arbitrary chunk-boundary invariance | Complete for direction/text stream | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits and default paragraph separators; future-sensitive custom regular expressions are buffered and split once at `finish()` |
 | Stable live rendering and flagship transition | Complete for direction/text stream | Source-position checkpoints; completed blocks immutable; flagship moves provisional LTR → locked RTL once |
-| Incremental performance without full-document reparse per token | Complete for direction/text stream | Incremental state machine and 1-char/1,000-chunk benchmarks; no accumulated document reparse |
+| Incremental performance without full-document reparse per token | Complete for direction/text stream | Incremental state machine and 1-char/1,000-chunk benchmarks; custom-regex pushes have an 8,000-character regression alarm and defer one full split to `finish()` |
 | Final stream equals batch for source and directions | Complete and tested | Core properties and framework adapter tests |
 | Final stream equals batch for Markdown AST, isolation, security, and HTML | Missing | No rich Markdown stream update type or parser state exists yet |
 

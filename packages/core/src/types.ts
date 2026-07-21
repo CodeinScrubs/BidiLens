@@ -91,6 +91,12 @@ export type StreamStrategy = 'content-majority' | 'semantic-dominant' | 'first-s
 export interface BidiStreamOptions {
   strategy?: StreamStrategy;
   fallback?: Direction;
+  /**
+   * Paragraph separator used when `finish()` reconciles the complete source.
+   * The default newline separator is recognized incrementally. An arbitrary
+   * custom RegExp is intentionally finalized only at end-of-stream because
+   * lookarounds, anchors, and extendable matches can depend on future chunks.
+   */
   paragraphSeparator?: RegExp;
   majorityThreshold?: number;
   /** Evidence required before the default live direction locks. */

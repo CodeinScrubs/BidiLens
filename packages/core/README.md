@@ -27,6 +27,12 @@ stream.push('old response');
 stream.reset(source); // clear and analyze replacement text atomically
 ```
 
+The default newline paragraph separator is recognized incrementally. A custom
+`paragraphSeparator` regular expression is evaluated once by `finish()` so
+future-sensitive lookarounds, anchors, and extendable matches remain invariant
+across arbitrary source chunking. Until then, custom-separated input is exposed
+as one unresolved open paragraph.
+
 The default `content-majority` policy excludes technical tokens before
 counting natural-language evidence. Use `first-strong` or `strict-uax9` only
 when compatibility with first-strong host behavior is required.

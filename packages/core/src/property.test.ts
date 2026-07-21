@@ -96,6 +96,34 @@ describe('property-based invariants', () => {
     ), { numRuns: 300, endOnFailure: true, seed: 0x51d10002 });
   });
 
+  it('keeps arbitrary custom-regex finalization invariant across random chunks', () => {
+    const sourceArbitrary = fc.array(fc.constantFrom(
+      'a', 'x', 'y', ' ', '\n', 'سلام', 'React', '😀'
+    ), { maxLength: 40 }).map((parts) => parts.join(''));
+    const separatorArbitrary = fc.constantFrom(
+      'x(?!y)', 'x(?=y)', 'x+', '(x)', '(?=y)', '^', '$'
+    );
+
+    fc.assert(fc.property(
+      sourceArbitrary,
+      separatorArbitrary,
+      fc.array(fc.nat(), { maxLength: 50 }),
+      (source, separatorSource, boundaryValues) => {
+        const whole = createBidiStream({ paragraphSeparator: new RegExp(separatorSource, 'gu') });
+        whole.push(source);
+        const expected = whole.finish();
+
+        const chunked = createBidiStream({ paragraphSeparator: new RegExp(separatorSource, 'gu') });
+        for (const chunk of splitsFor(source, boundaryValues)) chunked.push(chunk);
+        const actual = chunked.finish();
+
+        expect(actual.text).toBe(source);
+        expect(actual.direction).toBe(expected.direction);
+        expect(actual.paragraphs).toEqual(expected.paragraphs);
+      }
+    ), { numRuns: 300, endOnFailure: true, seed: 0x51d10004 });
+  });
+
   it('keeps live first-strong state invariant across arbitrary UTF-16 boundaries', () => {
     const sourceArbitrary = fc.array(fc.constantFrom(
       '\u{10940}',

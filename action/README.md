@@ -9,7 +9,7 @@ Pin third-party actions to a reviewed full commit SHA in production:
 ```yaml
 - name: Audit bidirectional controls
   id: bidi
-  uses: <owner>/<repository>/action@<full-commit-sha>
+  uses: CodeinScrubs/BidiLens/action@<reviewed-full-commit-sha>
   with:
     command: audit
     paths: |
@@ -28,7 +28,7 @@ host repository.
 Run the canonical direction corpus shipped in the action repository:
 
 ```yaml
-- uses: <owner>/<repository>/action@<full-commit-sha>
+- uses: CodeinScrubs/BidiLens/action@<reviewed-full-commit-sha>
   with:
     command: test
     format: json

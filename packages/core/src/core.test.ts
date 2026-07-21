@@ -279,8 +279,11 @@ describe('streaming', () => {
     const customSeparator = createBidiStream({ ...options, paragraphSeparator: /\|/g });
     customSeparator.push(high);
     const customSnapshot = customSeparator.push(`${low}|A`);
-    expect(customSnapshot.paragraphs[0]).toMatchObject({ text: source, direction: 'rtl', completed: true });
-    expect(customSnapshot.currentParagraph).toMatchObject({ text: 'A', direction: 'ltr' });
+    expect(customSnapshot.paragraphs).toHaveLength(1);
+    expect(customSnapshot.currentParagraph).toMatchObject({ text: `${source}|A`, completed: false });
+    const customFinal = customSeparator.finish();
+    expect(customFinal.paragraphs[0]).toMatchObject({ text: source, direction: 'rtl', completed: true });
+    expect(customFinal.currentParagraph).toMatchObject({ text: 'A', direction: 'ltr' });
   });
 
   it('can reset directly to replacement text without leaking finished state', () => {
@@ -299,10 +302,38 @@ describe('streaming', () => {
 
   it('does not expose capturing separator groups as paragraphs', () => {
     const stream = createBidiStream({ paragraphSeparator: /(\n)/g });
-    const snapshot = stream.push('Hello\nسلام');
+    stream.push('Hello\nسلام');
+    const snapshot = stream.finish();
     expect(snapshot.paragraphs.map((paragraph) => paragraph.text)).toEqual(['Hello', 'سلام']);
     expect(snapshot.paragraphs.map((paragraph) => paragraph.index)).toEqual([0, 1]);
     expect(snapshot.paragraphs[0]?.completed).toBe(true);
+  });
+
+  it('finalizes future-sensitive custom separators independently of chunk boundaries', () => {
+    const run = (chunks: string[], paragraphSeparator: RegExp) => {
+      const stream = createBidiStream({ paragraphSeparator });
+      for (const chunk of chunks) stream.push(chunk);
+      return stream.finish().paragraphs.map((paragraph) => paragraph.text);
+    };
+
+    expect(run(['axy'], /x(?!y)/g)).toEqual(['axy']);
+    expect(run(['ax', 'y'], /x(?!y)/g)).toEqual(['axy']);
+    expect(run(['axy'], /$/g)).toEqual(['axy', '']);
+    expect(run(['a', 'x', 'y'], /$/g)).toEqual(['axy', '']);
+    expect(run(['a😀b'], /(?=b)/gu)).toEqual(['a😀', 'b']);
+    expect(run(['a\ud83d', '\ude00b'], /(?=b)/gu)).toEqual(['a😀', 'b']);
+    expect(run(['a😀b'], /(?=😀)/gu)).toEqual(['a', '😀b']);
+    expect(run(['a', '😀', 'b'], new RegExp('(?=😀)', 'gv'))).toEqual(['a', '😀b']);
+  });
+
+  it('does not repeatedly reparse an open paragraph for a custom separator', () => {
+    const stream = createBidiStream({ paragraphSeparator: /---/g });
+    const started = performance.now();
+    for (let index = 0; index < 8_000; index += 1) stream.push('a');
+    const elapsed = performance.now() - started;
+
+    expect(stream.finish().currentParagraph.text).toHaveLength(8_000);
+    expect(elapsed).toBeLessThan(3_000);
   });
 
   it('is invariant across one-chunk, code-unit, and deterministic random chunking', () => {
