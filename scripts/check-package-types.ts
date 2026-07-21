@@ -75,12 +75,29 @@ function runAttw(tarball: string, packageName: string): Promise<void> {
   ], `Are the Types Wrong failed for ${packageName}.`);
 }
 
+async function buildWorkspacePackages(): Promise<void> {
+  const invocation = pnpmInvocation([
+    '-r',
+    '--filter', './packages/**',
+    '--workspace-concurrency=1',
+    'run', 'build'
+  ]);
+  await run(
+    invocation.program,
+    invocation.args,
+    'Topological package build failed before type-layout checks.',
+    invocation.shell
+  );
+}
+
 const packageDirectories = (await readdir(resolve(root, 'packages'), { withFileTypes: true }))
   .filter((entry) => entry.isDirectory())
   .map((entry) => resolve(root, 'packages', entry.name))
   .sort((a, b) => a.localeCompare(b));
 
 if (packageDirectories.length === 0) throw new Error('No package directories were discovered.');
+
+await buildWorkspacePackages();
 
 const packDirectory = await mkdtemp(resolve(tmpdir(), 'bidilens-type-packs-'));
 try {
