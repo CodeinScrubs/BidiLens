@@ -1,6 +1,6 @@
 # Sibling-project audit and idea traceability
 
-This audit compares the local project folders available on 2026-07-20. It is
+This audit compares the local project folders available on 2026-07-21. It is
 not a marketing comparison with external libraries. Counts come from files in
 those folders and do not treat README claims as proof.
 
@@ -13,9 +13,10 @@ those folders and do not treat README claims as proof.
 | `v1.1-Her` | 9 | 9 | 67 | 0 / 0 | 2 |
 | `v1.2-Her` | 9 | 9 | 67 | 0 / 0 | 2 |
 | `v1.3-Her` | 11 | 11 | 197 | 3 / 64 | 200 |
-| canonical BidiLens checkout | 12 | 14 | 841 | 3 / 63 | 918 |
+| `v1.4-Her` working tree | 16 | 21 | 745 | 1 / 18 | 310 |
+| canonical BidiLens checkout | 12 | 14 | 837 | 3 / 63 | 918 |
 
-Static assertion counts are only a depth signal; the canonical total is 904
+Static assertion counts are only a depth signal; the canonical total is 900
 across package and visual tests. The canonical checkout also runs those tests,
 coverage thresholds, examples, the three-browser visual suite,
 dependency audit, Unicode reproducibility, tarball inspection, and isolated
@@ -61,6 +62,92 @@ Those strengths do not make its published-readiness claims reproducible:
 The audit restored `v1.3-Her` to its original clean worktree after testing; no
 sibling source was edited.
 
+## `v1.4-Her` audit
+
+`v1.4-Her` is broader than `v1.3-Her`: its current working tree has 16
+publishable package folders, 742 passing tests when the seven Chromium visual
+cases are included, a reproducible Unicode 17 data generator, an SBOM checker,
+a second CLI, and a React Native package. Those are real scope advances, but
+the working tree is not a reproducible release candidate. It contains 926
+tracked insertions and 107 tracked deletions plus hundreds of untracked research
+files, and has no Git remote. The following commands were run against a fresh
+frozen-lockfile install:
+
+- `pnpm run build` fails with 31 missing-Node-type errors in
+  `@bidiguard/cli`;
+- `pnpm run typecheck` fails on the same package;
+- `pnpm run release:check -- --allow-dirty` still fails because the declared
+  `@bidiguard/web-component/standalone` export does not exist;
+- `pnpm audit --audit-level low` reports 11 known vulnerabilities, including
+  one high-severity Vite advisory;
+- `pnpm run test:coverage` passes its tests but does not enable coverage: the
+  root command forwards a literal `-- --coverage`, and no coverage report is
+  produced;
+- `pnpm run lint`, the 742-test command, Unicode reproducibility, SBOM
+  validation, and the advisory benchmark command pass. Lint reports four
+  unused-disable warnings.
+
+Passing tests do not cover several release-critical failures:
+
+- the new `skipIfNotMixed` path equates an LTR base direction with LTR-only
+  content. `The word سلام means hello.` therefore becomes plain unisolated
+  HTML, losing the exact English-with-Persian correction the toolkit exists to
+  provide. The DOM adapter makes the same document-level mistake, while the
+  React wrapper still adds its own container even on the claimed no-op path;
+- streaming hysteresis mutates only `analysis.direction`, leaving the
+  confidence, paragraph direction, counts, and isolation plan computed for the
+  opposite base. A reproduced live snapshot reported block `ltr`, paragraph
+  `rtl`, 10 LTR versus 16 RTL strong characters, and isolated `Hello world` as
+  LTR; `finish()` then changed the block to RTL. The documented
+  `stabilityThreshold` option is never read, and every live update reparses all
+  accumulated source, which the project's own long-stream benchmark shows is
+  many times slower than one batch analysis;
+- the streaming Web Component emits malformed markup such as
+  `<p class="bk-provisional dir="rtl" ...>` and does not rerender when its
+  observed `streaming` attribute changes. It also rewrites author light DOM
+  with `innerHTML`;
+- the GitHub Action invokes `packages/cli/dist/bin.js`, but package `dist`
+  output is not tracked, the path is resolved from the downstream
+  `GITHUB_WORKSPACE` instead of the Action's own checkout directory (for
+  example, one derived from `import.meta.url`), and root CI never runs the
+  Action test script. A consumer checking out an Action tag would not receive
+  or resolve the required CLI;
+- the 310 on-disk corpus cases assert exact block direction but only
+  lower-bound-check the *number* of isolations. Expected isolation text, kind,
+  direction, and ranges are parsed but never compared;
+- most technical isolation records omit the advertised code-point range, and
+  `mixed` means “paragraphs have different base directions,” not “both strong
+  directions are present.” That semantic mismatch is the cause of the unsafe
+  no-op gate;
+- the React Native tests never import or render the React Native adapter; they
+  only retest `@bidiguard/core`. Consequently the README's iOS, Android, Expo,
+  Yoga, and inline-isolation claims have no native or component-level evidence;
+- the security package keeps embedding and isolate stacks independently, so it
+  misses cross-isolate formatting structure that canonical BidiLens reports.
+  Its “false-positive-free guarantee” is inferred from a small benign list,
+  not a defensible universal guarantee or a sourced UTS #39 implementation;
+- the only active visual project is Chromium. The RLO case preserves the
+  dangerous control and merely snapshots the resulting page; it does not prove
+  that visual order is safe. Firefox and WebKit are commented out;
+- the requirement matrix says the complete UAX #9 X1-L4 algorithm is
+  implemented and the performance guide says `analyzeBlock` can call a full
+  reorder pass, but the public source has no visual-reordering API. A later row
+  in the same matrix correctly says the browser performs that work;
+- documentation is internally stale: all ten plans remain marked `TODO`, two
+  relative links are broken, repository URLs disagree, and current benchmark
+  output contradicts the unconditional `2.3x faster` badge for short text.
+
+Canonical BidiLens already has the safe versions of the worthwhile ideas:
+context-aware default non-interference, exact dual-offset isolation contracts,
+cross-isolate security checks, a bundled and self-tested Action, a genuinely
+standalone custom element, strict corpus isolation comparison, packed-consumer
+tests, and Chromium/Firefox/WebKit behavior checks. Its direct same-process
+microbenchmark is not universally faster: `v1.4-Her` was faster on pure English
+and Persian direction detection on this machine, while BidiLens was faster on
+the representative technical-token-plus-Persian mixed workload. Performance is
+therefore recorded as a tradeoff, not converted into an unsupported superiority
+claim.
+
 ## Material ideas reviewed
 
 | Idea found across siblings | Canonical disposition |
@@ -77,6 +164,7 @@ sibling source was edited.
 | React SSR and streaming | Implemented with duplicated-initial-text regression coverage and explicit SSR/client completion |
 | Vue and Svelte adapters | Implemented idiomatically with stream APIs |
 | Sibling `BidiMarkdown` framework wrappers | Replaced by composition with the real AST-based Markdown package; the sibling wrappers only split plain-text blocks despite their name and therefore were not copied |
+| Opt-in `skipIfNotMixed` no-op mode | Superseded by canonical default `needsBidiIntervention`: pure LTR in LTR context is untouched, English-majority text containing RTL is still isolated, LTR under an RTL parent is protected, and explicit policies remain authoritative |
 | Framework-independent custom element | Implemented with DOM node construction and side-effect metadata |
 | Chunk-boundary-invariant streaming | Implemented for final and live decisions with source-position checkpoints, pending-surrogate handling, UTF-16 boundary properties, and completed-paragraph immutability |
 | Trojan-Source-style scanner | Implemented with balance/cross-isolate checks, modes, dual offsets, and SARIF |
@@ -85,6 +173,8 @@ sibling source was edited.
 | Corpus schemas and numbered words | Implemented with JSON Schema, semantic technical-span numbering, and 918 cases |
 | Package/release evidence | Implemented with examples executed from all tarballs, licenses, ESM type analysis, pack/install consumer, audit, and SBOM command |
 | Reusable Playwright assertions | Implemented as a public package and exercised for direction, source text, isolation metadata, logical selection/clipboard, and physical edge geometry in the three-browser suite |
+| React Native adapter | Not copied from `v1.4-Her`: its tests never import the adapter and there is no iOS/Android rendering gate. A native package remains deferred until it has actual component tests plus device-level evidence, so a web-only repository is not burdened with an unverified platform claim |
+| API compatibility aliases and character helpers | Equivalent analysis, direction, run segmentation, control inspection, evidence, and sanitization primitives already exist; aliases are accepted only where they do not create ambiguous duplicate contracts |
 | Target matrices and upstream contribution dossiers | Reviewed as archival research; their issue/PR routing principle is retained in adoption guidance, but dated product-policy claims are not presented as current or ready-to-submit integrations |
 | Honest limitations and publishing guide | Implemented; false badges and fake repository metadata rejected |
 
@@ -124,6 +214,7 @@ interest.
 | `v1.1-Her` | 67 | 45 | 61 | More packages, very small corpus and no visual gate |
 | `v1.2-Her` | 67 | 45 | 61 | Substantively the same executable implementation as `v1.1-Her` |
 | `v1.3-Her` | 74 | 55 | 70 | Stronger scope and tests, but broken/omitted visuals and unsafe/incomplete distribution details |
+| `v1.4-Her` working tree | 78 | 42 | 74 | Broad and test-rich, but build/type/release/audit failures plus correctness bugs in its no-op, stream, Web Component, Action, and corpus gates |
 | canonical BidiLens | **90** | **96** | **93** | External identity, native review, accessibility/security audit, and downstream pilot remain |
 
 A score of 100 would be false today. Even the canonical web artifact cannot
@@ -150,11 +241,14 @@ unreproducible release/corpus counts were rejected rather than copied.
 
 ## Comparative conclusion
 
-Within the JavaScript/web scope that exists as executable source, the canonical
-checkout is objectively more complete and better verified than every sibling:
-more real packages, package-local test depth, a much larger validated corpus,
-generated current Unicode data, property/visual/security coverage, safe
-serialization, and clean tarball consumers.
+Within the shared JavaScript/web scope that exists as executable source, the
+canonical checkout is objectively deeper and better verified than every
+sibling: stronger package-local test depth, a much larger exactly validated
+corpus, generated current Unicode data, property/visual/security coverage, safe
+serialization, and clean tarball consumers. `v1.4-Her` has more package folders,
+but several of those folders split capabilities already provided by canonical
+core into separate packages, and its extra React Native surface lacks
+adapter-level or device evidence.
 
 It is not “100% better” in every conceivable dimension: some sibling documents
 describe a wider future platform vision. This repository records that wider
