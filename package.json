@@ -74,7 +74,7 @@
     "markdown-it": "^14.1.0",
     "tsx": "^4.20.6",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.46.2",
+    "typescript-eslint": "^8.65.0",
     "vitest": "^4.1.10"
   },
   "pnpm": {
