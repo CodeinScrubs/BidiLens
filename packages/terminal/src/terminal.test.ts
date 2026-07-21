@@ -3,6 +3,15 @@ import { BIDI_CONTROLS, stripBidiControls } from '@bidilens/core';
 import { formatTerminalText, maskAnsiForAnalysis } from './index.js';
 
 describe('terminal adapter', () => {
+  it('is an exact plain-text no-op for LTR-only input', () => {
+    const source = 'React is a very popular JavaScript library.';
+    const result = formatTerminalText(source);
+    expect(result.source).toBe(source);
+    expect(result.text).toBe(source);
+    expect(result.direction).toBe('ltr');
+    expect(result.controlsInserted).toBe(false);
+  });
+
   it('keeps logical source byte-for-byte unchanged by default', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     const result = formatTerminalText(source);

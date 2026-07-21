@@ -1,7 +1,9 @@
 import {
   createBidiStream,
   detectDirection,
+  needsBidiIntervention,
   planInlineIsolation,
+  type BidiInterventionMode,
   type BidiStreamOptions,
   type BidiStreamSnapshot,
   type DetectionOptions,
@@ -42,8 +44,12 @@ export function useBidiDirection(text: string, options: UseBidiDirectionOptions 
   }, [text, strategy, fallback, inheritedDirection, excludeTechnicalTokens, minimumStrongCharacters, majorityThreshold]);
 }
 
-function renderIsolatedText(text: string, direction: Exclude<Direction, 'neutral'>): ReactNode {
-  const isolations = planInlineIsolation(text, direction);
+function renderIsolatedText(
+  text: string,
+  direction: Exclude<Direction, 'neutral'>,
+  intervention: BidiInterventionMode
+): ReactNode {
+  const isolations = planInlineIsolation(text, direction, { intervention });
   if (!isolations.length) return text;
   const children: ReactNode[] = [];
   let cursor = 0;
@@ -68,6 +74,8 @@ export interface BidiTextProps extends HTMLAttributes<HTMLElement>, UseBidiDirec
   text?: string;
   forceDirection?: Direction;
   isolate?: boolean;
+  /** `auto` leaves ordinary LTR content observably untouched. */
+  intervention?: BidiInterventionMode;
 }
 
 export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>>(function BidiText(
@@ -83,6 +91,7 @@ export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>
     excludeTechnicalTokens,
     minimumStrongCharacters,
     majorityThreshold,
+    intervention = 'auto',
     style,
     ...rest
   },
@@ -97,21 +106,30 @@ export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>
   if (excludeTechnicalTokens !== undefined) detectionOptions.excludeTechnicalTokens = excludeTechnicalTokens;
   const detected = useBidiDirection(content, detectionOptions);
   const direction = forceDirection ?? detected;
-  const renderedContent = typeof (children ?? text) === 'string' && direction !== 'neutral'
-    ? renderIsolatedText(String(children ?? text), direction)
+  const intervene = isolate
+    || direction === 'rtl'
+    || needsBidiIntervention(content, { intervention, inheritedDirection });
+  const renderedContent = intervene && typeof (children ?? text) === 'string' && direction !== 'neutral'
+    ? renderIsolatedText(String(children ?? text), direction, intervention)
     : children ?? text;
-  const mergedStyle: CSSProperties = {
-    textAlign: 'start',
-    ...(isolate ? { unicodeBidi: 'isolate' as const } : {}),
-    ...style
-  };
+  const mergedStyle: CSSProperties | undefined = intervene
+    ? {
+        textAlign: 'start',
+        ...(isolate ? { unicodeBidi: 'isolate' as const } : {}),
+        ...style
+      }
+    : style;
+
+  const bidiProps = intervene ? {
+    ...(direction !== 'neutral' ? { dir: direction } : {}),
+    ...(!isolate ? { 'data-bidilens-block': '' } : {}),
+    ...(isolate ? { 'data-bidilens-isolate': '' } : {})
+  } : {};
 
   return createElement(as, {
     ...rest,
     ref,
-    dir: direction === 'neutral' ? undefined : direction,
-    'data-bidilens-block': isolate ? undefined : '',
-    'data-bidilens-isolate': isolate ? '' : undefined,
+    ...bidiProps,
     style: mergedStyle
   }, renderedContent);
 });

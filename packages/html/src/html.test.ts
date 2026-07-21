@@ -3,6 +3,30 @@ import { describe, expect, it } from 'vitest';
 import { escapeHtml, renderBidiHtml, renderInlineBidiHtml } from './index.js';
 
 describe('semantic HTML serializer', () => {
+  it('adds no BidiLens markup to ordinary LTR-only input by default', () => {
+    const source = 'React is a very popular JavaScript library.';
+    const result = renderBidiHtml(source);
+    expect(result.source).toBe(source);
+    expect(result.html).toBe(`<p>${source}</p>`);
+    expect(result.html).not.toContain('dir=');
+    expect(result.html).not.toContain('data-bidilens');
+    expect(result.blocks[0]?.direction).toBe('ltr');
+  });
+
+  it('retains annotations on request and for LTR text in an RTL parent', () => {
+    expect(renderBidiHtml('Hello world', { intervention: 'always' }).html)
+      .toContain('<p dir="ltr" data-bidilens-block="">');
+    expect(renderBidiHtml('Hello world', { inheritedDirection: 'rtl' }).html)
+      .toContain('<p dir="ltr" data-bidilens-block="">');
+  });
+
+  it('does not let the no-op gate override explicit RTL policies', () => {
+    expect(renderBidiHtml('Hello world', { strategy: 'rtl' }).html)
+      .toContain('<p dir="rtl" data-bidilens-block="">');
+    expect(renderBidiHtml('---', { fallback: 'rtl' }).html)
+      .toContain('<p dir="rtl" data-bidilens-block="">');
+  });
+
   it('renders and isolates the flagship source without changing logical text', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     const result = renderBidiHtml(source);
@@ -21,7 +45,7 @@ describe('semantic HTML serializer', () => {
 
   it('escapes hostile HTML and attribute characters', () => {
     const source = '<img src=x onerror="alert(1)"> & \'quoted\'';
-    const result = renderBidiHtml(source, { blockClassName: 'x" onclick="evil' });
+    const result = renderBidiHtml(source, { blockClassName: 'x" onclick="evil', intervention: 'always' });
     expect(result.html).not.toContain('<img');
     expect(result.html).not.toContain(' onclick="evil"');
     expect(result.html).toContain('&lt;img');
@@ -76,7 +100,7 @@ describe('semantic HTML serializer', () => {
     expect(() => renderBidiHtml('safe', { blockTag: 'p onclick=evil' })).toThrow('blockTag');
     expect(() => renderBidiHtml('safe\ntext', { containerTag: 'div><script' })).toThrow('containerTag');
     expect(() => renderBidiHtml('safe', { blockTag: 'H2' }).html).not.toThrow();
-    expect(renderBidiHtml('safe', { blockTag: 'H2' }).html).toContain('<h2 dir="ltr"');
+    expect(renderBidiHtml('safe', { blockTag: 'H2' }).html).toBe('<h2>safe</h2>');
   });
 
   it('rejects executable, raw-text, embedded, foreign, and void element names', () => {
@@ -88,7 +112,7 @@ describe('semantic HTML serializer', () => {
       expect(() => renderBidiHtml('alert(1)', { blockTag: tag })).toThrow('blockTag');
       expect(() => renderBidiHtml('safe\ntext', { containerTag: tag })).toThrow('containerTag');
     }
-    expect(renderBidiHtml('safe', { blockTag: 'article', containerTag: 'main' }).html)
+    expect(renderBidiHtml('safe', { blockTag: 'article', containerTag: 'main', intervention: 'always' }).html)
       .toBe('<main data-bidilens-document=""><article dir="ltr" data-bidilens-block="">safe</article></main>');
   });
 });

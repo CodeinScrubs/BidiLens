@@ -19,6 +19,23 @@ source string
 
 The source string is immutable throughout this flow.
 
+## Non-interference boundary
+
+`needsBidiIntervention` is the shared adapter gate. The default `auto` mode
+returns false when a scope has no RTL strong character or bidi formatting
+control and its inherited direction is LTR. Adapters then preserve the host
+tree/attributes/styles and omit inline isolation plans. This is tested as
+structural equality for DOM and Markdown and as marker/style absence for HTML,
+React, Vue, and the Web Component.
+
+An LTR string under an RTL parent is not safe to pass through because neutral
+punctuation can inherit the wrong paragraph context. Callers can provide
+`inheritedDirection: 'rtl'`; the DOM adapter also recognizes an RTL ancestor.
+`intervention: 'always'` is the explicit compatibility mode for applications
+that use stable `dir` or `data-bidilens-*` attributes as selectors. Hidden bidi
+formatting controls disable the fast path so visually English text cannot use
+the optimization to evade bidi-aware handling or auditing.
+
 `@bidilens/spec` defines the language-neutral boundary for this flow. Its
 versioned JSON Schemas describe block analysis, security reports, and stream
 snapshots using stable URN identifiers. Both evidence and isolation ranges
@@ -101,7 +118,7 @@ is reused for a different conversation.
 ## Markup adapters
 
 - `@bidilens/html` escapes untrusted text and serializes `<p dir>` plus `<bdi>`
-  isolation without `innerHTML` input paths.
+  isolation without `innerHTML` input paths; LTR-only input remains unannotated.
 - `@bidilens/dom` annotates semantic blocks, replaces eligible text ranges
   with DOM-created `<bdi>` nodes, supports idempotence/restoration, and can
   observe mutations.

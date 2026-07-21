@@ -34,6 +34,12 @@ changing user-visible markup. Then enable one surface, verify source/copy/search
 invariants, measure stream and rendering latency, and keep a feature flag that
 removes the adapter without data migration.
 
+Adapters default to `intervention: 'auto'`. A completely LTR scope in an LTR
+host is passed through without BidiLens attributes, wrappers, or styles. Pass
+`inheritedDirection: 'rtl'` when rendering into an RTL context that the adapter
+cannot inspect (especially SSR). Use `intervention: 'always'` only if existing
+host CSS/tests intentionally depend on stable BidiLens markers for every block.
+
 ## 6. Add security deliberately
 
 Start the CLI scanner in audit mode. Review ordinary RTL prose and repository

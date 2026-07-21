@@ -20,6 +20,11 @@ side-effect imports. Run `pnpm --filter @bidilens/web-component example` after
 building; the Node example's browser harness requires
 `npm install --save-dev jsdom`.
 
+LTR-only content under an LTR parent keeps the element free of BidiLens-owned
+`dir`, data markers, inline styles, and child wrappers. Author-provided
+presentation attributes and existing light-DOM markup are preserved. Add
+`intervention="always"` to retain stable annotations for all content.
+
 For a no-build page, use the self-contained browser entry. It bundles core on
 purpose, contains no bare package imports, and registers `<bidi-message>`:
 

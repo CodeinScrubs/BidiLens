@@ -27,6 +27,12 @@ stream.push('old response');
 stream.reset(source); // clear and analyze replacement text atomically
 ```
 
+`needsBidiIntervention(text, context)` exposes the shared non-interference
+gate. LTR-only text in an LTR context returns `false`; RTL content, bidi
+formatting controls, an inherited RTL context, or `{ intervention: 'always' }`
+returns `true`. Inline planning likewise returns no unnecessary ranges for
+ordinary LTR-only text.
+
 The default newline paragraph separator is recognized incrementally. A custom
 `paragraphSeparator` regular expression is evaluated once by `finish()` so
 future-sensitive lookarounds, anchors, and extendable matches remain invariant

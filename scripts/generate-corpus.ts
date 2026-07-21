@@ -1,6 +1,6 @@
 import { copyFile, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { findTechnicalTokenRanges } from '../packages/core/src/index.js';
+import { findTechnicalTokenRanges, needsBidiIntervention } from '../packages/core/src/index.js';
 
 type Direction = 'ltr' | 'rtl' | 'neutral';
 
@@ -274,7 +274,11 @@ for (const file of siblingSeedFiles) {
       seed.tags,
       {
         curation: 'imported-comparison-corpus',
-        expectedIsolations: seed.expectedIsolations
+        // Same-direction technical wrappers are unnecessary in a wholly LTR
+        // scope. Normalize legacy seed labels to the default no-op contract.
+        expectedIsolations: needsBidiIntervention(seed.text)
+          ? seed.expectedIsolations
+          : []
       }
     ));
     siblingSeedCount += 1;

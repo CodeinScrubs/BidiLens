@@ -2,6 +2,7 @@ import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
 import { analyzeText, findTechnicalTokenRanges } from './detect.js';
 import { scanBidiSecurity } from './security.js';
 import { planInlineIsolation } from './segments.js';
+import type { BidiInterventionMode } from './intervention.js';
 import type {
   BlockAnalysis,
   DetectionOptions,
@@ -9,6 +10,11 @@ import type {
   InlineIsolationKind,
   ResolvedDirection
 } from './types.js';
+
+export interface AnalyzeBlockOptions extends DetectionOptions {
+  /** `auto` avoids isolation plans for ordinary LTR content; `always` retains explicit plans. */
+  intervention?: BidiInterventionMode;
+}
 
 function excludesTechnical(options: DetectionOptions): boolean {
   if (options.excludeTechnicalTokens !== undefined) return options.excludeTechnicalTokens;
@@ -66,13 +72,17 @@ export function collectDirectionEvidence(text: string, options: DetectionOptions
   return evidence;
 }
 
-export function analyzeBlock(text: string, options: DetectionOptions = {}): BlockAnalysis {
+export function analyzeBlock(text: string, options: AnalyzeBlockOptions = {}): BlockAnalysis {
   const analysis = analyzeText(text, options);
   const resolved: ResolvedDirection = analysis.direction === 'neutral'
     ? (options.inheritedDirection ?? (options.fallback === 'rtl' ? 'rtl' : 'ltr'))
     : analysis.direction;
-  const isolationOptions: { excludeTechnicalTokens?: boolean } = {};
+  const isolationOptions: {
+    excludeTechnicalTokens?: boolean;
+    intervention?: BidiInterventionMode;
+  } = {};
   if (options.excludeTechnicalTokens !== undefined) isolationOptions.excludeTechnicalTokens = options.excludeTechnicalTokens;
+  if (options.intervention !== undefined) isolationOptions.intervention = options.intervention;
   return {
     ...analysis,
     policy: options.strategy ?? 'content-majority',

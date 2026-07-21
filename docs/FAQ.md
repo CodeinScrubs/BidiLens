@@ -12,6 +12,14 @@ No. Reversing strings breaks copy, search, selection, accessibility, combining
 characters, and source diffs. BidiLens preserves logical source order and adds
 direction/isolation structure only.
 
+## What happens in an English-only application?
+
+By default, nothing bidi-specific is added: no direction attribute, isolation
+wrapper, BidiLens data marker, inline style, or Unicode control. This fast path
+is disabled when RTL text or bidi formatting controls appear, or when the
+content inherits RTL direction. Use `intervention: 'always'` only when stable
+annotation of every block is an intentional integration requirement.
+
 ## Is this a replacement for Unicode UAX #9?
 
 No. Browsers and operating systems still perform shaping and visual bidi

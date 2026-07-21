@@ -30681,13 +30681,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "https://example.com",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-emoji-rtl-001",
@@ -30822,13 +30816,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "data.json",
-        "direction": "ltr",
-        "kind": "identifier"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-long-url-001",
@@ -30846,13 +30834,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "https://example.com/path/to/some/very/deep/resource/that/keeps/going/on?param1=value1&param2=value2&param3=value3",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-mixed-numerals-001",
@@ -30986,13 +30968,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "1234567890",
-        "direction": "ltr",
-        "kind": "number"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-punctuation-only-001",
@@ -31027,13 +31003,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "`const x = 1;`",
-        "direction": "ltr",
-        "kind": "code"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-pure-email-001",
@@ -31050,13 +31020,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "user@example.com",
-        "direction": "ltr",
-        "kind": "email"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-pure-path-001",
@@ -31073,13 +31037,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "/usr/local/bin/node",
-        "direction": "ltr",
-        "kind": "path"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-pure-url-001",
@@ -31096,13 +31054,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "https://example.com",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-pure-url-002",
@@ -31119,13 +31071,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "http://localhost:8080/api/v1",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-version-mixed-001",
@@ -31142,13 +31088,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "v2.0.1-alpha.2",
-        "direction": "ltr",
-        "kind": "identifier"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-edge-zwnj-legit-001",
@@ -31482,13 +31422,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "AI",
-        "direction": "ltr",
-        "kind": "identifier"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-everyday-prose-004",
@@ -31568,13 +31502,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "`npm install`",
-        "direction": "ltr",
-        "kind": "code"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-inline-code-002",
@@ -31599,13 +31527,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "`git clone https://example.org/repo`",
-        "direction": "ltr",
-        "kind": "code"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-inline-code-003",
@@ -31630,13 +31552,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "`npm run build && npm test`",
-        "direction": "ltr",
-        "kind": "code"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-markdown-bold-001",
@@ -31821,13 +31737,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "https://react.dev",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-technical-001",
@@ -31845,13 +31755,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "https://example.com/foo/bar?baz=1",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-technical-002",
@@ -31893,18 +31797,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "version",
-        "direction": "ltr",
-        "kind": "identifier"
-      },
-      {
-        "text": "2.0.1",
-        "direction": "ltr",
-        "kind": "version"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-url-001",
@@ -31932,13 +31825,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "https://example.com",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-url-002",
@@ -31960,13 +31847,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "https://docs.example.org/api/v2/endpoints",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-en-url-003",
@@ -31992,13 +31873,7 @@
     ],
     "curation": "imported-comparison-corpus",
     "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "http://localhost:3000",
-        "direction": "ltr",
-        "kind": "url"
-      }
-    ]
+    "expectedIsolations": []
   },
   {
     "id": "v13-fa-ai-response-001",

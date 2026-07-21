@@ -45,5 +45,9 @@ codes without launching a browser. The packaged example demonstrates that API;
 the repository's Playwright suite exercises the browser-bound helpers on
 Chromium, Firefox, and WebKit.
 
+An LTR expectation with no expected isolates accepts the default unannotated
+pass-through. Set `requireExplicitDirection: true` and
+`requireBlockMarker: true` when testing an `intervention: 'always'` integration.
+
 After building the repository, run the packaged example with
 `pnpm --filter @bidilens/playwright example`.

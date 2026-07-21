@@ -24,6 +24,9 @@ measured pilot in an open-source web chat renderer.
 - code, URLs, paths, and model names remain internally LTR;
 - final stream output equals batch direction/isolation results;
 - source, copy, search, and model payloads are byte-for-byte unchanged;
+- an LTR-only fixture produces no BidiLens DOM/AST attributes, wrappers, or
+  inline styles unless `intervention: 'always'` is deliberately configured;
+- LTR text nested under an RTL ancestor still receives an explicit LTR base;
 - no high-risk control reaches source-like content unnoticed;
 - host performance budgets remain within an agreed measured threshold;
 - a rollback removes the adapter without data migration.

@@ -33,6 +33,23 @@ describe('BidiLens CLI', () => {
     return { code, stdout, stderr };
   }
 
+  it('renders LTR-only input without BidiLens-specific markup', async () => {
+    const source = 'React is a very popular JavaScript library.';
+    const result = await invoke(['render', '--text', source, '--json']);
+    const report = JSON.parse(result.stdout) as { html: string; analysis: { text: string; direction: string } };
+    expect(result.code).toBe(0);
+    expect(report.analysis).toMatchObject({ text: source, direction: 'ltr' });
+    expect(report.html).toBe(`<p>${source}</p>`);
+    expect(report.html).not.toContain('data-bidilens');
+    expect(report.html).not.toContain('dir=');
+  });
+
+  it('exposes the explicit always-annotation compatibility mode', async () => {
+    const result = await invoke(['render', '--text', 'Hello world', '--intervention', 'always']);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('<p dir="ltr" data-bidilens-block="">');
+  });
+
   it('inspects mixed text in human and JSON formats', async () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     const human = await invoke(['inspect', '--text', source]);

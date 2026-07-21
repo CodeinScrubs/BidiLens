@@ -39,6 +39,9 @@ const html = md.render(markdown);
 ```
 
 Raw source HTML remains escaped when the host parser's HTML option is off.
+For an LTR-only document, the default plugins leave the MDAST/HAST and
+Markdown-It output free of BidiLens annotations. Set `intervention: 'always'`
+if a host intentionally selects every block by BidiLens metadata.
 Remark-compatible `math` and `inlineMath` nodes receive explicit LTR metadata
 and are excluded from surrounding prose evidence; math rendering itself stays
 the responsibility of the host's chosen math plugin.

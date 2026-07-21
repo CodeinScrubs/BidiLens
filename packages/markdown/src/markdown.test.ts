@@ -18,6 +18,46 @@ async function render(markdown: string): Promise<string> {
 }
 
 describe('Markdown plugins', () => {
+  it('is output-identical to unconfigured Markdown-It for an LTR-only document', () => {
+    const source = '# React guide\n\nUse `npm test` in a normal English project.';
+    const baseline = new MarkdownIt({ html: false }).render(source);
+    const configured = new MarkdownIt({ html: false });
+    markdownItBidi(configured);
+    const html = configured.render(source);
+    expect(html).toBe(baseline);
+    expect(html).not.toContain('dir=');
+    expect(html).not.toContain('data-bidilens');
+  });
+
+  it('leaves an LTR-only MDAST tree structurally unchanged', () => {
+    const tree = {
+      type: 'root',
+      children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Hello world' }] }]
+    } as MdastRoot;
+    const before = structuredClone(tree);
+    remarkBidi()(tree);
+    expect(tree).toEqual(before);
+  });
+
+  it('honors explicit RTL strategy and neutral fallback in every Markdown adapter', async () => {
+    const forced = new MarkdownIt({ html: false });
+    markdownItBidi(forced, { strategy: 'rtl' });
+    expect(forced.render('Hello')).toContain('<p dir="rtl"');
+
+    const neutral = new MarkdownIt({ html: false });
+    markdownItBidi(neutral, { fallback: 'rtl' });
+    expect(neutral.render('123')).toContain('dir="rtl"');
+
+    const html = String(await unified()
+      .use(remarkParse)
+      .use(remarkBidi, { strategy: 'rtl' })
+      .use(remarkRehype)
+      .use(rehypeBidi, { strategy: 'rtl' })
+      .use(rehypeStringify)
+      .process('Hello'));
+    expect(html).toContain('dir="rtl"');
+  });
+
   it('annotates Markdown-It paragraph tokens with content-majority direction', () => {
     const md = new MarkdownIt({ html: false });
     markdownItBidi(md);
@@ -41,7 +81,13 @@ describe('Markdown plugins', () => {
   });
 
   it('forces code blocks to LTR', async () => {
-    const html = await render('```ts\nconst x = 1;\n```');
+    const html = String(await unified()
+      .use(remarkParse)
+      .use(remarkBidi, { intervention: 'always' })
+      .use(remarkRehype)
+      .use(rehypeBidi, { intervention: 'always' })
+      .use(rehypeStringify)
+      .process('```ts\nconst x = 1;\n```'));
     expect(html).toContain('dir="ltr"');
     expect(html).toContain('data-bidilens-code');
   });
@@ -124,7 +170,7 @@ describe('Markdown plugins', () => {
 
   it('marks Markdown-It inline and fenced code as LTR isolates', () => {
     const md = new MarkdownIt({ html: false });
-    markdownItBidi(md);
+    markdownItBidi(md, { intervention: 'always' });
     const html = md.render('`src/index.ts`\n\n```ts\nconst value = 1;\n```');
     expect(html).toContain('<code dir="ltr" data-bidilens-code=""');
     expect(html).toContain('class="bidilens-code"');

@@ -4,6 +4,27 @@ import { renderToString } from '@vue/server-renderer';
 import { BidiIsolate, BidiMessage, useBidiDirection, useBidiStream } from './index.js';
 
 describe('Vue adapter', () => {
+  it('passes ordinary LTR content through without BidiLens markup', async () => {
+    const source = 'React is a very popular JavaScript library.';
+    const app = createSSRApp({ render: () => h(BidiMessage, { text: source }) });
+    const html = await renderToString(app);
+    expect(html).toBe(`<p>${source}</p>`);
+    expect(html).not.toContain('dir=');
+    expect(html).not.toContain('data-bidilens');
+    expect(html).not.toContain('style=');
+
+    const styled = createSSRApp({ render: () => h(BidiMessage, { text: source, className: 'message' }) });
+    expect(await renderToString(styled)).toBe(`<p class="message">${source}</p>`);
+  });
+
+  it('supports explicit annotation for stable integration markers', async () => {
+    const app = createSSRApp({ render: () => h(BidiMessage, { text: 'Hello world', intervention: 'always' }) });
+    const html = await renderToString(app);
+    expect(html).toContain('dir="ltr"');
+    expect(html).toContain('data-bidilens-block');
+    expect(html).toContain('text-align:start');
+  });
+
   it('exports real Vue component definitions', () => {
     expect(BidiMessage.name).toBe('BidiMessage');
     expect(BidiIsolate.name).toBe('BidiIsolate');

@@ -52,8 +52,8 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
-| Vitest within `check` | 15 files, 182 tests pass |
-| Coverage (seeded run) | 88.12% statements, 77.66% branches, 90.68% functions, 92.56% lines; core 95.15%, Playwright helpers 100% lines |
+| Vitest within `check` | 15 files, 214 tests pass |
+| Coverage (seeded run) | 88.16% statements, 79.43% branches, 91.44% functions, 91.76% lines; core 95.30%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 918/918; 0 native-speaker-reviewed |
 | `pnpm run test:visual` | 24/24 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS, including real standalone-module loading and the bilingual playground's controls/corpus/copy/theme/exports; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
 | `pnpm -r --if-present run example` | all 12 public package examples run in the workspace |
@@ -80,21 +80,21 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 
 | Package | Bytes | Enforced budget |
 |---|---:|---:|
-| CLI | 12,811 | 32,768 |
-| Core | 63,651 | 65,536 |
-| DOM | 7,807 | 16,384 |
-| HTML | 3,616 | 12,288 |
-| Markdown | 13,365 | 24,576 |
-| Playwright | 8,430 | 16,384 |
-| React | 7,256 | 16,384 |
+| CLI | 13,084 | 32,768 |
+| Core | 64,697 | 65,536 |
+| DOM | 17,442 | 20,480 |
+| HTML | 4,201 | 12,288 |
+| Markdown | 16,181 | 24,576 |
+| Playwright | 8,542 | 16,384 |
+| React | 7,580 | 16,384 |
 | Spec | 9,061 | 24,576 |
-| Svelte | 1,737 | 8,192 |
+| Svelte | 1,787 | 8,192 |
 | Terminal | 4,155 | 8,192 |
-| Vue | 3,736 | 12,288 |
-| Web Component | 26,723 | 81,920 |
+| Vue | 4,155 | 12,288 |
+| Web Component | 32,562 | 81,920 |
 
-The Web Component total deliberately includes both its 2,195-byte normal entry
-and 24,528-byte minified self-contained browser entry. Applications use the normal
+The Web Component total deliberately includes both its 4,875-byte normal entry
+and 27,687-byte minified self-contained browser entry. Applications use the normal
 entry for dependency deduplication; no-build pages trade that for one URL.
 
 The release verifier also checks export maps, declarations, licenses, packed
@@ -142,7 +142,7 @@ local numbers, not a service-level objective.
 
 The canonical checkout is the strongest reproducible JavaScript/web
 implementation among the local sibling folders: 12 public packages, 14 package test
-files, 755 static package/visual assertions, 918 fixtures, current generated Unicode data,
+files, 904 static package/visual assertions, 918 fixtures, current generated Unicode data,
 real three-engine visual evidence, and clean package-consumer gates. Broader
 native/desktop ideas found in sibling documentation are retained in the
 [traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.

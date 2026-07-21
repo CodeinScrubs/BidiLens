@@ -109,13 +109,14 @@ for (const item of cases) {
   if (item.expectedIsolations) {
     const direction = actual === 'neutral' ? 'ltr' : actual;
     const plans = planInlineIsolation(item.text, direction);
-    for (const expectedIsolation of item.expectedIsolations) {
-      if (!plans.some((plan) => plan.text === expectedIsolation.text
-        && plan.direction === expectedIsolation.direction
-        && plan.kind === expectedIsolation.kind)) {
-        failed += 1;
-        console.error(`${item.id}: expected isolation was not planned: ${expectedIsolation.text}`);
-      }
+    const actualIsolations = plans.map((plan) => ({
+      text: plan.text,
+      direction: plan.direction,
+      kind: plan.kind
+    }));
+    if (JSON.stringify(actualIsolations) !== JSON.stringify(item.expectedIsolations)) {
+      failed += 1;
+      console.error(`${item.id}: isolation plan mismatch: expected ${JSON.stringify(item.expectedIsolations)}, received ${JSON.stringify(actualIsolations)}`);
     }
   }
   if (item.expectedSecurityCodes) {

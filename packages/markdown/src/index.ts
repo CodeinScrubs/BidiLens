@@ -2,7 +2,14 @@ import type { Element, ElementContent, Root as HastRoot, Text as HastText } from
 import type { Content, Root as MdastRoot } from 'mdast';
 import type MarkdownIt from 'markdown-it';
 import type Token from 'markdown-it/lib/token.mjs';
-import { detectDirection, planInlineIsolation, type DetectionOptions, type Direction } from '@bidilens/core';
+import {
+  detectDirection,
+  needsBidiIntervention,
+  planInlineIsolation,
+  type BidiInterventionMode,
+  type DetectionOptions,
+  type Direction
+} from '@bidilens/core';
 import { visit } from 'unist-util-visit';
 
 export interface MarkdownBidiOptions extends DetectionOptions {
@@ -11,6 +18,8 @@ export interface MarkdownBidiOptions extends DetectionOptions {
   codeClassName?: string;
   annotateNeutral?: boolean;
   isolateInline?: boolean;
+  /** `auto` leaves an LTR-only document's AST and rendered HTML unchanged. */
+  intervention?: BidiInterventionMode;
 }
 
 const MDAST_BLOCK_TYPES = new Set([
@@ -71,11 +80,33 @@ function detectWithOptions(text: string, options: MarkdownBidiOptions): Directio
   return detectDirection(text, detection);
 }
 
+function shouldIntervene(text: string, options: MarkdownBidiOptions): boolean {
+  return options.annotateNeutral === true
+    || detectWithOptions(text, options) === 'rtl'
+    || needsBidiIntervention(text, {
+      intervention: options.intervention,
+      inheritedDirection: options.inheritedDirection
+    });
+}
+
 export function remarkBidi(options: MarkdownBidiOptions = {}) {
   const blockClassName = options.blockClassName ?? 'bidilens-block';
   const codeClassName = options.codeClassName ?? 'bidilens-code';
 
   return (tree: MdastRoot): void => {
+    let documentNeedsIntervention = false;
+    visit(tree, (visitedNode) => {
+      const node = visitedNode as ExtendedMdastBidiNode;
+      if (MDAST_BLOCK_TYPES.has(node.type) && shouldIntervene(mdastText(node), options)) {
+        documentNeedsIntervention = true;
+      } else if ((node.type === 'code' || node.type === 'inlineCode'
+        || node.type === 'math' || node.type === 'inlineMath')
+        && 'value' in node
+        && shouldIntervene(node.value, options)) {
+        documentNeedsIntervention = true;
+      }
+    });
+    if (!documentNeedsIntervention) return;
     visit(tree, (visitedNode) => {
       const node = visitedNode as ExtendedMdastBidiNode;
       if (node.type === 'math' || node.type === 'inlineMath') {
@@ -117,7 +148,7 @@ export function remarkBidi(options: MarkdownBidiOptions = {}) {
   };
 }
 
-function hastText(node: Element | HastText): string {
+function hastText(node: Element | HastText | HastRoot): string {
   if (node.type === 'text') return node.value;
   return node.children.map((child) => {
     if (child.type === 'text') return child.value;
@@ -126,11 +157,15 @@ function hastText(node: Element | HastText): string {
   }).join('');
 }
 
-function isolateHastChildren(element: Element, direction: 'ltr' | 'rtl'): void {
+function isolateHastChildren(
+  element: Element,
+  direction: 'ltr' | 'rtl',
+  intervention: BidiInterventionMode | undefined
+): void {
   const children: ElementContent[] = [];
   for (const child of element.children) {
     if (child.type === 'text') {
-      const plans = planInlineIsolation(child.value, direction);
+      const plans = planInlineIsolation(child.value, direction, { intervention });
       let cursor = 0;
       for (const plan of plans) {
         if (cursor < plan.start) children.push({ type: 'text', value: child.value.slice(cursor, plan.start) });
@@ -158,7 +193,7 @@ function isolateHastChildren(element: Element, direction: 'ltr' | 'rtl'): void {
       && child.tagName !== 'script'
       && child.tagName !== 'style'
       && child.tagName !== 'textarea') {
-      isolateHastChildren(child, direction);
+      isolateHastChildren(child, direction, intervention);
     }
     children.push(child);
   }
@@ -170,6 +205,15 @@ export function rehypeBidi(options: MarkdownBidiOptions = {}) {
   const codeClassName = options.codeClassName ?? 'bidilens-code';
 
   return (tree: HastRoot): void => {
+    let documentNeedsIntervention = false;
+    visit(tree, 'element', (node: Element) => {
+      if (HAST_BLOCK_TAGS.has(node.tagName) && shouldIntervene(hastText(node), options)) {
+        documentNeedsIntervention = true;
+      } else if (HAST_CODE_TAGS.has(node.tagName) && shouldIntervene(hastText(node), options)) {
+        documentNeedsIntervention = true;
+      }
+    });
+    if (!documentNeedsIntervention) return;
     visit(tree, 'element', (node: Element) => {
       node.properties ??= {};
 
@@ -186,7 +230,9 @@ export function rehypeBidi(options: MarkdownBidiOptions = {}) {
       appendClassName(node.properties, blockClassName);
       if (direction !== 'neutral') node.properties.dir = direction;
       else if (options.annotateNeutral) node.properties['data-bidilens-direction'] = 'neutral';
-      if ((options.isolateInline ?? true) && direction !== 'neutral') isolateHastChildren(node, direction);
+      if ((options.isolateInline ?? true) && direction !== 'neutral') {
+        isolateHastChildren(node, direction, options.intervention);
+      }
     });
   };
 }
@@ -224,11 +270,28 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
   let activeDirection: 'ltr' | 'rtl' | null = null;
   const blockClassName = options.blockClassName ?? 'bidilens-block';
   const codeClassName = options.codeClassName ?? 'bidilens-code';
+  const interventionCache = new WeakMap<Token[], boolean>();
+  const tokensNeedIntervention = (tokens: Token[]): boolean => {
+    const cached = interventionCache.get(tokens);
+    if (cached !== undefined) return cached;
+    const required = tokens.some((token) => (token.type === 'inline'
+      || token.type === 'code_inline'
+      || token.type === 'code_block'
+      || token.type === 'fence') && shouldIntervene(token.content, options));
+    interventionCache.set(tokens, required);
+    return required;
+  };
   const escape = md.utils?.escapeHtml ?? ((value: string) => value.replace(/[&<>"']/gu, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[character] ?? character)));
   const original = md.renderer.rules.paragraph_open;
   md.renderer.rules.paragraph_open = (tokens, index, renderOptions, env, self) => {
+    if (!tokensNeedIntervention(tokens)) {
+      activeDirection = null;
+      return original
+        ? original(tokens, index, renderOptions, env, self)
+        : self.renderToken(tokens, index, renderOptions);
+    }
     const content = tokens[index + 1]?.content ?? '';
     const direction = detectWithOptions(content, options);
     activeDirection = direction === 'neutral' ? null : direction;
@@ -252,6 +315,12 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
 
   const originalHeading = md.renderer.rules.heading_open;
   md.renderer.rules.heading_open = (tokens, index, renderOptions, env, self) => {
+    if (!tokensNeedIntervention(tokens)) {
+      activeDirection = null;
+      return originalHeading
+        ? originalHeading(tokens, index, renderOptions, env, self)
+        : self.renderToken(tokens, index, renderOptions);
+    }
     const content = tokens[index + 1]?.content ?? '';
     const direction = detectWithOptions(content, options);
     activeDirection = direction === 'neutral' ? null : direction;
@@ -278,6 +347,12 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
     const closeRule = `${tag}_close`;
     const originalOpen = md.renderer.rules[openRule];
     md.renderer.rules[openRule] = (tokens, index, renderOptions, env, self) => {
+      if (!tokensNeedIntervention(tokens)) {
+        activeDirection = null;
+        return originalOpen
+          ? originalOpen(tokens, index, renderOptions, env, self)
+          : self.renderToken(tokens, index, renderOptions);
+      }
       const content = tokens[index + 1]?.content ?? '';
       const direction = detectWithOptions(content, options);
       activeDirection = direction === 'neutral' ? null : direction;
@@ -305,6 +380,11 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
   ] as const) {
     const originalOpen = md.renderer.rules[openRule];
     md.renderer.rules[openRule] = (tokens, index, renderOptions, env, self) => {
+      if (!tokensNeedIntervention(tokens)) {
+        return originalOpen
+          ? originalOpen(tokens, index, renderOptions, env, self)
+          : self.renderToken(tokens, index, renderOptions);
+      }
       const direction = detectWithOptions(markdownItBlockContent(tokens, index, closeType), options);
       if (direction !== 'neutral') tokens[index]?.attrSet('dir', direction);
       else if (options.annotateNeutral) tokens[index]?.attrSet('data-bidilens-direction', 'neutral');
@@ -322,7 +402,7 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
     if (!(options.isolateInline ?? true) || activeDirection === null) {
       return originalText ? originalText(tokens, index, renderOptions, env, self) : escape(value);
     }
-    const plans = planInlineIsolation(value, activeDirection);
+    const plans = planInlineIsolation(value, activeDirection, { intervention: options.intervention });
     if (!plans.length) return originalText ? originalText(tokens, index, renderOptions, env, self) : escape(value);
     const renderValue = (part: string): string => {
       if (!originalText) return escape(part);
@@ -344,6 +424,9 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
     const originalCodeRule = md.renderer.rules[ruleName];
     if (!originalCodeRule) continue;
     md.renderer.rules[ruleName] = (tokens, index, renderOptions, env, self) => {
+      if (activeDirection === null && !tokensNeedIntervention(tokens)) {
+        return originalCodeRule(tokens, index, renderOptions, env, self);
+      }
       tokens[index]?.attrSet('dir', 'ltr');
       tokens[index]?.attrSet('data-bidilens-code', '');
       markdownItClass(tokens[index], codeClassName);

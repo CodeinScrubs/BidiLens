@@ -162,6 +162,28 @@ describe('Playwright bidi assertions', () => {
     expect(issues).toEqual([]);
   });
 
+  it('accepts the default LTR pass-through while retaining strict opt-in checks', () => {
+    const snapshot: BidiBlockSnapshot = {
+      text: 'Hello world',
+      directionAttribute: null,
+      computedDirection: 'ltr',
+      unicodeBidi: 'normal',
+      tagName: 'p',
+      hasBlockMarker: false,
+      isolations: []
+    };
+    expect(validateBidiSnapshot(snapshot, { text: 'Hello world', direction: 'ltr' })).toEqual([]);
+    expect(validateBidiSnapshot(snapshot, {
+      text: 'Hello world',
+      direction: 'ltr',
+      requireExplicitDirection: true,
+      requireBlockMarker: true
+    }).map((issue) => issue.code)).toEqual([
+      'direction-attribute-mismatch',
+      'missing-block-marker'
+    ]);
+  });
+
   it('preserves the logical selection across nested opposite-direction runs', async () => {
     document.body.innerHTML = `<p dir="rtl"><span>پیشوند </span><bdi dir="ltr">React API</bdi><span> پسوند.</span></p>`;
     const element = document.querySelector('p')!;

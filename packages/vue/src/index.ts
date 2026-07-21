@@ -2,7 +2,9 @@ import { computed, defineComponent, h, shallowRef, watch, type PropType, type Re
 import {
   analyzeText,
   createBidiStream,
+  needsBidiIntervention,
   planInlineIsolation,
+  type BidiInterventionMode,
   type BidiStreamOptions,
   type BidiStreamSnapshot,
   type DetectionOptions,
@@ -59,13 +61,14 @@ export const BidiMessage = defineComponent({
   props: {
     text: { type: String, required: true },
     as: { type: String, default: 'p' },
-    className: { type: String, default: 'bidilens-block' },
+    className: { type: String, default: undefined },
     fallback: { type: String as PropType<'ltr' | 'rtl' | 'neutral'>, default: 'ltr' },
     strategy: { type: String as PropType<DetectionOptions['strategy']>, default: undefined },
     inheritedDirection: { type: String as PropType<'ltr' | 'rtl'>, default: undefined },
     excludeTechnicalTokens: { type: Boolean, default: undefined },
     minimumStrongCharacters: { type: Number, default: undefined },
-    majorityThreshold: { type: Number, default: undefined }
+    majorityThreshold: { type: Number, default: undefined },
+    intervention: { type: String as PropType<BidiInterventionMode>, default: 'auto' }
   },
   setup(props) {
     return () => {
@@ -79,9 +82,14 @@ export const BidiMessage = defineComponent({
       const direction: Direction = analysis.direction === 'neutral'
         ? (props.inheritedDirection ?? 'ltr')
         : analysis.direction;
+      const intervene = direction === 'rtl' || needsBidiIntervention(props.text, {
+        intervention: props.intervention,
+        inheritedDirection: props.inheritedDirection
+      });
+      if (!intervene) return h(props.as, props.className ? { class: props.className } : {}, props.text);
       const children = [] as ReturnType<typeof h>[];
       let cursor = 0;
-      for (const isolation of planInlineIsolation(props.text, direction)) {
+      for (const isolation of planInlineIsolation(props.text, direction, { intervention: props.intervention })) {
         if (cursor < isolation.start) children.push(h('span', props.text.slice(cursor, isolation.start)));
         const tag = isolation.kind === 'code' ? 'code' : 'bdi';
         children.push(h(tag, {
@@ -95,7 +103,7 @@ export const BidiMessage = defineComponent({
       if (cursor < props.text.length) children.push(h('span', props.text.slice(cursor)));
       return h(props.as, {
         dir: direction,
-        class: props.className,
+        class: props.className ?? 'bidilens-block',
         'data-bidilens-block': '',
         style: { textAlign: 'start' }
       }, children);

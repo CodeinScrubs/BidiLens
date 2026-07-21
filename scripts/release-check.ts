@@ -30,7 +30,9 @@ const CANONICAL_HOMEPAGE = 'https://github.com/CodeinScrubs/BidiLens#readme';
 const CANONICAL_ISSUES = 'https://github.com/CodeinScrubs/BidiLens/issues';
 const DIST_BUDGETS = new Map<string, number>([
   ['@bidilens/core', 64 * 1024],
-  ['@bidilens/dom', 16 * 1024],
+  // Ownership-aware live direction/style restoration adds deliberate DOM
+  // integration code; keep a tight but realistic unminified ceiling.
+  ['@bidilens/dom', 20 * 1024],
   ['@bidilens/html', 12 * 1024],
   ['@bidilens/markdown', 24 * 1024],
   ['@bidilens/playwright', 16 * 1024],

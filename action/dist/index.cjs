@@ -6559,6 +6559,19 @@ function sanitizeBidiControls(text, options = {}) {
   return { text: output, removed };
 }
 
+// packages/core/src/intervention.ts
+function needsBidiIntervention(text, options = {}) {
+  if (options.intervention === "always") return true;
+  if (findBidiControls(text).length > 0) return true;
+  let hasLtr = false;
+  for (const character of text) {
+    const direction = classifyBidiStrongCharacter(character);
+    if (direction === "rtl") return true;
+    if (direction === "ltr") hasLtr = true;
+  }
+  return options.inheritedDirection === "rtl" && (hasLtr || text.length > 0);
+}
+
 // packages/core/src/segments.ts
 function attachSourceRanges(text, isolations) {
   const codePointAtUtf16 = new Uint32Array(text.length + 1);
@@ -6660,6 +6673,10 @@ function segmentDirectionalRuns(text) {
   return mergeAdjacent(resolveNeutralRuns(runs));
 }
 function planInlineIsolation(text, blockDirection, options = {}) {
+  if (!needsBidiIntervention(text, {
+    intervention: options.intervention,
+    inheritedDirection: blockDirection
+  })) return [];
   const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text);
   const isolations = technical.map((range) => ({
     text: range.text,
@@ -6772,7 +6789,7 @@ function classAttribute(value) {
 }
 function renderInlineBidiHtml(source, direction, options = {}) {
   const includeData = options.includeDataAttributes ?? true;
-  const isolations = planInlineIsolation(source, direction);
+  const isolations = planInlineIsolation(source, direction, { intervention: options.intervention });
   let html = "";
   let cursor = 0;
   for (const isolation of isolations) {
@@ -6789,10 +6806,20 @@ function renderBidiHtml(source, options = {}) {
   const analysis = analyzeText(source, detection);
   const blockTag = checkedTag(options.blockTag ?? "p", "blockTag", SAFE_BLOCK_TAGS);
   const includeData = options.includeDataAttributes ?? true;
+  const intervene = analysis.paragraphs.some((paragraph) => paragraph.direction === "rtl") || needsBidiIntervention(source, {
+    intervention: options.intervention,
+    inheritedDirection: options.inheritedDirection
+  });
   const blocks = analysis.paragraphs.map((paragraph) => {
     const direction = paragraph.direction === "neutral" ? options.inheritedDirection ?? "ltr" : paragraph.direction;
-    const data = includeData ? ' data-bidilens-block=""' : "";
-    const html2 = `<${blockTag} dir="${direction}"${data}${classAttribute(options.blockClassName)}>${renderInlineBidiHtml(paragraph.text, direction, { includeDataAttributes: includeData })}</${blockTag}>`;
+    const data = intervene && includeData ? ' data-bidilens-block=""' : "";
+    const directionAttribute = intervene ? ` dir="${direction}"` : "";
+    const blockClass = classAttribute(options.blockClassName);
+    const inline = intervene ? renderInlineBidiHtml(paragraph.text, direction, {
+      includeDataAttributes: includeData,
+      intervention: options.intervention
+    }) : escapeHtml(paragraph.text);
+    const html2 = `<${blockTag}${directionAttribute}${data}${blockClass}>${inline}</${blockTag}>`;
     return { text: paragraph.text, html: html2, direction, start: paragraph.start, end: paragraph.end };
   });
   const serializedBlocks = blocks.map((block, index) => {
@@ -6804,8 +6831,9 @@ function renderBidiHtml(source, options = {}) {
   const container = options.containerTag === void 0 ? automaticContainer : options.containerTag;
   const html = container === false ? serializedBlocks : (() => {
     const tag = checkedTag(container, "containerTag", SAFE_CONTAINER_TAGS);
-    const data = includeData ? ' data-bidilens-document=""' : "";
-    return `<${tag}${data}${classAttribute(options.containerClassName)}>${serializedBlocks}</${tag}>`;
+    const data = intervene && includeData ? ' data-bidilens-document=""' : "";
+    const containerClass = classAttribute(options.containerClassName);
+    return `<${tag}${data}${containerClass}>${serializedBlocks}</${tag}>`;
   })();
   return { source, html, analysis, blocks };
 }
@@ -6956,6 +6984,10 @@ function parseSecurityMode(value) {
   if (value === "off" || value === "audit" || value === "warn" || value === "strict") return value;
   throw new Error(`Invalid security mode: ${value}`);
 }
+function parseIntervention(value) {
+  if (value === "auto" || value === "always") return value;
+  throw new Error(`Invalid intervention mode: ${value}`);
+}
 function riskForFinding(finding) {
   if (finding.severity === "high") return "high";
   if (finding.severity === "warning") return "medium";
@@ -7032,10 +7064,10 @@ function createCliProgram(state) {
       if (controls.length) line(state.stdout, report.visible);
     }
   });
-  program2.command("render").description("Render plain text as escaped, semantic direction-aware HTML").option("-t, --text <text>", "text to render").option("-f, --file <path>", "file to render").option("--json", "emit analysis and HTML as JSON").action(async (options) => {
+  program2.command("render").description("Render plain text as escaped, semantic direction-aware HTML").option("-t, --text <text>", "text to render").option("-f, --file <path>", "file to render").option("--intervention <mode>", "auto or always", parseIntervention, "auto").option("--json", "emit analysis and HTML as JSON").action(async (options) => {
     if (!options.text && !options.file) throw new Error("Provide --text or --file.");
     const text = options.file ? await (0, import_promises.readFile)((0, import_node_path2.resolve)(state.cwd, options.file), "utf8") : options.text;
-    const result = renderBidiHtml(text);
+    const result = renderBidiHtml(text, { intervention: options.intervention });
     line(state.stdout, options.json ? JSON.stringify({ analysis: result.analysis, html: result.html }, null, 2) : result.html);
   });
   program2.command("audit").aliases(["security-scan", "lint"]).description("Audit files for hidden and unbalanced bidi controls").argument("<paths...>", "files or directories").option("--json", "emit JSON").option("--sarif", "emit SARIF 2.1.0").option("--mode <mode>", "off, audit, warn, or strict", parseSecurityMode, "audit").option("--fail-on <risk>", "minimum risk that exits non-zero", parseRisk, "high").action(async (paths, options) => {

@@ -31,6 +31,12 @@ Bidirectional Algorithm. Instead, it supplies the application layer that host
 renderers often omit: per-block base direction, semantic inline isolation,
 stable streaming state, and explicit bidi-control auditing.
 
+It is also non-interfering by default. If a scanned/rendered scope contains no
+RTL strong character or bidi formatting control and inherits LTR direction,
+BidiLens emits no `dir`, `<bdi>`, `data-bidilens-*`, or inline-style changes.
+English inside an RTL parent is still protected, and integrations that require
+stable annotations can opt into `intervention: 'always'`.
+
 ## The failure this project fixes
 
 ```text
@@ -170,7 +176,8 @@ console.log(stream.finish().direction); // rtl
 import { renderBidiHtml } from '@bidilens/html';
 
 const result = renderBidiHtml(userText);
-// result.html contains escaped source plus semantic dir/bdi markup.
+// Mixed/RTL input gets semantic dir/bdi markup. LTR-only input gets escaped
+// semantic HTML without BidiLens attributes or wrappers.
 ```
 
 ## Markdown usage

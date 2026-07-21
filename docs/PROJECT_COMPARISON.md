@@ -13,9 +13,9 @@ those folders and do not treat README claims as proof.
 | `v1.1-Her` | 9 | 9 | 67 | 0 / 0 | 2 |
 | `v1.2-Her` | 9 | 9 | 67 | 0 / 0 | 2 |
 | `v1.3-Her` | 11 | 11 | 197 | 3 / 64 | 200 |
-| canonical BidiLens checkout | 12 | 14 | 692 | 3 / 63 | 918 |
+| canonical BidiLens checkout | 12 | 14 | 841 | 3 / 63 | 918 |
 
-Static assertion counts are only a depth signal; the canonical total is 755
+Static assertion counts are only a depth signal; the canonical total is 904
 across package and visual tests. The canonical checkout also runs those tests,
 coverage thresholds, examples, the three-browser visual suite,
 dependency audit, Unicode reproducibility, tarball inspection, and isolated
@@ -124,7 +124,7 @@ interest.
 | `v1.1-Her` | 67 | 45 | 61 | More packages, very small corpus and no visual gate |
 | `v1.2-Her` | 67 | 45 | 61 | Substantively the same executable implementation as `v1.1-Her` |
 | `v1.3-Her` | 74 | 55 | 70 | Stronger scope and tests, but broken/omitted visuals and unsafe/incomplete distribution details |
-| canonical BidiLens | **88** | **96** | **91** | External identity, native review, accessibility/security audit, and downstream pilot remain |
+| canonical BidiLens | **90** | **96** | **93** | External identity, native review, accessibility/security audit, and downstream pilot remain |
 
 A score of 100 would be false today. Even the canonical web artifact cannot
 prove historical “first” status, absence of every defect, or acceptance by a

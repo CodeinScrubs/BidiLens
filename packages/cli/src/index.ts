@@ -12,6 +12,7 @@ import {
   scanBidiSecurity,
   visibleBidiControls,
   type BidiControlRisk,
+  type BidiInterventionMode,
   type BidiSecurityFinding,
   type BidiSecurityMode
 } from '@bidilens/core';
@@ -119,6 +120,11 @@ function parseSecurityMode(value: string): BidiSecurityMode {
   throw new Error(`Invalid security mode: ${value}`);
 }
 
+function parseIntervention(value: string): BidiInterventionMode {
+  if (value === 'auto' || value === 'always') return value;
+  throw new Error(`Invalid intervention mode: ${value}`);
+}
+
 function riskForFinding(finding: BidiSecurityFinding): BidiControlRisk {
   if (finding.severity === 'high') return 'high';
   if (finding.severity === 'warning') return 'medium';
@@ -223,11 +229,17 @@ function createCliProgram(state: RuntimeState): Command {
     .description('Render plain text as escaped, semantic direction-aware HTML')
     .option('-t, --text <text>', 'text to render')
     .option('-f, --file <path>', 'file to render')
+    .option('--intervention <mode>', 'auto or always', parseIntervention, 'auto')
     .option('--json', 'emit analysis and HTML as JSON')
-    .action(async (options: { text?: string; file?: string; json?: boolean }) => {
+    .action(async (options: {
+      text?: string;
+      file?: string;
+      intervention: BidiInterventionMode;
+      json?: boolean;
+    }) => {
       if (!options.text && !options.file) throw new Error('Provide --text or --file.');
       const text = options.file ? await readFile(resolve(state.cwd, options.file), 'utf8') : options.text!;
-      const result = renderBidiHtml(text);
+      const result = renderBidiHtml(text, { intervention: options.intervention });
       line(state.stdout, options.json
         ? JSON.stringify({ analysis: result.analysis, html: result.html }, null, 2)
         : result.html);

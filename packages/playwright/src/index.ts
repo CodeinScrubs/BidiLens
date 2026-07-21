@@ -32,9 +32,15 @@ export interface BidiBlockExpectation {
   text: string;
   direction: TestDirection;
   isolations?: readonly ExpectedIsolation[];
-  /** Require `dir`, rather than accepting direction inherited only from CSS. */
+  /**
+   * Require `dir`, rather than accepting direction inherited only from CSS.
+   * Defaults to false only for an LTR expectation with no expected isolates.
+   */
   requireExplicitDirection?: boolean;
-  /** Require the standard BidiLens block marker. */
+  /**
+   * Require the standard BidiLens block marker. Defaults to false only for an
+   * LTR expectation with no expected isolates.
+   */
   requireBlockMarker?: boolean;
   /** Require each expected inline run to use a CSS/HTML isolation value. */
   requireIsolationCss?: boolean;
@@ -110,8 +116,10 @@ export function validateBidiSnapshot(
   expected: BidiBlockExpectation
 ): BidiValidationIssue[] {
   const issues: BidiValidationIssue[] = [];
-  const requireExplicit = expected.requireExplicitDirection ?? true;
-  const requireMarker = expected.requireBlockMarker ?? true;
+  const expectedIsolations = expected.isolations ?? [];
+  const ltrPassthrough = expected.direction === 'ltr' && expectedIsolations.length === 0;
+  const requireExplicit = expected.requireExplicitDirection ?? !ltrPassthrough;
+  const requireMarker = expected.requireBlockMarker ?? !ltrPassthrough;
   const exactIsolations = expected.exactIsolationCount ?? true;
   const requireIsolationCss = expected.requireIsolationCss ?? true;
 
@@ -137,7 +145,6 @@ export function validateBidiSnapshot(
     issues.push({ code: 'tag-mismatch', message: `Expected <${expected.tagName}>; received <${snapshot.tagName}>.` });
   }
 
-  const expectedIsolations = expected.isolations ?? [];
   if (exactIsolations && snapshot.isolations.length !== expectedIsolations.length) {
     issues.push({
       code: 'isolation-count-mismatch',

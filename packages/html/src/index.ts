@@ -1,6 +1,8 @@
 import {
   analyzeText,
+  needsBidiIntervention,
   planInlineIsolation,
+  type BidiInterventionMode,
   type DetectionOptions,
   type ResolvedDirection,
   type TextAnalysis
@@ -12,6 +14,8 @@ export interface RenderHtmlOptions extends DetectionOptions {
   blockClassName?: string;
   containerClassName?: string;
   includeDataAttributes?: boolean;
+  /** Skip BidiLens markup for LTR-only text in an LTR context. */
+  intervention?: BidiInterventionMode;
 }
 
 export interface RenderedHtmlBlock {
@@ -60,10 +64,13 @@ function classAttribute(value: string | undefined): string {
 export function renderInlineBidiHtml(
   source: string,
   direction: ResolvedDirection,
-  options: { includeDataAttributes?: boolean } = {}
+  options: {
+    includeDataAttributes?: boolean;
+    intervention?: BidiInterventionMode | undefined;
+  } = {}
 ): string {
   const includeData = options.includeDataAttributes ?? true;
-  const isolations = planInlineIsolation(source, direction);
+  const isolations = planInlineIsolation(source, direction, { intervention: options.intervention });
   let html = '';
   let cursor = 0;
   for (const isolation of isolations) {
@@ -84,12 +91,25 @@ export function renderBidiHtml(source: string, options: RenderHtmlOptions = {}):
   const analysis = analyzeText(source, detection);
   const blockTag = checkedTag(options.blockTag ?? 'p', 'blockTag', SAFE_BLOCK_TAGS);
   const includeData = options.includeDataAttributes ?? true;
+  const intervene = analysis.paragraphs.some((paragraph) => paragraph.direction === 'rtl')
+    || needsBidiIntervention(source, {
+      intervention: options.intervention,
+      inheritedDirection: options.inheritedDirection
+    });
   const blocks = analysis.paragraphs.map<RenderedHtmlBlock>((paragraph) => {
     const direction = paragraph.direction === 'neutral'
       ? (options.inheritedDirection ?? 'ltr')
       : paragraph.direction;
-    const data = includeData ? ' data-bidilens-block=""' : '';
-    const html = `<${blockTag} dir="${direction}"${data}${classAttribute(options.blockClassName)}>${renderInlineBidiHtml(paragraph.text, direction, { includeDataAttributes: includeData })}</${blockTag}>`;
+    const data = intervene && includeData ? ' data-bidilens-block=""' : '';
+    const directionAttribute = intervene ? ` dir="${direction}"` : '';
+    const blockClass = classAttribute(options.blockClassName);
+    const inline = intervene
+      ? renderInlineBidiHtml(paragraph.text, direction, {
+          includeDataAttributes: includeData,
+          intervention: options.intervention
+        })
+      : escapeHtml(paragraph.text);
+    const html = `<${blockTag}${directionAttribute}${data}${blockClass}>${inline}</${blockTag}>`;
     return { text: paragraph.text, html, direction, start: paragraph.start, end: paragraph.end };
   });
 
@@ -104,8 +124,9 @@ export function renderBidiHtml(source: string, options: RenderHtmlOptions = {}):
     ? serializedBlocks
     : (() => {
       const tag = checkedTag(container, 'containerTag', SAFE_CONTAINER_TAGS);
-      const data = includeData ? ' data-bidilens-document=""' : '';
-      return `<${tag}${data}${classAttribute(options.containerClassName)}>${serializedBlocks}</${tag}>`;
+      const data = intervene && includeData ? ' data-bidilens-document=""' : '';
+      const containerClass = classAttribute(options.containerClassName);
+      return `<${tag}${data}${containerClass}>${serializedBlocks}</${tag}>`;
     })();
   return { source, html, analysis, blocks };
 }

@@ -3,6 +3,37 @@ import { describe, expect, it } from 'vitest';
 import { applyBidi, installBidiStyles, observeBidi, restoreBidi } from './index.js';
 
 describe('DOM adapter', () => {
+  it('does not mutate an LTR-only scope', () => {
+    document.body.innerHTML = '<main id="root"><p class="message">React is popular.</p><pre><code>npm test</code></pre></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const before = root.innerHTML;
+    const result = applyBidi(root);
+    expect(result.scanned).toBe(1);
+    expect(result.annotated).toBe(0);
+    expect(result.isolated).toBe(0);
+    expect(root.innerHTML).toBe(before);
+    expect(root.querySelector('[dir]')).toBeNull();
+    expect(root.querySelector('[data-bidilens-block]')).toBeNull();
+    expect(root.querySelector('[data-bidilens-code]')).toBeNull();
+  });
+
+  it('can annotate LTR-only scopes explicitly and respects an RTL inherited context', () => {
+    document.body.innerHTML = '<section dir="rtl"><div id="root"><p>Hello world</p></div></section>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    expect(applyBidi(root).annotated).toBe(1);
+    expect(root.querySelector('p')?.getAttribute('dir')).toBe('ltr');
+
+    document.body.innerHTML = '<div id="explicit"><p>Hello world</p></div>';
+    const explicit = document.querySelector<HTMLElement>('#explicit')!;
+    expect(applyBidi(explicit, { intervention: 'always' }).annotated).toBe(1);
+    expect(explicit.querySelector('p')?.getAttribute('dir')).toBe('ltr');
+
+    document.body.innerHTML = '<section style="direction: rtl"><div id="styled"><p>Hello CSS</p></div></section>';
+    const styled = document.querySelector<HTMLElement>('#styled')!;
+    expect(applyBidi(styled).annotated).toBe(1);
+    expect(styled.querySelector('p')?.getAttribute('dir')).toBe('ltr');
+  });
+
   it('assigns RTL to Persian-majority prose that starts with React', () => {
     document.body.innerHTML = '<p id="flagship">React یک کتابخانه جاوااسکریپت بسیار محبوب است.</p>';
     const paragraph = document.querySelector<HTMLElement>('#flagship')!;
@@ -27,14 +58,14 @@ describe('DOM adapter', () => {
     const paragraphs = root.querySelectorAll('p');
     const code = root.querySelector('code')!;
 
-    expect(result.annotated).toBe(2);
+    expect(result.annotated).toBe(1);
     expect(paragraphs[0]?.getAttribute('dir')).toBe('rtl');
-    expect(paragraphs[1]?.getAttribute('dir')).toBe('ltr');
+    expect(paragraphs[1]?.hasAttribute('dir')).toBe(false);
     expect(code.getAttribute('dir')).toBe('ltr');
     expect(code.hasAttribute('data-bidilens-code')).toBe(true);
     expect(result.scanned).toBe(2);
     expect(result.rtl).toBe(1);
-    expect(result.ltr).toBe(1);
+    expect(result.ltr).toBe(0);
     expect(code.style.unicodeBidi).toBe('isolate');
   });
 
@@ -55,6 +86,7 @@ describe('DOM adapter', () => {
     const seen: string[] = [];
     const result = applyBidi(root, {
       fallback: 'neutral',
+      intervention: 'always',
       skipSelector: '#skip',
       onAnnotated: (element, direction) => seen.push(`${element.id}:${direction}`)
     });
@@ -66,6 +98,106 @@ describe('DOM adapter', () => {
     expect(seen).toEqual(['neutral:neutral']);
     expect(skipped.hasAttribute('data-bidilens-block')).toBe(false);
     expect(neutral.hasAttribute('dir')).toBe(false);
+  });
+
+  it('keeps unrelated LTR siblings and code untouched when another subtree is RTL', () => {
+    document.body.innerHTML = '<main id="root"><section dir="rtl"><p id="protected">Hello RTL parent</p></section><p id="plain">Hello LTR page</p><code id="plain-code">npm test</code></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const plain = document.querySelector<HTMLElement>('#plain')!;
+    const plainCode = document.querySelector<HTMLElement>('#plain-code')!;
+    applyBidi(root);
+    expect(document.querySelector('#protected')?.getAttribute('dir')).toBe('ltr');
+    expect(plain.hasAttribute('dir')).toBe(false);
+    expect(plain.hasAttribute('data-bidilens-block')).toBe(false);
+    expect(plainCode.hasAttribute('dir')).toBe(false);
+    expect(plainCode.hasAttribute('data-bidilens-code')).toBe(false);
+  });
+
+  it('returns a previously annotated dynamic message to the exact no-op state', () => {
+    document.body.innerHTML = '<main id="root"><p id="message">سلام دنیا</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+    applyBidi(root);
+    expect(message.dir).toBe('rtl');
+    message.textContent = 'Hello world.';
+    const result = applyBidi(root);
+    expect(result.annotated).toBe(0);
+    expect(message.outerHTML).toBe('<p id="message">Hello world.</p>');
+  });
+
+  it('re-evaluates a dynamic host direction without trusting its own generated dir', () => {
+    document.body.innerHTML = '<main id="root" style="direction:ltr"><p id="message">سلام دنیا</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+    applyBidi(root);
+    root.style.direction = 'rtl';
+    message.textContent = 'Hello world.';
+    expect(applyBidi(root).annotated).toBe(1);
+    expect(message.getAttribute('dir')).toBe('ltr');
+    root.style.direction = 'ltr';
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(message.outerHTML).toBe('<p id="message">Hello world.</p>');
+  });
+
+  it('removes only its owned code style while preserving author style updates', () => {
+    document.body.innerHTML = '<main id="root"><code id="code">سلام</code></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const code = document.querySelector<HTMLElement>('#code')!;
+    applyBidi(root);
+    expect(code.style.unicodeBidi).toBe('isolate');
+    code.style.color = 'red';
+    code.textContent = 'npm test';
+    applyBidi(root);
+    expect(code.style.color).toBe('red');
+    expect(code.style.unicodeBidi).toBe('');
+    expect(code.hasAttribute('dir')).toBe(false);
+    expect(code.hasAttribute('data-bidilens-code')).toBe(false);
+
+    code.textContent = 'سلام';
+    applyBidi(root);
+    code.style.backgroundColor = 'blue';
+    restoreBidi(root);
+    expect(code.style.color).toBe('red');
+    expect(code.style.backgroundColor).toBe('blue');
+    expect(code.style.unicodeBidi).toBe('');
+  });
+
+  it('overrides conflicting own-element CSS only while protection is required', () => {
+    document.body.innerHTML = '<main id="root"><p id="message" style="direction:rtl">Hello world</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+    expect(applyBidi(root).annotated).toBe(1);
+    expect(message.getAttribute('dir')).toBe('ltr');
+    expect(getComputedStyle(message).direction).toBe('ltr');
+    expect(applyBidi(root).annotated).toBe(1);
+    message.style.setProperty('direction', 'ltr', 'important');
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(message.hasAttribute('data-bidilens-block')).toBe(false);
+    expect(message.style.direction).toBe('ltr');
+    expect(message.style.getPropertyPriority('direction')).toBe('important');
+  });
+
+  it('restores authored dir=auto after text changes from RTL to LTR', () => {
+    document.body.innerHTML = '<main id="root"><p id="message" dir="auto">سلام دنیا</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+    applyBidi(root);
+    expect(message.getAttribute('dir')).toBe('rtl');
+    message.textContent = 'Hello world';
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(message.getAttribute('dir')).toBe('auto');
+    expect(message.hasAttribute('data-bidilens-block')).toBe(false);
+  });
+
+  it('honors explicit RTL strategy and neutral fallback before using the fast path', () => {
+    document.body.innerHTML = '<main id="root"><p id="forced">Hello</p><p id="neutral">---</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    expect(applyBidi(root, { strategy: 'rtl' }).annotated).toBe(2);
+    expect(document.querySelector('#forced')?.getAttribute('dir')).toBe('rtl');
+    restoreBidi(root);
+    expect(applyBidi(root, { fallback: 'rtl' }).annotated).toBe(1);
+    expect(document.querySelector('#forced')?.hasAttribute('dir')).toBe(false);
+    expect(document.querySelector('#neutral')?.getAttribute('dir')).toBe('rtl');
   });
 
   it('supports custom selectors and explicit includeRoot', () => {
@@ -137,8 +269,8 @@ describe('DOM adapter', () => {
 
     root.insertAdjacentHTML('beforeend', '<p id="second">Hello world</p>');
     const flushed = controller.flush();
-    expect(flushed.annotated).toBe(2);
-    expect(document.querySelector<HTMLElement>('#second')?.dir).toBe('ltr');
+    expect(flushed.annotated).toBe(1);
+    expect(document.querySelector<HTMLElement>('#second')?.hasAttribute('dir')).toBe(false);
 
     controller.disconnect();
     root.insertAdjacentHTML('beforeend', '<p id="third">مرحبا بالعالم</p>');

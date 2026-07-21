@@ -18,4 +18,6 @@ stream.reset('یک پاسخ تازه.');
 ```
 
 Both APIs implement the standard Svelte readable-store subscription contract.
+LTR-only snapshots preserve the source and contain an empty isolation plan, so
+an idiomatic renderer has no BidiLens wrapper work to perform.
 Run `pnpm --filter @bidilens/svelte example` after building.

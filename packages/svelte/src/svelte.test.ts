@@ -3,6 +3,16 @@ import { get } from 'svelte/store';
 import { createBidiMessage, createStreamingBidiMessage } from './index.js';
 
 describe('Svelte adapter', () => {
+  it('returns no isolation work for ordinary LTR-only content', () => {
+    const source = 'React is a very popular JavaScript library.';
+    const analysis = get(createBidiMessage(source));
+    expect(analysis.text).toBe(source);
+    expect(analysis.direction).toBe('ltr');
+    expect(analysis.isolations).toEqual([]);
+    expect(get(createBidiMessage(source, { intervention: 'always' })).isolations.length)
+      .toBeGreaterThan(0);
+  });
+
   it('creates a reactive analysis store', () => {
     const store = createBidiMessage('React یک کتابخانه است.');
     expect(get(store).direction).toBe('rtl');

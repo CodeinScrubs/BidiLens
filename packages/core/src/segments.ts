@@ -1,6 +1,8 @@
 import { classifyCharacter } from './classify.js';
 import { isolateText } from './controls.js';
 import { findTechnicalTokenRanges } from './detect.js';
+import { needsBidiIntervention } from './intervention.js';
+import type { BidiInterventionMode } from './intervention.js';
 import type { Direction, DirectionalRun, InlineIsolation } from './types.js';
 
 function attachSourceRanges(text: string, isolations: Omit<InlineIsolation, 'sourceRange'>[]): InlineIsolation[] {
@@ -131,8 +133,16 @@ export function isolateDirectionalRuns(text: string): string {
 export function planInlineIsolation(
   text: string,
   blockDirection: Exclude<Direction, 'neutral'>,
-  options: { excludeTechnicalTokens?: boolean; isolateOppositeRuns?: boolean } = {}
+  options: {
+    excludeTechnicalTokens?: boolean;
+    isolateOppositeRuns?: boolean;
+    intervention?: BidiInterventionMode | undefined;
+  } = {}
 ): InlineIsolation[] {
+  if (!needsBidiIntervention(text, {
+    intervention: options.intervention,
+    inheritedDirection: blockDirection
+  })) return [];
   const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text);
   const isolations: Omit<InlineIsolation, 'sourceRange'>[] = technical.map((range) => ({
     text: range.text,

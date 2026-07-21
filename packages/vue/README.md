@@ -19,6 +19,9 @@ const stream = useBidiStream(answer);
 ```
 
 The component emits semantic `dir`, block metadata, and `<bdi>`/`<code>`
-isolations. Run `pnpm --filter @bidilens/vue example` after building.
+isolations when bidi handling is needed. LTR-only content emits no BidiLens
+attributes/styles by default; use `inherited-direction="rtl"` or
+`intervention="always"` for those explicit contexts. Run
+`pnpm --filter @bidilens/vue example` after building.
 The Node SSR example additionally needs
 `npm install --save-dev @vue/server-renderer`.

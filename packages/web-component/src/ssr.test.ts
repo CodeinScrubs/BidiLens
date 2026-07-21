@@ -3,7 +3,7 @@ import { BidiMessageElement } from './index.js';
 
 describe('web component SSR import', () => {
   it('can load without browser globals', () => {
-    expect(BidiMessageElement.observedAttributes).toEqual(['text']);
+    expect(BidiMessageElement.observedAttributes).toEqual(['text', 'intervention']);
     expect(typeof BidiMessageElement).toBe('function');
     expect(typeof BidiMessageElement.prototype.render).toBe('function');
   });

@@ -3,6 +3,7 @@ import {
   analyzeText,
   createBidiStream,
   planInlineIsolation,
+  type BidiInterventionMode,
   type BidiStreamOptions,
   type BidiStreamSnapshot,
   type DetectionOptions,
@@ -14,10 +15,17 @@ export interface SvelteBidiAnalysis extends TextAnalysis {
   isolations: InlineIsolation[];
 }
 
-function analyzeForSvelte(text: string, options: DetectionOptions): SvelteBidiAnalysis {
+export interface SvelteBidiOptions extends DetectionOptions {
+  intervention?: BidiInterventionMode;
+}
+
+function analyzeForSvelte(text: string, options: SvelteBidiOptions): SvelteBidiAnalysis {
   const analysis = analyzeText(text, options);
   const direction = analysis.direction === 'neutral' ? (options.inheritedDirection ?? 'ltr') : analysis.direction;
-  return { ...analysis, isolations: planInlineIsolation(text, direction) };
+  return {
+    ...analysis,
+    isolations: planInlineIsolation(text, direction, { intervention: options.intervention })
+  };
 }
 
 export interface BidiMessageStore {
@@ -26,7 +34,7 @@ export interface BidiMessageStore {
   getText: () => string;
 }
 
-export function createBidiMessage(text = '', options: DetectionOptions = {}): BidiMessageStore {
+export function createBidiMessage(text = '', options: SvelteBidiOptions = {}): BidiMessageStore {
   let source = text;
   const store = writable(analyzeForSvelte(source, options));
   return {

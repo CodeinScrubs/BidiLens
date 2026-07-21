@@ -17,6 +17,7 @@ import {
   findDirectionalRuns,
   stripBidiControls,
   findTechnicalTokenRanges,
+  needsBidiIntervention,
   planInlineIsolation
 } from './index.js';
 
@@ -148,6 +149,24 @@ describe('direction detection', () => {
 });
 
 describe('isolation and segmentation', () => {
+  it('uses a context-aware no-op gate for ordinary LTR content', () => {
+    const source = 'React is a very popular JavaScript library.';
+    expect(needsBidiIntervention(source)).toBe(false);
+    expect(needsBidiIntervention(source, { inheritedDirection: 'ltr' })).toBe(false);
+    expect(needsBidiIntervention(source, { inheritedDirection: 'rtl' })).toBe(true);
+    expect(needsBidiIntervention(source, { intervention: 'always' })).toBe(true);
+    expect(planInlineIsolation(source, 'ltr')).toEqual([]);
+    expect(planInlineIsolation(source, 'ltr', { intervention: 'always' }).length).toBeGreaterThan(0);
+    expect(analyzeBlock(source).isolations).toEqual([]);
+    expect(analyzeBlock(source, { intervention: 'always' }).isolations.length).toBeGreaterThan(0);
+  });
+
+  it('never sends RTL text or hidden bidi controls through the LTR fast path', () => {
+    expect(needsBidiIntervention('The Persian word کتاب means book.')).toBe(true);
+    expect(needsBidiIntervention('Hello\u202E world')).toBe(true);
+    expect(needsBidiIntervention('سلام دنیا')).toBe(true);
+  });
+
   it('plans the leading technical identifier without changing source order', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     const plans = planInlineIsolation(source, 'rtl');

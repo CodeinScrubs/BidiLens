@@ -8,6 +8,40 @@ import { BidiCode, BidiIsolate, BidiMessage, BidiText, StreamingBidiMessage, use
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe('React adapter', () => {
+  it('passes ordinary LTR content through without BidiLens attributes or styles', () => {
+    const source = 'React is a very popular JavaScript library.';
+    const html = renderToStaticMarkup(<BidiMessage text={source} className="message" />);
+    expect(html).toBe(`<article class="message">${source}</article>`);
+    expect(html).not.toContain('dir=');
+    expect(html).not.toContain('data-bidilens');
+    expect(html).not.toContain('style=');
+  });
+
+  it('preserves caller-owned direction, data attributes, and styles on pass-through', () => {
+    const html = renderToStaticMarkup(
+      <BidiMessage
+        text="Hello"
+        dir="rtl"
+        data-bidilens-block="author"
+        data-bidilens-owner="application"
+        style={{ color: 'red' }}
+      />
+    );
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('data-bidilens-block="author"');
+    expect(html).toContain('data-bidilens-owner="application"');
+    expect(html).toContain('style="color:red"');
+  });
+
+  it('still establishes LTR when the inherited context is RTL or annotations are requested', () => {
+    const inherited = renderToStaticMarkup(<BidiMessage text="Hello world" inheritedDirection="rtl" />);
+    const explicit = renderToStaticMarkup(<BidiMessage text="Hello world" intervention="always" />);
+    expect(inherited).toContain('dir="ltr"');
+    expect(inherited).toContain('data-bidilens-block');
+    expect(explicit).toContain('dir="ltr"');
+    expect(explicit).toContain('text-align:start');
+  });
+
   it('renders the flagship Persian-majority paragraph RTL', () => {
     const html = renderToStaticMarkup(
       <BidiMessage text="React یک کتابخانه جاوااسکریپت بسیار محبوب است.">

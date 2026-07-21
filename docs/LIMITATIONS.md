@@ -42,6 +42,17 @@ parsing.
 
 ## Compatibility
 
+The automatic LTR fast path is context-sensitive, not a universal promise that
+English never receives metadata. English under an RTL parent must establish an
+LTR base. DOM integrations can inspect ancestors; SSR/framework callers should
+pass `inheritedDirection="rtl"` when that context is not otherwise visible.
+Explicit `intervention: 'always'` also disables the fast path by design.
+
+DOM ownership is determined from observable attribute/property changes. A
+same-value inline-style assignment made while BidiLens already owns that exact
+value cannot be distinguished from no assignment; call `restoreBidi()` before
+intentionally transferring ownership of such a property to application code.
+
 Public packages are ESM-only. CommonJS consumers must use dynamic `import()`
 or an ESM bridge. Node.js 22.12 is the declared minimum. React 18–19, Vue 3.5+, and
 Svelte 4–5 are the tested/declarative peer families; older or future majors are

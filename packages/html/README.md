@@ -17,6 +17,11 @@ const { html } = renderBidiHtml(
 // <p dir="rtl"> with React in <bdi dir="ltr">
 ```
 
+LTR-only input in an LTR context is serialized without BidiLens direction,
+data attributes, or isolation wrappers; caller-supplied classes are preserved. Pass
+`{ inheritedDirection: 'rtl' }` when embedding it under RTL, or
+`{ intervention: 'always' }` for the former always-annotated output.
+
 `blockTag` and `containerTag` accept a conservative allowlist of ordinary
 semantic container elements. Executable, raw-text, embedded, foreign-content,
 and void tags are rejected even when their names are syntactically valid.

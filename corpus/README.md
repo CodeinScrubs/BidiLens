@@ -18,6 +18,11 @@ path, version, command, or similar detected span is one token even when it
 contains internal punctuation or spaces. Sentence punctuation outside those
 spans remains independently numbered.
 
+`expectedIsolations` describes the default `auto` intervention mode. A wholly
+LTR fixture in an LTR context therefore has no isolation expectation; legacy
+same-direction technical wrappers belong to `intervention: 'always'`
+compatibility tests instead.
+
 This convention makes reviews possible without asking contributors to reason
 about storage indexes. Browser geometry and copy-preservation are tested
 separately by Playwright; these arrays do not pretend to replace a rendering
