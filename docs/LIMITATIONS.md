@@ -19,8 +19,8 @@ not guarantee identical pixels across all hosts.
 
 `content-majority` is a deterministic application policy, not a language
 detector. Domain-specific prose dominated by identifiers may need an explicit
-direction or custom technical-token matcher. Very short or neutral blocks use
-the configured fallback or inherited direction.
+direction or the `technicalIdentifiers` option. Very short or neutral blocks
+use the configured fallback or inherited direction.
 
 The scanner identifies suspicious structure, not malicious intent. It does
 not implement whole-script confusable analysis or language-specific source

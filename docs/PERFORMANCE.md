@@ -23,10 +23,10 @@ not stable enough for a universal latency threshold.
 
 ## Environment
 
-Measured 2026-07-18 on:
+Measured 2026-07-22 on:
 
 - Windows 10.0.19045 x64;
-- Node.js 24.18.0 LTS;
+- Node.js 25.2.1;
 - Intel Core i7-4810MQ at 2.80 GHz, 8 logical CPUs;
 - local interactive machine; power state was not instrumented.
 
@@ -36,22 +36,22 @@ Average milliseconds per operation:
 
 | UTF-16 units | Iterations | Analyze | Segment | Isolate | Security |
 |---:|---:|---:|---:|---:|---:|
-| 1,024 | 1,000 | 1.0391 | 0.1243 | 0.2961 | 0.0367 |
-| 10,240 | 100 | 8.5716 | 0.9234 | 2.3767 | 0.3251 |
-| 102,400 | 10 | 99.4084 | 18.9249 | 35.6918 | 3.1792 |
-| 1,048,576 | 1 | 869.9294 | 199.0513 | 459.5628 | 32.6089 |
+| 1,024 | 1,000 | 0.4718 | 0.0968 | 0.3030 | 0.0356 |
+| 10,240 | 100 | 4.3712 | 0.7715 | 2.6978 | 0.2992 |
+| 102,400 | 10 | 43.8334 | 12.0886 | 28.5110 | 2.9937 |
+| 1,048,576 | 1 | 478.6787 | 153.5806 | 380.7700 | 30.2445 |
 
 ## Streaming and structured workloads
 
 | Workload | Measurement |
 |---|---:|
-| 100,000 units / 1,000 chunks, incremental | 102.0627 ms average (5 iterations) |
-| Same input, full accumulated reparse after each chunk | 56,853.5192 ms (1 iteration) |
-| 10,000 one-character pushes | 28.8889 ms average (5 iterations) |
-| 500-item / 20-indent-level list, 42,999 units, analyze | 43.6502 ms average |
-| Same deep list, isolation / security | 11.7461 / 1.2562 ms average |
-| 1,000-row table, 70,826 units, analyze | 79.3424 ms average |
-| Same table, isolation / security | 22.6197 / 1.9844 ms average |
+| 100,000 units / 1,000 chunks, incremental | 251.4544 ms average (5 iterations) |
+| Same input, full accumulated reparse after each chunk | 22,624.4040 ms (1 iteration) |
+| 10,000 one-character pushes | 44.6316 ms average (5 iterations) |
+| 500-item / 20-indent-level list, 42,999 units, analyze | 15.9302 ms average |
+| Same deep list, isolation / security | 8.7808 / 1.0634 ms average |
+| 1,000-row table, 70,826 units, analyze | 32.2007 ms average |
+| Same table, isolation / security | 18.9468 / 1.7496 ms average |
 
 The incremental comparison demonstrates the cost avoided by not reparsing the
 whole accumulated response after every chunk. It does not imply that every host
@@ -65,7 +65,8 @@ will achieve the same ratio.
 - completed stream paragraphs are cached and immutable;
 - the default separator uses incremental paragraph state;
 - open content uses chunk-independent, exponentially spaced source-length and
-  strong-evidence checkpoints;
+  strong-evidence checkpoints, while the default content-majority result stays
+  revisable until the paragraph is complete;
 - property tests cover one-character, random, token-like, CRLF, UTF-16
   surrogate-half, URL, and Markdown-fence chunk boundaries;
 - a unit alarm permits 8,000 single-character pushes and dense isolation

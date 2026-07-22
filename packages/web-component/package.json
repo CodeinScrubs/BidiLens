@@ -8,7 +8,7 @@
   "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
   "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
   "type": "module",
-  "sideEffects": ["./dist/index.js", "./dist/standalone.js"],
+  "sideEffects": ["./dist/auto.js", "./dist/standalone.js"],
   "keywords": ["bidi", "rtl", "ltr", "unicode", "web-component", "ai"],
   "files": ["dist", "README.md", "LICENSE", "examples"],
   "main": "./dist/index.js",
@@ -18,6 +18,7 @@
   "jsdelivr": "./dist/standalone.js",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" },
+    "./auto": { "types": "./dist/auto.d.ts", "import": "./dist/auto.js", "default": "./dist/auto.js" },
     "./standalone": { "types": "./dist/standalone.d.ts", "import": "./dist/standalone.js", "default": "./dist/standalone.js" }
   },
   "scripts": {

@@ -85,8 +85,10 @@ can be controlled through options.
 
 The core streaming state machine stores completed paragraphs separately from
 the current open paragraph. Completed snapshots are copied and never mutated.
-The open paragraph can move once from provisional fallback to a locked
-direction after configurable evidence and margin thresholds.
+The default open paragraph can revise its provisional direction at bounded
+evidence checkpoints as more text arrives. Irreversible live locking is limited
+to the explicit `first-strong` and `sticky-majority` strategies; `finish()`
+always reconciles the open paragraph with batch analysis.
 
 Batch reconciliation occurs at `finish()`. Exponential evidence checkpoints
 avoid rescanning a long neutral or incomplete technical token after every

@@ -103,7 +103,7 @@ test.describe('flagship mixed-direction rendering', () => {
     const finished = stream.finish();
     expect(provisional.direction).toBe('ltr');
     expect(settled.direction).toBe('rtl');
-    expect(settled.locked).toBe(true);
+    expect(settled.locked).toBe(false);
     expect(finished.direction).toBe('rtl');
 
     const rendered = renderBidiHtml(finished.text, { blockClassName: 'message' });

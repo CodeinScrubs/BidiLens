@@ -24,7 +24,10 @@ function analyzeForSvelte(text: string, options: SvelteBidiOptions): SvelteBidiA
   const direction = analysis.direction === 'neutral' ? (options.inheritedDirection ?? 'ltr') : analysis.direction;
   return {
     ...analysis,
-    isolations: planInlineIsolation(text, direction, { intervention: options.intervention })
+    isolations: planInlineIsolation(text, direction, {
+      intervention: options.intervention,
+      technicalIdentifiers: options.technicalIdentifiers
+    })
   };
 }
 

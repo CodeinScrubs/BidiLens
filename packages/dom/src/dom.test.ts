@@ -226,6 +226,16 @@ describe('DOM adapter', () => {
     expect(paragraph.querySelector<HTMLElement>('.machine')?.dataset.bidilensCode).toBe('');
   });
 
+  it('propagates caller-specific identifiers through detection and DOM isolation', () => {
+    const source = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
+    document.body.innerHTML = `<p id="message">${source}</p>`;
+    applyBidi(document.body, { technicalIdentifiers: ['InternalPlatform'] });
+    const paragraph = document.querySelector<HTMLElement>('#message')!;
+    expect(paragraph.dir).toBe('rtl');
+    expect(paragraph.querySelector('bdi')?.textContent).toBe('internalplatform');
+    expect(paragraph.textContent).toBe(source);
+  });
+
   it('isolates opposite natural-language runs without changing logical text and is idempotent', () => {
     const source = 'The Persian word کتاب means book.';
     document.body.innerHTML = `<p id="message">${source}</p>`;

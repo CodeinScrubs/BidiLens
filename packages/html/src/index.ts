@@ -67,10 +67,14 @@ export function renderInlineBidiHtml(
   options: {
     includeDataAttributes?: boolean;
     intervention?: BidiInterventionMode | undefined;
+    technicalIdentifiers?: readonly string[] | undefined;
   } = {}
 ): string {
   const includeData = options.includeDataAttributes ?? true;
-  const isolations = planInlineIsolation(source, direction, { intervention: options.intervention });
+  const isolations = planInlineIsolation(source, direction, {
+    intervention: options.intervention,
+    technicalIdentifiers: options.technicalIdentifiers
+  });
   let html = '';
   let cursor = 0;
   for (const isolation of isolations) {
@@ -106,7 +110,8 @@ export function renderBidiHtml(source: string, options: RenderHtmlOptions = {}):
     const inline = intervene
       ? renderInlineBidiHtml(paragraph.text, direction, {
           includeDataAttributes: includeData,
-          intervention: options.intervention
+          intervention: options.intervention,
+          technicalIdentifiers: options.technicalIdentifiers
         })
       : escapeHtml(paragraph.text);
     const html = `<${blockTag}${directionAttribute}${data}${blockClass}>${inline}</${blockTag}>`;

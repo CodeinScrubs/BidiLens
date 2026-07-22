@@ -17,6 +17,14 @@ describe('React adapter', () => {
     expect(html).not.toContain('style=');
   });
 
+  it('honors an explicitly forced LTR base inside an author-owned RTL context', () => {
+    const html = renderToStaticMarkup(
+      <BidiMessage text="Hello world" forceDirection="ltr" dir="rtl" />
+    );
+    expect(html).toContain('dir="ltr"');
+    expect(html).not.toContain('dir="rtl"');
+  });
+
   it('preserves caller-owned direction, data attributes, and styles on pass-through', () => {
     const html = renderToStaticMarkup(
       <BidiMessage
@@ -53,6 +61,20 @@ describe('React adapter', () => {
     expect(html).toContain('>React</bdi>');
     expect(html).toContain('data-bidilens-kind="identifier"');
     expect(html).not.toContain('unicode-bidi:plaintext');
+  });
+
+  it('uses caller-specific identifiers for direction and isolation', () => {
+    const html = renderToStaticMarkup(
+      <BidiMessage
+        text={'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.'}
+        technicalIdentifiers={['InternalPlatform']}
+      />
+    );
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('>internalplatform</bdi>');
+    expect(renderToStaticMarkup(
+      <BidiMessage text="internalplatform is healthy." technicalIdentifiers={['InternalPlatform']} />
+    )).toBe('<article>internalplatform is healthy.</article>');
   });
 
   it('renders RTL message semantics', () => {
@@ -157,5 +179,35 @@ describe('React adapter', () => {
     await act(async () => finish?.());
     expect(container.querySelector('output')?.dataset.direction).toBe('rtl');
     await act(async () => root.unmount());
+  });
+
+  it('renders accumulated mixed-direction paragraphs as independent blocks', () => {
+    const source = 'Hello world\n\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627';
+    const html = renderToStaticMarkup(
+      <StreamingBidiMessage text={source} completed />
+    );
+    expect(html).toMatch(/^<article>/u);
+    expect(html).toContain('<span dir="ltr"');
+    expect(html).toContain('>Hello world</span>');
+    expect(html).toContain('<span dir="rtl"');
+    expect(html).toContain('>سلام دنیا</span>');
+    expect(html).not.toMatch(/^<article dir=/u);
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    expect(container.textContent).toBe(source);
+  });
+
+  it('keeps an ordinary pure-LTR streaming message observably untouched', () => {
+    expect(renderToStaticMarkup(<StreamingBidiMessage text="Hello world" />))
+      .toBe('<article>Hello world</article>');
+  });
+
+  it('preserves consecutive streaming paragraph separators and empty paragraphs', () => {
+    const source = 'Hello\n\n\u0633\u0644\u0627\u0645\u2029English';
+    const html = renderToStaticMarkup(<StreamingBidiMessage text={source} completed />);
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    expect(container.textContent).toBe(source);
+    expect(container.querySelectorAll('article > span')).toHaveLength(4);
   });
 });

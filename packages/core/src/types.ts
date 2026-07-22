@@ -24,6 +24,11 @@ export interface DetectionOptions {
   majorityThreshold?: number;
   /** Exclude inline technical tokens from natural-language evidence. */
   excludeTechnicalTokens?: boolean;
+  /**
+   * Additional single-token product or identifier names to exclude from
+   * natural-language evidence, matched case-insensitively.
+   */
+  technicalIdentifiers?: readonly string[];
 }
 
 export interface StrongCharacterCounts {
@@ -37,6 +42,7 @@ export interface ParagraphAnalysis {
   start: number;
   end: number;
   direction: Direction;
+  /** First strong character after the configured technical-token policy. */
   firstStrong: Direction;
   confidence: number;
   counts: StrongCharacterCounts;
@@ -45,7 +51,10 @@ export interface ParagraphAnalysis {
 export interface TextAnalysis {
   text: string;
   direction: Direction;
+  /** First strong character after the configured technical-token policy. */
   firstStrong: Direction;
+  /** Literal first Unicode bidi-strong character before technical-token exclusion. */
+  rawFirstStrong: Direction;
   confidence: number;
   counts: StrongCharacterCounts;
   /** Strong natural-language counts before technical-token exclusion. */
@@ -99,10 +108,12 @@ export interface BidiStreamOptions {
    */
   paragraphSeparator?: RegExp;
   majorityThreshold?: number;
-  /** Evidence required before the default live direction locks. */
+  /** Evidence required before the default live direction is adopted. */
   lockAfterStrongCharacters?: number;
-  /** Minimum winning character margin required before locking. */
+  /** Minimum winning character margin required before adopting a direction. */
   lockMargin?: number;
+  /** Additional technical identifiers, using the same rules as batch detection. */
+  technicalIdentifiers?: readonly string[];
 }
 
 export interface StreamParagraph {

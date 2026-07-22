@@ -91,7 +91,7 @@ describe('Vue adapter', () => {
     source.value += 'یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(stream.snapshot.value.text).toBe(source.value);
     expect(stream.snapshot.value.direction).toBe('rtl');
-    expect(stream.snapshot.value.locked).toBe(true);
+    expect(stream.snapshot.value.locked).toBe(false);
     const final = stream.finish();
     expect(final.finished).toBe(true);
     expect(final.direction).toBe('rtl');
@@ -117,6 +117,17 @@ describe('Vue adapter', () => {
     expect(html).toContain('data-bidilens-kind="identifier"');
     expect(html).toContain('>React</bdi>');
     expect(html).toContain('text-align:start');
+  });
+
+  it('uses caller-specific identifiers for direction and isolation', async () => {
+    const source = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
+    expect(useBidiDirection(source, { technicalIdentifiers: ['InternalPlatform'] }).value).toBe('rtl');
+    const app = createSSRApp({
+      render: () => h(BidiMessage, { text: source, technicalIdentifiers: ['InternalPlatform'] })
+    });
+    const html = await renderToString(app);
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('>internalplatform</bdi>');
   });
 
   it('uses inherited direction for a neutral SSR block and renders isolate slots', async () => {

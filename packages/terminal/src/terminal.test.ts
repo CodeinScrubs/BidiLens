@@ -37,6 +37,17 @@ describe('terminal adapter', () => {
     expect(result.warnings[1]).toContain('changes the output string');
   });
 
+  it('uses caller-specific identifiers consistently in isolate mode', () => {
+    const source = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
+    const result = formatTerminalText(source, {
+      mode: 'unicode-isolates',
+      technicalIdentifiers: ['InternalPlatform']
+    });
+    expect(result.direction).toBe('rtl');
+    expect(result.text).toContain(`${BIDI_CONTROLS.LRI}internalplatform${BIDI_CONTROLS.PDI}`);
+    expect(stripBidiControls(result.text)).toBe(source);
+  });
+
   it('handles every paragraph independently while preserving separators', () => {
     const source = 'سلام دنیا\nHello world';
     const result = formatTerminalText(source, { mode: 'unicode-isolates' });

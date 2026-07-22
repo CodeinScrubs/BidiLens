@@ -4,6 +4,7 @@ import { BidiMessageElement, defineBidiMessageElement } from './index.js';
 
 describe('BidiMessageElement', () => {
   it('is a real HTMLElement with the expected observed attribute', () => {
+    expect(customElements.get('bidi-message')).toBeUndefined();
     expect(BidiMessageElement.prototype).toBeInstanceOf(HTMLElement.prototype.constructor);
     expect(BidiMessageElement.observedAttributes).toEqual(['text', 'intervention']);
   });

@@ -43,5 +43,24 @@ The default `content-majority` policy excludes technical tokens before
 counting natural-language evidence. Use `first-strong` or `strict-uax9` only
 when compatibility with first-strong host behavior is required.
 
+Built-in recognition covers conservative, unambiguous tool and product names.
+Add private or domain-specific single-token identifiers without changing global
+state:
+
+```ts
+analyzeText('internalplatform خوب است.', {
+  technicalIdentifiers: ['InternalPlatform']
+});
+```
+
+Matching is case-insensitive. Custom values must start with an ASCII letter and
+may then contain ASCII letters, digits, `_`, `.`, or `-`. `firstStrong` reports
+the first strong character after configured technical-token exclusion;
+`rawFirstStrong` reports the literal first Unicode bidi-strong character.
+
+The default stream direction remains provisional and revisable until
+`finish()`. Choose `sticky-majority` only when UI stability is more important
+than correcting a misleading prefix before completion.
+
 Run the packaged example after building with
 `pnpm --filter @bidilens/core example`.

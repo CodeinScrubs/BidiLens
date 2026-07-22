@@ -140,13 +140,15 @@ Passing tests do not cover several release-critical failures:
 Canonical BidiLens already has the safe versions of the worthwhile ideas:
 context-aware default non-interference, exact dual-offset isolation contracts,
 cross-isolate security checks, a bundled and self-tested Action, a genuinely
-standalone custom element, strict corpus isolation comparison, packed-consumer
-tests, and Chromium/Firefox/WebKit behavior checks. Its direct same-process
-microbenchmark is not universally faster: `v1.4-Her` was faster on pure English
-and Persian direction detection on this machine, while BidiLens was faster on
-the representative technical-token-plus-Persian mixed workload. Performance is
-therefore recorded as a tradeoff, not converted into an unsupported superiority
-claim.
+standalone custom element, direction-exact corpus comparison (plus exact
+isolation expectations where authored), packed-consumer tests, and
+Chromium/Firefox/WebKit behavior checks. An ad-hoc same-process audit on this
+machine also put canonical ahead for both 10 KiB and 100 KiB English, Persian,
+and representative technical/Persian inputs after duplicate analysis passes
+were removed. Because that sibling checkout and harness are not published with
+this repository, this observation is deliberately not presented as a
+reproducible product benchmark or a universal latency claim; BidiLens' own
+committed benchmark remains the release regression evidence.
 
 ## Material ideas reviewed
 
@@ -157,23 +159,24 @@ claim.
 | Separate `stream` and `security` package proposals | Their useful APIs are implemented in `@bidilens/core`; keeping them together avoids two tiny dependency layers while preserving streaming, scan, sanitize, and SARIF capabilities |
 | Block evidence and language-neutral offsets | Implemented in `analyzeBlock` with UTF-16 and code-point ranges |
 | Versioned language-neutral output contracts | Implemented in `@bidilens/spec` with strict analysis/security/stream JSON Schemas validated against real core output |
-| Technical-token exclusion and inline planning | Implemented with monotonic range traversal and expanded token classes |
+| Technical-token exclusion and inline planning | Implemented with monotonic range traversal, a conservative expanded built-in vocabulary, and caller-supplied `technicalIdentifiers` propagated through every applicable adapter |
 | Semantic HTML compiler | Implemented as an escaped package with a conservative non-executable tag allowlist |
 | DOM mutation support | Implemented with custom selectors, idempotence, restoration, and isolation |
 | unified plus markdown-it support | Implemented in one deep Markdown package |
-| React SSR and streaming | Implemented with duplicated-initial-text regression coverage and explicit SSR/client completion |
+| React SSR and streaming | Implemented with duplicated-initial-text regression coverage, explicit SSR/client completion, revisable default direction, and independent blocks when accumulated paragraphs differ in direction |
 | Vue and Svelte adapters | Implemented idiomatically with stream APIs |
 | Sibling `BidiMarkdown` framework wrappers | Replaced by composition with the real AST-based Markdown package; the sibling wrappers only split plain-text blocks despite their name and therefore were not copied |
 | Opt-in `skipIfNotMixed` no-op mode | Superseded by canonical default `needsBidiIntervention`: pure LTR in LTR context is untouched, English-majority text containing RTL is still isolated, LTR under an RTL parent is protected, and explicit policies remain authoritative |
-| Framework-independent custom element | Implemented with DOM node construction and side-effect metadata |
-| Chunk-boundary-invariant streaming | Implemented for final and live decisions with source-position checkpoints, pending-surrogate handling, UTF-16 boundary properties, and completed-paragraph immutability |
+| Framework-independent custom element | Implemented with DOM node construction, a side-effect-free main entry, explicit `/auto` registration, and a bundled standalone entry |
+| Chunk-boundary-invariant streaming | Implemented for final and live decisions with source-position checkpoints, misleading-prefix revision, an explicit sticky strategy, pending-surrogate handling, UTF-16 boundary properties, and completed-paragraph immutability |
 | Trojan-Source-style scanner | Implemented with balance/cross-isolate checks, modes, dual offsets, and SARIF |
 | Conservative terminal behavior | Implemented with complete ECMA-48 CSI/string-control masking; control insertion remains opt-in |
 | CLI inspection/audit/render/test/sanitize | Implemented with deterministic directory filtering, unconditional explicit-file scans, and symlink skipping |
-| Corpus schemas and numbered words | Implemented with JSON Schema, semantic technical-span numbering, and 918 cases |
+| Corpus schemas and numbered words | Implemented with JSON Schema and 918 direction-exact cases; 197 also carry exact isolation expectations, five carry security-code expectations, and numbered-order arrays are schema/permutation fixtures rather than rendered-geometry oracles |
 | Package/release evidence | Implemented with examples executed from all tarballs, licenses, ESM type analysis, pack/install consumer, audit, and SBOM command |
 | Reusable Playwright assertions | Implemented as a public package and exercised for direction, source text, isolation metadata, logical selection/clipboard, and physical edge geometry in the three-browser suite |
 | React Native adapter | Not copied from `v1.4-Her`: its tests never import the adapter and there is no iOS/Android rendering gate. A native package remains deferred until it has actual component tests plus device-level evidence, so a web-only repository is not burdened with an unverified platform claim |
+| Public full Unicode `BidiClass` lookup | `v1.4-Her` is broader here. Canonical deliberately exposes generated strong-direction/natural-letter helpers used by application policy, while mature UAX #9 engines remain the correct dependency for full class/reordering work. Copying a second public standards surface would increase size and long-term compatibility obligations without improving browser message rendering |
 | API compatibility aliases and character helpers | Equivalent analysis, direction, run segmentation, control inspection, evidence, and sanitization primitives already exist; aliases are accepted only where they do not create ambiguous duplicate contracts |
 | Target matrices and upstream contribution dossiers | Reviewed as archival research; their issue/PR routing principle is retained in adoption guidance, but dated product-policy claims are not presented as current or ready-to-submit integrations |
 | Honest limitations and publishing guide | Implemented; false badges and fake repository metadata rejected |
@@ -184,7 +187,7 @@ claim.
 |---|---|
 | Explicit `math` / `inlineMath` nodes | Adopted in the unified Markdown adapter as LTR code-like nodes, with regression coverage |
 | Reset with replacement text | Adopted atomically in the shared core stream and every framework adapter; one state transition replaces the source |
-| Wider multilingual examples | 196 substantive strings imported under their Apache-2.0 notice; four empty/whitespace-only cases were excluded because they add no linguistic oracle; canonical outputs were recomputed and 16 documented policy differences were retained rather than copying sibling labels blindly |
+| Wider multilingual examples | 196 substantive strings imported under their Apache-2.0 notice; four empty/whitespace-only cases were excluded because they add no linguistic oracle; canonical outputs were recomputed and 17 documented policy differences were retained rather than copying sibling labels blindly |
 | No-build custom element | Adopted as a genuinely self-contained `standalone.js`; normal imports remain externalized for deduplication, and all three browsers load the packed design without an import map |
 | Demo presets and inspectors | Adopted and extended into a complete offline bilingual playground: policy/security and stream controls, four-way live input, AST/evidence/isolation/security, searchable 918-case asset, copy verification, semantic HTML/JSON export, hash state, theme, and an opt-in Pages workflow |
 | Cross-platform CI | Configured as complete `check` and example jobs on Windows and macOS in addition to Ubuntu Node 22/24; hosted results begin only after the repository is pushed |
@@ -194,7 +197,7 @@ claim.
 | Full accumulated Markdown reparse while streaming | Not copied: it is quadratic over repeated updates and its lightweight splitter is not a full Markdown parser; canonical paragraph streaming already freezes completed blocks and preserves chunk invariance |
 | Direction on an aggregate table | Rejected because `direction: rtl` on the table can reverse column order; canonical annotates semantic cells independently |
 | Simplistic mixed-script/confusable warning | Rejected pending a sourced UTS #39 policy to avoid false security claims and ordinary multilingual false positives |
-| `innerHTML` and `sideEffects: false` custom element | Rejected; canonical constructs text/element nodes and explicitly retains auto-registration side effects |
+| `innerHTML` custom element and ambiguous package side effects | Rejected; canonical constructs text/element nodes, keeps its main import side-effect-free, and limits global registration to explicit `/auto` and standalone entries |
 
 The general corpus row above is now 918 cases, not 722: 722 authored/generated
 canonical fixtures plus the 196 attributed comparison seeds.
@@ -215,7 +218,7 @@ interest.
 | `v1.2-Her` | 67 | 45 | 61 | Substantively the same executable implementation as `v1.1-Her` |
 | `v1.3-Her` | 74 | 55 | 70 | Stronger scope and tests, but broken/omitted visuals and unsafe/incomplete distribution details |
 | `v1.4-Her` working tree | 78 | 42 | 74 | Broad and test-rich, but build/type/release/audit failures plus correctness bugs in its no-op, stream, Web Component, Action, and corpus gates |
-| canonical BidiLens | **90** | **96** | **93** | External identity, native review, accessibility/security audit, and downstream pilot remain |
+| canonical BidiLens | **88** | **91** | **93** | External native-speaker/accessibility/security review, npm publication provenance, native surfaces, and a downstream pilot remain |
 
 A score of 100 would be false today. Even the canonical web artifact cannot
 prove historical “first” status, absence of every defect, or acceptance by a
@@ -243,8 +246,9 @@ unreproducible release/corpus counts were rejected rather than copied.
 
 Within the shared JavaScript/web scope that exists as executable source, the
 canonical checkout is objectively deeper and better verified than every
-sibling: stronger package-local test depth, a much larger exactly validated
-corpus, generated current Unicode data, property/visual/security coverage, safe
+sibling: stronger package-local test depth, a much larger direction-exact
+corpus with a documented subset of exact isolation/security expectations,
+generated current Unicode data, property/visual/security coverage, safe
 serialization, and clean tarball consumers. `v1.4-Her` has more package folders,
 but several of those folders split capabilities already provided by canonical
 core into separate packages, and its extra React Native surface lacks

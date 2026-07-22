@@ -10,7 +10,7 @@ const shared = {
 // Run sequentially: a concurrent clean could erase the standalone output.
 await build({
   ...shared,
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/auto.ts'],
   clean: true
 });
 

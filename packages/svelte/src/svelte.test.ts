@@ -52,6 +52,16 @@ describe('Svelte adapter', () => {
     expect(get(flagship).isolations).toContainEqual(expect.objectContaining({ text: 'React', direction: 'ltr' }));
   });
 
+  it('uses caller-specific identifiers for direction and isolation', () => {
+    const source = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
+    const analysis = get(createBidiMessage(source, { technicalIdentifiers: ['InternalPlatform'] }));
+    expect(analysis.direction).toBe('rtl');
+    expect(analysis.isolations).toContainEqual(expect.objectContaining({
+      text: 'internalplatform',
+      direction: 'ltr'
+    }));
+  });
+
   it('exposes a Svelte-compatible readable store contract', () => {
     const store = createBidiMessage('Hello world');
     const snapshots: string[] = [];

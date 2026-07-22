@@ -3,13 +3,29 @@
   "version": "0.1.0",
   "description": "React components and hooks for mixed RTL/LTR and streaming AI messages.",
   "license": "MIT",
-  "author": { "name": "Shayan SalehiRad", "url": "https://github.com/CodeinScrubs" },
-  "repository": { "type": "git", "url": "git+https://github.com/CodeinScrubs/BidiLens.git", "directory": "packages/react" },
+  "author": {
+    "name": "Shayan SalehiRad",
+    "url": "https://github.com/CodeinScrubs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeinScrubs/BidiLens.git",
+    "directory": "packages/react"
+  },
   "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
-  "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
+  "bugs": {
+    "url": "https://github.com/CodeinScrubs/BidiLens/issues"
+  },
   "type": "module",
   "sideEffects": false,
-  "keywords": ["bidi", "rtl", "ltr", "unicode", "react", "ai"],
+  "keywords": [
+    "bidi",
+    "rtl",
+    "ltr",
+    "unicode",
+    "react",
+    "ai"
+  ],
   "files": [
     "dist",
     "README.md",
@@ -39,12 +55,14 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.2",
-    "react": "^19.2.7",
-    "tsup": "^8.5.1",
-    "react-dom": "^19.2.7"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsup": "^8.5.1"
   },
   "publishConfig": {
     "access": "public"
   },
-  "engines": { "node": ">=22.12.0" }
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

@@ -68,6 +68,7 @@ export const BidiMessage = defineComponent({
     excludeTechnicalTokens: { type: Boolean, default: undefined },
     minimumStrongCharacters: { type: Number, default: undefined },
     majorityThreshold: { type: Number, default: undefined },
+    technicalIdentifiers: { type: Array as PropType<readonly string[]>, default: undefined },
     intervention: { type: String as PropType<BidiInterventionMode>, default: 'auto' }
   },
   setup(props) {
@@ -78,6 +79,9 @@ export const BidiMessage = defineComponent({
       if (props.excludeTechnicalTokens !== undefined) detectionOptions.excludeTechnicalTokens = props.excludeTechnicalTokens;
       if (props.minimumStrongCharacters !== undefined) detectionOptions.minimumStrongCharacters = props.minimumStrongCharacters;
       if (props.majorityThreshold !== undefined) detectionOptions.majorityThreshold = props.majorityThreshold;
+      if (props.technicalIdentifiers !== undefined) {
+        detectionOptions.technicalIdentifiers = props.technicalIdentifiers;
+      }
       const analysis = analyzeText(props.text, detectionOptions);
       const direction: Direction = analysis.direction === 'neutral'
         ? (props.inheritedDirection ?? 'ltr')
@@ -89,7 +93,10 @@ export const BidiMessage = defineComponent({
       if (!intervene) return h(props.as, props.className ? { class: props.className } : {}, props.text);
       const children = [] as ReturnType<typeof h>[];
       let cursor = 0;
-      for (const isolation of planInlineIsolation(props.text, direction, { intervention: props.intervention })) {
+      for (const isolation of planInlineIsolation(props.text, direction, {
+        intervention: props.intervention,
+        technicalIdentifiers: props.technicalIdentifiers
+      })) {
         if (cursor < isolation.start) children.push(h('span', props.text.slice(cursor, isolation.start)));
         const tag = isolation.kind === 'code' ? 'code' : 'bdi';
         children.push(h(tag, {

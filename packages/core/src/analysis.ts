@@ -24,7 +24,9 @@ function excludesTechnical(options: DetectionOptions): boolean {
 
 /** Returns auditable evidence with both UTF-16 and code-point source offsets. */
 export function collectDirectionEvidence(text: string, options: DetectionOptions = {}): DirectionEvidence[] {
-  const technical = excludesTechnical(options) ? findTechnicalTokenRanges(text) : [];
+  const technical = excludesTechnical(options)
+    ? findTechnicalTokenRanges(text, options.technicalIdentifiers)
+    : [];
   const evidence: DirectionEvidence[] = [];
   let utf16Index = 0;
   let codePointIndex = 0;
@@ -80,9 +82,13 @@ export function analyzeBlock(text: string, options: AnalyzeBlockOptions = {}): B
   const isolationOptions: {
     excludeTechnicalTokens?: boolean;
     intervention?: BidiInterventionMode;
+    technicalIdentifiers?: readonly string[];
   } = {};
   if (options.excludeTechnicalTokens !== undefined) isolationOptions.excludeTechnicalTokens = options.excludeTechnicalTokens;
   if (options.intervention !== undefined) isolationOptions.intervention = options.intervention;
+  if (options.technicalIdentifiers !== undefined) {
+    isolationOptions.technicalIdentifiers = options.technicalIdentifiers;
+  }
   return {
     ...analysis,
     policy: options.strategy ?? 'content-majority',

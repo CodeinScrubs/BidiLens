@@ -10,6 +10,7 @@ import {
   type Direction
 } from '@bidilens/core';
 import {
+  Fragment,
   createElement,
   forwardRef,
   useEffect,
@@ -31,7 +32,15 @@ export interface UseBidiDirectionOptions extends DetectionOptions {
 }
 
 export function useBidiDirection(text: string, options: UseBidiDirectionOptions = {}): Direction {
-  const { strategy, fallback, inheritedDirection, excludeTechnicalTokens, minimumStrongCharacters, majorityThreshold } = options;
+  const {
+    strategy,
+    fallback,
+    inheritedDirection,
+    excludeTechnicalTokens,
+    minimumStrongCharacters,
+    majorityThreshold,
+    technicalIdentifiers
+  } = options;
   return useMemo(() => {
     const detection: DetectionOptions = {};
     if (strategy !== undefined) detection.strategy = strategy;
@@ -40,16 +49,27 @@ export function useBidiDirection(text: string, options: UseBidiDirectionOptions 
     if (excludeTechnicalTokens !== undefined) detection.excludeTechnicalTokens = excludeTechnicalTokens;
     if (minimumStrongCharacters !== undefined) detection.minimumStrongCharacters = minimumStrongCharacters;
     if (majorityThreshold !== undefined) detection.majorityThreshold = majorityThreshold;
+    if (technicalIdentifiers !== undefined) detection.technicalIdentifiers = technicalIdentifiers;
     return detectDirection(text, detection);
-  }, [text, strategy, fallback, inheritedDirection, excludeTechnicalTokens, minimumStrongCharacters, majorityThreshold]);
+  }, [
+    text,
+    strategy,
+    fallback,
+    inheritedDirection,
+    excludeTechnicalTokens,
+    minimumStrongCharacters,
+    majorityThreshold,
+    technicalIdentifiers
+  ]);
 }
 
 function renderIsolatedText(
   text: string,
   direction: Exclude<Direction, 'neutral'>,
-  intervention: BidiInterventionMode
+  intervention: BidiInterventionMode,
+  technicalIdentifiers: readonly string[] | undefined
 ): ReactNode {
-  const isolations = planInlineIsolation(text, direction, { intervention });
+  const isolations = planInlineIsolation(text, direction, { intervention, technicalIdentifiers });
   if (!isolations.length) return text;
   const children: ReactNode[] = [];
   let cursor = 0;
@@ -91,6 +111,7 @@ export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>
     excludeTechnicalTokens,
     minimumStrongCharacters,
     majorityThreshold,
+    technicalIdentifiers,
     intervention = 'auto',
     style,
     ...rest
@@ -104,13 +125,15 @@ export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>
   if (majorityThreshold !== undefined) detectionOptions.majorityThreshold = majorityThreshold;
   if (inheritedDirection !== undefined) detectionOptions.inheritedDirection = inheritedDirection;
   if (excludeTechnicalTokens !== undefined) detectionOptions.excludeTechnicalTokens = excludeTechnicalTokens;
+  if (technicalIdentifiers !== undefined) detectionOptions.technicalIdentifiers = technicalIdentifiers;
   const detected = useBidiDirection(content, detectionOptions);
   const direction = forceDirection ?? detected;
-  const intervene = isolate
+  const intervene = forceDirection !== undefined
+    || isolate
     || direction === 'rtl'
     || needsBidiIntervention(content, { intervention, inheritedDirection });
   const renderedContent = intervene && typeof (children ?? text) === 'string' && direction !== 'neutral'
-    ? renderIsolatedText(String(children ?? text), direction, intervention)
+    ? renderIsolatedText(String(children ?? text), direction, intervention, technicalIdentifiers)
     : children ?? text;
   const mergedStyle: CSSProperties | undefined = intervene
     ? {
@@ -194,6 +217,7 @@ function bidiStreamOptionsKey(options: BidiStreamOptions): string {
     options.majorityThreshold ?? null,
     options.lockAfterStrongCharacters ?? null,
     options.lockMargin ?? null,
+    options.technicalIdentifiers ?? null,
     options.paragraphSeparator?.source ?? null,
     options.paragraphSeparator?.flags ?? null
   ]);
@@ -278,13 +302,92 @@ export interface StreamingBidiMessageProps extends Omit<BidiMessageProps, 'text'
   completed?: boolean;
 }
 
+function streamParagraphParts(text: string, customSeparator?: RegExp): Array<{ text: string; separator: string }> {
+  const separator = customSeparator
+    ? new RegExp(
+        customSeparator.source,
+        customSeparator.flags.replaceAll('y', '').includes('g')
+          ? customSeparator.flags.replaceAll('y', '')
+          : `${customSeparator.flags.replaceAll('y', '')}g`
+      )
+    : /\r\n|\n|\r|\u2029/gu;
+  const parts: Array<{ text: string; separator: string }> = [];
+  let start = 0;
+  let match: RegExpExecArray | null;
+  while ((match = separator.exec(text)) !== null) {
+    parts.push({ text: text.slice(start, match.index), separator: match[0] });
+    start = match.index + match[0].length;
+    if (match[0].length === 0) {
+      const codePoint = text.codePointAt(separator.lastIndex);
+      const unicodeSets = (separator as RegExp & { readonly unicodeSets?: boolean }).unicodeSets === true;
+      separator.lastIndex += (separator.unicode || unicodeSets) && codePoint !== undefined && codePoint > 0xffff ? 2 : 1;
+    }
+  }
+  parts.push({ text: text.slice(start), separator: '' });
+  return parts;
+}
+
 export const StreamingBidiMessage = forwardRef<HTMLElement, StreamingBidiMessageProps>(function StreamingBidiMessage(
   { text, streamOptions, completed = false, children, ...props },
   ref
 ) {
   const { snapshot } = useBidiStream(text, streamOptions, completed);
+  const paragraphDirections = new Set(snapshot.paragraphs
+    .filter((paragraph) => paragraph.text.length > 0)
+    .map((paragraph) => paragraph.direction));
+  const paragraphParts = streamParagraphParts(snapshot.text, streamOptions?.paragraphSeparator);
+  const canRenderParagraphs = (children === undefined || children === snapshot.text)
+    && paragraphParts.length === snapshot.paragraphs.length;
+  if (canRenderParagraphs && snapshot.paragraphs.length > 1 && paragraphDirections.size > 1) {
+    const {
+      as = 'article',
+      strategy,
+      fallback,
+      inheritedDirection,
+      excludeTechnicalTokens,
+      minimumStrongCharacters,
+      majorityThreshold,
+      technicalIdentifiers,
+      intervention,
+      ...outerProps
+    } = props;
+    const childOptions: UseBidiDirectionOptions & { intervention?: BidiInterventionMode } = {};
+    if (strategy !== undefined) childOptions.strategy = strategy;
+    if (fallback !== undefined) childOptions.fallback = fallback;
+    if (inheritedDirection !== undefined) childOptions.inheritedDirection = inheritedDirection;
+    if (excludeTechnicalTokens !== undefined) childOptions.excludeTechnicalTokens = excludeTechnicalTokens;
+    if (minimumStrongCharacters !== undefined) childOptions.minimumStrongCharacters = minimumStrongCharacters;
+    if (majorityThreshold !== undefined) childOptions.majorityThreshold = majorityThreshold;
+    if (technicalIdentifiers !== undefined) childOptions.technicalIdentifiers = technicalIdentifiers;
+    if (intervention !== undefined) childOptions.intervention = intervention;
+    return createElement(as, { ...outerProps, ref }, snapshot.paragraphs.map((paragraph) => (
+      <Fragment key={paragraph.index}>
+        <BidiMessage
+          {...childOptions}
+          as="span"
+          forceDirection={paragraph.direction}
+          style={{ display: 'block', whiteSpace: 'pre-wrap' }}
+          text={paragraph.text}
+        />
+        {paragraphParts[paragraph.index]!.separator}
+      </Fragment>
+    )));
+  }
+  const streamNeedsIntervention = snapshot.direction === 'rtl'
+    || needsBidiIntervention(text, {
+      intervention: props.intervention,
+      inheritedDirection: props.inheritedDirection
+    });
+  const streamDirectionProps = streamNeedsIntervention && snapshot.direction !== 'neutral'
+    ? { forceDirection: snapshot.direction }
+    : {};
   return (
-    <BidiMessage {...props} ref={ref} text={text} forceDirection={snapshot.direction}>
+    <BidiMessage
+      {...props}
+      {...streamDirectionProps}
+      ref={ref}
+      text={text}
+    >
       {children ?? text}
     </BidiMessage>
   );

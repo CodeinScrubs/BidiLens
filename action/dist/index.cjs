@@ -6054,9 +6054,10 @@ var DEFAULT_OPTIONS = {
   inheritedDirection: "ltr",
   minimumStrongCharacters: 1,
   majorityThreshold: 0.5,
-  excludeTechnicalTokens: true
+  excludeTechnicalTokens: true,
+  technicalIdentifiers: []
 };
-var KNOWN_TECHNICAL_TOKENS = /* @__PURE__ */ new Set([
+var DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
   "ai",
   "api",
   "anthropic",
@@ -6093,8 +6094,32 @@ var KNOWN_TECHNICAL_TOKENS = /* @__PURE__ */ new Set([
   "vue",
   "web",
   "webpack",
-  "yaml"
+  "yaml",
+  "angular",
+  "astro",
+  "chrome",
+  "docker",
+  "esbuild",
+  "eslint",
+  "firefox",
+  "kubernetes",
+  "kubectl",
+  "nuxt",
+  "playwright",
+  "pnpm",
+  "preact",
+  "remix",
+  "rollup",
+  "safari",
+  "stencil",
+  "storybook",
+  "tailwind",
+  "turbopack",
+  "vite",
+  "vitest"
 ]);
+var KNOWN_TECHNICAL_TOKENS = new Set(DEFAULT_TECHNICAL_IDENTIFIERS);
+var CUSTOM_TECHNICAL_IDENTIFIER_CACHE = /* @__PURE__ */ new WeakMap();
 function normalizeOptions(options = {}) {
   const strategy = options.strategy ?? DEFAULT_OPTIONS.strategy;
   const majorityStrategy = strategy === "content-majority" || strategy === "semantic-dominant" || strategy === "majority";
@@ -6106,7 +6131,8 @@ function normalizeOptions(options = {}) {
     majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? DEFAULT_OPTIONS.majorityThreshold)),
     // Compatibility/strict first-strong modes must see the real first strong
     // character (including a leading technical identifier), like dir="auto".
-    excludeTechnicalTokens: options.excludeTechnicalTokens ?? majorityStrategy
+    excludeTechnicalTokens: options.excludeTechnicalTokens ?? majorityStrategy,
+    technicalIdentifiers: options.technicalIdentifiers ?? DEFAULT_OPTIONS.technicalIdentifiers
   };
 }
 function addRange(ranges, text, start, end, kind) {
@@ -6123,8 +6149,9 @@ function addMatches(text, ranges, expression, kind, group = 0) {
   }
 }
 function trimTechnicalPunctuation(value) {
-  while (/[.,;:!?،؛؟。।۔]$/u.test(value)) value = value.slice(0, -1);
-  return value;
+  let end = value.length;
+  while (end > 0 && /[.,;:!?،؛؟。।۔]/u.test(value[end - 1])) end -= 1;
+  return end === value.length ? value : value.slice(0, end);
 }
 function addValidatedMatches(text, ranges, expression, kind, validate, group = 0) {
   expression.lastIndex = 0;
@@ -6161,13 +6188,84 @@ function isIpv6(value) {
   if (!groups.every((group) => /^[0-9A-F]{1,4}$/iu.test(group))) return false;
   return compression >= 0 ? groups.length < 8 : groups.length === 8;
 }
-function isTechnicalIdentifier(token) {
-  const normalized = token.toLowerCase();
-  return KNOWN_TECHNICAL_TOKENS.has(normalized) || /[0-9_.-]/u.test(token) || /^[A-Z]{2,}$/u.test(token) || /[a-z][A-Z]/u.test(token);
+function addCodeRanges(text, ranges) {
+  const lineExpression = /[^\r\n]*/gu;
+  let lineMatch;
+  while ((lineMatch = lineExpression.exec(text)) !== null) {
+    const line2 = lineMatch[0];
+    const lineStart = lineMatch.index;
+    const runs = [];
+    for (let index = 0; index < line2.length; ) {
+      if (line2[index] !== "`") {
+        index += 1;
+        continue;
+      }
+      const start = index;
+      while (index < line2.length && line2[index] === "`") index += 1;
+      runs.push({ start, length: index - start });
+    }
+    const suffixMaximum = new Array(runs.length + 1).fill(0);
+    for (let index = runs.length - 1; index >= 0; index -= 1) {
+      suffixMaximum[index] = Math.max(runs[index].length, suffixMaximum[index + 1]);
+    }
+    let runIndex = 0;
+    let cursor = runs[0]?.start ?? 0;
+    while (runIndex < runs.length) {
+      const opener = runs[runIndex];
+      const openerEnd = opener.start + opener.length;
+      if (cursor >= openerEnd) {
+        runIndex += 1;
+        cursor = runs[runIndex]?.start ?? 0;
+        continue;
+      }
+      const available = openerEnd - cursor;
+      const delimiterLength = Math.min(
+        available,
+        Math.max(Math.floor(available / 2), suffixMaximum[runIndex + 1])
+      );
+      if (delimiterLength === 0) {
+        runIndex += 1;
+        cursor = runs[runIndex]?.start ?? 0;
+        continue;
+      }
+      let closingRunIndex = runIndex;
+      let closingStart = cursor + delimiterLength;
+      if (available - delimiterLength < delimiterLength) {
+        closingRunIndex += 1;
+        while (closingRunIndex < runs.length && runs[closingRunIndex].length < delimiterLength) closingRunIndex += 1;
+        if (closingRunIndex >= runs.length) {
+          runIndex += 1;
+          cursor = runs[runIndex]?.start ?? 0;
+          continue;
+        }
+        closingStart = runs[closingRunIndex].start;
+      }
+      const end = closingStart + delimiterLength;
+      addRange(ranges, text, lineStart + cursor, lineStart + end, "code");
+      runIndex = closingRunIndex;
+      cursor = end;
+    }
+    if (lineMatch[0].length === 0) lineExpression.lastIndex += 1;
+  }
 }
-function findTechnicalTokenRanges(text) {
+function customTechnicalIdentifiers(values) {
+  const cacheable = Object.isFrozen(values);
+  const cached = cacheable ? CUSTOM_TECHNICAL_IDENTIFIER_CACHE.get(values) : void 0;
+  if (cached) return cached;
+  const identifiers = /* @__PURE__ */ new Set();
+  for (const value of values) {
+    if (/^[A-Za-z][A-Za-z0-9_.-]*$/u.test(value)) identifiers.add(value.toLowerCase());
+  }
+  if (cacheable) CUSTOM_TECHNICAL_IDENTIFIER_CACHE.set(values, identifiers);
+  return identifiers;
+}
+function isTechnicalIdentifier(token, custom) {
+  const normalized = token.toLowerCase();
+  return KNOWN_TECHNICAL_TOKENS.has(normalized) || custom.has(normalized) || /[0-9_.-]/u.test(token) || /^[A-Z]{2,}$/u.test(token) || /[a-z][A-Z]/u.test(token);
+}
+function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   const ranges = [];
-  addMatches(text, ranges, /(`+)[^\r\n]*?\1/gu, "code");
+  addCodeRanges(text, ranges);
   addMatches(text, ranges, /<\/?[A-Za-z][^<>\r\n]*>/gu, "html");
   addMatches(text, ranges, /(?:\$\$[^\r\n]*?\$\$|\$[^$\r\n]+\$|\\\([^\r\n]*?\\\))/gu, "math");
   const urls = /\b(?:https?|ftp):\/\/[^\s<>{}"']+/giu;
@@ -6176,9 +6274,19 @@ function findTechnicalTokenRanges(text) {
     let value = urlMatch[0];
     value = trimTechnicalPunctuation(value);
     for (const [open, close] of [["(", ")"], ["[", "]"], ["{", "}"]]) {
-      while (value.endsWith(close) && [...value].filter((character) => character === close).length > [...value].filter((character) => character === open).length) {
-        value = value.slice(0, -1);
+      if (!value.endsWith(close)) continue;
+      let balance = 0;
+      for (const character of value) {
+        if (character === open) balance += 1;
+        else if (character === close) balance -= 1;
       }
+      if (balance >= 0) continue;
+      let end = value.length;
+      while (balance < 0 && end > 0 && value[end - 1] === close) {
+        balance += 1;
+        end -= 1;
+      }
+      if (end !== value.length) value = value.slice(0, end);
     }
     addRange(ranges, text, urlMatch.index, urlMatch.index + value.length, "url");
   }
@@ -6209,10 +6317,13 @@ function findTechnicalTokenRanges(text) {
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, "hash");
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, "number");
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
+  const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
   let match;
   while ((match = words.exec(text)) !== null) {
     const token = match[0];
-    if (isTechnicalIdentifier(token)) addRange(ranges, text, match.index, match.index + token.length, "identifier");
+    if (isTechnicalIdentifier(token, customIdentifiers)) {
+      addRange(ranges, text, match.index, match.index + token.length, "identifier");
+    }
   }
   ranges.sort((a, b) => a.start - b.start || b.end - a.end);
   const merged = [];
@@ -6227,9 +6338,8 @@ function findTechnicalTokenRanges(text) {
   }
   return merged;
 }
-function countStrongCharacters(text, options = {}) {
-  const normalized = normalizeOptions(options);
-  const technicalTokens = normalized.excludeTechnicalTokens ? findTechnicalTokenRanges(text) : [];
+function countStrongCharactersNormalized(text, normalized) {
+  const technicalTokens = normalized.excludeTechnicalTokens ? findTechnicalTokenRanges(text, normalized.technicalIdentifiers) : [];
   let ltr = 0;
   let rtl = 0;
   let firstStrong = "neutral";
@@ -6255,11 +6365,9 @@ function countStrongCharacters(text, options = {}) {
 function fallbackDirection(options) {
   return options.fallback;
 }
-function detectDirection(text, options = {}) {
-  const normalized = normalizeOptions(options);
+function directionFromCounts(counts, normalized) {
   if (normalized.strategy === "ltr" || normalized.strategy === "rtl") return normalized.strategy;
   if (normalized.strategy === "inherit") return normalized.inheritedDirection;
-  const counts = countStrongCharacters(text, normalized);
   if (counts.total < normalized.minimumStrongCharacters) return fallbackDirection(normalized);
   if (normalized.strategy === "first-strong" || normalized.strategy === "strict-uax9") {
     return counts.firstStrong === "neutral" ? fallbackDirection(normalized) : counts.firstStrong;
@@ -6272,6 +6380,13 @@ function confidenceFor(counts, direction) {
   if (counts.total === 0 || direction === "neutral") return 0;
   const matching = direction === "rtl" ? counts.rtl : counts.ltr;
   return Number((matching / counts.total).toFixed(4));
+}
+function firstBidiStrongCharacter(text) {
+  for (const character of text) {
+    const direction = classifyBidiStrongCharacter(character);
+    if (direction !== "neutral") return direction;
+  }
+  return "neutral";
 }
 function splitParagraphs(text) {
   const paragraphs = [];
@@ -6286,13 +6401,14 @@ function splitParagraphs(text) {
   return paragraphs;
 }
 function analyzeParagraph(text, start = 0, options = {}) {
-  const countsWithFirst = countStrongCharacters(text, options);
+  const normalized = normalizeOptions(options);
+  const countsWithFirst = countStrongCharactersNormalized(text, normalized);
   const counts = {
     ltr: countsWithFirst.ltr,
     rtl: countsWithFirst.rtl,
     total: countsWithFirst.total
   };
-  const direction = detectDirection(text, options);
+  const direction = directionFromCounts(countsWithFirst, normalized);
   return {
     text,
     start,
@@ -6304,28 +6420,39 @@ function analyzeParagraph(text, start = 0, options = {}) {
   };
 }
 function analyzeText(text, options = {}) {
-  const countsWithFirst = countStrongCharacters(text, options);
+  const normalized = normalizeOptions(options);
+  const countsWithFirst = countStrongCharactersNormalized(text, normalized);
   const counts = {
     ltr: countsWithFirst.ltr,
     rtl: countsWithFirst.rtl,
     total: countsWithFirst.total
   };
-  const direction = detectDirection(text, options);
-  const rawCountsWithFirst = countStrongCharacters(text, {
-    ...options,
+  const direction = directionFromCounts(countsWithFirst, normalized);
+  const rawCountsWithFirst = countStrongCharactersNormalized(text, normalizeOptions({
+    ...normalized,
     strategy: "content-majority",
     excludeTechnicalTokens: false
-  });
+  }));
   const rawCounts = {
     ltr: rawCountsWithFirst.ltr,
     rtl: rawCountsWithFirst.rtl,
     total: rawCountsWithFirst.total
   };
-  const paragraphs = splitParagraphs(text).map((paragraph) => analyzeParagraph(paragraph.text, paragraph.start, options));
+  const split = splitParagraphs(text);
+  const paragraphs = split.length === 1 ? [{
+    text,
+    start: 0,
+    end: text.length,
+    direction,
+    firstStrong: countsWithFirst.firstStrong,
+    confidence: confidenceFor(counts, direction),
+    counts
+  }] : split.map((paragraph) => analyzeParagraph(paragraph.text, paragraph.start, normalized));
   return {
     text,
     direction,
     firstStrong: countsWithFirst.firstStrong,
+    rawFirstStrong: firstBidiStrongCharacter(text),
     confidence: confidenceFor(counts, direction),
     counts,
     rawCounts,
@@ -6677,7 +6804,7 @@ function planInlineIsolation(text, blockDirection, options = {}) {
     intervention: options.intervention,
     inheritedDirection: blockDirection
   })) return [];
-  const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text);
+  const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text, options.technicalIdentifiers);
   const isolations = technical.map((range) => ({
     text: range.text,
     direction: "ltr",
@@ -6789,7 +6916,10 @@ function classAttribute(value) {
 }
 function renderInlineBidiHtml(source, direction, options = {}) {
   const includeData = options.includeDataAttributes ?? true;
-  const isolations = planInlineIsolation(source, direction, { intervention: options.intervention });
+  const isolations = planInlineIsolation(source, direction, {
+    intervention: options.intervention,
+    technicalIdentifiers: options.technicalIdentifiers
+  });
   let html = "";
   let cursor = 0;
   for (const isolation of isolations) {
@@ -6817,7 +6947,8 @@ function renderBidiHtml(source, options = {}) {
     const blockClass = classAttribute(options.blockClassName);
     const inline = intervene ? renderInlineBidiHtml(paragraph.text, direction, {
       includeDataAttributes: includeData,
-      intervention: options.intervention
+      intervention: options.intervention,
+      technicalIdentifiers: options.technicalIdentifiers
     }) : escapeHtml(paragraph.text);
     const html2 = `<${blockTag}${directionAttribute}${data}${blockClass}>${inline}</${blockTag}>`;
     return { text: paragraph.text, html: html2, direction, start: paragraph.start, end: paragraph.end };

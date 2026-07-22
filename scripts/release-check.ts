@@ -29,7 +29,10 @@ const CANONICAL_REPOSITORY = 'git+https://github.com/CodeinScrubs/BidiLens.git';
 const CANONICAL_HOMEPAGE = 'https://github.com/CodeinScrubs/BidiLens#readme';
 const CANONICAL_ISSUES = 'https://github.com/CodeinScrubs/BidiLens/issues';
 const DIST_BUDGETS = new Map<string, number>([
-  ['@bidilens/core', 64 * 1024],
+  // Unicode 17 tables plus auditable evidence, security, configurable token
+  // policy, and the chunk-invariant streaming classifier remain below a
+  // 116 KiB unminified ceiling (the current artifact is about 24 KiB gzip).
+  ['@bidilens/core', 116 * 1024],
   // Ownership-aware live direction/style restoration adds deliberate DOM
   // integration code; keep a tight but realistic unminified ceiling.
   ['@bidilens/dom', 20 * 1024],
@@ -132,8 +135,9 @@ async function validatePackageSources(packages: Awaited<ReturnType<typeof packag
       assert(manifest.unpkg === './dist/standalone.js', `${manifest.name}: unpkg must select the bundled standalone entry.`);
       assert(manifest.jsdelivr === './dist/standalone.js', `${manifest.name}: jsdelivr must select the bundled standalone entry.`);
       assert(Array.isArray(manifest.sideEffects)
-        && manifest.sideEffects.includes('./dist/index.js')
-        && manifest.sideEffects.includes('./dist/standalone.js'), `${manifest.name}: both auto-registration entries must be retained as side effects.`);
+        && !manifest.sideEffects.includes('./dist/index.js')
+        && manifest.sideEffects.includes('./dist/auto.js')
+        && manifest.sideEffects.includes('./dist/standalone.js'), `${manifest.name}: only explicit auto-registration entries may have side effects.`);
     }
     if (manifest.name === '@bidilens/spec') {
       assert(manifest.files?.includes('schemas'), `${manifest.name}: language-neutral schemas must be packed.`);
@@ -164,6 +168,8 @@ async function inspectTarball(tarball: string, manifest: PackageManifest): Promi
     assert(entries.includes('package/dist/bin.js'), `${manifest.name}: tarball is missing the executable entry.`);
   }
   if (manifest.name === '@bidilens/web-component') {
+    assert(entries.includes('package/dist/auto.js'), `${manifest.name}: tarball is missing the auto-registration entry.`);
+    assert(entries.includes('package/dist/auto.d.ts'), `${manifest.name}: tarball is missing auto-registration declarations.`);
     assert(entries.includes('package/dist/standalone.js'), `${manifest.name}: tarball is missing the standalone browser entry.`);
     assert(entries.includes('package/dist/standalone.d.ts'), `${manifest.name}: tarball is missing standalone declarations.`);
     const standalone = await command('tar', ['-xOf', tarball, 'package/dist/standalone.js']);
@@ -208,8 +214,8 @@ async function verifyConsumer(tarballs: Map<string, string>, consumer: string): 
     '@vue/server-renderer': '3.5.40',
     jsdom: '29.1.1',
     'markdown-it': '14.3.0',
-    react: '19.2.7',
-    'react-dom': '19.2.7',
+    react: '19.2.8',
+    'react-dom': '19.2.8',
     vue: '3.5.40',
     svelte: '^5.0.0'
   });
@@ -254,6 +260,7 @@ import { createBidiMessage, createStreamingBidiMessage } from '@bidilens/svelte'
 import { formatTerminalText } from '@bidilens/terminal';
 import { BidiMessage as VueBidiMessage, useBidiDirection, useBidiStream as useVueBidiStream } from '@bidilens/vue';
 import { BidiMessageElement, defineBidiMessageElement } from '@bidilens/web-component';
+import { defineBidiMessageElement as defineAutoBidiMessageElement } from '@bidilens/web-component/auto';
 import { defineBidiMessageElement as defineStandaloneBidiMessageElement } from '@bidilens/web-component/standalone';
 import { runCli } from '@bidilens/cli';
 
@@ -266,7 +273,7 @@ createStreamingBidiMessage().push(source);
 formatTerminalText(source);
 useBidiDirection(source);
 void [applyBidi, markdownItBidi, rehypeBidi, remarkBidi, ReactBidiMessage, useReactBidiStream,
-  VueBidiMessage, useVueBidiStream, BidiMessageElement, defineBidiMessageElement,
+  VueBidiMessage, useVueBidiStream, BidiMessageElement, defineBidiMessageElement, defineAutoBidiMessageElement,
   defineStandaloneBidiMessageElement, expectBidiBlock, expectLogicalSelection,
   expectTokenAtBaseStart, runCli, schemaIds, schemas];
 `);
@@ -284,10 +291,16 @@ await import('@bidilens/playwright');
 await import('@bidilens/react');
 await import('@bidilens/vue');
 await import('@bidilens/web-component');
+await import('@bidilens/web-component/auto');
 await import('@bidilens/web-component/standalone');
 await import('@bidilens/cli');
 const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
-assert.equal(analyzeBlock(source).direction, 'rtl');
+const block = analyzeBlock(source);
+assert.equal(block.direction, 'rtl');
+assert.equal(block.rawFirstStrong, 'ltr');
+assert.equal(analyzeBlock('internalplatform خوب است.', {
+  technicalIdentifiers: ['InternalPlatform']
+}).direction, 'rtl');
 assert.equal(renderBidiHtml(source).blocks[0].direction, 'rtl');
 assert.equal(formatTerminalText(source).text, source);
 assert.equal(get(createBidiMessage(source)).direction, 'rtl');

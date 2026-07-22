@@ -92,6 +92,21 @@ import map نیز قابل استفاده است:
 در برنامه‌هایی که bundler دارند، ورودی عادی بسته بهتر است؛ چون bundler
 می‌تواند `@bidilens/core` را میان وابستگی‌ها تکرارزدایی کند.
 
+ورودی اصلی Web Component عمداً بدون عارضهٔ جانبی است. در پروژه‌های دارای
+bundler، عنصر را صریح ثبت کنید:
+
+```js
+import { defineBidiMessageElement } from '@bidilens/web-component';
+
+defineBidiMessageElement();
+```
+
+اگر ثبت خودکار را ترجیح می‌دهید، ورودی زیر را وارد کنید:
+
+```js
+import '@bidilens/web-component/auto';
+```
+
 ## توسعه و بررسی
 
 ```bash

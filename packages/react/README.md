@@ -17,7 +17,9 @@ export function Answer({ text, streaming }: { text: string; streaming: boolean }
 
 `completed` performs batch-equivalent final reconciliation, including during
 SSR. The lower-level `useBidiStream` hook also returns an explicit `finish()`
-action for imperative transports.
+action for imperative transports. Accumulated text whose paragraphs resolve to
+different directions is rendered as independent block-like spans so the last
+paragraph never changes the base direction of earlier paragraphs.
 
 String content is isolated automatically without injecting invisible controls.
 LTR-only string content emits none of BidiLens's attributes or inline styles

@@ -137,13 +137,16 @@ export function planInlineIsolation(
     excludeTechnicalTokens?: boolean;
     isolateOppositeRuns?: boolean;
     intervention?: BidiInterventionMode | undefined;
+    technicalIdentifiers?: readonly string[] | undefined;
   } = {}
 ): InlineIsolation[] {
   if (!needsBidiIntervention(text, {
     intervention: options.intervention,
     inheritedDirection: blockDirection
   })) return [];
-  const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text);
+  const technical = options.excludeTechnicalTokens === false
+    ? []
+    : findTechnicalTokenRanges(text, options.technicalIdentifiers);
   const isolations: Omit<InlineIsolation, 'sourceRange'>[] = technical.map((range) => ({
     text: range.text,
     direction: 'ltr',

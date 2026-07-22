@@ -77,6 +77,7 @@ function detectWithOptions(text: string, options: MarkdownBidiOptions): Directio
   if (options.majorityThreshold !== undefined) detection.majorityThreshold = options.majorityThreshold;
   if (options.inheritedDirection !== undefined) detection.inheritedDirection = options.inheritedDirection;
   if (options.excludeTechnicalTokens !== undefined) detection.excludeTechnicalTokens = options.excludeTechnicalTokens;
+  if (options.technicalIdentifiers !== undefined) detection.technicalIdentifiers = options.technicalIdentifiers;
   return detectDirection(text, detection);
 }
 
@@ -160,12 +161,13 @@ function hastText(node: Element | HastText | HastRoot): string {
 function isolateHastChildren(
   element: Element,
   direction: 'ltr' | 'rtl',
-  intervention: BidiInterventionMode | undefined
+  intervention: BidiInterventionMode | undefined,
+  technicalIdentifiers: readonly string[] | undefined
 ): void {
   const children: ElementContent[] = [];
   for (const child of element.children) {
     if (child.type === 'text') {
-      const plans = planInlineIsolation(child.value, direction, { intervention });
+      const plans = planInlineIsolation(child.value, direction, { intervention, technicalIdentifiers });
       let cursor = 0;
       for (const plan of plans) {
         if (cursor < plan.start) children.push({ type: 'text', value: child.value.slice(cursor, plan.start) });
@@ -193,7 +195,7 @@ function isolateHastChildren(
       && child.tagName !== 'script'
       && child.tagName !== 'style'
       && child.tagName !== 'textarea') {
-      isolateHastChildren(child, direction, intervention);
+      isolateHastChildren(child, direction, intervention, technicalIdentifiers);
     }
     children.push(child);
   }
@@ -231,7 +233,7 @@ export function rehypeBidi(options: MarkdownBidiOptions = {}) {
       if (direction !== 'neutral') node.properties.dir = direction;
       else if (options.annotateNeutral) node.properties['data-bidilens-direction'] = 'neutral';
       if ((options.isolateInline ?? true) && direction !== 'neutral') {
-        isolateHastChildren(node, direction, options.intervention);
+        isolateHastChildren(node, direction, options.intervention, options.technicalIdentifiers);
       }
     });
   };
@@ -402,7 +404,10 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
     if (!(options.isolateInline ?? true) || activeDirection === null) {
       return originalText ? originalText(tokens, index, renderOptions, env, self) : escape(value);
     }
-    const plans = planInlineIsolation(value, activeDirection, { intervention: options.intervention });
+    const plans = planInlineIsolation(value, activeDirection, {
+      intervention: options.intervention,
+      technicalIdentifiers: options.technicalIdentifiers
+    });
     if (!plans.length) return originalText ? originalText(tokens, index, renderOptions, env, self) : escape(value);
     const renderValue = (part: string): string => {
       if (!originalText) return escape(part);

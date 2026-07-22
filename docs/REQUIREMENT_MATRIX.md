@@ -1,6 +1,6 @@
 # Build-specification traceability matrix
 
-**Evidence date:** 2026-07-20
+**Evidence date:** 2026-07-22
 
 This file maps the binding “Ultimate Build Instruction — Cross-Platform
 Bidirectional Text Toolkit for AI Interfaces, version 2.0” to the source and
@@ -41,11 +41,11 @@ Status vocabulary:
 | Framework-independent TypeScript core | Complete and tested | `@bidilens/core`; dependency-free runtime; generated Unicode data; analysis, evidence, isolation, security, streaming |
 | unified/remark/rehype and markdown-it AST processing | Complete and tested | `@bidilens/markdown`; typed adapters, structural blocks, tables/lists/quotes/code/math, raw-HTML-safe defaults |
 | Plain HTML and DOM | Complete and tested | `@bidilens/html` and `@bidilens/dom`; escaped serialization, restore/observe lifecycle, cross-realm tests |
-| Web Component | Complete and tested | `@bidilens/web-component`; SSR-safe import, auto-registration entries, self-contained browser bundle, three-browser load test |
+| Web Component | Complete and tested | `@bidilens/web-component`; side-effect-free/SSR-safe main import, explicit `/auto` registration, self-contained browser bundle, three-browser load test |
 | React | Complete and tested | `@bidilens/react`; React 18/19 probes, SSR, components and streaming hook |
 | Vue | Complete and tested | `@bidilens/vue`; Vue 3 component, SSR and reactive stream composable |
 | Svelte | Complete and tested | `@bidilens/svelte`; Svelte 4/5 store APIs and consumer probes |
-| Direction streaming engine | Complete and tested within its stated boundary | `@bidilens/core` incrementally tracks source, completed paragraphs, surrogate boundaries, stable lock and batch direction equivalence |
+| Direction streaming engine | Complete and tested within its stated boundary | `@bidilens/core` incrementally tracks source, completed paragraphs, surrogate boundaries, revisable default direction, explicit sticky lock, and batch direction equivalence |
 | Streaming Markdown AST/HTML update API | Partial | `createBidiMarkdownStream` is currently an alias of the paragraph direction stream. It does not return AST annotations, isolation/security deltas, dirty regions, or final HTML, so the complete §7 API/AST equivalence requirement is not met |
 | Security scanner and SARIF | Complete and tested for bidi-control threats | Core scanner plus CLI audit/security modes and SARIF; 15 ordinary multilingual false-positive cases under all four modes. Full identifier confusable analysis under UTS #39 remains research |
 | CLI commands and CI exit behavior | Complete and tested | `@bidilens/cli`: inspect, lint, render, test, audit/security-scan, sanitize; human/JSON/SARIF; packed binary consumer test |
@@ -95,8 +95,8 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
-| Arbitrary chunk-boundary invariance | Complete for direction/text stream | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits and default paragraph separators; future-sensitive custom regular expressions are buffered and split once at `finish()` |
-| Stable live rendering and flagship transition | Complete for direction/text stream | Source-position checkpoints; completed blocks immutable; flagship moves provisional LTR → locked RTL once |
+| Chunk-boundary invariance | Complete for finalized direction/text within the tested grammar | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits and default paragraph separators; unfinished future-sensitive tokens may revise live snapshots, and custom regular expressions are buffered and split once at `finish()` |
+| Stable live rendering and flagship transition | Complete for direction/text stream | Source-position checkpoints; completed blocks immutable; default live direction remains revisable so misleading prefixes cannot permanently freeze the paragraph; sticky locking is explicit |
 | Incremental performance without full-document reparse per token | Complete for direction/text stream | Incremental state machine and 1-char/1,000-chunk benchmarks; custom-regex pushes have an 8,000-character regression alarm and defer one full split to `finish()` |
 | Final stream equals batch for source and directions | Complete and tested | Core properties and framework adapter tests |
 | Final stream equals batch for Markdown AST, isolation, security, and HTML | Missing | No rich Markdown stream update type or parser state exists yet |
@@ -129,7 +129,7 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
 | CI: VS Code and native builds | Missing | Follows missing platform implementations |
 | Changesets and inactive human-controlled release workflow | Complete | Changesets configuration and opt-in release-preparation workflow; no automatic publication step |
-| Clean packed consumer | Complete in development mode; final clean gate pending | `pnpm run release:check -- --allow-dirty` passed on the modified tree. A reviewed commit followed by `pnpm run release:check` without the override is still required |
+| Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
 | Registry ownership, provenance, public repo metadata, credentials | Partial/external | Canonical GitHub source and package metadata are real and public. npm scope ownership, trusted-publishing provenance, and release credentials still require maintainer verification; npm E404 is not ownership proof |
 | Name/trademark decision | Partial/external | ADR records provisional `BidiLens`; final registry/legal review is still required |
 
@@ -187,6 +187,5 @@ The current tree is a strong, locally verified **web release candidate**, not
 the completed cross-platform v2.0 mission. A public web beta can be prepared
 after the external identity/security/accessibility/language-review gates. The
 original specification's final `v0.1.0` gate remains red until the missing
-Markdown streaming, Tier-2/Tier-3 surfaces
-requirements, integrations, reviewed commit, clean-checkout gate, and tags are
-actually completed.
+Markdown streaming, Tier-2/Tier-3 surface requirements, integrations, and tags
+are actually completed.

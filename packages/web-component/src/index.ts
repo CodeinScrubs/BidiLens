@@ -80,24 +80,24 @@ export class BidiMessageElement extends HTMLElementBase {
 
   render(): void {
     const source = this.text;
-    const analysis = analyzeText(source, { fallback: 'ltr' });
-    const direction = analysis.direction === 'neutral' ? 'ltr' : analysis.direction;
     const directionalParent = this.parentElement?.closest('[dir]');
     const parentDirection = directionalParent?.getAttribute('dir')?.toLowerCase() === 'rtl'
       || (this.parentElement && this.ownerDocument.defaultView
         ?.getComputedStyle(this.parentElement).direction === 'rtl')
       ? 'rtl'
       : 'ltr';
-    const intervene = direction === 'rtl' || needsBidiIntervention(source, {
-      intervention: this.getAttribute('intervention') === 'always' ? 'always' : 'auto',
+    const intervention = this.getAttribute('intervention') === 'always' ? 'always' : 'auto';
+    if (!needsBidiIntervention(source, {
+      intervention,
       inheritedDirection: parentDirection
-    });
-    if (!intervene) {
+    })) {
       this.#renderPassThrough(source);
       return;
     }
+    const analysis = analyzeText(source, { fallback: 'ltr' });
+    const direction = analysis.direction === 'neutral' ? 'ltr' : analysis.direction;
     const isolations = planInlineIsolation(source, direction, {
-      intervention: this.getAttribute('intervention') === 'always' ? 'always' : 'auto'
+      intervention
     });
     const fragment = this.ownerDocument.createDocumentFragment();
     let cursor = 0;
@@ -128,5 +128,3 @@ export function defineBidiMessageElement(registry: CustomElementRegistry = globa
   if (!registry || registry.get('bidi-message')) return;
   registry.define('bidi-message', BidiMessageElement);
 }
-
-if (typeof globalThis.customElements !== 'undefined') defineBidiMessageElement();

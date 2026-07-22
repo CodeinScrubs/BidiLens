@@ -34214,8 +34214,8 @@
       "Docker",
       "container"
     ],
-    "expected": "ltr",
-    "expectedVisualOrderLeftToRight": [
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
       1,
       2,
       3,
@@ -34231,8 +34231,13 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "אנחנו משתמשים ב",
-        "direction": "rtl",
+        "text": "Docker",
+        "direction": "ltr",
+        "kind": "identifier"
+      },
+      {
+        "text": "container",
+        "direction": "ltr",
         "kind": "opposite-direction-run"
       }
     ]

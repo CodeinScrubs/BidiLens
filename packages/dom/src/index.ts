@@ -316,7 +316,8 @@ function isolateInlineText(
   direction: 'ltr' | 'rtl',
   blockSelector: string,
   codeSelector: string,
-  intervention: BidiInterventionMode | undefined
+  intervention: BidiInterventionMode | undefined,
+  technicalIdentifiers: readonly string[] | undefined
 ): number {
   const documentRef = element.ownerDocument;
   const showText = documentRef.defaultView?.NodeFilter.SHOW_TEXT ?? 4;
@@ -335,7 +336,7 @@ function isolateInlineText(
   let isolated = 0;
   for (const node of textNodes) {
     const source = node.data;
-    const plans = planInlineIsolation(source, direction, { intervention });
+    const plans = planInlineIsolation(source, direction, { intervention, technicalIdentifiers });
     if (!plans.length) continue;
     const fragment = documentRef.createDocumentFragment();
     let cursor = 0;
@@ -383,6 +384,7 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
     if (options.majorityThreshold !== undefined) detection.majorityThreshold = options.majorityThreshold;
     if (options.inheritedDirection !== undefined) detection.inheritedDirection = options.inheritedDirection;
     if (options.excludeTechnicalTokens !== undefined) detection.excludeTechnicalTokens = options.excludeTechnicalTokens;
+    if (options.technicalIdentifiers !== undefined) detection.technicalIdentifiers = options.technicalIdentifiers;
     const directionalText = textForDirection(candidate, codeSelector);
     const direction = detectDirection(directionalText, detection);
     const hostDirection = options.inheritedDirection ?? inheritedDirection(candidate);
@@ -415,7 +417,14 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
       if (direction === 'rtl') result.rtl += 1;
       else result.ltr += 1;
       if (options.isolateInline ?? true) {
-        result.isolated += isolateInlineText(candidate, direction, blockSelector, codeSelector, options.intervention);
+        result.isolated += isolateInlineText(
+          candidate,
+          direction,
+          blockSelector,
+          codeSelector,
+          options.intervention,
+          options.technicalIdentifiers
+        );
       }
     }
     markApplied(candidate, ['dir', markAttribute, 'style']);

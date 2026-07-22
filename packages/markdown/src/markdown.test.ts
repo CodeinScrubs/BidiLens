@@ -191,6 +191,14 @@ describe('Markdown plugins', () => {
     expect(english).toContain('>کتاب</bdi>');
   });
 
+  it('propagates caller-specific identifiers through Markdown detection and isolation', () => {
+    const md = new MarkdownIt({ html: false });
+    markdownItBidi(md, { technicalIdentifiers: ['InternalPlatform'] });
+    const html = md.render('internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.');
+    expect(html).toContain('<p dir="rtl"');
+    expect(html).toContain('>internalplatform</bdi>');
+  });
+
   it('escapes raw markup while adding isolation wrappers', () => {
     const md = new MarkdownIt({ html: false });
     markdownItBidi(md);

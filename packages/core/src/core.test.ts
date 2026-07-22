@@ -34,10 +34,17 @@ describe('direction detection', () => {
     const analysis = analyzeText(source);
     expect(analysis.direction).toBe('rtl');
     expect(analysis.firstStrong).toBe('rtl');
+    expect(analysis.rawFirstStrong).toBe('ltr');
     expect(analysis.text).toBe(source);
     expect(analysis.mixed).toBe(true);
     expect(analysis.rawCounts.ltr).toBeGreaterThan(0);
     expect(analysis.counts.ltr).toBe(0);
+  });
+
+  it('reports bidi-strong formatting marks in literal first-strong evidence', () => {
+    const analysis = analyzeText('\u200fHello world');
+    expect(analysis.rawFirstStrong).toBe('rtl');
+    expect(analysis.firstStrong).toBe('ltr');
   });
 
   it('keeps an English-majority sentence LTR when it contains Persian', () => {
@@ -48,6 +55,25 @@ describe('direction detection', () => {
     const ranges = findTechnicalTokenRanges('React and TypeScript در یک جمله.');
     expect(ranges.map((range) => range.text)).toEqual(['React', 'TypeScript']);
     expect(detectDirection('React یک کتابخانه است.')).toBe('rtl');
+  });
+
+  it('covers unambiguous tool names and accepts caller-specific identifiers', () => {
+    expect(detectDirection('Kubernetes \u062e\u0648\u0628 \u0627\u0633\u062a.')).toBe('rtl');
+    expect(detectDirection('Playwright \u062e\u0648\u0628 \u0627\u0633\u062a.')).toBe('rtl');
+    const customSource = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
+    expect(detectDirection(customSource)).toBe('ltr');
+    expect(detectDirection(customSource, { technicalIdentifiers: ['InternalPlatform'] })).toBe('rtl');
+    expect(findTechnicalTokenRanges(customSource, ['InternalPlatform']))
+      .toContainEqual(expect.objectContaining({ text: 'internalplatform', kind: 'identifier' }));
+    expect(planInlineIsolation(customSource, 'rtl', { technicalIdentifiers: ['InternalPlatform'] }))
+      .toContainEqual(expect.objectContaining({ text: 'internalplatform', direction: 'ltr' }));
+    expect(planInlineIsolation('internalplatform is healthy.', 'ltr', {
+      technicalIdentifiers: ['InternalPlatform']
+    })).toEqual([]);
+    const mutableIdentifiers = ['InternalPlatform'];
+    expect(detectDirection(customSource, { technicalIdentifiers: mutableIdentifiers })).toBe('rtl');
+    mutableIdentifiers[0] = 'OtherPlatform';
+    expect(detectDirection(customSource, { technicalIdentifiers: mutableIdentifiers })).toBe('ltr');
   });
 
   it('recognizes production technical-token categories and trims sentence punctuation', () => {
@@ -212,11 +238,12 @@ describe('isolation and segmentation', () => {
 });
 
 describe('streaming', () => {
-  it('settles the flagship sentence from provisional LTR to RTL exactly once', () => {
+  it('settles the flagship sentence from provisional LTR to revisable RTL', () => {
     const stream = createBidiStream();
     expect(stream.push('React ').direction).toBe('ltr');
     const settled = stream.push('یک کتابخانه جاوااسکریپت بسیار محبوب است.');
     expect(settled.direction).toBe('rtl');
+    expect(settled.locked).toBe(false);
     expect(settled.text).toBe('React یک کتابخانه جاوااسکریپت بسیار محبوب است.');
     expect(stream.finish().direction).toBe('rtl');
     expect(() => stream.push(' more')).toThrow('Cannot push after finish()');
@@ -229,7 +256,7 @@ describe('streaming', () => {
     expect(leading.locked).toBe(false);
     const settled = stream.push(' is a common Persian word in this English sentence.');
     expect(settled.direction).toBe('ltr');
-    expect(settled.locked).toBe(true);
+    expect(settled.locked).toBe(false);
     expect(stream.finish().direction).toBe('ltr');
   });
 
@@ -238,7 +265,7 @@ describe('streaming', () => {
     expect(stream.push('Hello').locked).toBe(false);
     const settled = stream.push(' world from the browser.');
     expect(settled.direction).toBe('ltr');
-    expect(settled.locked).toBe(true);
+    expect(settled.locked).toBe(false);
     expect(stream.finish().direction).toBe('ltr');
   });
 
@@ -393,10 +420,239 @@ describe('streaming', () => {
       .toEqual({ direction: codePoints.direction, locked: codePoints.locked });
   });
 
-  it('settles exactly at the configured strong-evidence threshold', () => {
+  it('settles without freezing the default strategy at the configured evidence threshold', () => {
     const snapshot = createBidiStream().push('سلام دنیا');
     expect(snapshot.direction).toBe('rtl');
-    expect(snapshot.locked).toBe(true);
+    expect(snapshot.locked).toBe(false);
+  });
+
+  it('revises a misleading RTL prefix when later evidence is English-majority', () => {
+    const stream = createBidiStream();
+    const prefix = stream.push('کتابخانه');
+    expect(prefix).toMatchObject({ direction: 'rtl', locked: false });
+
+    const live = stream.push(' is a common Persian word in this long English sentence.');
+    expect(live).toMatchObject({ direction: 'ltr', locked: false });
+    expect(stream.finish()).toMatchObject({ direction: 'ltr', locked: true });
+  });
+
+  it('rechecks policy-aware evidence after an excluded technical token flips raw evidence', () => {
+    const stream = createBidiStream();
+    expect(stream.push('\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627').direction).toBe('rtl');
+    expect(stream.push(' Kubernetes').direction).toBe('rtl');
+    const live = stream.push(' is commonly used');
+    expect(live.direction).toBe('ltr');
+    expect(live.direction).toBe(detectDirection(live.currentParagraph.text));
+    expect(stream.finish().direction).toBe('ltr');
+  });
+
+  it('rechecks opposite policy evidence after a long same-direction technical prefix', () => {
+    const stream = createBidiStream();
+    expect(stream.push('Hello world').direction).toBe('ltr');
+    expect(stream.push(' Kubernetes'.repeat(8)).direction).toBe('ltr');
+    const live = stream.push(' \u0627\u06cc\u0646 \u06cc\u06a9 \u062c\u0645\u0644\u0647 \u0641\u0627\u0631\u0633\u06cc \u0637\u0648\u0644\u0627\u0646\u06cc \u0648 \u0645\u0647\u0645 \u0627\u0633\u062a');
+    expect(live.direction).toBe('rtl');
+    expect(live.direction).toBe(detectDirection(live.currentParagraph.text));
+    expect(stream.finish().direction).toBe('rtl');
+  });
+
+  it('does not count prose-shaped content inside completed technical structures', () => {
+    for (const technical of [
+      ' `ordinary prose` ',
+      ' ```ordinary prose``` ',
+      ' <span title="ordinary prose"> ',
+      ' $ordinary prose$ ',
+      ' $$ordinary prose$$ ',
+      ' \\(ordinary prose\\) ',
+      ' npm ordinary prose words remain arguments '
+    ]) {
+      const stream = createBidiStream();
+      stream.push('\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627');
+      const live = stream.push(technical);
+      expect(live.direction, technical).toBe('rtl');
+      expect(live.direction, technical).toBe(detectDirection(live.currentParagraph.text));
+      expect(stream.finish().direction, technical).toBe('rtl');
+    }
+
+    const commandThenPersian = createBidiStream();
+    commandThenPersian.push('Hello world');
+    const live = commandThenPersian.push(' npm run test, \u0627\u06cc\u0646 \u062c\u0645\u0644\u0647 \u0641\u0627\u0631\u0633\u06cc \u0637\u0648\u0644\u0627\u0646\u06cc \u0648 \u0645\u0647\u0645 \u0627\u0633\u062a ');
+    expect(live.direction).toBe('rtl');
+    expect(live.direction).toBe(detectDirection(live.currentParagraph.text));
+
+    for (const opener of ['`', '<', '$']) {
+      const unfinished = createBidiStream();
+      const source = `\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627 ${opener} this is a long English sentence with several words`;
+      expect(unfinished.push(source).direction, opener).toBe(detectDirection(source));
+    }
+    const emptyCode = '\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627 `` this is a long English sentence with several words';
+    expect(createBidiStream().push(emptyCode).direction).toBe(detectDirection(emptyCode));
+    const currentWord = `${'\u0633'.repeat(8)} ${'g'.repeat(9)}`;
+    expect(createBidiStream().push(currentWord).direction).toBe(detectDirection(currentWord));
+
+    const rtlPrefix = `${'\u0633'.repeat(8)} `;
+    for (const tail of [
+      'greetings.',
+      'greetings-',
+      'Kubernetes,',
+      '(Kubernetes)',
+      '[Kubernetes]',
+      'React/Kubernetes',
+      'word/Kubernetes',
+      'https://example.com',
+      'user@example.com',
+      'C:/Users/Shayan/file.txt',
+      '../src/components/Button.tsx',
+      '@scope/package'
+    ]) {
+      const lexicalSource = `${rtlPrefix}${tail}`;
+      expect(createBidiStream().push(lexicalSource).direction, tail)
+        .toBe(detectDirection(lexicalSource));
+    }
+
+    const doubleDelimiter = `${rtlPrefix}\`\`ordinary English prose with many words\`\`\``;
+    expect(createBidiStream().push(doubleDelimiter).direction)
+      .toBe(detectDirection(doubleDelimiter));
+    const tripleWithInnerTick = `${rtlPrefix}\`\`\`ordinary \` English prose with many words\`\`\``;
+    expect(createBidiStream().push(tripleWithInnerTick).direction)
+      .toBe(detectDirection(tripleWithInnerTick));
+
+    const unfinishedQuotedCommand = `\u0633\u0644\u0627\u0645\u062f\u0646\u06cc\u0627 npm "ggggggggg`;
+    expect(createBidiStream().push(unfinishedQuotedCommand).direction)
+      .toBe(detectDirection(unfinishedQuotedCommand));
+
+    for (const technicalBoundarySource of [
+      '\u0633\u0644\u0627\u0645\u0633\u0644\u0627\u0645 C:\\Users\\foo',
+      '\u0633\u0644\u0627\u0645\u0633\u0644\u0627\u0645;npm ordinary prose words remain arguments',
+      '\u0633\u0644\u0627\u0645\u0633\u0644\u0627\u0645 $ABCDEFGHI',
+      '\u0633\u0644\u0627\u0645\u0633\u0644\u0627\u0645 npm -x=ordinaryenglish',
+      '\u0633\u0644\u0627\u0645\u0633\u0644\u0627\u0645 ```ordinary English prose`'
+    ]) {
+      const whole = createBidiStream().push(technicalBoundarySource);
+      const codePointStream = createBidiStream();
+      let codePointSnapshot = codePointStream.snapshot();
+      for (const character of technicalBoundarySource) codePointSnapshot = codePointStream.push(character);
+      const expected = detectDirection(technicalBoundarySource, { fallback: 'ltr' });
+      expect(whole.direction, technicalBoundarySource).toBe(expected);
+      expect(codePointSnapshot.direction, technicalBoundarySource).toBe(expected);
+    }
+
+    const rtlEvidence = '\u0633\u0644\u0627\u0645\u0633\u0644\u0627\u0645';
+    const reviewerRegressions = [
+      `src/a.ts;${rtlEvidence}`,
+      `src\\a.ts;${rtlEvidence}`,
+      `npm "${rtlEvidence} hello.world`,
+      `npm "${rtlEvidence} @scope/pkg`,
+      `npm "${rtlEvidence} go test`,
+      `npm "${rtlEvidence} npm run build`,
+      `npm "${rtlEvidence} https://x.test/a(b);hello`,
+      `${rtlEvidence} \`\`ordinaryenglish\`\`\``,
+      `${rtlEvidence} ./src/a.ts;https://x.test/(ordinaryenglish)`,
+      `${rtlEvidence} C:\\src\\a.ts;https://x.test/(ordinaryenglish)`,
+      `${rtlEvidence} npm run https://x.test/(abc);npm ordinaryenglishwords`,
+      `${rtlEvidence} $A`,
+      `${rtlEvidence} \${A}`,
+      `${rtlEvidence} \\(x+1\\)`,
+      `https://x.test/a(b);hello ${rtlEvidence}`,
+      `npm "${rtlEvidence} hello.world" ${rtlEvidence}`,
+      '$A',
+      '${A}',
+      '$A $A',
+      '$AB $A',
+      '$A ${A}',
+      '$A ordinaryenglish $A',
+      '\\(x+1\\)',
+      'https://x.test/a(b);hello',
+      '``ordinaryenglish``` npm "---- go test',
+      'npm "---- go test https://x.test/a(b);hello',
+      '```ordinary`` ; npm "---- @scope/pkg',
+      'C:\\src\\a.ts ```ordinary`` npm "hello.world'
+    ];
+    for (const fallback of ['ltr', 'rtl', 'neutral'] as const) {
+      for (const source of reviewerRegressions) {
+        const expected = detectDirection(source, { fallback });
+        expect(createBidiStream({ fallback }).push(source).direction, `${fallback}: ${source}`)
+          .toBe(expected);
+        const codePointStream = createBidiStream({ fallback });
+        let codePointSnapshot = codePointStream.snapshot();
+        for (const character of source) codePointSnapshot = codePointStream.push(character);
+        expect(codePointSnapshot.direction, `${fallback}, code points: ${source}`).toBe(expected);
+      }
+    }
+
+    for (const fallback of ['rtl', 'neutral'] as const) {
+      for (const environment of ['$A', '$AB', '$HOME', '${A}', '${HOME}']) {
+        for (const separator of [' ', ';', ',', '(', ')']) {
+          const source = `${environment}${separator}$x$`;
+          const options = { strategy: 'majority' as const, fallback };
+          const expected = detectDirection(source, { fallback });
+          expect(createBidiStream(options).push(source).direction, source).toBe(expected);
+          const codePointStream = createBidiStream(options);
+          let codePointSnapshot = codePointStream.snapshot();
+          for (const character of source) codePointSnapshot = codePointStream.push(character);
+          expect(codePointSnapshot.direction, `code points: ${source}`).toBe(expected);
+        }
+      }
+
+      for (const [separator, tail] of [
+        [' ', 'Kubernetes'],
+        [' ', 'Kubernetes,'],
+        [' ', 'hello'],
+        [' ', 'hello-world'],
+        [' ', 'hello.world'],
+        [' ', 'me@example.com'],
+        [' ', '../src/a.ts'],
+        [' ', 'C:\\src\\a.ts'],
+        [' ', '@scope/pkg'],
+        [' ', 'go test'],
+        [';', '${A}'],
+        [',', '${A}'],
+        ['(', '${A}'],
+        [')', '${A}']
+      ] as const) {
+        const source = `npm run https://x.test/(abc)${separator}${tail}`;
+        const options = { strategy: 'majority' as const, fallback };
+        const expected = detectDirection(source, { fallback });
+        const codePointStream = createBidiStream(options);
+        let codePointSnapshot = codePointStream.snapshot();
+        for (const character of source) codePointSnapshot = codePointStream.push(character);
+        expect(codePointSnapshot.direction, `code points: ${source}`).toBe(expected);
+      }
+
+      for (const separator of [' ', ';', ',', '(', ')']) {
+        const source = `npm "\u0633\u0644\u0627\u0645${separator}npm -x=ordinaryenglish`;
+        const options = { strategy: 'majority' as const, fallback };
+        const expected = detectDirection(source, { fallback });
+        const codePointStream = createBidiStream(options);
+        let codePointSnapshot = codePointStream.snapshot();
+        for (const character of source) codePointSnapshot = codePointStream.push(character);
+        expect(codePointSnapshot.direction, `code points: ${source}`).toBe(expected);
+      }
+    }
+  });
+
+  it('retains irreversible behavior only for the explicit sticky strategy', () => {
+    const stream = createBidiStream({ strategy: 'sticky-majority' });
+    const prefix = stream.push('کتابخانه');
+    expect(prefix).toMatchObject({ direction: 'rtl', locked: true });
+    expect(stream.push(' is a common Persian word in this long English sentence.'))
+      .toMatchObject({ direction: 'rtl', locked: true });
+  });
+
+  it('uses caller-specific identifiers during live and final stream analysis', () => {
+    const source = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
+    const stream = createBidiStream({ technicalIdentifiers: ['InternalPlatform'] });
+    expect(stream.push(source).direction).toBe('rtl');
+    expect(stream.finish().direction).toBe('rtl');
+
+    for (const options of [
+      { fallback: 'rtl' as const },
+      { strategy: 'majority' as const, fallback: 'rtl' as const }
+    ]) {
+      expect(createBidiStream(options).push('Kubernetes').direction).toBe('rtl');
+      expect(createBidiStream({ ...options, technicalIdentifiers: ['InternalPlatform'] })
+        .push('InternalPlatform').direction).toBe('rtl');
+    }
   });
 
   it('keeps completed paragraph snapshots protected from caller mutation', () => {
@@ -406,12 +662,56 @@ describe('streaming', () => {
     expect(stream.snapshot().paragraphs[0]?.text).toBe('Hello');
   });
 
-  it('keeps one-character neutral streaming and dense isolation planning within linear-time budgets', () => {
+  it('keeps neutral, alternating-direction, and isolation workloads within linear-time budgets', () => {
     const stream = createBidiStream();
     const streamStart = performance.now();
     for (let index = 0; index < 8_000; index += 1) stream.push('.');
     expect(stream.finish().text).toHaveLength(8_000);
     expect(performance.now() - streamStart).toBeLessThan(3_000);
+
+    const alternatingSource = `abcdefgh ${'\u0633'.repeat(11)} ${`abcdef${'\u0633'.repeat(6)} `.repeat(1_000)}`;
+    const alternating = createBidiStream();
+    const alternatingStart = performance.now();
+    for (const character of alternatingSource) alternating.push(character);
+    expect(alternating.finish().text).toBe(alternatingSource);
+    expect(performance.now() - alternatingStart).toBeLessThan(3_000);
+
+    const unfinishedCode = createBidiStream();
+    const unfinishedCodeStart = performance.now();
+    unfinishedCode.push(`\`${'g'.repeat(80_000)}`);
+    expect(performance.now() - unfinishedCodeStart).toBeLessThan(3_000);
+
+    const punctuationToken = createBidiStream();
+    const punctuationTokenStart = performance.now();
+    for (const character of `a-${'x'.repeat(16_000)}`) punctuationToken.push(character);
+    expect(performance.now() - punctuationTokenStart).toBeLessThan(3_000);
+
+    const unmatchedUrl = `https://example.com/${')'.repeat(16_000)}`;
+    const unmatchedUrlStart = performance.now();
+    detectDirection(unmatchedUrl);
+    expect(performance.now() - unmatchedUrlStart).toBeLessThan(3_000);
+
+    for (const delimiter of ['>', '$', '`']) {
+      const delimiterStream = createBidiStream();
+      const delimiterStart = performance.now();
+      for (let index = 0; index < 16_000; index += 1) delimiterStream.push(delimiter);
+      expect(performance.now() - delimiterStart, delimiter).toBeLessThan(3_000);
+    }
+
+    for (const completedCode of ['`code`'.repeat(2_048), '``code``'.repeat(2_048)]) {
+      const completedCodeStream = createBidiStream({ strategy: 'majority', fallback: 'neutral' });
+      const completedCodeStart = performance.now();
+      for (const character of completedCode) completedCodeStream.push(character);
+      expect(completedCodeStream.snapshot().direction).toBe(
+        detectDirection(completedCode, { fallback: 'neutral' })
+      );
+      expect(performance.now() - completedCodeStart).toBeLessThan(3_000);
+    }
+
+    const backticks = '`'.repeat(64_000);
+    const backtickBatchStart = performance.now();
+    findTechnicalTokenRanges(backticks);
+    expect(performance.now() - backtickBatchStart).toBeLessThan(1_500);
 
     const source = 'سلام React '.repeat(8_000);
     const isolationStart = performance.now();

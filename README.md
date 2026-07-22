@@ -95,10 +95,12 @@ reordering and shaping; BidiLens supplies the application structure they need.
 - content-majority, first-strong, strict first-strong, explicit, inherited,
   and neutral-fallback direction policies;
 - technical-token recognition for code, URLs, email, paths, packages, model
-  names, versions, commands, hashes, addresses, dates, times, and numbers;
+  names, versions, commands, hashes, addresses, dates, times, and numbers,
+  plus caller-supplied private identifiers;
 - UTF-16 and code-point evidence/range reporting;
 - semantic inline-isolation plans without source mutation;
-- chunk-invariant, paragraph-aware streaming with bounded re-analysis;
+- paragraph-aware streaming with bounded re-analysis and chunk-invariant final
+  snapshots across tested source and technical-token boundaries;
 - audit/warn/strict security modes and SARIF-compatible diagnostics;
 - versioned language-neutral schemas for analysis, security, and stream data;
 - safe HTML, DOM, unified/remark/rehype, markdown-it, React, Vue, Svelte, and
@@ -149,9 +151,11 @@ standalone entry that bundles the core and needs no import map:
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 
-Use the normal package entry in bundled applications so the application can
-deduplicate `@bidilens/core`. The URL above becomes usable only after the
-maintainer-controlled npm publication described below.
+Use the side-effect-free normal package entry plus
+`defineBidiMessageElement()` in bundled applications, or import
+`@bidilens/web-component/auto` when global registration is deliberate. Both
+allow the application to deduplicate `@bidilens/core`. The URL above becomes
+usable only after the maintainer-controlled npm publication described below.
 
 ## Core usage
 
@@ -255,6 +259,7 @@ external package-publication prerequisites.
 See [limitations](docs/LIMITATIONS.md), [architecture](docs/ARCHITECTURE.md),
 [security](docs/SECURITY.md), [publishing](docs/PUBLISHING.md), the
 [accessibility checklist](docs/ACCESSIBILITY.md), [migration guide](docs/MIGRATION.md),
+[adoption strategy](docs/ADOPTION.md), [maintainer outreach kit](docs/OUTREACH.md),
 [FAQ](docs/FAQ.md), [build report](docs/V1_BUILD_REPORT.md),
 [sibling-project comparison](docs/PROJECT_COMPARISON.md), and
 [roadmap](docs/ROADMAP.md), or request help through [SUPPORT.md](SUPPORT.md).

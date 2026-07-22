@@ -43,6 +43,17 @@ describe('semantic HTML serializer', () => {
     expect(host.textContent).toBe(source);
   });
 
+  it('uses caller-specific identifiers consistently for direction and isolation', () => {
+    const source = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
+    const result = renderBidiHtml(source, { technicalIdentifiers: ['InternalPlatform'] });
+    expect(result.analysis.direction).toBe('rtl');
+    expect(result.html).toContain('<p dir="rtl"');
+    expect(result.html).toContain('>internalplatform</bdi>');
+    expect(renderBidiHtml('internalplatform is healthy.', {
+      technicalIdentifiers: ['InternalPlatform']
+    }).html).toBe('<p>internalplatform is healthy.</p>');
+  });
+
   it('escapes hostile HTML and attribute characters', () => {
     const source = '<img src=x onerror="alert(1)"> & \'quoted\'';
     const result = renderBidiHtml(source, { blockClassName: 'x" onclick="evil', intervention: 'always' });

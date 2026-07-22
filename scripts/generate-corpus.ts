@@ -259,6 +259,17 @@ for (const [id, text, expected, tags] of structuredCases) {
 }
 
 const siblingSeedDirectory = resolve('corpus', 'v1.3-her-seeds');
+const importedPolicyOverrides = new Map<string, Pick<ReviewedSiblingSeed, 'expected' | 'expectedIsolations'>>([
+  // Docker is technical evidence. The surrounding Hebrew phrase remains the
+  // natural-language base; the imported seed counted the product name as prose.
+  ['v13-he-mixed-en-he-002', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: 'Docker', direction: 'ltr', kind: 'identifier' },
+      { text: 'container', direction: 'ltr', kind: 'opposite-direction-run' }
+    ]
+  }]
+]);
 const siblingSeedFiles = (await readdir(siblingSeedDirectory))
   .filter((file) => file.endsWith('.json'))
   .sort();
@@ -266,18 +277,19 @@ let siblingSeedCount = 0;
 for (const file of siblingSeedFiles) {
   const seeds = JSON.parse(await readFile(resolve(siblingSeedDirectory, file), 'utf8')) as ReviewedSiblingSeed[];
   for (const seed of seeds) {
+    const policy = importedPolicyOverrides.get(seed.id) ?? seed;
     fixtures.push(makeFixture(
       seed.id,
       seed.description,
       seed.text,
-      seed.expected,
+      policy.expected,
       seed.tags,
       {
         curation: 'imported-comparison-corpus',
         // Same-direction technical wrappers are unnecessary in a wholly LTR
         // scope. Normalize legacy seed labels to the default no-op contract.
         expectedIsolations: needsBidiIntervention(seed.text)
-          ? seed.expectedIsolations
+          ? policy.expectedIsolations
           : []
       }
     ));

@@ -88,8 +88,13 @@ export function maskAnsiForAnalysis(source: string): string {
   return result + source.slice(cursor);
 }
 
-function isolateParagraph(source: string, analysisText: string, direction: 'ltr' | 'rtl'): string {
-  const plans = planInlineIsolation(analysisText, direction);
+function isolateParagraph(
+  source: string,
+  analysisText: string,
+  direction: 'ltr' | 'rtl',
+  technicalIdentifiers: readonly string[] | undefined
+): string {
+  const plans = planInlineIsolation(analysisText, direction, { technicalIdentifiers });
   let output = '';
   let cursor = 0;
   for (const plan of plans) {
@@ -131,7 +136,7 @@ export function formatTerminalText(source: string, options: TerminalFormatOption
     const direction = paragraph.direction === 'neutral' ? (options.inheritedDirection ?? 'ltr') : paragraph.direction;
     const next = analysis.paragraphs[index + 1];
     const separator = next ? source.slice(paragraph.end, next.start) : '';
-    return `${isolateParagraph(sourceParagraph, paragraph.text, direction)}${separator}`;
+    return `${isolateParagraph(sourceParagraph, paragraph.text, direction, options.technicalIdentifiers)}${separator}`;
   });
   warnings.push('Unicode-isolate mode changes the output string; keep the returned source for storage, search, and model input.');
   return {

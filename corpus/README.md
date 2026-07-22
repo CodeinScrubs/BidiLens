@@ -43,11 +43,12 @@ canonical authored templates.
 
 The imported text and descriptive tags come from the sibling, but its policy
 outputs are not treated as an oracle. Canonical expectations were recomputed
-and then frozen: 16 of 196 directions differ from the sibling labels. Thirteen
+and then frozen: 17 of 196 directions differ from the sibling labels. Thirteen
 are technical-only inputs for which BidiLens returns `neutral` instead of
 inventing an LTR language direction, one is a raw fenced-code string whose
-Persian literal is visible to the plain-text analyzer, and two are genuinely
-mixed sentences where content-majority differs from the sibling expectation.
+Persian literal is visible to the plain-text analyzer, and three are genuinely
+mixed sentences where content-majority differs from the sibling expectation;
+the third treats `Docker` as technical evidence in a Hebrew sentence.
 Structured Markdown consumers should use the Markdown adapter, which forces
 code and math nodes to LTR independently of plain-text analysis.
 

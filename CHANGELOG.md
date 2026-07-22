@@ -14,11 +14,16 @@ been published from this checkout.
 - Added technical-token exclusion, dual UTF-16/code-point evidence ranges,
   directional runs, semantic isolation plans, and specification-oriented API
   aliases.
+- Added caller-supplied `technicalIdentifiers` across applicable adapters and
+  separate literal `rawFirstStrong` versus policy-adjusted `firstStrong`
+  evidence.
 - Added versioned language-neutral JSON Schemas for block analysis, security
   reports, and stream snapshots, with dual-offset isolation ranges.
-- Added paragraph-aware, chunk-invariant streaming with stable settlement,
-  completed-block immutability, random UTF-16-boundary properties,
-  supplementary-character buffering, and incremental checkpoints.
+- Added paragraph-aware streaming with chunk-invariant final snapshots across
+  the tested token grammar, a revisable live default,
+  opt-in sticky settlement, completed-block immutability, random
+  UTF-16-boundary properties, supplementary-character buffering, and
+  geometrically spaced policy-aware checkpoints.
 - Added atomic `reset(initialText)` replacement across core, React, Vue, and
   Svelte streaming adapters so regeneration cannot expose a transient empty
   state.
@@ -38,8 +43,9 @@ been published from this checkout.
 - Added per-structural-block Markdown direction, LTR code policy, inline
   isolation, math-node LTR policy, XSS-safe rendering, SSR behavior, and
   framework streaming APIs.
-- Added a tested single-file Web Component entry for no-build/CDN pages while
-  retaining a deduplicatable normal bundler entry.
+- Added a tested single-file Web Component entry for no-build/CDN pages, a
+  side-effect-free normal bundler entry with explicit registration, and an
+  opt-in `/auto` registration entry.
 - Added reusable Playwright assertions for block direction, ordered isolation,
   logical selection/clipboard text, and base-start token geometry; the visual
   suite now consumes the same public helper API.
@@ -49,7 +55,7 @@ been published from this checkout.
 - Added 918 schema-validated corpus fixtures, with fixture #001 representing
   the user flagship, 196 attributed `v1.3-Her` seeds, and native-review status
   recorded explicitly.
-- Added 179 unit/property/action tests with enforced coverage thresholds and 24
+- Added 234 unit/property/action tests with enforced coverage thresholds and 24
   visual/browser tests across Chromium, Firefox, and WebKit; property seeds make
   coverage evidence reproducible across consecutive runs.
 - Added strict-mode false-positive regressions for ordinary Persian, Arabic,
