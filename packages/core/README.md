@@ -37,7 +37,10 @@ The default newline paragraph separator is recognized incrementally. A custom
 `paragraphSeparator` regular expression is evaluated once by `finish()` so
 future-sensitive lookarounds, anchors, and extendable matches remain invariant
 across arbitrary source chunking. Until then, custom-separated input is exposed
-as one unresolved open paragraph.
+as one unresolved open paragraph. Set `paragraphBoundary: 'markdown'` to
+recognize blank lines incrementally while retaining a single soft line break
+inside the current paragraph. If both options are supplied, the explicit
+Markdown boundary policy takes precedence in core and framework rendering.
 
 The default `content-majority` policy excludes technical tokens before
 counting natural-language evidence. Use `first-strong` or `strict-uax9` only

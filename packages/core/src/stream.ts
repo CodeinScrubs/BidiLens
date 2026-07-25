@@ -50,13 +50,17 @@ function detectForStrategy(
   text: string,
   strategy: StreamStrategy,
   fallback: Direction,
+  minimumStrongCharacters: number,
   threshold: number,
+  excludeTechnicalTokens: boolean | undefined,
   technicalIdentifiers: readonly string[]
 ): Direction {
   return detectDirection(text, {
     strategy: batchStrategy(strategy),
     fallback,
+    minimumStrongCharacters,
     majorityThreshold: threshold,
+    ...(excludeTechnicalTokens === undefined ? {} : { excludeTechnicalTokens }),
     technicalIdentifiers
   });
 }
@@ -73,7 +77,10 @@ export class BidiStream {
   readonly #fallback: Direction;
   readonly #separator: RegExp;
   readonly #usesDefaultSeparator: boolean;
+  readonly #usesMarkdownSeparator: boolean;
+  readonly #minimumStrongCharacters: number;
   readonly #threshold: number;
+  readonly #excludeTechnicalTokens: boolean | undefined;
   readonly #lockAfter: number;
   readonly #lockMargin: number;
   readonly #technicalIdentifiers: readonly string[];
@@ -86,10 +93,13 @@ export class BidiStream {
   #lastChanged = false;
   #finished = false;
   #pendingCarriageReturn = false;
+  #pendingMarkdownSeparator = '';
+  #markdownBoundaryOpen = false;
   #pendingHighSurrogate: string | null = null;
   #analysisDue = false;
   #nextAnalysisLength = 1;
   #strongCharacters = 0;
+  #rawFirstStrong: Direction = 'neutral';
   #nextStrongAnalysisCount = 1;
   #adoptedDirection = false;
   #hadAdoptionEvidence = false;
@@ -183,8 +193,12 @@ export class BidiStream {
     this.#strategy = options.strategy ?? 'content-majority';
     this.#fallback = options.fallback ?? 'ltr';
     this.#separator = options.paragraphSeparator ?? DEFAULT_SEPARATOR;
-    this.#usesDefaultSeparator = options.paragraphSeparator === undefined;
+    this.#usesMarkdownSeparator = options.paragraphBoundary === 'markdown';
+    this.#usesDefaultSeparator = options.paragraphSeparator === undefined
+      && !this.#usesMarkdownSeparator;
+    this.#minimumStrongCharacters = Math.max(1, options.minimumStrongCharacters ?? 1);
     this.#threshold = Math.min(1, Math.max(0.5, options.majorityThreshold ?? 0.5));
+    this.#excludeTechnicalTokens = options.excludeTechnicalTokens;
     // A single short opposite-language word should remain provisional. Eight
     // strong characters and a margin of three let the default strategy adopt
     // a direction while keeping it revisable as more model output arrives.
@@ -203,6 +217,7 @@ export class BidiStream {
     const previous = this.#direction;
     this.#text += chunk;
     if (this.#usesDefaultSeparator) this.#consumeDefaultSeparators(chunk, false);
+    else if (this.#usesMarkdownSeparator) this.#consumeMarkdownSeparators(chunk, false);
     else this.#appendCurrent(chunk);
     // A caller can observe the stream at every push boundary. Reconcile only
     // the still-open lexical run here so live classification has the exact
@@ -244,10 +259,13 @@ export class BidiStream {
     this.#lastChanged = false;
     this.#finished = false;
     this.#pendingCarriageReturn = false;
+    this.#pendingMarkdownSeparator = '';
+    this.#markdownBoundaryOpen = false;
     this.#pendingHighSurrogate = null;
     this.#analysisDue = false;
     this.#nextAnalysisLength = 1;
     this.#strongCharacters = 0;
+    this.#rawFirstStrong = 'neutral';
     this.#nextStrongAnalysisCount = 1;
     this.#adoptedDirection = false;
     this.#hadAdoptionEvidence = false;
@@ -272,8 +290,11 @@ export class BidiStream {
   /** Finalizes the open paragraph and reconciles it with batch analysis. */
   finish(): BidiStreamSnapshot {
     if (!this.#finished) {
-      if (this.#pendingCarriageReturn) this.#consumeDefaultSeparators('', true);
-      if (!this.#usesDefaultSeparator) this.#finalizeCustomSeparators();
+      if (this.#usesDefaultSeparator && this.#pendingCarriageReturn) {
+        this.#consumeDefaultSeparators('', true);
+      }
+      if (this.#usesMarkdownSeparator) this.#consumeMarkdownSeparators('', true);
+      else if (!this.#usesDefaultSeparator) this.#finalizeCustomSeparators();
     }
     this.#flushPendingHighSurrogate();
     const previous = this.#direction;
@@ -281,7 +302,9 @@ export class BidiStream {
       this.#currentText,
       this.#strategy,
       this.#fallback,
+      this.#minimumStrongCharacters,
       this.#threshold,
+      this.#excludeTechnicalTokens,
       this.#technicalIdentifiers
     );
     this.#locked = this.#direction !== 'neutral';
@@ -298,7 +321,9 @@ export class BidiStream {
             this.#currentText,
             this.#strategy,
             this.#fallback,
+            this.#minimumStrongCharacters,
             this.#threshold,
+            this.#excludeTechnicalTokens,
             this.#technicalIdentifiers
           )
         : this.#direction,
@@ -347,11 +372,15 @@ export class BidiStream {
   }
 
   #processCharacter(character: string): void {
-    if (this.#strategy === 'first-strong' && !this.#locked) {
+    if (this.#strategy === 'first-strong' && this.#excludeTechnicalTokens !== true) {
       const actual = classifyBidiStrongCharacter(character);
       if (actual !== 'neutral') {
-        this.#direction = actual;
-        this.#locked = true;
+        this.#strongCharacters += 1;
+        if (this.#rawFirstStrong === 'neutral') this.#rawFirstStrong = actual;
+      }
+      if (!this.#locked && this.#strongCharacters >= this.#minimumStrongCharacters) {
+        this.#direction = this.#rawFirstStrong;
+        this.#locked = this.#direction !== 'neutral';
       }
       return;
     }
@@ -376,7 +405,9 @@ export class BidiStream {
         this.#currentText,
         this.#strategy,
         this.#fallback,
+        this.#minimumStrongCharacters,
         this.#threshold,
+        this.#excludeTechnicalTokens,
         this.#technicalIdentifiers
       ),
       completed: true,
@@ -389,6 +420,7 @@ export class BidiStream {
     this.#analysisDue = false;
     this.#nextAnalysisLength = 1;
     this.#strongCharacters = 0;
+    this.#rawFirstStrong = 'neutral';
     this.#nextStrongAnalysisCount = 1;
     this.#adoptedDirection = false;
     this.#hadAdoptionEvidence = false;
@@ -431,6 +463,62 @@ export class BidiStream {
     this.#appendCurrent(combined.slice(start));
   }
 
+  #consumeMarkdownSeparators(chunk: string, final: boolean): void {
+    const combined = `${this.#pendingCarriageReturn ? '\r' : ''}${chunk}`;
+    this.#pendingCarriageReturn = false;
+    for (let index = 0; index < combined.length; index += 1) {
+      const character = combined[index]!;
+      let newline = '';
+      if (character === '\r') {
+        if (index + 1 >= combined.length && !final) {
+          this.#pendingCarriageReturn = true;
+          break;
+        }
+        if (combined[index + 1] === '\n') {
+          newline = '\r\n';
+          index += 1;
+        } else {
+          newline = '\r';
+        }
+      } else if (character === '\n') {
+        newline = '\n';
+      }
+
+      if (newline) {
+        if (this.#markdownBoundaryOpen) {
+          this.#pendingMarkdownSeparator = '';
+          continue;
+        }
+        if (this.#pendingMarkdownSeparator) {
+          this.#pendingMarkdownSeparator = '';
+          if (this.#currentText) this.#completeCurrentParagraph();
+          this.#markdownBoundaryOpen = true;
+        } else {
+          this.#pendingMarkdownSeparator = newline;
+        }
+        continue;
+      }
+      if (this.#markdownBoundaryOpen && (character === ' ' || character === '\t')) {
+        this.#pendingMarkdownSeparator += character;
+        continue;
+      }
+      if (this.#pendingMarkdownSeparator && (character === ' ' || character === '\t')) {
+        this.#pendingMarkdownSeparator += character;
+        continue;
+      }
+      if (this.#markdownBoundaryOpen) this.#markdownBoundaryOpen = false;
+      if (this.#pendingMarkdownSeparator) {
+        this.#appendCurrent(this.#pendingMarkdownSeparator);
+        this.#pendingMarkdownSeparator = '';
+      }
+      this.#appendCurrent(character);
+    }
+    if (final && this.#pendingMarkdownSeparator) {
+      if (!this.#markdownBoundaryOpen) this.#appendCurrent(this.#pendingMarkdownSeparator);
+      this.#pendingMarkdownSeparator = '';
+    }
+  }
+
   #finalizeCustomSeparators(): void {
     const combined = this.#currentText;
     const separator = normalizedSeparator(this.#separator);
@@ -441,6 +529,7 @@ export class BidiStream {
     this.#analysisDue = false;
     this.#nextAnalysisLength = 1;
     this.#strongCharacters = 0;
+    this.#rawFirstStrong = 'neutral';
     this.#nextStrongAnalysisCount = 1;
     this.#adoptedDirection = false;
     this.#hadAdoptionEvidence = false;
@@ -487,7 +576,9 @@ export class BidiStream {
       this.#currentText,
       this.#strategy,
       this.#fallback,
+      this.#minimumStrongCharacters,
       this.#threshold,
+      this.#excludeTechnicalTokens,
       this.#technicalIdentifiers
     );
     this.#analysisDue = false;
@@ -511,11 +602,14 @@ export class BidiStream {
 
     const counts = countStrongCharacters(this.#currentText, {
       strategy: 'content-majority',
+      ...(this.#excludeTechnicalTokens === undefined
+        ? {}
+        : { excludeTechnicalTokens: this.#excludeTechnicalTokens }),
       technicalIdentifiers: this.#technicalIdentifiers
     });
     const margin = Math.abs(counts.rtl - counts.ltr);
     const sticky = this.#strategy === 'sticky-majority';
-    const requiredCount = sticky ? 1 : this.#lockAfter;
+    const requiredCount = Math.max(this.#minimumStrongCharacters, sticky ? 1 : this.#lockAfter);
     const requiredMargin = sticky ? 1 : this.#lockMargin;
     const revisingAdoptedDirection = !sticky
       && this.#adoptedDirection
@@ -537,11 +631,16 @@ export class BidiStream {
       this.#currentText,
       this.#strategy,
       this.#fallback,
+      this.#minimumStrongCharacters,
       this.#threshold,
+      this.#excludeTechnicalTokens,
       this.#technicalIdentifiers
     );
     const counts = countStrongCharacters(this.#currentText, {
       strategy: 'content-majority',
+      ...(this.#excludeTechnicalTokens === undefined
+        ? {}
+        : { excludeTechnicalTokens: this.#excludeTechnicalTokens }),
       technicalIdentifiers: this.#technicalIdentifiers
     });
     this.#policyCorrectionLtr = counts.ltr - this.#policyLtr;
@@ -732,6 +831,14 @@ export class BidiStream {
     if (total > 0) {
       if (effectiveRtl > effectiveLtr && effectiveRtl / total >= this.#threshold) candidate = 'rtl';
       if (effectiveLtr > effectiveRtl && effectiveLtr / total >= this.#threshold) candidate = 'ltr';
+    }
+    if (this.#strategy === 'first-strong' && this.#excludeTechnicalTokens === true) {
+      const hasMinimumEvidence = total >= this.#minimumStrongCharacters;
+      this.#direction = hasMinimumEvidence ? candidate : this.#fallback;
+      // Only committed lexical evidence is irreversible. A partial ASCII word
+      // can still become a recognized identifier as more characters arrive.
+      this.#locked = hasMinimumEvidence && this.#policyFirstStrong !== 'neutral';
+      return;
     }
     if (this.#strategy === 'majority') {
       this.#direction = candidate;
@@ -1394,7 +1501,11 @@ export function createBidiStream(options: BidiStreamOptions = {}): BidiStream {
   return new BidiStream(options);
 }
 
-/** Naming aligned with Markdown/chat integrations in the public specification. */
+/**
+ * @deprecated This compatibility alias is a direction-only paragraph stream.
+ * Use `createBidiMarkdownStream` from `@bidilens/markdown` for rich AST, HTML,
+ * isolation, security-delta, and dirty-region updates.
+ */
 export function createBidiMarkdownStream(options: BidiStreamOptions = {}): BidiStream {
   return createBidiStream(options);
 }

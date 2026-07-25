@@ -46,17 +46,18 @@ Status vocabulary:
 | Vue | Complete and tested | `@bidilens/vue`; Vue 3 component, SSR and reactive stream composable |
 | Svelte | Complete and tested | `@bidilens/svelte`; Svelte 4/5 store APIs and consumer probes |
 | Direction streaming engine | Complete and tested within its stated boundary | `@bidilens/core` incrementally tracks source, completed paragraphs, surrogate boundaries, revisable default direction, explicit sticky lock, and batch direction equivalence |
-| Streaming Markdown AST/HTML update API | Partial | `createBidiMarkdownStream` is currently an alias of the paragraph direction stream. It does not return AST annotations, isolation/security deltas, dirty regions, or final HTML, so the complete §7 API/AST equivalence requirement is not met |
+| Streaming Markdown AST/HTML update API | Complete and tested within the Markdown-It backend | `@bidilens/markdown` exports a real `createBidiMarkdownStream`: per-push direction state, checkpointed serializable AST/HTML/security documents, block analysis and isolation, dirty and pending ranges, security deltas, conservative stable prefixes, atomic reset, and exact `finish()` parity with `analyzeBidiMarkdown` |
 | Security scanner and SARIF | Complete and tested for bidi-control threats | Core scanner plus CLI audit/security modes and SARIF; 15 ordinary multilingual false-positive cases under all four modes. Full identifier confusable analysis under UTS #39 remains research |
 | CLI commands and CI exit behavior | Complete and tested | `@bidilens/cli`: inspect, lint, render, test, audit/security-scan, sanitize; human/JSON/SARIF; packed binary consumer test |
 | Reusable Playwright helpers | Complete and tested | `@bidilens/playwright`: metadata, logical text, isolation, selection, clipboard and edge geometry; package-local tests plus real Chromium/Firefox/WebKit use |
 | Reusable conformance GitHub Action | Complete and tested | `action/action.yml`; self-contained Node 24 bundle around the real CLI; audit/test, human/JSON/SARIF, stable outputs and exit codes; 43 source assertions plus built safe/strict-failure probes |
 | Playground | Complete and tested | Static/offline Vite app; Markdown; adjustable chunk/speed simulation; policy/security selectors; live arbitrary-input four-way comparison; AST/evidence/isolation/security inspectors; searchable 918-case local corpus asset; logical-copy verifier; JSON/semantic-HTML export; URL state; explicit dark theme; responsive layout; complete EN/FA UI switch. The full flow passes all three browsers |
 
-Keeping stream and security inside `@bidilens/core` is an intentional package
-boundary: their implementations are substantial, but separate packages would
-only create thin re-export layers. The missing Markdown stream behavior above
-is a functional gap, not excused by that packaging decision.
+Keeping the dependency-free direction stream and security primitives inside
+`@bidilens/core` is intentional. Parser-specific rich state belongs in
+`@bidilens/markdown`, where it can accept a caller-owned Markdown-It instance
+without adding a parser dependency to core. Unified/remark/rehype remains a
+batch plugin path; it is not misrepresented as a stateful streaming backend.
 
 ### Tier 2 — mandatory honest-effort desktop surfaces
 
@@ -95,11 +96,11 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
-| Chunk-boundary invariance | Complete for finalized direction/text within the tested grammar | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits and default paragraph separators; unfinished future-sensitive tokens may revise live snapshots, and custom regular expressions are buffered and split once at `finish()` |
-| Stable live rendering and flagship transition | Complete for direction/text stream | Source-position checkpoints; completed blocks immutable; default live direction remains revisable so misleading prefixes cannot permanently freeze the paragraph; sticky locking is explicit |
-| Incremental performance without full-document reparse per token | Complete for direction/text stream | Incremental state machine and 1-char/1,000-chunk benchmarks; custom-regex pushes have an 8,000-character regression alarm and defer one full split to `finish()` |
+| Chunk-boundary invariance | Complete for finalized direction/text and Markdown-It rich output within the tested grammar | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits, Markdown fences/links and default paragraph separators; unfinished future-sensitive tokens may revise live snapshots, and final rich documents equal the batch oracle |
+| Stable live rendering and flagship transition | Complete for the shipped streams | Source-position checkpoints; completed core paragraphs immutable; rich Markdown exposes conservative `stableThrough`, pending source, and dirty replacements rather than freezing future-sensitive syntax; default direction remains revisable and sticky locking is explicit |
+| Incremental performance without full-document reparse per token | Complete for the shipped streams | Core incremental state plus 1-char/1,000-chunk benchmarks; the rich Markdown parser runs at geometric and structural checkpoints plus finalization, with an 8,192 one-character plain-text regression asserting no more than 14 live parses |
 | Final stream equals batch for source and directions | Complete and tested | Core properties and framework adapter tests |
-| Final stream equals batch for Markdown AST, isolation, security, and HTML | Missing | No rich Markdown stream update type or parser state exists yet |
+| Final stream equals batch for Markdown AST, isolation, security, and HTML | Complete and tested for Markdown-It | Forty seeded random chunkings across Unicode, surrogate, combining, link, URL, inline-code and fence boundaries produce the exact `analyzeBidiMarkdown` document; unified remains batch-only and is documented as such |
 
 ## Corpus and testing
 
@@ -143,7 +144,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M0 discovery/tooling/schemas | Gated historically | Annotated `m0` exists; current later changes were not part of that historical tree |
 | M1 Unicode/core/security/100 fixtures | Gated historically | Annotated `m1` exists; current core coverage exceeds the 90% line requirement |
 | M2 Markdown/HTML/DOM | Implemented; historical gate incomplete | Implementations and tests pass; no annotated `m2` tag |
-| M3 streaming | Partial | Plain direction streaming passes; rich Markdown AST/HTML stream equivalence is missing; no `m3` tag |
+| M3 streaming | Implemented; historical gate incomplete | Direction and rich Markdown-It stream gates pass now; no historical `m3` tag exists and is not fabricated retroactively |
 | M4 frameworks/Electron | Partial | Web Component/React/Vue/Svelte pass anti-hollow and SSR gates; Electron is missing; no `m4` tag |
 | M5 CLI/Playwright Action/VS Code | Partial | CLI, reusable Playwright helpers, and bundled conformance Action pass; VS Code extension is missing; no `m5` tag |
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 918 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
@@ -159,8 +160,8 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 2 | Complete — content majority is default; first-strong is opt-in |
 | 3 | Complete for shipped surfaces — source and logical copy order are preserved |
 | 4 | Complete for shipped structured/web surfaces |
-| 5 | Complete for batch Markdown; incomplete for rich Markdown streaming |
-| 6 | Partial — direction/text stream equivalence passes; AST/security/isolation/HTML stream equivalence missing |
+| 5 | Complete for batch Markdown and the shipped rich Markdown-It stream |
+| 6 | Complete for direction/text and the shipped Markdown-It AST/security/isolation/HTML stream contract; unified remains batch-only |
 | 7 | Complete for implemented bidi-control scope; broader parser-aware Trojan Source work remains |
 | 8 | Complete — current Playwright suite passes all three engines |
 | 9 | Complete — executable anti-hollow gate passes all 12 packages |
@@ -187,5 +188,5 @@ The current tree is a strong, locally verified **web release candidate**, not
 the completed cross-platform v2.0 mission. A public web beta can be prepared
 after the external identity/security/accessibility/language-review gates. The
 original specification's final `v0.1.0` gate remains red until the missing
-Markdown streaming, Tier-2/Tier-3 surface requirements, integrations, and tags
-are actually completed.
+Tier-2/Tier-3 surface requirements, integrations, and tags are actually
+completed.

@@ -1,7 +1,10 @@
 import MarkdownIt from 'markdown-it';
-import { markdownItBidi } from '@bidilens/markdown';
+import { createBidiMarkdownStream } from '@bidilens/markdown';
 
 const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 const markdown = new MarkdownIt({ html: false });
-markdownItBidi(markdown);
-console.log(markdown.render(source));
+const stream = createBidiMarkdownStream(markdown);
+stream.push(source.slice(0, 6));
+stream.getUpdate();
+stream.push(source.slice(6));
+console.log(stream.finish().document.html);

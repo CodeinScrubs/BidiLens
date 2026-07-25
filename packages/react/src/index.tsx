@@ -214,10 +214,13 @@ function bidiStreamOptionsKey(options: BidiStreamOptions): string {
   return JSON.stringify([
     options.strategy ?? null,
     options.fallback ?? null,
+    options.minimumStrongCharacters ?? null,
     options.majorityThreshold ?? null,
+    options.excludeTechnicalTokens ?? null,
     options.lockAfterStrongCharacters ?? null,
     options.lockMargin ?? null,
     options.technicalIdentifiers ?? null,
+    options.paragraphBoundary ?? null,
     options.paragraphSeparator?.source ?? null,
     options.paragraphSeparator?.flags ?? null
   ]);
@@ -302,8 +305,14 @@ export interface StreamingBidiMessageProps extends Omit<BidiMessageProps, 'text'
   completed?: boolean;
 }
 
-function streamParagraphParts(text: string, customSeparator?: RegExp): Array<{ text: string; separator: string }> {
-  const separator = customSeparator
+function streamParagraphParts(
+  text: string,
+  customSeparator?: RegExp,
+  paragraphBoundary?: BidiStreamOptions['paragraphBoundary']
+): Array<{ text: string; separator: string }> {
+  const separator = paragraphBoundary === 'markdown'
+    ? /(?:\r\n|\r|\n)[ \t]*(?:\r\n|\r|\n)/gu
+    : customSeparator
     ? new RegExp(
         customSeparator.source,
         customSeparator.flags.replaceAll('y', '').includes('g')
@@ -335,7 +344,11 @@ export const StreamingBidiMessage = forwardRef<HTMLElement, StreamingBidiMessage
   const paragraphDirections = new Set(snapshot.paragraphs
     .filter((paragraph) => paragraph.text.length > 0)
     .map((paragraph) => paragraph.direction));
-  const paragraphParts = streamParagraphParts(snapshot.text, streamOptions?.paragraphSeparator);
+  const paragraphParts = streamParagraphParts(
+    snapshot.text,
+    streamOptions?.paragraphSeparator,
+    streamOptions?.paragraphBoundary
+  );
   const canRenderParagraphs = (children === undefined || children === snapshot.text)
     && paragraphParts.length === snapshot.paragraphs.length;
   if (canRenderParagraphs && snapshot.paragraphs.length > 1 && paragraphDirections.size > 1) {

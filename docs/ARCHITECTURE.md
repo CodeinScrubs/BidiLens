@@ -117,6 +117,21 @@ Each adapter's reset operation replaces the current source atomically through
 replacement text, which matters when an AI response is regenerated or a view
 is reused for a different conversation.
 
+The rich `@bidilens/markdown` session layers a caller-owned Markdown-It parser
+over that fast direction stream. It does not invoke a batch parser after every
+token. Instead, AST/HTML/security revisions occur at geometrically spaced
+source checkpoints and structural Markdown boundaries, and expose both
+replacement (`dirtyRegions`) and unparsed
+suffix (`pendingSourceRange`) ranges. The complete source is parsed exactly
+once at `finish()`, using the same function exported as `analyzeBidiMarkdown`,
+which makes final batch/stream equality directly testable.
+
+Only self-contained plain-paragraph prefixes that already carry stable
+intervention metadata advance `stableThrough`. Future-sensitive constructs,
+including reference links, lists, tables, fences, and HTML, remain provisional.
+A later link definition can therefore correctly dirty an earlier reference;
+the API never labels that earlier AST as immutable.
+
 ## Markup adapters
 
 - `@bidilens/html` escapes untrusted text and serializes `<p dir>` plus `<bdi>`

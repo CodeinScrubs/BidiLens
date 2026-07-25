@@ -156,13 +156,13 @@ committed benchmark remains the release regression evidence.
 |---|---|
 | Content-majority default for the user flagship | Implemented and fixture #001 |
 | Unicode range lookup instead of hand-written script ranges | Implemented from pinned Unicode 17 bidi-class and general-category data with checksums/generator |
-| Separate `stream` and `security` package proposals | Their useful APIs are implemented in `@bidilens/core`; keeping them together avoids two tiny dependency layers while preserving streaming, scan, sanitize, and SARIF capabilities |
+| Separate `stream` and `security` package proposals | Dependency-free direction/security primitives remain in `@bidilens/core`; parser-specific rich state lives in `@bidilens/markdown`, avoiding thin packages while keeping the parser out of core |
 | Block evidence and language-neutral offsets | Implemented in `analyzeBlock` with UTF-16 and code-point ranges |
 | Versioned language-neutral output contracts | Implemented in `@bidilens/spec` with strict analysis/security/stream JSON Schemas validated against real core output |
 | Technical-token exclusion and inline planning | Implemented with monotonic range traversal, a conservative expanded built-in vocabulary, and caller-supplied `technicalIdentifiers` propagated through every applicable adapter |
 | Semantic HTML compiler | Implemented as an escaped package with a conservative non-executable tag allowlist |
 | DOM mutation support | Implemented with custom selectors, idempotence, restoration, and isolation |
-| unified plus markdown-it support | Implemented in one deep Markdown package |
+| unified plus markdown-it support | Implemented in one deep Markdown package, with batch adapters for both and a rich checkpointed Markdown-It stream |
 | React SSR and streaming | Implemented with duplicated-initial-text regression coverage, explicit SSR/client completion, revisable default direction, and independent blocks when accumulated paragraphs differ in direction |
 | Vue and Svelte adapters | Implemented idiomatically with stream APIs |
 | Sibling `BidiMarkdown` framework wrappers | Replaced by composition with the real AST-based Markdown package; the sibling wrappers only split plain-text blocks despite their name and therefore were not copied |
@@ -190,11 +190,11 @@ committed benchmark remains the release regression evidence.
 | Wider multilingual examples | 196 substantive strings imported under their Apache-2.0 notice; four empty/whitespace-only cases were excluded because they add no linguistic oracle; canonical outputs were recomputed and 17 documented policy differences were retained rather than copying sibling labels blindly |
 | No-build custom element | Adopted as a genuinely self-contained `standalone.js`; normal imports remain externalized for deduplication, and all three browsers load the packed design without an import map |
 | Demo presets and inspectors | Adopted and extended into a complete offline bilingual playground: policy/security and stream controls, four-way live input, AST/evidence/isolation/security, searchable 918-case asset, copy verification, semantic HTML/JSON export, hash state, theme, and an opt-in Pages workflow |
-| Cross-platform CI | Configured as complete `check` and example jobs on Windows and macOS in addition to Ubuntu Node 22/24; hosted results begin only after the repository is pushed |
+| Cross-platform CI | Complete `check` and example jobs pass on Windows and macOS in addition to Ubuntu Node 22/24; public hosted results are linked from the release report |
 | Machine-readable benchmark history | Adopted as manual/weekly JSON artifacts; kept advisory because shared CI hardware is noisy |
 | CLI color and `.gitignore` plan | Color work is unnecessary because canonical CLI output contains no ANSI styling. Recursive audits already restrict traversal to known text extensions, skip symlinks/common generated directories, and still scan explicitly named files. `.gitignore` is deliberately not an implicit security boundary; a future opt-in requires full nested-pattern semantics rather than a partial matcher |
-| Separate core/stream/security packages | Not copied: the mature APIs already live in dependency-free core, avoiding two tiny package boundaries and version-skew risk |
-| Full accumulated Markdown reparse while streaming | Not copied: it is quadratic over repeated updates and its lightweight splitter is not a full Markdown parser; canonical paragraph streaming already freezes completed blocks and preserves chunk invariance |
+| Separate core/stream/security packages | Not copied: direction/security APIs live in dependency-free core and parser-specific rich streaming lives beside the Markdown adapters, avoiding thin package boundaries and version-skew risk |
+| Full accumulated Markdown reparse while streaming | Replaced by a real Markdown-It session: per-push direction, geometric and structural rich revisions, dirty/pending ranges, conservative stable prefixes, and one exact final reconciliation. The measured benchmark records the actual rich parse count rather than assuming one parse per chunk |
 | Direction on an aggregate table | Rejected because `direction: rtl` on the table can reverse column order; canonical annotates semantic cells independently |
 | Simplistic mixed-script/confusable warning | Rejected pending a sourced UTS #39 policy to avoid false security claims and ordinary multilingual false positives |
 | `innerHTML` custom element and ambiguous package side effects | Rejected; canonical constructs text/element nodes, keeps its main import side-effect-free, and limits global registration to explicit `/auto` and standalone entries |

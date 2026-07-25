@@ -11,16 +11,31 @@ import {
   type Direction
 } from '@bidilens/core';
 import { visit } from 'unist-util-visit';
+import {
+  BidiMarkdownStream,
+  analyzeConfiguredBidiMarkdown
+} from './stream.js';
+import type {
+  BidiMarkdownDocument,
+  BidiMarkdownStreamSession,
+  BidiMarkdownStreamOptions,
+  MarkdownBidiOptions
+} from './types.js';
 
-export interface MarkdownBidiOptions extends DetectionOptions {
-  fallback?: Direction;
-  blockClassName?: string;
-  codeClassName?: string;
-  annotateNeutral?: boolean;
-  isolateInline?: boolean;
-  /** `auto` leaves an LTR-only document's AST and rendered HTML unchanged. */
-  intervention?: BidiInterventionMode;
-}
+export type {
+  BidiMarkdownBlock,
+  BidiMarkdownDocument,
+  BidiMarkdownStreamSession,
+  BidiMarkdownStreamOptions,
+  BidiMarkdownStreamUpdate,
+  MarkdownAstNode,
+  MarkdownAstRoot,
+  MarkdownBidiOptions,
+  MarkdownBlockAnnotation,
+  MarkdownDirtyRegion,
+  MarkdownSecurityDelta,
+  MarkdownSourceRange
+} from './types.js';
 
 const MDAST_BLOCK_TYPES = new Set([
   'paragraph', 'heading', 'blockquote', 'listItem', 'tableCell', 'definition'
@@ -239,7 +254,28 @@ export function rehypeBidi(options: MarkdownBidiOptions = {}) {
   };
 }
 
-const configuredMarkdownIt = new WeakSet<object>();
+const configuredMarkdownIt = new WeakMap<object, string>();
+
+function markdownItConfigurationKey(options: MarkdownBidiOptions): string {
+  const strategy = options.strategy ?? 'content-majority';
+  const majorityStrategy = strategy === 'content-majority'
+    || strategy === 'semantic-dominant'
+    || strategy === 'majority';
+  return JSON.stringify({
+    strategy,
+    fallback: options.fallback ?? 'ltr',
+    inheritedDirection: options.inheritedDirection ?? 'ltr',
+    minimumStrongCharacters: Math.max(1, options.minimumStrongCharacters ?? 1),
+    majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? 0.5)),
+    excludeTechnicalTokens: options.excludeTechnicalTokens ?? majorityStrategy,
+    technicalIdentifiers: options.technicalIdentifiers ?? [],
+    blockClassName: options.blockClassName ?? 'bidilens-block',
+    codeClassName: options.codeClassName ?? 'bidilens-code',
+    annotateNeutral: options.annotateNeutral ?? false,
+    isolateInline: options.isolateInline ?? true,
+    intervention: options.intervention ?? 'auto'
+  });
+}
 
 function markdownItClass(token: Token | undefined, className: string): void {
   if (!token) return;
@@ -266,9 +302,22 @@ function markdownItBlockContent(tokens: Token[], index: number, closeType: strin
 }
 
 /** Markdown-It adapter with the same content-majority policy as the AST plugins. */
-export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}): void {
-  if (configuredMarkdownIt.has(md as object)) return;
-  configuredMarkdownIt.add(md as object);
+export function markdownItBidi(md: MarkdownIt, inputOptions: MarkdownBidiOptions = {}): void {
+  const options: MarkdownBidiOptions = {
+    ...inputOptions,
+    ...(inputOptions.technicalIdentifiers
+      ? { technicalIdentifiers: Object.freeze([...inputOptions.technicalIdentifiers]) }
+      : {})
+  };
+  const configurationKey = markdownItConfigurationKey(options);
+  const previousConfiguration = configuredMarkdownIt.get(md as object);
+  if (previousConfiguration !== undefined) {
+    if (previousConfiguration !== configurationKey) {
+      throw new Error('This Markdown-It instance is already configured with different BidiLens options.');
+    }
+    return;
+  }
+  configuredMarkdownIt.set(md as object, configurationKey);
   let activeDirection: 'ltr' | 'rtl' | null = null;
   const blockClassName = options.blockClassName ?? 'bidilens-block';
   const codeClassName = options.codeClassName ?? 'bidilens-code';
@@ -438,4 +487,27 @@ export function markdownItBidi(md: MarkdownIt, options: MarkdownBidiOptions = {}
       return originalCodeRule(tokens, index, renderOptions, env, self);
     };
   }
+}
+
+/** Exact batch document used as the rich stream's final equivalence oracle. */
+export function analyzeBidiMarkdown(
+  markdownIt: MarkdownIt,
+  source: string,
+  options: BidiMarkdownStreamOptions = {}
+): BidiMarkdownDocument {
+  markdownItBidi(markdownIt, options);
+  return analyzeConfiguredBidiMarkdown(markdownIt, source, options);
+}
+
+/**
+ * Incremental Markdown session with fast per-push direction state and
+ * checkpointed rich AST/HTML/security updates. `finish()` exactly reconciles
+ * through the same batch pipeline as `analyzeBidiMarkdown()`.
+ */
+export function createBidiMarkdownStream(
+  markdownIt: MarkdownIt,
+  options: BidiMarkdownStreamOptions = {}
+): BidiMarkdownStreamSession {
+  markdownItBidi(markdownIt, options);
+  return new BidiMarkdownStream(markdownIt, options);
 }

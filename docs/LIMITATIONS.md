@@ -26,6 +26,15 @@ The scanner identifies suspicious structure, not malicious intent. It does
 not implement whole-script confusable analysis or language-specific source
 parsing.
 
+Rich Markdown streaming uses a caller-supplied Markdown-It instance. Live
+direction state is updated after every push and reconciled to Markdown block
+semantics at each rich revision, while AST/HTML/security revisions are
+deliberately checkpointed by source growth and structural boundaries; inspect
+`pendingSourceRange` before treating a
+live `document` as current. `finish()` is the exact batch-equivalence boundary.
+Unified/remark/rehype transforms remain supported as batch plugins, not as a
+stateful unified streaming backend.
+
 ## Validation boundaries
 
 - the corpus contains broad authored template matrices, but currently records

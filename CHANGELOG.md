@@ -43,6 +43,9 @@ been published from this checkout.
 - Added per-structural-block Markdown direction, LTR code policy, inline
   isolation, math-node LTR policy, XSS-safe rendering, SSR behavior, and
   framework streaming APIs.
+- Added a real Markdown-It stream with per-push direction state, checkpointed
+  AST/HTML/security revisions, dirty and pending ranges, security deltas,
+  conservative stable prefixes, atomic reset, and exact final batch parity.
 - Added a tested single-file Web Component entry for no-build/CDN pages, a
   side-effect-free normal bundler entry with explicit registration, and an
   opt-in `/auto` registration entry.
@@ -55,7 +58,7 @@ been published from this checkout.
 - Added 918 schema-validated corpus fixtures, with fixture #001 representing
   the user flagship, 196 attributed `v1.3-Her` seeds, and native-review status
   recorded explicitly.
-- Added 234 unit/property/action tests with enforced coverage thresholds and 24
+- Added 347 unit/property/action tests with enforced coverage thresholds and 24
   visual/browser tests across Chromium, Firefox, and WebKit; property seeds make
   coverage evidence reproducible across consecutive runs.
 - Added strict-mode false-positive regressions for ordinary Persian, Arabic,

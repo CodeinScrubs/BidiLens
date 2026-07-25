@@ -61,6 +61,7 @@ The Persian word کتاب means “book”.
 - دادهٔ قابل‌بازتولید و ثابت‌شدهٔ Unicode 17.0.0؛
 - تحلیل جهت، شواهد، بازه‌ها و برنامهٔ ایزوله‌سازی؛
 - پردازش جریان توکن با نتیجهٔ نهایی برابر با پردازش یک‌باره؛
+- جریان غنی Markdown-It با AST، HTML، ایزوله‌سازی و گزارش امنیتی نهاییِ برابر با پردازش یک‌باره؛
 - اسکن امنیتی نویسه‌های کنترل دوجهته و خروجی SARIF؛
 - JSON Schema نسخه‌بندی‌شده برای تبادل تحلیل، امنیت و جریان میان زبان‌ها؛
 - پشتیبانی HTML، DOM، unified/remark/rehype، markdown-it، React، Vue، Svelte و Web Component؛
@@ -123,6 +124,10 @@ pnpm run release:check
 React Native، SwiftUI، Electron، افزونهٔ VS Code، PDF و آزمون آزمایشگاهی
 صفحه‌خوان‌ها هنوز ارائه نشده‌اند. مالکیت scope در npm، تنظیم provenance و
 مجوزهای انتشار بسته نیز باید پیش از انتشار npm توسط نگه‌دارنده تکمیل شود.
+
+در جریان غنی Markdown، وضعیت جهت با هر `push()` به‌روز است؛ اما AST و HTML در
+نقاط کنترل هندسی به‌روز می‌شوند. `pendingSourceRange` بخش هنوز پردازش‌نشده را
+مشخص می‌کند و `finish()` مرز برابری دقیق با پردازش یک‌باره است.
 
 برای جزئیات به `docs/ARCHITECTURE.md`، `docs/LIMITATIONS.md`،
 `docs/PUBLISHING.md`، `docs/ROADMAP.md` و ممیزی کامل نیازمندی‌ها در

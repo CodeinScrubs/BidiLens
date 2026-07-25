@@ -297,6 +297,48 @@ describe('streaming', () => {
       .toEqual({ direction: oneChunk.direction, locked: oneChunk.locked });
   });
 
+  it('recognizes Markdown blank lines incrementally while preserving soft line breaks', () => {
+    const stream = createBidiStream({ paragraphBoundary: 'markdown' });
+    stream.push('This remains one');
+    const soft = stream.push('\r\nwrapped paragraph');
+    expect(soft.paragraphs).toHaveLength(1);
+    expect(soft.currentParagraph.text).toBe('This remains one\r\nwrapped paragraph');
+
+    stream.push('\r');
+    const next = stream.push('\n\t\r\nHello');
+    expect(next.paragraphs[0]).toMatchObject({
+      text: 'This remains one\r\nwrapped paragraph',
+      completed: true
+    });
+    expect(next.currentParagraph).toMatchObject({ text: 'Hello', direction: 'ltr' });
+  });
+
+  it.each([
+    '\n\n\n',
+    '\n\n\n\n',
+    '\r\n \t\r\n\r\n\r\n\r\n'
+  ])('coalesces a Markdown blank-line run without completed empty paragraphs', (separator) => {
+    const stream = createBidiStream({ paragraphBoundary: 'markdown' });
+    for (const character of `Hello${separator}سلام`) stream.push(character);
+    const snapshot = stream.snapshot();
+    expect(snapshot.paragraphs.map((paragraph) => paragraph.text)).toEqual(['Hello', 'سلام']);
+    expect(snapshot.paragraphs[0]?.completed).toBe(true);
+    expect(stream.finish().currentParagraph.direction).toBe('rtl');
+  });
+
+  it('preserves indentation on content after a Markdown blank boundary', () => {
+    const stream = createBidiStream({
+      paragraphBoundary: 'markdown',
+      lockAfterStrongCharacters: 1,
+      lockMargin: 1
+    });
+    for (const character of 'Hello\n\n \t\n\n    سلام') stream.push(character);
+    const snapshot = stream.snapshot();
+    expect(snapshot.paragraphs.map((paragraph) => paragraph.text))
+      .toEqual(['Hello', '    سلام']);
+    expect(snapshot.currentParagraph.direction).toBe('rtl');
+  });
+
   it('handles a pending high surrogate across finish, reset, and paragraph boundaries', () => {
     const source = '\u{10940}';
     const high = source.slice(0, 1);
@@ -653,6 +695,36 @@ describe('streaming', () => {
       expect(createBidiStream({ ...options, technicalIdentifiers: ['InternalPlatform'] })
         .push('InternalPlatform').direction).toBe('rtl');
     }
+  });
+
+  it('honors minimum evidence and technical-token policy during final reconciliation', () => {
+    const minimum = createBidiStream({ minimumStrongCharacters: 100, fallback: 'rtl' });
+    minimum.push('Hello');
+    expect(minimum.finish().direction).toBe('rtl');
+
+    const included = createBidiStream({
+      strategy: 'content-majority',
+      excludeTechnicalTokens: false,
+      fallback: 'rtl'
+    });
+    included.push('React');
+    expect(included.finish().direction).toBe('ltr');
+
+    const firstNatural = createBidiStream({
+      strategy: 'first-strong',
+      excludeTechnicalTokens: true
+    });
+    expect(firstNatural.push('React ').direction).toBe('ltr');
+    expect(firstNatural.push('سلام').direction).toBe('rtl');
+    expect(firstNatural.finish().direction).toBe('rtl');
+
+    const firstWithMinimum = createBidiStream({
+      strategy: 'first-strong',
+      minimumStrongCharacters: 100,
+      fallback: 'rtl'
+    });
+    expect(firstWithMinimum.push('H')).toMatchObject({ direction: 'rtl', locked: false });
+    expect(firstWithMinimum.finish().direction).toBe('rtl');
   });
 
   it('keeps completed paragraph snapshots protected from caller mutation', () => {

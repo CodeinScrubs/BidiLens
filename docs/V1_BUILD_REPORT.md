@@ -28,10 +28,10 @@ opposite-direction runs.
 
 | Surface | Status | Evidence / boundary |
 |---|---|---|
-| `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 95.38% lines |
+| `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 95.64% lines |
 | `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, styles, observer lifecycle, detached/cross-realm DOM |
 | `@bidilens/html` | Complete and tested | escaped semantic blocks and `<bdi>` isolation, tag validation, source preservation |
-| `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed markdown-it; blocks/lists/tables/quotes/code/math/XSS |
+| `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed Markdown-It batch adapters; blocks/lists/tables/quotes/code/math/XSS; rich Markdown-It stream with AST/HTML/isolation/security final parity, dirty/pending ranges, and 97.29% lines |
 | `@bidilens/playwright` | Complete and tested | reusable direction/source/isolation/selection/clipboard/geometry assertions; 100% lines and real three-browser use |
 | `@bidilens/react` | Complete and tested | SSR-safe components, per-paragraph mixed-stream rendering, isolation, direction and stream hooks |
 | `@bidilens/spec` | Complete and tested | five versioned language-neutral schema documents, strict registry API, dual-offset compatibility, real-output and negative validation tests |
@@ -52,8 +52,8 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
-| Vitest within `check` | 16 files, 234 tests pass |
-| Coverage (seeded run) | 90.00% statements, 82.35% branches, 92.12% functions, 92.95% lines; core 95.38%, Playwright helpers 100% lines |
+| Vitest within `check` | 16 files, 347 tests pass |
+| Coverage (seeded run) | 91.80% statements, 85.40% branches, 94.37% functions, 94.78% lines; core 95.64%, Markdown 97.29%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 918/918; 0 native-speaker-reviewed |
 | `pnpm run test:visual` | 24/24 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS, including real standalone-module loading and the bilingual playground's controls/corpus/copy/theme/exports; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
 | `pnpm -r --if-present run example` | all 12 public package examples run in the workspace |
@@ -81,24 +81,31 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 | Package | Bytes | Enforced budget |
 |---|---:|---:|
 | CLI | 13,084 | 32,768 |
-| Core | 112,110 | 118,784 |
+| Core | 116,291 | 118,784 |
 | DOM | 17,698 | 20,480 |
 | HTML | 4,321 | 12,288 |
-| Markdown | 16,455 | 24,576 |
+| Markdown | 79,315 | 81,920 |
 | Playwright | 8,542 | 16,384 |
-| React | 11,277 | 16,384 |
+| React | 11,550 | 16,384 |
 | Spec | 9,160 | 24,576 |
 | Svelte | 1,855 | 8,192 |
 | Terminal | 4,233 | 8,192 |
 | Vue | 4,422 | 12,288 |
 | Web Component | 34,384 | 81,920 |
 
-The core artifact is 24,051 bytes with gzip and 17,776 bytes with Brotli on
+The core artifact is 24,428 bytes with gzip and 18,243 bytes with Brotli on
 this build. Its unminified increase funds exact batch/final token-policy parity
 across the tested token grammar and stream chunk boundaries; applications that
 do not import the stream API can still tree-shake that implementation. Live
 snapshots remain intentionally revisable while an unfinished token can still
 change classification; `finish()` is the exact finalization boundary.
+
+The Markdown artifact is 14,916 bytes with gzip and 12,980 bytes with Brotli on
+this build. Its increase contains the serializable token AST, block-analysis
+report, security deltas, dirty/pending range protocol, geometric and
+context-changing structural checkpoints, bounded grammar-aware provisional
+state, and exact final reconciliation. Markdown-It remains a caller-owned
+optional peer and is not bundled into the package artifact.
 
 The Web Component total deliberately includes the shared main/auto-registration
 entries and the minified self-contained browser entry. Applications use the
@@ -118,13 +125,15 @@ host/peer dependencies.
 Host: Windows 10.0.19045 x64, Node 25.2.1, Intel i7-4810MQ 2.80 GHz,
 8 logical CPUs. Selected averages:
 
-- 1 KB / 10 KB / 100 KB / 1 MB analysis: 0.4718 / 4.3712 / 43.8334 /
-  478.6787 ms;
-- 100,000 units streamed in 1,000 chunks: 251.4544 ms incremental versus
-  22,624.4040 ms for full accumulated reparse after every chunk;
-- 10,000 one-character pushes: 44.6316 ms;
-- 500-item deep list: 15.9302 ms analysis;
-- 1,000-row table: 32.2007 ms analysis.
+- 1 KB / 10 KB / 100 KB / 1 MB analysis: 0.5062 / 4.8258 / 54.1128 /
+  510.9244 ms;
+- 100,000 units streamed in 1,000 chunks: 319.6915 ms incremental versus
+  24,329.2887 ms for full accumulated reparse after every chunk;
+- 10,000 one-character pushes: 49.7679 ms;
+- 20,000 Markdown units in 400 chunks: 469.8347 ms with 10 rich parses
+  versus 8,211.4203 ms for a rich full reparse after every chunk;
+- 500-item deep list: 20.1153 ms analysis;
+- 1,000-row table: 42.8413 ms analysis.
 
 See the complete [methodology and matrix](PERFORMANCE.md). These are comparative
 local numbers, not a service-level objective.
@@ -150,7 +159,7 @@ local numbers, not a service-level objective.
 
 The canonical checkout is the strongest reproducible JavaScript/web
 implementation among the local sibling folders: 12 public packages, 16 test
-files with 234 tests, 918 fixtures, current generated Unicode data, real
+files with 347 tests, 918 fixtures, current generated Unicode data, real
 three-engine visual evidence, and clean package-consumer gates. Broader
 native/desktop ideas found in sibling documentation are retained in the
 [traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.

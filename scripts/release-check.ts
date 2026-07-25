@@ -37,7 +37,10 @@ const DIST_BUDGETS = new Map<string, number>([
   // integration code; keep a tight but realistic unminified ceiling.
   ['@bidilens/dom', 20 * 1024],
   ['@bidilens/html', 12 * 1024],
-  ['@bidilens/markdown', 24 * 1024],
+  // Includes batch adapters plus the grammar-aware checkpointed Markdown
+  // stream. The current ESM artifact remains below 15 KiB gzip and the
+  // side-effect-free entry stays tree-shakeable.
+  ['@bidilens/markdown', 80 * 1024],
   ['@bidilens/playwright', 16 * 1024],
   ['@bidilens/react', 16 * 1024],
   ['@bidilens/spec', 24 * 1024],
@@ -211,6 +214,7 @@ async function verifyConsumer(tarballs: Map<string, string>, consumer: string): 
   );
   Object.assign(dependencies, {
     '@playwright/test': '1.61.1',
+    '@types/markdown-it': '14.1.2',
     '@vue/server-renderer': '3.5.40',
     jsdom: '29.1.1',
     'markdown-it': '14.3.0',
@@ -252,7 +256,8 @@ async function verifyConsumer(tarballs: Map<string, string>, consumer: string): 
 import { analyzeBlock, createBidiStream } from '@bidilens/core';
 import { applyBidi } from '@bidilens/dom';
 import { renderBidiHtml } from '@bidilens/html';
-import { markdownItBidi, rehypeBidi, remarkBidi } from '@bidilens/markdown';
+import MarkdownIt from 'markdown-it';
+import { analyzeBidiMarkdown, createBidiMarkdownStream, markdownItBidi, rehypeBidi, remarkBidi } from '@bidilens/markdown';
 import { expectBidiBlock, expectLogicalSelection, expectTokenAtBaseStart } from '@bidilens/playwright';
 import { BidiMessage as ReactBidiMessage, useBidiStream as useReactBidiStream } from '@bidilens/react';
 import { schemaIds, schemas } from '@bidilens/spec';
@@ -271,8 +276,11 @@ renderBidiHtml(source);
 createBidiMessage(source);
 createStreamingBidiMessage().push(source);
 formatTerminalText(source);
+analyzeBidiMarkdown(new MarkdownIt({ html: false }), source);
+createBidiMarkdownStream(new MarkdownIt({ html: false })).push(source);
 useBidiDirection(source);
-void [applyBidi, markdownItBidi, rehypeBidi, remarkBidi, ReactBidiMessage, useReactBidiStream,
+void [applyBidi, analyzeBidiMarkdown, createBidiMarkdownStream, markdownItBidi, rehypeBidi, remarkBidi,
+  ReactBidiMessage, useReactBidiStream,
   VueBidiMessage, useVueBidiStream, BidiMessageElement, defineBidiMessageElement, defineAutoBidiMessageElement,
   defineStandaloneBidiMessageElement, expectBidiBlock, expectLogicalSelection,
   expectTokenAtBaseStart, runCli, schemaIds, schemas];
@@ -281,6 +289,8 @@ void [applyBidi, markdownItBidi, rehypeBidi, remarkBidi, ReactBidiMessage, useRe
 import { strict as assert } from 'node:assert';
 import { analyzeBlock, createBidiStream } from '@bidilens/core';
 import { renderBidiHtml } from '@bidilens/html';
+import MarkdownIt from 'markdown-it';
+import { createBidiMarkdownStream } from '@bidilens/markdown';
 import { formatTerminalText } from '@bidilens/terminal';
 import { createBidiMessage } from '@bidilens/svelte';
 import { schemaIds, schemas } from '@bidilens/spec';
@@ -309,6 +319,12 @@ assert.match(schemaIds.blockAnalysis, /block-analysis/);
 const stream = createBidiStream();
 for (const character of source) stream.push(character);
 assert.equal(stream.finish().direction, 'rtl');
+const markdownStream = createBidiMarkdownStream(new MarkdownIt({ html: false }));
+for (const character of source) markdownStream.push(character);
+const markdownFinal = markdownStream.finish();
+assert.equal(markdownFinal.document.blocks[0].direction, 'rtl');
+assert.match(markdownFinal.document.html, /data-bidilens-block/);
+assert.equal(markdownFinal.source, source);
 console.log('Clean consumer runtime imports and assertions passed.');
 `);
 

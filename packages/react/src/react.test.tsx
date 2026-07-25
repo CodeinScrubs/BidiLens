@@ -197,6 +197,44 @@ describe('React adapter', () => {
     expect(container.textContent).toBe(source);
   });
 
+  it('preserves Markdown soft wraps while separating blank-line stream blocks', () => {
+    const source = 'This is one\nwrapped English paragraph.\n\nسلام دنیا';
+    const html = renderToStaticMarkup(
+      <StreamingBidiMessage
+        text={source}
+        completed
+        streamOptions={{ paragraphBoundary: 'markdown' }}
+      />
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    expect(container.textContent).toBe(source);
+    expect(container.querySelectorAll('article > span')).toHaveLength(2);
+    expect(container.querySelector('article > span')?.textContent)
+      .toBe('This is one\nwrapped English paragraph.');
+  });
+
+  it('matches core precedence when Markdown and custom separators are both supplied', () => {
+    const source = 'Hello | still English\nsoft wrap.\n\nسلام دنیا';
+    const html = renderToStaticMarkup(
+      <StreamingBidiMessage
+        text={source}
+        completed
+        streamOptions={{
+          paragraphBoundary: 'markdown',
+          paragraphSeparator: /\|/gu
+        }}
+      />
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    expect(container.textContent).toBe(source);
+    expect(container.querySelectorAll('article > span')).toHaveLength(2);
+    expect(container.querySelector('article > span')?.textContent)
+      .toBe('Hello | still English\nsoft wrap.');
+    expect(container.querySelectorAll('article > span')[1]?.getAttribute('dir')).toBe('rtl');
+  });
+
   it('keeps an ordinary pure-LTR streaming message observably untouched', () => {
     expect(renderToStaticMarkup(<StreamingBidiMessage text="Hello world" />))
       .toBe('<article>Hello world</article>');

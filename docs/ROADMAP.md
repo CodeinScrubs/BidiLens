@@ -9,6 +9,8 @@ implementation or adoption claim.
 - versioned language-neutral block-analysis, security, and stream schemas;
 - content-majority core, technical-token isolation, security modes, and SARIF;
 - paragraph-aware chunk-invariant streaming and measured incremental behavior;
+- checkpointed rich Markdown-It streaming with AST/HTML/isolation/security
+  final equivalence, dirty regions, security deltas, and pending-source state;
 - safe HTML, restorable/observable DOM, unified, markdown-it, React, Vue,
   Svelte, Web Component, Playwright helpers, conservative terminal, and CLI
   packages;
@@ -40,8 +42,8 @@ implementation or adoption claim.
 
 ## Planned web and desktop work
 
-- rich incremental Markdown streaming with AST/isolation/security/HTML batch
-  equivalence;
+- a stateful unified/remark/rehype streaming backend matching the shipped
+  Markdown-It session's final-equivalence contract;
 - Monaco and CodeMirror integrations;
 - CSP-safe VS Code extension demonstration;
 - secure Electron example with clipboard and print/PDF verification;

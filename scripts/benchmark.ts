@@ -3,6 +3,7 @@ import process from 'node:process';
 import { performance } from 'node:perf_hooks';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import MarkdownIt from 'markdown-it';
 import {
   analyzeText,
   createBidiStream,
@@ -10,6 +11,10 @@ import {
   scanBidiSecurity,
   segmentDirectionalRuns
 } from '../packages/core/src/index.js';
+import {
+  analyzeBidiMarkdown,
+  createBidiMarkdownStream
+} from '../packages/markdown/src/index.js';
 
 const BASE = 'React یک کتابخانه جاوااسکریپت محبوب است. The API path is src/server/index.ts. سلام دنیا.\n';
 
@@ -71,6 +76,35 @@ const oneCharacterStream = measure(() => {
   stream.finish();
 }, 5);
 
+const markdownStreamSource = sample(20_000);
+const markdownChunkSize = Math.ceil(markdownStreamSource.length / 400);
+const markdownChunks: string[] = [];
+for (let index = 0; index < markdownStreamSource.length; index += markdownChunkSize) {
+  markdownChunks.push(markdownStreamSource.slice(index, index + markdownChunkSize));
+}
+const markdownIncremental = measure(() => {
+  const stream = createBidiMarkdownStream(new MarkdownIt({ html: false }));
+  for (const chunk of markdownChunks) {
+    stream.push(chunk);
+    stream.getUpdate();
+  }
+  stream.finish();
+}, 5);
+const markdownNaiveReparse = measure(() => {
+  const markdownIt = new MarkdownIt({ html: false });
+  let accumulated = '';
+  for (const chunk of markdownChunks) {
+    accumulated += chunk;
+    analyzeBidiMarkdown(markdownIt, accumulated);
+  }
+}, 1, 0);
+const markdownParseProbe = createBidiMarkdownStream(new MarkdownIt({ html: false }));
+for (const chunk of markdownChunks) {
+  markdownParseProbe.push(chunk);
+  markdownParseProbe.getUpdate();
+}
+const markdownParseCount = markdownParseProbe.finish().parseCount;
+
 const deepList = Array.from({ length: 500 }, (_, index) =>
   `${'  '.repeat(index % 20)}- React یک کتابخانه محبوب است و مسیر src/app.ts را استفاده می‌کند.`
 ).join('\n');
@@ -117,6 +151,14 @@ const report = JSON.stringify({
       utf16CodeUnits: oneCharacterSource.length,
       iterations: 5,
       ...oneCharacterStream
+    },
+    markdown: {
+      utf16CodeUnits: markdownStreamSource.length,
+      requestedChunks: 400,
+      actualChunks: markdownChunks.length,
+      richParseCount: markdownParseCount,
+      incremental: markdownIncremental,
+      naiveFullReparse: markdownNaiveReparse
     }
   },
   structured: {

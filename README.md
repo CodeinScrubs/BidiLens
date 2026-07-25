@@ -101,6 +101,8 @@ reordering and shaping; BidiLens supplies the application structure they need.
 - semantic inline-isolation plans without source mutation;
 - paragraph-aware streaming with bounded re-analysis and chunk-invariant final
   snapshots across tested source and technical-token boundaries;
+- rich Markdown-It streaming with checkpointed AST/HTML/security revisions,
+  dirty/pending ranges, and exact final batch equivalence;
 - audit/warn/strict security modes and SARIF-compatible diagnostics;
 - versioned language-neutral schemas for analysis, security, and stream data;
 - safe HTML, DOM, unified/remark/rehype, markdown-it, React, Vue, Svelte, and
@@ -117,7 +119,7 @@ reordering and shaping; BidiLens supplies the application structure they need.
 | `@bidilens/core` | Analysis, evidence, isolation, streaming, and security |
 | `@bidilens/dom` | DOM annotation, restoration, CSS policy, and observation |
 | `@bidilens/html` | XSS-safe semantic HTML serialization |
-| `@bidilens/markdown` | unified/remark/rehype and markdown-it plugins |
+| `@bidilens/markdown` | unified/remark/rehype and Markdown-It plugins plus rich Markdown-It streaming |
 | `@bidilens/playwright` | Rendering, isolation, selection, clipboard, and geometry assertions |
 | `@bidilens/react` | SSR-safe components and streaming hooks |
 | `@bidilens/spec` | Versioned cross-language JSON Schemas and schema registry |
@@ -200,6 +202,22 @@ const html = String(await unified()
   .use(rehypeBidi)
   .use(rehypeStringify)
   .process(markdown));
+```
+
+For streamed Markdown, pass a caller-owned Markdown-It parser. Direction state
+updates on every push; rich output is checkpointed to avoid quadratic reparsing,
+and `finish()` exactly reconciles AST annotations, HTML, isolations, and security:
+
+```ts
+import MarkdownIt from 'markdown-it';
+import { createBidiMarkdownStream } from '@bidilens/markdown';
+
+const session = createBidiMarkdownStream(new MarkdownIt({ html: false }));
+session.push('React ');
+session.getUpdate();
+session.push('یک کتابخانه جاوااسکریپت بسیار محبوب است.');
+const final = session.finish();
+console.log(final.document.html);
 ```
 
 ## CLI

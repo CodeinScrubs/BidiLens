@@ -106,8 +106,18 @@ export interface BidiStreamOptions {
    * custom RegExp is intentionally finalized only at end-of-stream because
    * lookarounds, anchors, and extendable matches can depend on future chunks.
    */
+  /** A custom separator reconciled over the complete source at `finish()`. */
   paragraphSeparator?: RegExp;
+  /**
+   * Incremental line-boundary policy; `markdown` preserves soft line breaks
+   * and takes precedence when `paragraphSeparator` is also supplied.
+   */
+  paragraphBoundary?: 'line' | 'markdown';
+  /** Minimum strong-character evidence before direction can differ from the fallback. */
+  minimumStrongCharacters?: number;
   majorityThreshold?: number;
+  /** Include technical-token characters as direction evidence when set to `false`. */
+  excludeTechnicalTokens?: boolean;
   /** Evidence required before the default live direction is adopted. */
   lockAfterStrongCharacters?: number;
   /** Minimum winning character margin required before adopting a direction. */
