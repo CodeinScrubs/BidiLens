@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted for the 0.1.0 candidate; re-evaluate after downstream pilot feedback.
+Accepted for the 0.1.0 release; re-evaluate after downstream pilot feedback.
 
 ## Context
 

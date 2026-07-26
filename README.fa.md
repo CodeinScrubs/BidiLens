@@ -5,6 +5,7 @@
 # BidiLens
 
 [![CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml/badge.svg)](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/%40bidilens%2Fcore?color=cb3837&label=npm)](https://www.npmjs.com/package/@bidilens/core)
 [![MIT License](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
 [![Unicode 17.0](https://img.shields.io/badge/Unicode-17.0-8b5cf6.svg)](unicode/README.md)
 
@@ -12,8 +13,9 @@
 [مشارکت](CONTRIBUTING.md) · [وضعیت پروژه](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> بخش وب و JavaScript یک نامزد انتشار آزموده‌شده است. کد منبع عمومی است، اما
-> بسته‌های npm هنوز منتشر نشده‌اند و پلتفرم‌های بومی/دسکتاپ در نقشهٔ راه هستند.
+> بخش وب و JavaScript به‌عنوان نسخهٔ آزمایشی عمومی `0.1.0` منتشر شده است. هر
+> ۱۲ بستهٔ `@bidilens/*` در npm عمومی هستند و یکپارچگی و provenance آن‌ها
+> بررسی شده است. پلتفرم‌های بومی/دسکتاپ همچنان در نقشهٔ راه هستند.
 
 BidiLens یک ابزار متن‌باز و آفلاین برای نمایش درست متن‌های ترکیبی راست‌به‌چپ
 و چپ‌به‌راست در رابط‌های هوش مصنوعی، Markdown و برنامه‌های وب است.
@@ -71,8 +73,8 @@ The Persian word کتاب means “book”.
 - ۹۱۸ نمونهٔ اعتبارسنجی‌شده با JSON Schema و آزمون تصویری در سه موتور مرورگر.
 
 تمام بسته‌های عمومی ESM-only هستند و برای استفادهٔ سمت سرور به Node.js 22.12 یا
-جدیدتر نیاز دارند. این بسته‌ها در این مخزن برای انتشار آماده شده‌اند، اما هنوز
-از این نسخه در npm منتشر نشده‌اند.
+جدیدتر نیاز دارند. مجموعهٔ کامل نسخهٔ `0.1.0` در
+[سازمان `@bidilens` در npm](https://www.npmjs.com/org/bidilens) منتشر شده است.
 
 پروژه با [مجوز MIT](LICENSE) متن‌باز است. شرایط داده‌های Unicode و بخش
 Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حفظ شده
@@ -82,8 +84,8 @@ Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حف
 [Private Vulnerability Reporting](https://github.com/CodeinScrubs/BidiLens/security/advisories/new)
 ارسال شود.
 
-پس از انتشار کنترل‌شده در npm، حالت مستقل Web Component بدون ابزار build یا
-import map نیز قابل استفاده است:
+حالت مستقل Web Component منتشرشده بدون ابزار build یا import map نیز قابل
+استفاده است:
 
 ```html
 <script type="module" src="https://unpkg.com/@bidilens/web-component@0.1.0"></script>
@@ -122,8 +124,9 @@ pnpm run release:check
 
 نسخهٔ فعلی بسته‌های وب و TypeScript را پیاده‌سازی می‌کند. Android، Flutter،
 React Native، SwiftUI، Electron، افزونهٔ VS Code، PDF و آزمون آزمایشگاهی
-صفحه‌خوان‌ها هنوز ارائه نشده‌اند. مالکیت scope در npm، تنظیم provenance و
-مجوزهای انتشار بسته نیز باید پیش از انتشار npm توسط نگه‌دارنده تکمیل شود.
+صفحه‌خوان‌ها هنوز ارائه نشده‌اند. مالکیت scope در npm، انتشار اولیه، یکپارچگی
+بسته‌ها و provenance بررسی شده‌اند؛ ممیزی مستقل و شواهد استفاده در محصول واقعی
+هنوز باقی مانده‌اند.
 
 در جریان غنی Markdown، وضعیت جهت با هر `push()` به‌روز است؛ اما AST و HTML در
 نقاط کنترل هندسی به‌روز می‌شوند. `pendingSourceRange` بخش هنوز پردازش‌نشده را

@@ -3,7 +3,7 @@
 The roadmap separates executable evidence from targets. A target is not an
 implementation or adoption claim.
 
-## Implemented in the 0.1.0 web candidate
+## Implemented and published in the 0.1.0 web beta
 
 - reproducible Unicode 17.0.0 bidi data and dual-offset evidence;
 - versioned language-neutral block-analysis, security, and stream schemas;
@@ -27,6 +27,8 @@ implementation or adoption claim.
   theme, and an opt-in GitHub Pages workflow;
 - ESM type-layout analysis, aggregate size budgets, tarball inspection,
   isolated consumer install/runtime/CLI execution, audit, and validated SBOM.
+- public npm packages with SLSA provenance, registry-integrity verification,
+  an annotated source tag, and a protected human-approved release workflow.
 
 ## Required before broad production recommendation
 
@@ -37,9 +39,7 @@ implementation or adoption claim.
 - external security review appropriate to the deployment risk;
 - a downstream pilot in a real AI interface with performance and rollback data;
 - an additional maintainer-controlled private conduct channel if community
-  activity expands beyond GitHub;
-- initial npm publication, per-package trusted-publishing activation, and
-  human release approval.
+  activity expands beyond GitHub.
 
 ## Planned web and desktop work
 

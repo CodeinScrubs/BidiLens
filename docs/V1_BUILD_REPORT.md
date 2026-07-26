@@ -1,13 +1,14 @@
-# BidiLens 0.1.0 web release-candidate report
+# BidiLens 0.1.0 public web-beta report
 
-**Evidence date:** 2026-07-22
+**Evidence date:** 2026-07-26
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
-**Publication status:** canonical source repository public; npm packages not published
+**Publication status:** canonical source and all 12 npm packages public;
+registry integrity and SLSA provenance verified; `v0.1.0` tagged
 
-**Recommendation:** suitable for maintainer-controlled web pilots after the
-external publication gates; not a universal cross-platform production release
+**Recommendation:** suitable for bounded, maintainer-controlled web pilots;
+not a universal cross-platform production release
 
 ## Mission and architecture
 
@@ -68,6 +69,9 @@ opposite-direction runs.
 | Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
 | Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.8, Vue 3.5.40, and Svelte 5 |
 | `pnpm run release:check` | strict clean-worktree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 12 tarballs execute. The pre-commit development tree also passed with `--allow-dirty` |
+| GitHub CI for published commit | [11/11 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30182895057): Node 22/24 quality and packed consumers, Windows/macOS quality, three browser engines, actionlint, dependency audit, and SBOM |
+| Protected npm publication | [workflow run `30183018352`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30183018352) passed the full release gate, published or byte-verified 12 packages, retained exact tarballs, and matched every registry SHA-512 |
+| External npm consumer | all 12 public packages installed from the registry; runtime imports, mixed Persian/English direction, streaming, CLI, and the pure-LTR no-op passed; current production dependency audit reported zero findings |
 
 Visual coverage includes the four-way flagship comparison, geometry, English
 mirror, per-paragraph direction, logical selection in three engines, actual
@@ -152,7 +156,11 @@ local numbers, not a service-level objective.
   counts and percentages while failure output retains fast-check replay data.
 - Runtime Commander and the compatible ESLint/Vite toolchain majors were
   refreshed during the final audit; incompatible/mismatched major updates are
-  recorded rather than forced through the release candidate.
+  recorded rather than forced through the public beta.
+- All 12 npm artifacts expose SLSA provenance and exact registry integrity.
+  Future publishing is restricted to the protected GitHub environment through
+  per-package OIDC trust; the temporary bootstrap credential was removed and
+  traditional token publishing is disabled for every package.
 - No external penetration test or security audit is claimed.
 
 ## Sibling-project comparison
@@ -166,17 +174,19 @@ native/desktop ideas found in sibling documentation are retained in the
 
 ## Release decision
 
-The code artifacts are ready for a **maintainer-controlled public web beta**
-once all of these external gates are completed:
+The code artifacts are published as a **maintainer-controlled public web
+beta**. Initial npm publication, package provenance, registry-integrity
+verification, per-package trusted publishing, protected human approval, and the
+annotated `v0.1.0` tag are complete. Broad rollout still requires:
 
-1. publish the initial versions through the verified `@bidilens` npm scope;
-2. activate per-package trusted npm publishing and protected human approval;
-3. perform final name/trademark review;
-4. obtain native-language and accessibility review appropriate to claims.
+1. final name/trademark review appropriate to the adopter;
+2. native-language and accessibility review appropriate to claims;
+3. independent security review appropriate to the deployment risk;
+4. a real downstream pilot with performance and rollback evidence.
 
 Broad production or “all platforms” readiness is **not** claimed because native
 packages, Tier-2 desktop/PDF surfaces, upstream integrations, native-speaker
 certification, accessibility laboratory testing, an external security audit,
-and a real downstream pilot remain absent. Milestone tags beyond `m1` were not
-retroactively fabricated; publishing the reviewed source does not reconstruct
-the original stepwise tag history.
+and a real downstream pilot remain absent. Historical milestone tags between
+`m1` and the final `v0.1.0` tag were not retroactively fabricated; publishing
+the reviewed source does not reconstruct the original stepwise tag history.

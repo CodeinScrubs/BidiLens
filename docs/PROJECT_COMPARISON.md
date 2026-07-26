@@ -218,7 +218,7 @@ interest.
 | `v1.2-Her` | 67 | 45 | 61 | Substantively the same executable implementation as `v1.1-Her` |
 | `v1.3-Her` | 74 | 55 | 70 | Stronger scope and tests, but broken/omitted visuals and unsafe/incomplete distribution details |
 | `v1.4-Her` working tree | 78 | 42 | 74 | Broad and test-rich, but build/type/release/audit failures plus correctness bugs in its no-op, stream, Web Component, Action, and corpus gates |
-| canonical BidiLens | **88** | **91** | **93** | External native-speaker/accessibility/security review, npm publication provenance, native surfaces, and a downstream pilot remain |
+| canonical BidiLens | **88** | **93** | **94** | External native-speaker/accessibility/security review, native surfaces, upstream integrations, and a downstream pilot remain |
 
 A score of 100 would be false today. Even the canonical web artifact cannot
 prove historical “first” status, absence of every defect, or acceptance by a

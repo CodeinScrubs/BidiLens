@@ -2,8 +2,8 @@
 
 The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
-checklist concerns package and release publication; source availability alone
-does not mean npm artifacts exist.
+checklist records the completed `0.1.0` package release and the controls required
+for future releases.
 
 ## Completed repository prerequisites
 
@@ -14,24 +14,32 @@ does not mean npm artifacts exist.
 - GitHub Private Vulnerability Reporting and least-privilege workflow defaults;
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication
-  workflows.
+  workflows;
+- all 12 `@bidilens/*@0.1.0` packages published publicly with SLSA provenance;
+- retained release tarballs whose SHA-512 values match the public registry;
+- per-package GitHub OIDC trusted publishers bound to `publish.yml` and the
+  protected `npm-release` environment;
+- token-based publishing disabled through npm's recommended
+  `Require two-factor authentication and disallow tokens` package setting;
+- annotated `v0.1.0` tag for the published source commit.
 
-## External prerequisites
+## Remaining external adoption prerequisites
 
-- configure npm trusted publishing/provenance and least-privilege CI
-  permissions;
-- protect the release environment and require human approval;
 - complete native-speaker corpus review appropriate for the release claim;
+- complete independent security and accessibility review appropriate to the
+  deployment risk;
 - decide whether the ESM-only boundary is acceptable for target adopters.
 
-A public `npm view @bidilens/core` lookup returned E404 on 2026-07-20. That
-means no public package was visible at the time of this audit; it does **not**
-reserve the scope, prove organization ownership, or rule out a private package.
-The maintainer must claim/control the scope immediately before publication or
-perform a complete, reviewed rename.
+The pre-release E404 observation from 2026-07-20 is superseded. On 2026-07-26,
+the protected publication run
+[`30183018352`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30183018352)
+published or byte-verified the complete package set. A clean external consumer
+then installed all 12 packages from npm, exercised runtime imports and the CLI,
+confirmed the target mixed-direction behavior and pure-LTR no-op, and reported
+zero production audit findings with current peers.
 
-Do not invent registry ownership, package URLs, or adoption to make validators
-green. The GitHub repository is real; the npm scope is still unverified.
+Registry availability and provenance are verified facts. Adoption, independent
+review, native support, and company endorsement remain unclaimed.
 
 ## Reproducible local gate
 
@@ -63,15 +71,18 @@ Changesets configuration and a manual `publish.yml` workflow are committed.
 The workflow requires the `npm-release` GitHub environment, an exact
 confirmation phrase, the `main` branch, a clean checkout, aligned versions,
 the complete quality/release gate, and provenance-capable publication. It
-publishes deterministic tarballs in dependency order and safely skips only an
-already-published version with identical registry integrity.
+packs on a fixed Linux toolchain, publishes in dependency order, retains the
+exact tarballs, and safely skips only an already-published version with
+identical registry integrity. Local dry-runs on another operating system may
+produce different tarball bytes; real publication retries remain byte-strict on
+the release runner.
 
-The first publication uses a short-lived granular token stored only as the
-`NPM_TOKEN` secret in the protected `npm-release` environment. Immediately
-after all packages exist, configure each package's npm trusted publisher for
-`CodeinScrubs/BidiLens`, workflow `publish.yml`, environment `npm-release`,
-then revoke the bootstrap token. Subsequent releases select
-`trusted-publishing` and use short-lived OIDC credentials.
+The first publication used a short-lived granular bootstrap token. Every
+package now trusts `CodeinScrubs/BidiLens`, workflow `publish.yml`, environment
+`npm-release`, with publish permission. The bootstrap credential and matching
+GitHub environment secret were removed after verification, and all packages
+disallow traditional publishing tokens. Subsequent releases use short-lived
+OIDC credentials.
 
 For each release:
 
@@ -81,11 +92,11 @@ For each release:
 4. manually dispatch `publish.yml` with the aligned version and exact
    `PUBLISH @bidilens/* <version>` confirmation;
 5. confirm registry contents and provenance before creating the tag;
-6. create a signed/annotated `v0.1.0` tag only for the exact published commit;
+6. create a signed/annotated `v<version>` tag only for the exact published commit;
 7. record real package URLs and checksums in the release notes.
 
-Nothing in this document authorizes npm publication, release tagging, or
-external integration pull requests without a separate maintainer decision.
+Each future npm publication, release tag, or external integration pull request
+still requires a separate maintainer decision.
 
 ## Optional public demo
 

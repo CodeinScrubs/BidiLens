@@ -1,9 +1,19 @@
 # Changelog
 
-All notable changes to this project are recorded here. The package set has not
-been published from this checkout.
+All notable changes to this project are recorded here. The complete package set
+is published under the public `@bidilens` npm scope.
 
-## 0.1.0 - 2026-07-18
+## 0.1.0 - 2026-07-26
+
+### Public release
+
+- Published all 12 public packages with npm SLSA provenance from the protected
+  `npm-release` GitHub environment.
+- Verified each retained release tarball against its public registry SHA-512
+  integrity, confirmed the `latest` tag, and installed the complete set into a
+  clean external consumer.
+- Added the annotated `v0.1.0` source tag, retained npm release manifest, and
+  validated CycloneDX 1.7 SBOM.
 
 ### Direction and Unicode
 

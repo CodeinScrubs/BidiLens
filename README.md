@@ -7,6 +7,7 @@
 **Standards-first mixed RTL/LTR infrastructure for AI interfaces.**
 
 [![CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml/badge.svg)](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/%40bidilens%2Fcore?color=cb3837&label=npm)](https://www.npmjs.com/package/@bidilens/core)
 [![MIT License](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
 [![Unicode 17.0](https://img.shields.io/badge/Unicode-17.0-8b5cf6.svg)](unicode/README.md)
 [![Node 22.12+](https://img.shields.io/badge/Node-22.12%2B-22d3ee.svg)](package.json)
@@ -18,10 +19,10 @@
 [Project status](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> The JavaScript/web surface is a tested release candidate. Source is public,
-> the `@bidilens` npm scope is maintainer-controlled, and a protected
-> provenance-capable publication workflow is prepared. Native/desktop
-> platforms remain explicit roadmap work rather than claimed support.
+> The JavaScript/web surface is published as the public `0.1.0` beta. All 12
+> `@bidilens/*` packages are public on npm with verified registry integrity and
+> SLSA provenance. Native/desktop platforms remain explicit roadmap work rather
+> than claimed support.
 
 BidiLens is an offline, standards-first toolkit for mixed right-to-left and
 left-to-right text in AI chat, Markdown, streaming interfaces, web
@@ -132,12 +133,10 @@ reordering and shaping; BidiLens supplies the application structure they need.
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
-Browser packages target current standards-based browsers. The packages are
-prepared but **not yet published to npm**.
+Browser packages target current standards-based browsers. The complete `0.1.0`
+package set is [published under the `@bidilens` npm scope](https://www.npmjs.com/org/bidilens).
 
 ## Consumer install
-
-After the maintainer publishes and owns the `@bidilens` npm scope:
 
 ```bash
 npm install @bidilens/core @bidilens/html
@@ -157,8 +156,8 @@ standalone entry that bundles the core and needs no import map:
 Use the side-effect-free normal package entry plus
 `defineBidiMessageElement()` in bundled applications, or import
 `@bidilens/web-component/auto` when global registration is deliberate. Both
-allow the application to deduplicate `@bidilens/core`. The URL above becomes
-usable only after the maintainer-controlled npm publication described below.
+allow the application to deduplicate `@bidilens/core`. The versioned CDN URL
+above is live; pinning the version keeps no-build deployments reproducible.
 
 ## Core usage
 
@@ -268,13 +267,13 @@ for security-sensitive findings.
 
 ## Honest scope
 
-The implemented web/JavaScript packages are release-candidate quality, not a
-guarantee about every proprietary renderer. Native Android, Flutter, React
+The implemented web/JavaScript packages are public-beta quality, not a guarantee
+about every proprietary renderer. Native Android, Flutter, React
 Native, SwiftUI, Electron, VS Code, PDF, screen-reader laboratory validation,
 and downstream product patches are not shipped in this repository. The npm
-scope and bootstrap maintainer identity are verified; first publication,
-per-package trusted-publisher activation, and downstream adoption evidence
-remain release/adoption gates.
+scope, maintainer identity, first publication, package integrity, and
+provenance are verified; independent review and downstream adoption evidence
+remain adoption gates.
 
 See [limitations](docs/LIMITATIONS.md), [architecture](docs/ARCHITECTURE.md),
 [security](docs/SECURITY.md), [publishing](docs/PUBLISHING.md), the

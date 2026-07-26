@@ -153,13 +153,9 @@ async function assertReleaseContext(version: string): Promise<void> {
   assert(process.env.GITHUB_REF === 'refs/heads/main', 'Publication must run from the main branch.');
   assert(process.env.BIDILENS_RELEASE_CONFIRMATION === expected, `Confirmation must exactly equal "${expected}".`);
   assert(
-    process.env.BIDILENS_RELEASE_AUTHENTICATION === 'bootstrap-token'
-      || process.env.BIDILENS_RELEASE_AUTHENTICATION === 'trusted-publishing',
-    'Release authentication mode is invalid.'
+    process.env.BIDILENS_RELEASE_AUTHENTICATION === 'trusted-publishing',
+    'Release authentication must use npm trusted publishing.'
   );
-  if (process.env.BIDILENS_RELEASE_AUTHENTICATION === 'bootstrap-token') {
-    assert(Boolean(process.env.NODE_AUTH_TOKEN), 'The bootstrap NPM_TOKEN GitHub environment secret is missing.');
-  }
 
   const status = await runChecked('git', ['status', '--porcelain']);
   assert(status.stdout.trim() === '', 'The release checkout is dirty.');

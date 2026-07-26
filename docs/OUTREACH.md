@@ -1,9 +1,9 @@
 # Maintainer outreach kit
 
-BidiLens is ready for source review and a bounded web pilot. It is not yet an
-npm release, a native-platform solution, or evidence of adoption. Contact
-maintainers with one concrete renderer and one reproducible failure rather than
-a request to replace every bidi layer at once.
+BidiLens `0.1.0` is published for source review and bounded web pilots. It is
+not a native-platform solution or evidence of adoption. Contact maintainers
+with one concrete renderer and one reproducible failure rather than a request
+to replace every bidi layer at once.
 
 ## Suggested subject
 
@@ -23,7 +23,8 @@ BidiLens attributes, wrappers, styles, or source changes.
 The repository includes Unicode 17-derived classification, per-block direction,
 semantic isolation, streaming reconciliation, bidi-control auditing, adapters
 for major web renderers, 918 direction fixtures, and Chromium/Firefox/WebKit
-tests. Limitations and missing external validation are documented explicitly.
+tests. Twelve public npm packages include provenance; limitations and missing
+external validation are documented explicitly.
 
 Would you be open to reviewing a small, reversible pilot in [specific renderer
 or component]? I can provide a focused integration patch and host-specific
@@ -35,6 +36,8 @@ Thank you,
 ## Links to include
 
 - Problem and quick start: [README](../README.md)
+- Published packages: [`@bidilens` on npm](https://www.npmjs.com/org/bidilens)
+- Versioned release: [`v0.1.0` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.1.0)
 - Exact boundaries: [Limitations](LIMITATIONS.md)
 - Pilot and rollback criteria: [Adoption strategy](ADOPTION.md)
 - Architecture and threat model: [Architecture](ARCHITECTURE.md) and
@@ -52,10 +55,11 @@ pnpm run test:visual
 pnpm run release:check
 ```
 
-For an initial review, ask for one of these outcomes: confirmation of the host
+For an initial review, install `@bidilens/core@0.1.0` and ask for one of these outcomes: confirmation of the host
 bug, feedback on the API boundary, or permission to prepare a small draft pull
-request. Do not claim universal rendering, zero defects, npm availability,
-native support, or company endorsement. Browser/OS layout engines still perform
+request. Do not claim universal rendering, zero defects, native support,
+adoption, or company endorsement. npm availability is verifiable, but adoption
+is not. Browser/OS layout engines still perform
 Unicode reordering and shaping; BidiLens supplies the application structure and
 policy they need.
 

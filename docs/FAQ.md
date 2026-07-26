@@ -55,7 +55,7 @@ and does not insert hidden controls; compatibility controls are explicit.
 
 ## Why can CommonJS not `require()` the packages?
 
-The 0.1.0 candidate is ESM-only. Use ESM or dynamic `import()`. This reduces
+The 0.1.0 release is ESM-only. Use ESM or dynamic `import()`. This reduces
 conditional-export ambiguity but deliberately excludes synchronous CommonJS.
 
 ## A sentence is classified incorrectly. What should I provide?
