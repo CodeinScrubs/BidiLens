@@ -3,7 +3,7 @@
 The roadmap separates executable evidence from targets. A target is not an
 implementation or adoption claim.
 
-## Implemented and published in the 0.1.0 web beta
+## Implemented and published in the 0.1.1 web beta
 
 - reproducible Unicode 17.0.0 bidi data and dual-offset evidence;
 - versioned language-neutral block-analysis, security, and stream schemas;

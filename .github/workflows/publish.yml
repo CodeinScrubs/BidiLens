@@ -6,7 +6,6 @@ on:
       version:
         description: Exact aligned package version to publish
         required: true
-        default: 0.1.0
         type: string
       confirmation:
         description: Type "PUBLISH @bidilens/* <version>"

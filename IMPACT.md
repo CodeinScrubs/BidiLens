@@ -19,7 +19,7 @@
 - clean tarball installation, strict consumer type-check, runtime imports, and
   execution of the exact examples extracted from all 12 tarballs;
 - no known dependency vulnerabilities at the recorded audit;
-- a validated CycloneDX 1.7 SBOM with 584 components and 598 dependency
+- a validated CycloneDX 1.7 SBOM with 585 components and 599 dependency
   relationships;
 - all 12 tarballs installed and exercised in a strict isolated consumer.
 

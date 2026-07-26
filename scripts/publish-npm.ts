@@ -110,9 +110,9 @@ async function runChecked(program: 'git' | 'npm' | 'pnpm', args: string[], inher
   return result;
 }
 
-function requestedVersion(): string {
+function requestedVersion(defaultVersion: string): string {
   const position = process.argv.indexOf('--version');
-  const version = position >= 0 ? process.argv[position + 1] : '0.1.0';
+  const version = position >= 0 ? process.argv[position + 1] : defaultVersion;
   assert(version !== undefined && /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/u.test(version), 'A valid --version is required.');
   return version;
 }
@@ -217,7 +217,15 @@ async function packPackage(name: string, version: string): Promise<{ tarball: st
 }
 
 async function main(): Promise<void> {
-  const version = requestedVersion();
+  const rootManifest = JSON.parse(
+    await readFile(resolve(root, 'package.json'), 'utf8')
+  ) as { version?: unknown };
+  assert(typeof rootManifest.version === 'string', 'The root package version is missing.');
+  const version = requestedVersion(rootManifest.version);
+  assert(
+    version === rootManifest.version,
+    `Requested version ${version} does not match the root package version ${rootManifest.version}.`
+  );
   const publish = process.argv.includes('--publish');
   const packages = await loadPackages(version);
   if (publish) await assertReleaseContext(version);

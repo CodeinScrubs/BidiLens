@@ -1,11 +1,12 @@
-# BidiLens 0.1.0 public web-beta report
+# BidiLens 0.1.1 reliability-patch report
 
 **Evidence date:** 2026-07-26
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
-**Publication status:** canonical source and all 12 npm packages public;
-registry integrity and SLSA provenance verified; `v0.1.0` tagged
+**Publication status:** `0.1.0` is public with verified registry integrity,
+SLSA provenance, and an annotated source tag; the synchronized `0.1.1` patch is
+prepared for the protected publication workflow
 
 **Recommendation:** suitable for bounded, maintainer-controlled web pilots;
 not a universal cross-platform production release
@@ -53,8 +54,8 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
-| Vitest within `check` | 16 files, 347 tests pass |
-| Coverage (seeded run) | 91.80% statements, 85.40% branches, 94.37% functions, 94.78% lines; core 95.64%, Markdown 97.29%, Playwright helpers 100% lines |
+| Vitest within `check` | 16 files, 355 tests pass |
+| Coverage (seeded run) | 91.76% statements, 85.51% branches, 94.45% functions, 94.71% lines; core 95.64%, Markdown 97.29%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 918/918; 0 native-speaker-reviewed |
 | `pnpm run test:visual` | 24/24 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS, including real standalone-module loading and the bilingual playground's controls/corpus/copy/theme/exports; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
 | `pnpm -r --if-present run example` | all 12 public package examples run in the workspace |
@@ -63,9 +64,9 @@ opposite-direction runs.
 | `pnpm run deps:audit` | no known vulnerabilities at audit time |
 | `pnpm licenses list --prod` | runtime dependency inventory reports MIT, ISC, BSD-2-Clause, and Python-2.0 licenses; Unicode data and the imported Apache-2.0 corpus are covered separately by the committed third-party notices |
 | `pnpm outdated -r` | only `@types/node` 26 and TypeScript 7 are newer majors; types stay aligned to supported Node 24 and TypeScript 6.0.3 is the newest line accepted by the installed `typescript-eslint` peer range |
-| `pnpm run sbom` + `pnpm run sbom:check` | CycloneDX 1.7; 584 components, 598 dependency relationships. cdxgen also reports inherited `NODE_PATH` in the pnpm execution environment; validation does not treat that environment warning as a component finding |
+| `pnpm run sbom` + `pnpm run sbom:check` | CycloneDX 1.7; 585 components, 599 dependency relationships. cdxgen also reports inherited process environment warnings in the local execution environment; validation does not treat those environment warnings as component findings |
 | actionlint 1.7.12 | CI, release-preparation, benchmark, and opt-in Pages workflows pass |
-| `pnpm run action:check` | 187,701-byte bundle; Node 24 metadata/notices and unresolved-import checks pass; built artifact returns 0 for safe source and 2 for a strict high-risk control without mutation |
+| `pnpm run action:check` | 190,859-byte bundle; Node 24 metadata/notices and unresolved-import checks pass; built artifact returns 0 for safe source and 2 for a strict high-risk control without mutation |
 | Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
 | Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.8, Vue 3.5.40, and Svelte 5 |
 | `pnpm run release:check` | strict clean-worktree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 12 tarballs execute. The pre-commit development tree also passed with `--allow-dirty` |
@@ -84,18 +85,18 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 
 | Package | Bytes | Enforced budget |
 |---|---:|---:|
-| CLI | 13,084 | 32,768 |
+| CLI | 16,241 | 32,768 |
 | Core | 116,291 | 118,784 |
-| DOM | 17,698 | 20,480 |
-| HTML | 4,321 | 12,288 |
-| Markdown | 79,315 | 81,920 |
+| DOM | 18,297 | 20,480 |
+| HTML | 4,361 | 12,288 |
+| Markdown | 79,375 | 81,920 |
 | Playwright | 8,542 | 16,384 |
-| React | 11,550 | 16,384 |
+| React | 11,597 | 16,384 |
 | Spec | 9,160 | 24,576 |
 | Svelte | 1,855 | 8,192 |
-| Terminal | 4,233 | 8,192 |
-| Vue | 4,422 | 12,288 |
-| Web Component | 34,384 | 81,920 |
+| Terminal | 4,273 | 8,192 |
+| Vue | 4,478 | 12,288 |
+| Web Component | 34,941 | 81,920 |
 
 The core artifact is 24,428 bytes with gzip and 18,243 bytes with Brotli on
 this build. Its unminified increase funds exact batch/final token-policy parity
@@ -167,17 +168,19 @@ local numbers, not a service-level objective.
 
 The canonical checkout is the strongest reproducible JavaScript/web
 implementation among the local sibling folders: 12 public packages, 16 test
-files with 347 tests, 918 fixtures, current generated Unicode data, real
+files with 355 tests, 918 fixtures, current generated Unicode data, real
 three-engine visual evidence, and clean package-consumer gates. Broader
 native/desktop ideas found in sibling documentation are retained in the
 [traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.
 
 ## Release decision
 
-The code artifacts are published as a **maintainer-controlled public web
-beta**. Initial npm publication, package provenance, registry-integrity
+The `0.1.0` code artifacts are published as a **maintainer-controlled public
+web beta**. Initial npm publication, package provenance, registry-integrity
 verification, per-package trusted publishing, protected human approval, and the
-annotated `v0.1.0` tag are complete. Broad rollout still requires:
+annotated `v0.1.0` tag are complete. The `0.1.1` reliability patch has passed
+the local source, browser, package, dependency, and SBOM gates and awaits the
+protected publication workflow. Broad rollout still requires:
 
 1. final name/trademark review appropriate to the adopter;
 2. native-language and accessibility review appropriate to claims;

@@ -43,9 +43,11 @@ describe('React adapter', () => {
 
   it('still establishes LTR when the inherited context is RTL or annotations are requested', () => {
     const inherited = renderToStaticMarkup(<BidiMessage text="Hello world" inheritedDirection="rtl" />);
+    const inheritedNeutral = renderToStaticMarkup(<BidiMessage text="---" inheritedDirection="rtl" />);
     const explicit = renderToStaticMarkup(<BidiMessage text="Hello world" intervention="always" />);
     expect(inherited).toContain('dir="ltr"');
     expect(inherited).toContain('data-bidilens-block');
+    expect(inheritedNeutral).toContain('dir="rtl"');
     expect(explicit).toContain('dir="ltr"');
     expect(explicit).toContain('text-align:start');
   });

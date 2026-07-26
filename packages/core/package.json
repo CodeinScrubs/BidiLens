@@ -1,16 +1,39 @@
 {
   "name": "@bidilens/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unicode direction analysis, isolation, streaming state, and bidi security primitives.",
   "license": "MIT",
-  "author": { "name": "Shayan SalehiRad", "url": "https://github.com/CodeinScrubs" },
-  "repository": { "type": "git", "url": "git+https://github.com/CodeinScrubs/BidiLens.git", "directory": "packages/core" },
+  "author": {
+    "name": "Shayan SalehiRad",
+    "url": "https://github.com/CodeinScrubs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeinScrubs/BidiLens.git",
+    "directory": "packages/core"
+  },
   "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
-  "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
+  "bugs": {
+    "url": "https://github.com/CodeinScrubs/BidiLens/issues"
+  },
   "type": "module",
   "sideEffects": false,
-  "keywords": ["bidi", "rtl", "ltr", "unicode", "persian", "ai"],
-  "files": ["dist", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "examples"],
+  "keywords": [
+    "bidi",
+    "rtl",
+    "ltr",
+    "unicode",
+    "persian",
+    "ai"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md",
+    "examples"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -26,7 +49,13 @@
     "prepack": "pnpm run build",
     "example": "node examples/basic.mjs"
   },
-  "engines": { "node": ">=22.12.0" },
-  "publishConfig": { "access": "public" },
-  "devDependencies": { "tsup": "^8.5.1" }
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1"
+  }
 }

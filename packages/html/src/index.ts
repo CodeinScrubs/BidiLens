@@ -91,7 +91,10 @@ export function renderInlineBidiHtml(
 
 /** Serializes untrusted plain text; it never accepts or emits unescaped source HTML. */
 export function renderBidiHtml(source: string, options: RenderHtmlOptions = {}): RenderedBidiHtml {
-  const detection: DetectionOptions = { ...options, fallback: options.fallback ?? 'ltr' };
+  const detection: DetectionOptions = {
+    ...options,
+    fallback: options.fallback ?? options.inheritedDirection ?? 'ltr'
+  };
   const analysis = analyzeText(source, detection);
   const blockTag = checkedTag(options.blockTag ?? 'p', 'blockTag', SAFE_BLOCK_TAGS);
   const includeData = options.includeDataAttributes ?? true;

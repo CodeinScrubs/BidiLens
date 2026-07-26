@@ -86,7 +86,7 @@ function appendClassName(properties: Record<string, unknown>, className: string)
 function detectWithOptions(text: string, options: MarkdownBidiOptions): Direction {
   const detection: DetectionOptions = {
     strategy: options.strategy ?? 'content-majority',
-    fallback: options.fallback ?? 'ltr'
+    fallback: options.fallback ?? options.inheritedDirection ?? 'ltr'
   };
   if (options.minimumStrongCharacters !== undefined) detection.minimumStrongCharacters = options.minimumStrongCharacters;
   if (options.majorityThreshold !== undefined) detection.majorityThreshold = options.majorityThreshold;
@@ -263,7 +263,7 @@ function markdownItConfigurationKey(options: MarkdownBidiOptions): string {
     || strategy === 'majority';
   return JSON.stringify({
     strategy,
-    fallback: options.fallback ?? 'ltr',
+    fallback: options.fallback ?? options.inheritedDirection ?? 'ltr',
     inheritedDirection: options.inheritedDirection ?? 'ltr',
     minimumStrongCharacters: Math.max(1, options.minimumStrongCharacters ?? 1),
     majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? 0.5)),

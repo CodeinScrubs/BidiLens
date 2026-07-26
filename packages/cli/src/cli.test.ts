@@ -44,6 +44,22 @@ describe('BidiLens CLI', () => {
     expect(report.html).not.toContain('dir=');
   });
 
+  it('accepts an explicitly empty string without confusing it with a missing option', async () => {
+    const inspected = await invoke(['inspect', '--text', '', '--json']);
+    expect(inspected.code).toBe(0);
+    expect(JSON.parse(inspected.stdout)).toMatchObject({
+      analysis: { text: '', direction: 'neutral' },
+      controls: []
+    });
+
+    const rendered = await invoke(['render', '--text', '', '--json']);
+    expect(rendered.code).toBe(0);
+    expect(JSON.parse(rendered.stdout)).toMatchObject({
+      analysis: { text: '', direction: 'ltr' },
+      html: '<p></p>'
+    });
+  });
+
   it('exposes the explicit always-annotation compatibility mode', async () => {
     const result = await invoke(['render', '--text', 'Hello world', '--intervention', 'always']);
     expect(result.code).toBe(0);
@@ -185,6 +201,26 @@ describe('BidiLens CLI', () => {
     expect(report.failures).toEqual([{ id: 'flagship', expected: 'ltr', actual: 'rtl' }]);
   });
 
+  it('rejects malformed explicit corpora with a controlled diagnostic', async () => {
+    await writeFile(join(cwd, 'malformed.json'), JSON.stringify([
+      { id: 'duplicate', text: 'Hello', expected: 'ltr' },
+      { id: 'duplicate', text: 'سلام', expected: 'rtl' }
+    ]), 'utf8');
+    const result = await invoke(['test', '--corpus', 'malformed.json']);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('duplicate case id "duplicate"');
+  });
+
+  it('does not silently bypass a malformed default corpus in the working directory', async () => {
+    const directory = join(cwd, 'corpus');
+    await mkdir(directory, { recursive: true });
+    await writeFile(join(directory, 'cases.json'), '{invalid', 'utf8');
+    const result = await invoke(['test']);
+    await rm(directory, { recursive: true, force: true });
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('cases.json is not valid JSON');
+  });
+
   it('sanitizes to stdout or a file and can preserve low-risk marks', async () => {
     const input = `${BIDI_CONTROLS.LRM}safe${BIDI_CONTROLS.RLO}evil${BIDI_CONTROLS.PDF}`;
     await writeFile(join(cwd, 'input.txt'), input, 'utf8');
@@ -204,6 +240,10 @@ describe('BidiLens CLI', () => {
     const missing = await invoke(['inspect']);
     expect(missing.code).toBe(1);
     expect(missing.stderr).toContain('bidilens: Provide --text or --file.');
+
+    const duplicateInput = await invoke(['render', '--text', 'Hello', '--file', 'clean.md']);
+    expect(duplicateInput.code).toBe(1);
+    expect(duplicateInput.stderr).toContain('Choose either --text or --file');
 
     const conflicting = await invoke(['audit', 'clean.md', '--json', '--sarif']);
     expect(conflicting.code).toBe(1);

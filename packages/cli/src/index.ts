@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { lstat, readFile, readdir, writeFile } from 'node:fs/promises';
-import { basename, extname, relative, resolve } from 'node:path';
+import { basename, extname, isAbsolute, relative, resolve } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { Command, CommanderError } from 'commander';
 import { renderBidiHtml } from '@bidilens/html';
+import packageManifest from '../package.json' with { type: 'json' };
 import {
   analyzeText,
   findBidiControls,
@@ -38,6 +39,13 @@ const IGNORED_DIRECTORIES = new Set([
 ]);
 
 const RISK_ORDER: Record<BidiControlRisk, number> = { low: 1, medium: 2, high: 3 };
+const CLI_VERSION = packageManifest.version;
+
+interface CorpusCase {
+  id: string;
+  text: string;
+  expected: 'ltr' | 'rtl' | 'neutral';
+}
 
 export interface CliRuntime {
   cwd?: string;
@@ -91,21 +99,57 @@ async function collectFiles(inputs: string[], cwd: string): Promise<string[]> {
   return files.sort((a, b) => a.localeCompare(b));
 }
 
-async function readCorpus(cwd: string, explicitPath?: string): Promise<Array<{ id: string; text: string; expected: string }>> {
-  const candidates: Array<string | URL> = explicitPath
-    ? [resolve(cwd, explicitPath)]
-    : [
-      resolve(cwd, 'corpus/cases.json'),
-      new URL('../corpus/cases.json', import.meta.url),
-      new URL('../../../corpus/cases.json', import.meta.url)
-    ];
+function parseCorpus(source: string, location: string): CorpusCase[] {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(source);
+  } catch (error) {
+    throw new Error(`${location} is not valid JSON. ${String(error)}`, { cause: error });
+  }
+  if (!Array.isArray(parsed)) throw new Error(`${location} must contain a JSON array.`);
+  const ids = new Set<string>();
+  return parsed.map((item: unknown, index) => {
+    if (typeof item !== 'object' || item === null) {
+      throw new Error(`${location}: case ${index + 1} must be an object.`);
+    }
+    const candidate = item as Record<string, unknown>;
+    if (typeof candidate.id !== 'string' || candidate.id.length === 0) {
+      throw new Error(`${location}: case ${index + 1} must have a non-empty string id.`);
+    }
+    if (ids.has(candidate.id)) throw new Error(`${location}: duplicate case id "${candidate.id}".`);
+    ids.add(candidate.id);
+    if (typeof candidate.text !== 'string') {
+      throw new Error(`${location}: case "${candidate.id}" must have string text.`);
+    }
+    if (candidate.expected !== 'ltr' && candidate.expected !== 'rtl' && candidate.expected !== 'neutral') {
+      throw new Error(`${location}: case "${candidate.id}" has invalid expected direction.`);
+    }
+    return { id: candidate.id, text: candidate.text, expected: candidate.expected };
+  });
+}
+
+async function readCorpus(cwd: string, explicitPath?: string): Promise<CorpusCase[]> {
+  if (explicitPath !== undefined) {
+    const location = resolve(cwd, explicitPath);
+    return parseCorpus(await readFile(location, 'utf8'), location);
+  }
+  const candidates: Array<string | URL> = [
+    resolve(cwd, 'corpus/cases.json'),
+    new URL('../corpus/cases.json', import.meta.url),
+    new URL('../../../corpus/cases.json', import.meta.url)
+  ];
   let lastError: unknown;
   for (const candidate of candidates) {
+    let source: string;
     try {
-      return JSON.parse(await readFile(candidate, 'utf8')) as Array<{ id: string; text: string; expected: string }>;
+      source = await readFile(candidate, 'utf8');
     } catch (error) {
       lastError = error;
+      continue;
     }
+    // An existing, malformed higher-priority corpus is a configuration error,
+    // not a reason to silently fall back to a different data set.
+    return parseCorpus(source, String(candidate));
   }
   throw new Error(`Unable to locate corpus/cases.json. Pass --corpus <path>. ${String(lastError)}`);
 }
@@ -152,7 +196,7 @@ function sourcePosition(text: string, utf16Offset: number): { line: number; colu
 
 function artifactUri(file: string, cwd: string): string {
   const local = relative(cwd, file);
-  if (local && !local.startsWith('..') && !resolve(local).startsWith('..')) return local.replaceAll('\\', '/');
+  if (local && !local.startsWith('..') && !isAbsolute(local)) return local.replaceAll('\\', '/');
   return pathToFileURL(file).href;
 }
 
@@ -163,13 +207,28 @@ interface SecurityFileReport {
   highestRisk: BidiControlRisk | null;
 }
 
+async function readTextInput(
+  options: { text?: string; file?: string },
+  cwd: string
+): Promise<string> {
+  if (options.text === undefined && options.file === undefined) {
+    throw new Error('Provide --text or --file.');
+  }
+  if (options.text !== undefined && options.file !== undefined) {
+    throw new Error('Choose either --text or --file, not both.');
+  }
+  return options.file !== undefined
+    ? readFile(resolve(cwd, options.file), 'utf8')
+    : options.text!;
+}
+
 function sarifForReports(reports: readonly SecurityFileReport[], cwd: string): object {
   return {
     version: '2.1.0',
     $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
     runs: [{
       columnKind: 'utf16CodeUnits',
-      tool: { driver: { name: 'BidiLens', semanticVersion: '0.1.0' } },
+      tool: { driver: { name: 'BidiLens', semanticVersion: CLI_VERSION } },
       results: reports.flatMap((report) => report.findings.map((finding) => {
         const start = sourcePosition(report.text, finding.sourceRange.utf16.start);
         const end = sourcePosition(report.text, finding.sourceRange.utf16.end);
@@ -199,7 +258,7 @@ function createCliProgram(state: RuntimeState): Command {
   program
     .name('bidilens')
     .description('Inspect and secure mixed bidirectional text')
-    .version('0.1.0')
+    .version(CLI_VERSION)
     .exitOverride()
     .configureOutput({ writeOut: state.stdout, writeErr: state.stderr });
 
@@ -209,8 +268,7 @@ function createCliProgram(state: RuntimeState): Command {
     .option('-f, --file <path>', 'file to inspect')
     .option('--json', 'emit JSON')
     .action(async (options: { text?: string; file?: string; json?: boolean }) => {
-      if (!options.text && !options.file) throw new Error('Provide --text or --file.');
-      const text = options.file ? await readFile(resolve(state.cwd, options.file), 'utf8') : options.text!;
+      const text = await readTextInput(options, state.cwd);
       const analysis = analyzeText(text, { strategy: 'content-majority', fallback: 'neutral' });
       const controls = findBidiControls(text);
       const report = { analysis, controls, visible: controls.length ? visibleBidiControls(text) : text };
@@ -237,8 +295,7 @@ function createCliProgram(state: RuntimeState): Command {
       intervention: BidiInterventionMode;
       json?: boolean;
     }) => {
-      if (!options.text && !options.file) throw new Error('Provide --text or --file.');
-      const text = options.file ? await readFile(resolve(state.cwd, options.file), 'utf8') : options.text!;
+      const text = await readTextInput(options, state.cwd);
       const result = renderBidiHtml(text, { intervention: options.intervention });
       line(state.stdout, options.json
         ? JSON.stringify({ analysis: result.analysis, html: result.html }, null, 2)

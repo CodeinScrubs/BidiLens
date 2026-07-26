@@ -180,6 +180,21 @@ function markApplied(element: HTMLElement, attributes: readonly string[]): void 
   }
 }
 
+function restoreOriginalInlineStyle(element: HTMLElement): void {
+  const state = originalStates.get(element);
+  if (!state) return;
+  if (state.style.originalAttribute === null) element.removeAttribute('style');
+  else element.setAttribute('style', state.style.originalAttribute);
+}
+
+function restoreOriginalAttribute(element: HTMLElement, attribute: string): void {
+  const state = originalStates.get(element);
+  if (!state?.attributes.has(attribute)) return;
+  const value = state.attributes.get(attribute);
+  if (value === null || value === undefined) element.removeAttribute(attribute);
+  else element.setAttribute(attribute, value);
+}
+
 function restoreElementState(element: HTMLElement): boolean {
   const state = originalStates.get(element);
   if (!state) return false;
@@ -378,16 +393,18 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
     if (candidate.matches(codeSelector)) continue;
 
     result.scanned += 1;
-    const detection: DetectionOptions = { fallback: options.fallback ?? 'ltr' };
+    const hostDirection = options.inheritedDirection ?? inheritedDirection(candidate);
+    const detection: DetectionOptions = {
+      fallback: options.fallback ?? hostDirection,
+      inheritedDirection: hostDirection
+    };
     if (options.strategy !== undefined) detection.strategy = options.strategy;
     if (options.minimumStrongCharacters !== undefined) detection.minimumStrongCharacters = options.minimumStrongCharacters;
     if (options.majorityThreshold !== undefined) detection.majorityThreshold = options.majorityThreshold;
-    if (options.inheritedDirection !== undefined) detection.inheritedDirection = options.inheritedDirection;
     if (options.excludeTechnicalTokens !== undefined) detection.excludeTechnicalTokens = options.excludeTechnicalTokens;
     if (options.technicalIdentifiers !== undefined) detection.technicalIdentifiers = options.technicalIdentifiers;
     const directionalText = textForDirection(candidate, codeSelector);
     const direction = detectDirection(directionalText, detection);
-    const hostDirection = options.inheritedDirection ?? inheritedDirection(candidate);
     const shouldIntervene = direction === 'rtl' || needsBidiIntervention(candidate.textContent ?? '', {
       intervention: options.intervention,
       inheritedDirection: hostDirection
@@ -405,7 +422,11 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
     rememberState(candidate, ['dir', markAttribute]);
     candidate.setAttribute(markAttribute, '');
     if (direction === 'neutral') {
-      candidate.removeAttribute('dir');
+      restoreOriginalAttribute(candidate, 'dir');
+      // A previous application may have supplied an inline base direction.
+      // Neutral content should inherit its host again without discarding
+      // authored styles that were reconciled by rememberState().
+      restoreOriginalInlineStyle(candidate);
       result.neutral += 1;
     } else {
       candidate.dir = direction;

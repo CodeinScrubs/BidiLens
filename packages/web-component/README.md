@@ -33,7 +33,7 @@ purpose, contains no bare package imports, and registers `<bidi-message>`:
 ```html
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 <script type="module"
-  src="https://unpkg.com/@bidilens/web-component@0.1.0/dist/standalone.js"></script>
+  src="https://unpkg.com/@bidilens/web-component@0.1.1/dist/standalone.js"></script>
 ```
 
 Applications with a bundler should prefer the side-effect-free normal entry

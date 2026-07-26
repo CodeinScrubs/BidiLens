@@ -1,16 +1,38 @@
 {
   "name": "@bidilens/dom",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DOM annotation and streaming mutation support for bidirectional text.",
   "license": "MIT",
-  "author": { "name": "Shayan SalehiRad", "url": "https://github.com/CodeinScrubs" },
-  "repository": { "type": "git", "url": "git+https://github.com/CodeinScrubs/BidiLens.git", "directory": "packages/dom" },
+  "author": {
+    "name": "Shayan SalehiRad",
+    "url": "https://github.com/CodeinScrubs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeinScrubs/BidiLens.git",
+    "directory": "packages/dom"
+  },
   "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
-  "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
+  "bugs": {
+    "url": "https://github.com/CodeinScrubs/BidiLens/issues"
+  },
   "type": "module",
   "sideEffects": false,
-  "keywords": ["bidi", "rtl", "ltr", "unicode", "dom", "ai"],
-  "files": ["dist", "README.md", "LICENSE", "examples"],
+  "keywords": [
+    "bidi",
+    "rtl",
+    "ltr",
+    "unicode",
+    "dom",
+    "ai"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "examples"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -33,6 +55,10 @@
     "jsdom": "^29.1.1",
     "tsup": "^8.5.1"
   },
-  "engines": { "node": ">=22.12.0" },
-  "publishConfig": { "access": "public" }
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

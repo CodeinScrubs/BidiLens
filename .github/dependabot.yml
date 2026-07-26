@@ -16,6 +16,17 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # Keep compile-time platform types aligned with the Node 22/24 runtime
+      # matrix. Adopting a newer major belongs in a deliberate runtime review.
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major
+      # TypeScript majors can change emitted/declaration behavior and must be
+      # validated together with the typescript-eslint compatibility range.
+      - dependency-name: "typescript"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /

@@ -133,7 +133,7 @@ describe('Vue adapter', () => {
   it('uses inherited direction for a neutral SSR block and renders isolate slots', async () => {
     const app = createSSRApp({
       render: () => h('section', [
-        h(BidiMessage, { text: '---', fallback: 'neutral', inheritedDirection: 'rtl' }),
+        h(BidiMessage, { text: '---', inheritedDirection: 'rtl' }),
         h(BidiIsolate, { direction: 'ltr' }, { default: () => 'v2.1.0' })
       ])
     });

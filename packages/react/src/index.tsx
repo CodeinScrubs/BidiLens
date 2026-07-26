@@ -106,7 +106,7 @@ export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>
     forceDirection,
     isolate = false,
     strategy,
-    fallback = 'ltr',
+    fallback,
     inheritedDirection,
     excludeTechnicalTokens,
     minimumStrongCharacters,
@@ -119,7 +119,8 @@ export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>
   ref
 ) {
   const content = text ?? (typeof children === 'string' ? children : '');
-  const detectionOptions: UseBidiDirectionOptions = { fallback };
+  const detectionOptions: UseBidiDirectionOptions = {};
+  if (fallback !== undefined) detectionOptions.fallback = fallback;
   if (strategy !== undefined) detectionOptions.strategy = strategy;
   if (minimumStrongCharacters !== undefined) detectionOptions.minimumStrongCharacters = minimumStrongCharacters;
   if (majorityThreshold !== undefined) detectionOptions.majorityThreshold = majorityThreshold;

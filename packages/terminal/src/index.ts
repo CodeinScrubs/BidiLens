@@ -113,7 +113,10 @@ function isolateParagraph(
 export function formatTerminalText(source: string, options: TerminalFormatOptions = {}): TerminalFormatResult {
   const mode = options.mode ?? 'plain';
   const analysisText = maskAnsiForAnalysis(source);
-  const analysis = analyzeText(analysisText, { ...options, fallback: options.fallback ?? 'ltr' });
+  const analysis = analyzeText(analysisText, {
+    ...options,
+    fallback: options.fallback ?? options.inheritedDirection ?? 'ltr'
+  });
   const warnings = [
     'Terminal bidi behavior depends on the emulator, font, shaping engine, and copy implementation.'
   ];

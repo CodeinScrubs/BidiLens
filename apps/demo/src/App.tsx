@@ -63,7 +63,7 @@ const PRESETS = [
 
 const COPY = {
   en: {
-    product: 'BidiLens v0.1.0',
+    product: 'BidiLens v0.1.1',
     headline: 'Mixed-direction text that stays readable while AI streams.',
     intro: 'Standards-based direction detection, Markdown annotation, inline isolation, and hidden-control auditing.',
     direction: 'Direction', confidence: 'Confidence', counts: 'RTL / LTR', controls: 'Hidden controls',

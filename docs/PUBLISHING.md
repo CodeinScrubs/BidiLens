@@ -2,8 +2,8 @@
 
 The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
-checklist records the completed `0.1.0` package release and the controls required
-for future releases.
+checklist records the completed initial `0.1.0` package release and the controls
+required for the synchronized `0.1.1` reliability patch and future releases.
 
 ## Completed repository prerequisites
 

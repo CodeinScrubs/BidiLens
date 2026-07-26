@@ -3,6 +3,29 @@
 All notable changes to this project are recorded here. The complete package set
 is published under the public `@bidilens` npm scope.
 
+## 0.1.1 - 2026-07-26
+
+### Correctness
+
+- Made neutral and technical-only content inherit its host direction
+  consistently across DOM, HTML, Markdown, React, Vue, terminal, and Web
+  Component adapters unless the caller supplies an explicit fallback.
+- Restored the author-owned inline `direction` style when a DOM node changes
+  from an intervened RTL state to a neutral state.
+- Preserved current author light DOM when `<bidi-message>` changes from
+  pass-through rendering to BidiLens-owned rendering.
+- Made CLI `--text ""` valid, rejected ambiguous text/file input, validated
+  custom corpus structure and IDs, and made Windows SARIF paths safe across
+  volumes.
+
+### Release engineering
+
+- Removed hard-coded release versions from the CLI and release scripts, aligned
+  Playwright 1.62 tooling, and taught Dependabot to defer unsupported Node and
+  TypeScript major lines to deliberate compatibility reviews.
+- Added release-document version consistency checks and refreshed package,
+  support, publishing, outreach, limitation, and build-report documentation.
+
 ## 0.1.0 - 2026-07-26
 
 ### Public release

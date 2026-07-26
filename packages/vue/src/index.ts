@@ -62,7 +62,7 @@ export const BidiMessage = defineComponent({
     text: { type: String, required: true },
     as: { type: String, default: 'p' },
     className: { type: String, default: undefined },
-    fallback: { type: String as PropType<'ltr' | 'rtl' | 'neutral'>, default: 'ltr' },
+    fallback: { type: String as PropType<'ltr' | 'rtl' | 'neutral'>, default: undefined },
     strategy: { type: String as PropType<DetectionOptions['strategy']>, default: undefined },
     inheritedDirection: { type: String as PropType<'ltr' | 'rtl'>, default: undefined },
     excludeTechnicalTokens: { type: Boolean, default: undefined },
@@ -73,7 +73,8 @@ export const BidiMessage = defineComponent({
   },
   setup(props) {
     return () => {
-      const detectionOptions: DetectionOptions = { fallback: props.fallback };
+      const detectionOptions: DetectionOptions = {};
+      if (props.fallback !== undefined) detectionOptions.fallback = props.fallback;
       if (props.strategy !== undefined) detectionOptions.strategy = props.strategy;
       if (props.inheritedDirection !== undefined) detectionOptions.inheritedDirection = props.inheritedDirection;
       if (props.excludeTechnicalTokens !== undefined) detectionOptions.excludeTechnicalTokens = props.excludeTechnicalTokens;

@@ -109,9 +109,15 @@ async function packageManifests(): Promise<Array<{ directory: string; manifest: 
   return packages;
 }
 
-async function validatePackageSources(packages: Awaited<ReturnType<typeof packageManifests>>): Promise<void> {
+async function validatePackageSources(
+  packages: Awaited<ReturnType<typeof packageManifests>>,
+  expectedVersion: string
+): Promise<void> {
   for (const { directory, manifest } of packages) {
-    assert(manifest.version === '0.1.0', `${manifest.name}: version must be aligned at 0.1.0.`);
+    assert(
+      manifest.version === expectedVersion,
+      `${manifest.name}: version must be aligned at ${expectedVersion}.`
+    );
     assert(manifest.engines?.node === '>=22.12.0', `${manifest.name}: supported Node floor must be >=22.12.0.`);
     assert(manifest.exports !== undefined, `${manifest.name}: exports map is required.`);
     assert(typeof manifest.author === 'object'
@@ -125,6 +131,7 @@ async function validatePackageSources(packages: Awaited<ReturnType<typeof packag
     assert(typeof manifest.bugs === 'object' && manifest.bugs.url === CANONICAL_ISSUES, `${manifest.name}: canonical issue URL is invalid.`);
     assert(manifest.files?.includes('dist'), `${manifest.name}: dist must be in files.`);
     assert(manifest.files?.includes('LICENSE'), `${manifest.name}: LICENSE must be packed.`);
+    assert(manifest.files?.includes('CHANGELOG.md'), `${manifest.name}: CHANGELOG.md must be packed.`);
     if (manifest.name === '@bidilens/core') {
       assert(manifest.files?.includes('THIRD_PARTY_NOTICES.md'), `${manifest.name}: Unicode notice must be packed.`);
     }
@@ -213,7 +220,7 @@ async function verifyConsumer(tarballs: Map<string, string>, consumer: string): 
     [...tarballs].map(([name, tarball]) => [name, fileDependency(tarball)])
   );
   Object.assign(dependencies, {
-    '@playwright/test': '1.61.1',
+    '@playwright/test': '1.62.0',
     '@types/markdown-it': '14.1.2',
     '@vue/server-renderer': '3.5.40',
     jsdom: '29.1.1',
@@ -353,8 +360,16 @@ async function main(): Promise<void> {
     const status = await command('git', ['status', '--porcelain']);
     assert(status.trim() === '', 'Release check requires a clean worktree. Commit reviewed changes or pass --allow-dirty for development only.');
   }
+  const rootManifest = JSON.parse(
+    await readFile(resolve(root, 'package.json'), 'utf8')
+  ) as { version?: unknown };
+  assert(
+    typeof rootManifest.version === 'string'
+      && /^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$/u.test(rootManifest.version),
+    'The root package must declare a valid semantic version.'
+  );
   const packages = await packageManifests();
-  await validatePackageSources(packages);
+  await validatePackageSources(packages, rootManifest.version);
   await command('pnpm', ['run', 'build']);
   await command('pnpm', ['run', 'action:check']);
   await validateBuiltSizes(packages);

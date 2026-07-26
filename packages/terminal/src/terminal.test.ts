@@ -57,6 +57,15 @@ describe('terminal adapter', () => {
     expect(result.text).toContain(`${BIDI_CONTROLS.PDI}\n${BIDI_CONTROLS.LRI}`);
   });
 
+  it('uses inherited direction for neutral terminal content', () => {
+    const result = formatTerminalText('---', {
+      mode: 'unicode-isolates',
+      inheritedDirection: 'rtl'
+    });
+    expect(result.direction).toBe('rtl');
+    expect(result.text).toBe(`${BIDI_CONTROLS.RLI}---${BIDI_CONTROLS.PDI}`);
+  });
+
   it('masks ANSI escapes without moving source offsets or skewing direction', () => {
     const source = '\u001B[31mسلام دنیا\u001B[0m';
     const masked = maskAnsiForAnalysis(source);

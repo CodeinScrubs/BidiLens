@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React components and hooks for mixed RTL/LTR and streaming AI messages.",
   "license": "MIT",
   "author": {
@@ -30,6 +30,7 @@
     "dist",
     "README.md",
     "LICENSE",
+    "CHANGELOG.md",
     "examples"
   ],
   "main": "./dist/index.js",

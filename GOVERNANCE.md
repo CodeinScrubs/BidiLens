@@ -26,5 +26,5 @@ remain private.
 ## Conduct
 
 Participation is governed by `CODE_OF_CONDUCT.md`. Security reports follow
-`SECURITY.md`; ordinary bugs and proposals use the public issue tracker once
-the canonical repository exists.
+`SECURITY.md`; ordinary bugs and proposals use the
+[public issue tracker](https://github.com/CodeinScrubs/BidiLens/issues).

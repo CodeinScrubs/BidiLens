@@ -25,6 +25,19 @@ const requiredDocuments = [
   'docs/SECURITY.md',
   'docs/V1_BUILD_REPORT.md'
 ];
+const releaseDocuments = [
+  'README.md',
+  'README.fa.md',
+  'CHANGELOG.md',
+  'CITATION.cff',
+  'docs/V1_BUILD_REPORT.md'
+];
+const staleReleasePhrases = [
+  'maintained release-candidate scope',
+  'once the canonical repository exists',
+  'no npm package or production deployment is claimed',
+  '0.1.0 has not been published'
+];
 
 async function markdownFiles(directory: string): Promise<string[]> {
   const files: string[] = [];
@@ -44,10 +57,37 @@ const files = (await markdownFiles(root)).sort((a, b) => a.localeCompare(b));
 const failures: string[] = [];
 let localLinkCount = 0;
 const markdownLink = /(?<!!)\[[^\]]*\]\(([^)]+)\)/gu;
+const rootManifest = JSON.parse(
+  await readFile(resolve(root, 'package.json'), 'utf8')
+) as { version?: unknown };
+if (typeof rootManifest.version !== 'string') {
+  failures.push('package.json must declare a string version.');
+} else {
+  for (const document of releaseDocuments) {
+    const source = await readFile(resolve(root, document), 'utf8');
+    if (!source.includes(rootManifest.version)) {
+      failures.push(`${document} does not mention the current release ${rootManifest.version}.`);
+    }
+  }
+  for (const location of ['apps/demo/package.json', ...await readdir(resolve(root, 'packages')).then(
+    (entries) => entries.map((entry) => `packages/${entry}/package.json`)
+  )]) {
+    const manifest = JSON.parse(await readFile(resolve(root, location), 'utf8')) as {
+      name?: unknown;
+      version?: unknown;
+    };
+    if (manifest.version !== rootManifest.version) {
+      failures.push(`${location} has version ${String(manifest.version)}; expected ${rootManifest.version}.`);
+    }
+  }
+}
 
 for (const file of files) {
   const source = await readFile(file, 'utf8');
   if (source.includes('\uFFFD')) failures.push(`${relative(root, file)} contains a Unicode replacement character.`);
+  for (const phrase of staleReleasePhrases) {
+    if (source.includes(phrase)) failures.push(`${relative(root, file)} contains stale release text: ${phrase}`);
+  }
   for (const match of source.matchAll(markdownLink)) {
     let target = match[1]?.trim() ?? '';
     if (target.startsWith('<') && target.endsWith('>')) target = target.slice(1, -1);

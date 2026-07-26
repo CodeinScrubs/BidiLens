@@ -17,20 +17,28 @@ export class BidiMessageElement extends HTMLElementBase {
   #lastAppliedDir: string | null = null;
   #lastAppliedMarker: string | null = null;
 
+  #captureAuthorContent(): void {
+    this.#initialContent = this.textContent ?? '';
+    this.#initialChildren = [...this.childNodes].map((node) => node.cloneNode(true));
+  }
+
   connectedCallback(): void {
-    if (this.#initialContent === null) {
-      this.#initialContent = this.textContent ?? '';
-      this.#initialChildren = [...this.childNodes].map((node) => node.cloneNode(true));
-    }
+    if (this.#initialContent === null) this.#captureAuthorContent();
     this.render();
   }
 
-  attributeChangedCallback(): void {
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+    if (name === 'text' && oldValue === null && newValue !== null && !this.#contentOwned) {
+      this.#captureAuthorContent();
+    }
     if (this.isConnected) this.render();
   }
 
   get text(): string {
-    return this.getAttribute('text') ?? this.#initialContent ?? this.textContent ?? '';
+    const explicit = this.getAttribute('text');
+    if (explicit !== null) return explicit;
+    if (!this.#contentOwned) return this.textContent ?? '';
+    return this.#initialContent ?? '';
   }
 
   set text(value: string) {
@@ -79,6 +87,7 @@ export class BidiMessageElement extends HTMLElementBase {
   }
 
   render(): void {
+    if (!this.hasAttribute('text') && !this.#contentOwned) this.#captureAuthorContent();
     const source = this.text;
     const directionalParent = this.parentElement?.closest('[dir]');
     const parentDirection = directionalParent?.getAttribute('dir')?.toLowerCase() === 'rtl'
@@ -94,8 +103,8 @@ export class BidiMessageElement extends HTMLElementBase {
       this.#renderPassThrough(source);
       return;
     }
-    const analysis = analyzeText(source, { fallback: 'ltr' });
-    const direction = analysis.direction === 'neutral' ? 'ltr' : analysis.direction;
+    const analysis = analyzeText(source, { fallback: parentDirection });
+    const direction = analysis.direction === 'neutral' ? parentDirection : analysis.direction;
     const isolations = planInlineIsolation(source, direction, {
       intervention
     });

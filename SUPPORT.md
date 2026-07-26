@@ -19,6 +19,6 @@ expected block direction. Never manually reverse the sample before sharing it.
 
 ## Supported scope
 
-The maintained release-candidate scope is the JavaScript/web package set on
+The maintained public-beta scope is the JavaScript/web package set on
 Node.js 22.12+ and current standards-based browsers. Native and desktop targets
 listed in the roadmap are not supported implementations yet.

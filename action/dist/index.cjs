@@ -6932,7 +6932,10 @@ function renderInlineBidiHtml(source, direction, options = {}) {
   return html + escapeHtml(source.slice(cursor));
 }
 function renderBidiHtml(source, options = {}) {
-  const detection = { ...options, fallback: options.fallback ?? "ltr" };
+  const detection = {
+    ...options,
+    fallback: options.fallback ?? options.inheritedDirection ?? "ltr"
+  };
   const analysis = analyzeText(source, detection);
   const blockTag = checkedTag(options.blockTag ?? "p", "blockTag", SAFE_BLOCK_TAGS);
   const includeData = options.includeDataAttributes ?? true;
@@ -6968,6 +6971,78 @@ function renderBidiHtml(source, options = {}) {
   })();
   return { source, html, analysis, blocks };
 }
+
+// packages/cli/package.json
+var package_default = {
+  name: "@bidilens/cli",
+  version: "0.1.1",
+  description: "CLI for inspecting direction and auditing hidden Unicode bidi controls.",
+  license: "MIT",
+  author: {
+    name: "Shayan SalehiRad",
+    url: "https://github.com/CodeinScrubs"
+  },
+  repository: {
+    type: "git",
+    url: "git+https://github.com/CodeinScrubs/BidiLens.git",
+    directory: "packages/cli"
+  },
+  homepage: "https://github.com/CodeinScrubs/BidiLens#readme",
+  bugs: {
+    url: "https://github.com/CodeinScrubs/BidiLens/issues"
+  },
+  type: "module",
+  sideEffects: false,
+  keywords: [
+    "bidi",
+    "rtl",
+    "ltr",
+    "unicode",
+    "cli",
+    "security"
+  ],
+  files: [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md",
+    "corpus",
+    "examples"
+  ],
+  bin: {
+    bidilens: "./dist/bin.js"
+  },
+  main: "./dist/index.js",
+  module: "./dist/index.js",
+  types: "./dist/index.d.ts",
+  exports: {
+    ".": {
+      types: "./dist/index.d.ts",
+      import: "./dist/index.js",
+      default: "./dist/index.js"
+    }
+  },
+  scripts: {
+    build: "tsup src/index.ts src/bin.ts --format esm --dts --clean --sourcemap",
+    prepack: "pnpm run build",
+    example: "node examples/basic.mjs"
+  },
+  dependencies: {
+    "@bidilens/core": "workspace:*",
+    "@bidilens/html": "workspace:*",
+    commander: "^15.0.0"
+  },
+  devDependencies: {
+    tsup: "^8.5.1"
+  },
+  engines: {
+    node: ">=22.12.0"
+  },
+  publishConfig: {
+    access: "public"
+  }
+};
 
 // packages/cli/src/index.ts
 var import_meta = {};
@@ -7054,6 +7129,7 @@ var IGNORED_DIRECTORIES = /* @__PURE__ */ new Set([
   ".output"
 ]);
 var RISK_ORDER = { low: 1, medium: 2, high: 3 };
+var CLI_VERSION = package_default.version;
 function createRuntime(runtime) {
   return {
     cwd: (0, import_node_path2.resolve)(runtime.cwd ?? import_node_process2.default.cwd()),
@@ -7091,19 +7167,54 @@ async function collectFiles(inputs, cwd) {
   for (const input2 of inputs) await visitPath(input2, true);
   return files.sort((a, b) => a.localeCompare(b));
 }
+function parseCorpus(source, location) {
+  let parsed;
+  try {
+    parsed = JSON.parse(source);
+  } catch (error) {
+    throw new Error(`${location} is not valid JSON. ${String(error)}`, { cause: error });
+  }
+  if (!Array.isArray(parsed)) throw new Error(`${location} must contain a JSON array.`);
+  const ids = /* @__PURE__ */ new Set();
+  return parsed.map((item, index) => {
+    if (typeof item !== "object" || item === null) {
+      throw new Error(`${location}: case ${index + 1} must be an object.`);
+    }
+    const candidate = item;
+    if (typeof candidate.id !== "string" || candidate.id.length === 0) {
+      throw new Error(`${location}: case ${index + 1} must have a non-empty string id.`);
+    }
+    if (ids.has(candidate.id)) throw new Error(`${location}: duplicate case id "${candidate.id}".`);
+    ids.add(candidate.id);
+    if (typeof candidate.text !== "string") {
+      throw new Error(`${location}: case "${candidate.id}" must have string text.`);
+    }
+    if (candidate.expected !== "ltr" && candidate.expected !== "rtl" && candidate.expected !== "neutral") {
+      throw new Error(`${location}: case "${candidate.id}" has invalid expected direction.`);
+    }
+    return { id: candidate.id, text: candidate.text, expected: candidate.expected };
+  });
+}
 async function readCorpus(cwd, explicitPath) {
-  const candidates = explicitPath ? [(0, import_node_path2.resolve)(cwd, explicitPath)] : [
+  if (explicitPath !== void 0) {
+    const location = (0, import_node_path2.resolve)(cwd, explicitPath);
+    return parseCorpus(await (0, import_promises.readFile)(location, "utf8"), location);
+  }
+  const candidates = [
     (0, import_node_path2.resolve)(cwd, "corpus/cases.json"),
     new URL("../corpus/cases.json", import_meta.url),
     new URL("../../../corpus/cases.json", import_meta.url)
   ];
   let lastError;
   for (const candidate of candidates) {
+    let source;
     try {
-      return JSON.parse(await (0, import_promises.readFile)(candidate, "utf8"));
+      source = await (0, import_promises.readFile)(candidate, "utf8");
     } catch (error) {
       lastError = error;
+      continue;
     }
+    return parseCorpus(source, String(candidate));
   }
   throw new Error(`Unable to locate corpus/cases.json. Pass --corpus <path>. ${String(lastError)}`);
 }
@@ -7143,8 +7254,17 @@ function sourcePosition(text, utf16Offset) {
 }
 function artifactUri(file, cwd) {
   const local = (0, import_node_path2.relative)(cwd, file);
-  if (local && !local.startsWith("..") && !(0, import_node_path2.resolve)(local).startsWith("..")) return local.replaceAll("\\", "/");
+  if (local && !local.startsWith("..") && !(0, import_node_path2.isAbsolute)(local)) return local.replaceAll("\\", "/");
   return (0, import_node_url.pathToFileURL)(file).href;
+}
+async function readTextInput(options, cwd) {
+  if (options.text === void 0 && options.file === void 0) {
+    throw new Error("Provide --text or --file.");
+  }
+  if (options.text !== void 0 && options.file !== void 0) {
+    throw new Error("Choose either --text or --file, not both.");
+  }
+  return options.file !== void 0 ? (0, import_promises.readFile)((0, import_node_path2.resolve)(cwd, options.file), "utf8") : options.text;
 }
 function sarifForReports(reports, cwd) {
   return {
@@ -7152,7 +7272,7 @@ function sarifForReports(reports, cwd) {
     $schema: "https://json.schemastore.org/sarif-2.1.0.json",
     runs: [{
       columnKind: "utf16CodeUnits",
-      tool: { driver: { name: "BidiLens", semanticVersion: "0.1.0" } },
+      tool: { driver: { name: "BidiLens", semanticVersion: CLI_VERSION } },
       results: reports.flatMap((report) => report.findings.map((finding) => {
         const start = sourcePosition(report.text, finding.sourceRange.utf16.start);
         const end = sourcePosition(report.text, finding.sourceRange.utf16.end);
@@ -7178,10 +7298,9 @@ function sarifForReports(reports, cwd) {
 }
 function createCliProgram(state) {
   const program2 = new Command();
-  program2.name("bidilens").description("Inspect and secure mixed bidirectional text").version("0.1.0").exitOverride().configureOutput({ writeOut: state.stdout, writeErr: state.stderr });
+  program2.name("bidilens").description("Inspect and secure mixed bidirectional text").version(CLI_VERSION).exitOverride().configureOutput({ writeOut: state.stdout, writeErr: state.stderr });
   program2.command("inspect").description("Analyze a string or file").option("-t, --text <text>", "text to inspect").option("-f, --file <path>", "file to inspect").option("--json", "emit JSON").action(async (options) => {
-    if (!options.text && !options.file) throw new Error("Provide --text or --file.");
-    const text = options.file ? await (0, import_promises.readFile)((0, import_node_path2.resolve)(state.cwd, options.file), "utf8") : options.text;
+    const text = await readTextInput(options, state.cwd);
     const analysis = analyzeText(text, { strategy: "content-majority", fallback: "neutral" });
     const controls = findBidiControls(text);
     const report = { analysis, controls, visible: controls.length ? visibleBidiControls(text) : text };
@@ -7196,8 +7315,7 @@ function createCliProgram(state) {
     }
   });
   program2.command("render").description("Render plain text as escaped, semantic direction-aware HTML").option("-t, --text <text>", "text to render").option("-f, --file <path>", "file to render").option("--intervention <mode>", "auto or always", parseIntervention, "auto").option("--json", "emit analysis and HTML as JSON").action(async (options) => {
-    if (!options.text && !options.file) throw new Error("Provide --text or --file.");
-    const text = options.file ? await (0, import_promises.readFile)((0, import_node_path2.resolve)(state.cwd, options.file), "utf8") : options.text;
+    const text = await readTextInput(options, state.cwd);
     const result = renderBidiHtml(text, { intervention: options.intervention });
     line(state.stdout, options.json ? JSON.stringify({ analysis: result.analysis, html: result.html }, null, 2) : result.html);
   });

@@ -46,8 +46,8 @@ stateful unified streaming backend.
 - Android, Flutter, React Native, SwiftUI, Electron, VS Code, and PDF packages
   are not implemented in this repository;
 - no external security audit or downstream production pilot has occurred;
-- source is public on GitHub, but no npm package or production deployment is
-  claimed.
+- source and all 12 JavaScript packages are public, but no downstream
+  production deployment or company adoption is claimed.
 
 ## Compatibility
 

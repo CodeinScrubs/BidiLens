@@ -56,13 +56,17 @@ describe('Markdown plugins', () => {
     markdownItBidi(neutral, { fallback: 'rtl' });
     expect(neutral.render('123')).toContain('dir="rtl"');
 
+    const inherited = new MarkdownIt({ html: false });
+    markdownItBidi(inherited, { inheritedDirection: 'rtl' });
+    expect(inherited.render('123')).toContain('dir="rtl"');
+
     const html = String(await unified()
       .use(remarkParse)
-      .use(remarkBidi, { strategy: 'rtl' })
+      .use(remarkBidi, { inheritedDirection: 'rtl' })
       .use(remarkRehype)
-      .use(rehypeBidi, { strategy: 'rtl' })
+      .use(rehypeBidi, { inheritedDirection: 'rtl' })
       .use(rehypeStringify)
-      .process('Hello'));
+      .process('123'));
     expect(html).toContain('dir="rtl"');
   });
 

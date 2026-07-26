@@ -1,6 +1,6 @@
 # Maintainer outreach kit
 
-BidiLens `0.1.0` is published for source review and bounded web pilots. It is
+BidiLens `0.1.1` is published for source review and bounded web pilots. It is
 not a native-platform solution or evidence of adoption. Contact maintainers
 with one concrete renderer and one reproducible failure rather than a request
 to replace every bidi layer at once.
@@ -37,7 +37,7 @@ Thank you,
 
 - Problem and quick start: [README](../README.md)
 - Published packages: [`@bidilens` on npm](https://www.npmjs.com/org/bidilens)
-- Versioned release: [`v0.1.0` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.1.0)
+- Versioned release: [`v0.1.1` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.1.1)
 - Exact boundaries: [Limitations](LIMITATIONS.md)
 - Pilot and rollback criteria: [Adoption strategy](ADOPTION.md)
 - Architecture and threat model: [Architecture](ARCHITECTURE.md) and
@@ -55,7 +55,7 @@ pnpm run test:visual
 pnpm run release:check
 ```
 
-For an initial review, install `@bidilens/core@0.1.0` and ask for one of these outcomes: confirmation of the host
+For an initial review, install `@bidilens/core@0.1.1` and ask for one of these outcomes: confirmation of the host
 bug, feedback on the API boundary, or permission to prepare a small draft pull
 request. Do not claim universal rendering, zero defects, native support,
 adoption, or company endorsement. npm availability is verifiable, but adoption

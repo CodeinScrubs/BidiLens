@@ -114,6 +114,20 @@ describe('BidiMessageElement', () => {
     expect(element.querySelector('em')?.dataset.owner).toBe('author');
   });
 
+  it('captures current author light DOM when intervention takes ownership', () => {
+    const element = document.createElement('bidi-message') as BidiMessageElement;
+    element.innerHTML = '<em>Hello initial</em>';
+    document.body.append(element);
+
+    element.innerHTML = '<em data-owner="author">Hello updated</em>';
+    element.setAttribute('intervention', 'always');
+    expect(element.textContent).toBe('Hello updated');
+    expect(element.querySelector('em')).toBeNull();
+
+    element.removeAttribute('intervention');
+    expect(element.innerHTML).toBe('<em data-owner="author">Hello updated</em>');
+  });
+
   it('preserves author attribute updates when returning from intervention to LTR', () => {
     const element = document.createElement('bidi-message') as BidiMessageElement;
     element.innerHTML = '<em>Hello original</em>';
@@ -145,6 +159,17 @@ describe('BidiMessageElement', () => {
     parent.append(element);
     document.body.append(parent);
     expect(element.dir).toBe('ltr');
+    expect(element.dataset.bidilensBlock).toBe('');
+  });
+
+  it('lets neutral content inherit an RTL parent', () => {
+    const parent = document.createElement('section');
+    parent.dir = 'rtl';
+    const element = document.createElement('bidi-message') as BidiMessageElement;
+    element.textContent = '---';
+    parent.append(element);
+    document.body.append(parent);
+    expect(element.dir).toBe('rtl');
     expect(element.dataset.bidilensBlock).toBe('');
   });
 });

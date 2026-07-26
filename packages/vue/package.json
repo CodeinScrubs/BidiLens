@@ -1,28 +1,68 @@
 {
   "name": "@bidilens/vue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Vue 3 bidirectional message component and composable.",
   "license": "MIT",
-  "author": { "name": "Shayan SalehiRad", "url": "https://github.com/CodeinScrubs" },
-  "repository": { "type": "git", "url": "git+https://github.com/CodeinScrubs/BidiLens.git", "directory": "packages/vue" },
+  "author": {
+    "name": "Shayan SalehiRad",
+    "url": "https://github.com/CodeinScrubs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeinScrubs/BidiLens.git",
+    "directory": "packages/vue"
+  },
   "homepage": "https://github.com/CodeinScrubs/BidiLens#readme",
-  "bugs": { "url": "https://github.com/CodeinScrubs/BidiLens/issues" },
+  "bugs": {
+    "url": "https://github.com/CodeinScrubs/BidiLens/issues"
+  },
   "type": "module",
   "sideEffects": false,
-  "keywords": ["bidi", "rtl", "ltr", "unicode", "vue", "ai"],
-  "files": ["dist", "README.md", "LICENSE", "examples"],
+  "keywords": [
+    "bidi",
+    "rtl",
+    "ltr",
+    "unicode",
+    "vue",
+    "ai"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "examples"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" } },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean --sourcemap",
     "prepack": "pnpm run build",
     "example": "node examples/basic.mjs"
   },
-  "dependencies": { "@bidilens/core": "workspace:*" },
-  "peerDependencies": { "vue": ">=3.5 <4" },
-  "devDependencies": { "@vue/server-renderer": "^3.5.0", "tsup": "^8.5.1", "vue": "^3.5.0" },
-  "engines": { "node": ">=22.12.0" },
-  "publishConfig": { "access": "public" }
+  "dependencies": {
+    "@bidilens/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": ">=3.5 <4"
+  },
+  "devDependencies": {
+    "@vue/server-renderer": "^3.5.0",
+    "tsup": "^8.5.1",
+    "vue": "^3.5.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

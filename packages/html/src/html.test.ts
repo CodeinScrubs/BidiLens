@@ -18,6 +18,8 @@ describe('semantic HTML serializer', () => {
       .toContain('<p dir="ltr" data-bidilens-block="">');
     expect(renderBidiHtml('Hello world', { inheritedDirection: 'rtl' }).html)
       .toContain('<p dir="ltr" data-bidilens-block="">');
+    expect(renderBidiHtml('---', { inheritedDirection: 'rtl' }).html)
+      .toContain('<p dir="rtl" data-bidilens-block="">');
   });
 
   it('does not let the no-op gate override explicit RTL policies', () => {

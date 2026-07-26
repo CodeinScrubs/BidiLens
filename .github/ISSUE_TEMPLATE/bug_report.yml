@@ -14,7 +14,22 @@ body:
     id: surface
     attributes:
       label: Surface
-      options: [Core, Markdown, DOM, React, CLI, Demo, Other]
+      options:
+        - Core
+        - DOM
+        - HTML
+        - Markdown
+        - Playwright
+        - React
+        - Svelte
+        - Terminal
+        - Vue
+        - Web Component
+        - CLI
+        - GitHub Action
+        - Demo
+        - Documentation
+        - Other
     validations:
       required: true
   - type: textarea

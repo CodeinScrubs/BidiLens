@@ -32,6 +32,11 @@ describe('DOM adapter', () => {
     const styled = document.querySelector<HTMLElement>('#styled')!;
     expect(applyBidi(styled).annotated).toBe(1);
     expect(styled.querySelector('p')?.getAttribute('dir')).toBe('ltr');
+
+    document.body.innerHTML = '<section dir="rtl"><div id="neutral-root"><p>---</p></div></section>';
+    const neutral = document.querySelector<HTMLElement>('#neutral-root')!;
+    expect(applyBidi(neutral).annotated).toBe(1);
+    expect(neutral.querySelector('p')?.getAttribute('dir')).toBe('rtl');
   });
 
   it('assigns RTL to Persian-majority prose that starts with React', () => {
@@ -98,6 +103,33 @@ describe('DOM adapter', () => {
     expect(seen).toEqual(['neutral:neutral']);
     expect(skipped.hasAttribute('data-bidilens-block')).toBe(false);
     expect(neutral.hasAttribute('dir')).toBe(false);
+  });
+
+  it('restores authored inline style when reapplying an RTL block as neutral', () => {
+    document.body.innerHTML = '<main id="root"><p id="message" dir="auto" style="color:red">سلام</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+
+    applyBidi(root, { intervention: 'always', fallback: 'neutral' });
+    expect(message.dir).toBe('rtl');
+    expect(message.style.direction).toBe('rtl');
+
+    message.textContent = '---';
+    const result = applyBidi(root, { intervention: 'always', fallback: 'neutral' });
+    expect(result.neutral).toBe(1);
+    expect(message.getAttribute('dir')).toBe('auto');
+    expect(message.style.direction).toBe('');
+    expect(message.style.color).toBe('red');
+    expect(message.hasAttribute('data-bidilens-block')).toBe(true);
+  });
+
+  it('resolves the inherit strategy from the actual DOM host', () => {
+    document.body.innerHTML = '<main id="root" dir="rtl"><p id="message">123</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+    const result = applyBidi(root, { strategy: 'inherit', intervention: 'always' });
+    expect(result.rtl).toBe(1);
+    expect(message.getAttribute('dir')).toBe('rtl');
   });
 
   it('keeps unrelated LTR siblings and code untouched when another subtree is RTL', () => {
