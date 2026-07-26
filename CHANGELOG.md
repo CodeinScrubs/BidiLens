@@ -5,6 +5,14 @@ is published under the public `@bidilens` npm scope.
 
 ## 0.1.1 - 2026-07-26
 
+### Public release
+
+- Published all 12 public packages from the protected OIDC workflow with npm
+  SLSA provenance, then independently matched every public registry integrity
+  value to the retained release manifest and tarball.
+- Added the annotated `v0.1.1` source tag and immutable GitHub release with the
+  exact 12 package tarballs, release manifest, and validated CycloneDX 1.7 SBOM.
+
 ### Correctness
 
 - Made neutral and technical-only content inherit its host direction

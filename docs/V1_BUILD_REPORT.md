@@ -4,9 +4,10 @@
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
-**Publication status:** `0.1.0` is public with verified registry integrity,
-SLSA provenance, and an annotated source tag; the synchronized `0.1.1` patch is
-prepared for the protected publication workflow
+**Publication status:** all 12 `0.1.1` packages are public with verified
+registry integrity and SLSA provenance; the exact source commit has an
+annotated `v0.1.1` tag and an immutable GitHub release containing the retained
+tarballs, release manifest, and validated SBOM
 
 **Recommendation:** suitable for bounded, maintainer-controlled web pilots;
 not a universal cross-platform production release
@@ -70,8 +71,9 @@ opposite-direction runs.
 | Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
 | Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.8, Vue 3.5.40, and Svelte 5 |
 | `pnpm run release:check` | strict clean-worktree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 12 tarballs execute. The pre-commit development tree also passed with `--allow-dirty` |
-| GitHub CI for published commit | [11/11 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30182895057): Node 22/24 quality and packed consumers, Windows/macOS quality, three browser engines, actionlint, dependency audit, and SBOM |
-| Protected npm publication | [workflow run `30183018352`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30183018352) passed the full release gate, published or byte-verified 12 packages, retained exact tarballs, and matched every registry SHA-512 |
+| GitHub CI for published commit | [11/11 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30187521175): Node 22/24 quality and packed consumers, Windows/macOS quality, three browser engines, actionlint, dependency audit, and SBOM |
+| Protected npm publication | [workflow run `30187675015`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30187675015) passed the full release gate, published all 12 `0.1.1` packages through OIDC, and retained the exact tarballs, manifest, and SBOM |
+| Immutable GitHub release | [`v0.1.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.1.1) resolves to the audited source commit; GitHub's immutable-release verification covers the 12 package tarballs, release manifest, and SBOM |
 | External npm consumer | all 12 public packages installed from the registry; runtime imports, mixed Persian/English direction, streaming, CLI, and the pure-LTR no-op passed; current production dependency audit reported zero findings |
 
 Visual coverage includes the four-way flagship comparison, geometry, English
@@ -175,12 +177,11 @@ native/desktop ideas found in sibling documentation are retained in the
 
 ## Release decision
 
-The `0.1.0` code artifacts are published as a **maintainer-controlled public
-web beta**. Initial npm publication, package provenance, registry-integrity
-verification, per-package trusted publishing, protected human approval, and the
-annotated `v0.1.0` tag are complete. The `0.1.1` reliability patch has passed
-the local source, browser, package, dependency, and SBOM gates and awaits the
-protected publication workflow. Broad rollout still requires:
+The `0.1.1` code artifacts are published as a **maintainer-controlled public
+web beta**. npm publication, package provenance, registry-integrity
+verification, per-package trusted publishing, protected human approval, the
+annotated `v0.1.1` tag, and the immutable release are complete. Broad rollout
+still requires:
 
 1. final name/trademark review appropriate to the adopter;
 2. native-language and accessibility review appropriate to claims;
@@ -191,5 +192,6 @@ Broad production or “all platforms” readiness is **not** claimed because nat
 packages, Tier-2 desktop/PDF surfaces, upstream integrations, native-speaker
 certification, accessibility laboratory testing, an external security audit,
 and a real downstream pilot remain absent. Historical milestone tags between
-`m1` and the final `v0.1.0` tag were not retroactively fabricated; publishing
+`m1` and the current `v0.1.1` release tag were not retroactively fabricated;
+publishing
 the reviewed source does not reconstruct the original stepwise tag history.

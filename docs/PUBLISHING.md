@@ -2,8 +2,8 @@
 
 The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
-checklist records the completed initial `0.1.0` package release and the controls
-required for the synchronized `0.1.1` reliability patch and future releases.
+checklist records the completed `0.1.1` reliability release and the controls
+required for future releases.
 
 ## Completed repository prerequisites
 
@@ -15,13 +15,14 @@ required for the synchronized `0.1.1` reliability patch and future releases.
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication
   workflows;
-- all 12 `@bidilens/*@0.1.0` packages published publicly with SLSA provenance;
+- all 12 `@bidilens/*@0.1.1` packages published publicly with SLSA provenance;
 - retained release tarballs whose SHA-512 values match the public registry;
 - per-package GitHub OIDC trusted publishers bound to `publish.yml` and the
   protected `npm-release` environment;
 - token-based publishing disabled through npm's recommended
   `Require two-factor authentication and disallow tokens` package setting;
-- annotated `v0.1.0` tag for the published source commit.
+- annotated `v0.1.1` tag and immutable GitHub release for the exact published
+  source commit, with all package tarballs, release manifest, and SBOM attached.
 
 ## Remaining external adoption prerequisites
 
@@ -31,12 +32,16 @@ required for the synchronized `0.1.1` reliability patch and future releases.
 - decide whether the ESM-only boundary is acceptable for target adopters.
 
 The pre-release E404 observation from 2026-07-20 is superseded. On 2026-07-26,
-the protected publication run
-[`30183018352`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30183018352)
-published or byte-verified the complete package set. A clean external consumer
-then installed all 12 packages from npm, exercised runtime imports and the CLI,
-confirmed the target mixed-direction behavior and pure-LTR no-op, and reported
-zero production audit findings with current peers.
+the final source commit passed
+[all 11 CI jobs](https://github.com/CodeinScrubs/BidiLens/actions/runs/30187521175),
+and protected publication run
+[`30187675015`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30187675015)
+published all 12 version `0.1.1` packages. Independent verification matched the
+retained tarball SHA-256 values, release-manifest registry SHA-512 values, npm
+integrity metadata, and SLSA provenance for every package. A clean external
+consumer then installed the complete exact-version set from npm, exercised
+runtime imports and the CLI, confirmed the target mixed-direction behavior and
+pure-LTR no-op, and reported zero production audit findings with current peers.
 
 Registry availability and provenance are verified facts. Adoption, independent
 review, native support, and company endorsement remain unclaimed.

@@ -131,7 +131,7 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 | CI: VS Code and native builds | Missing | Follows missing platform implementations |
 | Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in release preparation, and protected manual npm publication with exact confirmation, integrity-safe retries, and provenance |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
-| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata and `@bidilens` ownership verified; all 12 `0.1.0` packages are public with SLSA provenance and matching registry integrity; per-package OIDC trust is bound to the protected workflow, the bootstrap credential was removed, and traditional token publishing is disabled |
+| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata and `@bidilens` ownership verified; all 12 `0.1.1` packages are public with SLSA provenance and matching registry integrity; per-package OIDC trust is bound to the protected workflow, the bootstrap credential was removed, and traditional token publishing is disabled |
 | Name/trademark decision | Partial/external | ADR records provisional `BidiLens`; final registry/legal review is still required |
 
 ## Milestone gate status
@@ -150,7 +150,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 918 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal exists; Android/Flutter/RN/Swift do not; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
-| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, and `v0.1.0` tag. The required upstream integration minimum remains missing |
+| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, and immutable `v0.1.1` release. The required upstream integration minimum remains missing |
 
 ## Definition-of-done audit
 
@@ -170,7 +170,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 12 | Complete for current packages — workflows validate, SBOM/license/notices exist |
 | 13 | Missing — zero host-tested ready-to-submit integration patches |
 | 14 | Complete for current documented claims; continue checking after every change |
-| 15 | Partial — the reviewed source and final `v0.1.0` package-release tag are public, but historical intermediate milestone tags were not fabricated retroactively |
+| 15 | Partial — the reviewed source and current `v0.1.1` package release are public, but historical intermediate milestone tags were not fabricated retroactively |
 
 ## Prior-attempt idea coverage
 
@@ -186,7 +186,8 @@ rows above are the active backlog, not hidden omissions.
 
 The current tree is a verified and published **public web beta**, not the
 completed cross-platform v2.0 mission. Registry identity, package publication,
-provenance, OIDC trust, and the final `v0.1.0` tag are complete. The original
+provenance, OIDC trust, and the current immutable `v0.1.1` release are complete.
+The original
 specification's broader definition of done remains red until the missing
 Tier-2/Tier-3 surfaces, integrations, native-language/accessibility review, and
 real downstream evidence are actually completed.
