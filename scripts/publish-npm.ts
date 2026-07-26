@@ -168,7 +168,13 @@ async function assertReleaseContext(version: string): Promise<void> {
 }
 
 async function registryIntegrity(name: string, version: string): Promise<string | null> {
-  const result = await run('npm', ['view', `${name}@${version}`, 'dist.integrity', '--json']);
+  const result = await run('npm', [
+    'view',
+    `${name}@${version}`,
+    'dist.integrity',
+    '--json',
+    '--prefer-online'
+  ]);
   if (result.code !== 0) {
     const output = `${result.stdout}\n${result.stderr}`;
     if (/\bE404\b|404 Not Found/u.test(output)) return null;
@@ -176,20 +182,30 @@ async function registryIntegrity(name: string, version: string): Promise<string 
   }
 
   const parsed: unknown = JSON.parse(result.stdout);
-  assert(typeof parsed === 'string' && parsed.startsWith('sha512-'), `Registry returned invalid integrity for ${name}@${version}.`);
-  return parsed;
+  // npm 11 emits a scalar for one selected field; npm 12 emits a one-item
+  // array. Reject every other shape so a malformed registry response cannot
+  // accidentally satisfy the immutable-version retry guard.
+  const integrity = Array.isArray(parsed) && parsed.length === 1 ? parsed[0] : parsed;
+  assert(
+    typeof integrity === 'string' && integrity.startsWith('sha512-'),
+    `Registry returned invalid integrity for ${name}@${version}.`
+  );
+  return integrity;
 }
 
 async function waitForRegistry(name: string, version: string, expectedIntegrity: string): Promise<string> {
-  for (let attempt = 0; attempt < 30; attempt += 1) {
+  for (let attempt = 0; attempt < 180; attempt += 1) {
     const integrity = await registryIntegrity(name, version);
     if (integrity === expectedIntegrity) return integrity;
     if (integrity !== null) {
       throw new Error(`${name}@${version} exists with unexpected integrity ${integrity}; expected ${expectedIntegrity}.`);
     }
-    await new Promise((resolveWait) => setTimeout(resolveWait, 2_000));
+    if (attempt > 0 && attempt % 12 === 0) {
+      console.log(`Waiting for public registry propagation: ${name}@${version} (${attempt * 5} seconds).`);
+    }
+    await new Promise((resolveWait) => setTimeout(resolveWait, 5_000));
   }
-  throw new Error(`${name}@${version} was not visible with the expected integrity after publication.`);
+  throw new Error(`${name}@${version} was not visible with the expected integrity after 15 minutes.`);
 }
 
 async function packPackage(name: string, version: string): Promise<{ tarball: string; sha256: string; integrity: string }> {
@@ -222,12 +238,18 @@ async function main(): Promise<void> {
     const existing = await registryIntegrity(name, version);
 
     let status: ReleaseArtifact['status'] = 'ready';
-    let verifiedIntegrity = existing;
+    const verifiedIntegrity = existing;
     if (existing !== null) {
-      assert(
-        existing === packed.integrity,
-        `${name}@${version} is already published with integrity ${existing}, but the release tarball is ${packed.integrity}.`
-      );
+      if (publish) {
+        assert(
+          existing === packed.integrity,
+          `${name}@${version} is already published with integrity ${existing}, but the release tarball is ${packed.integrity}.`
+        );
+      } else if (existing !== packed.integrity) {
+        console.warn(
+          `${name}@${version} is published, but this local-platform dry-run tarball has different bytes; registry mutation remains disabled.`
+        );
+      }
       status = 'already-published';
       console.log(`Verified existing ${name}@${version}; skipping publication.`);
     } else if (publish) {
@@ -237,7 +259,6 @@ async function main(): Promise<void> {
         ['publish', packed.tarball, '--access', 'public', '--tag', 'latest', '--provenance'],
         true
       );
-      verifiedIntegrity = await waitForRegistry(name, version, packed.integrity);
       status = 'published';
     } else {
       console.log(`Ready to publish ${name}@${version}: ${basename(packed.tarball)}.`);
@@ -253,6 +274,19 @@ async function main(): Promise<void> {
       status,
       url: `https://www.npmjs.com/package/${name}/v/${version}`
     });
+  }
+
+  if (publish) {
+    console.log('All publish commands were accepted; verifying public registry integrity concurrently...');
+    await Promise.all(artifacts.map(async (artifact) => {
+      if (artifact.registryIntegrity === null) {
+        artifact.registryIntegrity = await waitForRegistry(
+          artifact.name,
+          artifact.version,
+          artifact.integrity
+        );
+      }
+    }));
   }
 
   const manifest = {
