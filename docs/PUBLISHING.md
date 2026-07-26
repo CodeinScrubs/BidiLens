@@ -11,6 +11,10 @@ required for future releases.
 - verified `shayanay80` owner access to the `bidilens` npm organization and
   `@bidilens` scope;
 - identified bootstrap maintainer and CODEOWNERS;
+- strict `main` protection requires all 11 CI job contexts on an up-to-date
+  branch and linear history, while blocking force-pushes, branch deletion, and
+  unresolved review conversations; the sole-maintainer administrative bypass
+  remains available for CI-outage recovery;
 - GitHub Private Vulnerability Reporting and least-privilege workflow defaults;
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication
