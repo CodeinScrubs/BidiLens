@@ -381,7 +381,7 @@ async function main(): Promise<void> {
     await rm(temporary, { recursive: true, force: true });
   }
   console.log(`Release artifacts verified for ${packages.length} packages with a clean TypeScript/runtime/CLI consumer and all packed examples executed.`);
-  console.warn('npm publication still requires @bidilens scope ownership, provenance configuration, credentials, and a human release decision.');
+  console.warn('npm publication still requires the protected provenance-capable publish workflow and an explicit human release decision.');
 }
 
 await main();

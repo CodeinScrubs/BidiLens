@@ -8,15 +8,16 @@ does not mean npm artifacts exist.
 ## Completed repository prerequisites
 
 - canonical public repository and real package source/homepage/issue metadata;
+- verified `shayanay80` owner access to the `bidilens` npm organization and
+  `@bidilens` scope;
 - identified bootstrap maintainer and CODEOWNERS;
 - GitHub Private Vulnerability Reporting and least-privilege workflow defaults;
 - MIT project license plus Unicode and imported-corpus notices;
-- inactive, human-controlled release preparation workflow.
+- human-controlled release preparation and protected npm publication
+  workflows.
 
 ## External prerequisites
 
-- verify ownership of the `@bidilens` npm organization/scope, or rename every
-  package before release;
 - configure npm trusted publishing/provenance and least-privilege CI
   permissions;
 - protect the release environment and require human approval;
@@ -58,14 +59,27 @@ tarball with documented host/peer dependencies installed in that consumer.
 
 ## Release workflow
 
-Changesets configuration is committed, but automatic publishing intentionally
-is not enabled until repository identity, scope ownership, provenance, and
-secrets exist. Once configured:
+Changesets configuration and a manual `publish.yml` workflow are committed.
+The workflow requires the `npm-release` GitHub environment, an exact
+confirmation phrase, the `main` branch, a clean checkout, aligned versions,
+the complete quality/release gate, and provenance-capable publication. It
+publishes deterministic tarballs in dependency order and safely skips only an
+already-published version with identical registry integrity.
+
+The first publication uses a short-lived granular token stored only as the
+`NPM_TOKEN` secret in the protected `npm-release` environment. Immediately
+after all packages exist, configure each package's npm trusted publisher for
+`CodeinScrubs/BidiLens`, workflow `publish.yml`, environment `npm-release`,
+then revoke the bootstrap token. Subsequent releases select
+`trusted-publishing` and use short-lived OIDC credentials.
+
+For each release:
 
 1. require all CI jobs and an approved changeset;
 2. run the local gate above on the release commit;
 3. generate and retain the CycloneDX SBOM;
-4. publish packages in dependency order or use a verified Changesets action;
+4. manually dispatch `publish.yml` with the aligned version and exact
+   `PUBLISH @bidilens/* <version>` confirmation;
 5. confirm registry contents and provenance before creating the tag;
 6. create a signed/annotated `v0.1.0` tag only for the exact published commit;
 7. record real package URLs and checksums in the release notes.

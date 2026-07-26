@@ -169,8 +169,8 @@ native/desktop ideas found in sibling documentation are retained in the
 The code artifacts are ready for a **maintainer-controlled public web beta**
 once all of these external gates are completed:
 
-1. prove ownership or rename the `@bidilens` npm scope;
-2. configure trusted npm publishing/provenance and protected human approval;
+1. publish the initial versions through the verified `@bidilens` npm scope;
+2. activate per-package trusted npm publishing and protected human approval;
 3. perform final name/trademark review;
 4. obtain native-language and accessibility review appropriate to claims.
 

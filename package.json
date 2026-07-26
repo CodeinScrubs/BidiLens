@@ -47,6 +47,8 @@
     "unicode:download": "tsx scripts/generate-bidi-data.ts --download",
     "unicode:check": "tsx scripts/generate-bidi-data.ts --check",
     "release:check": "tsx scripts/release-check.ts",
+    "npm:release:dry-run": "tsx scripts/publish-npm.ts",
+    "npm:release:publish": "tsx scripts/publish-npm.ts --publish",
     "packages:types": "tsx scripts/check-package-types.ts",
     "packages:depth": "tsx scripts/check-package-depth.ts",
     "sbom": "pnpm dlx @cyclonedx/cdxgen@12.7.1 -t js --no-install-deps --fail-on-error --spec-version 1.7 --json-pretty -o bidilens-sbom.cdx.json .",

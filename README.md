@@ -19,8 +19,9 @@
 
 > [!IMPORTANT]
 > The JavaScript/web surface is a tested release candidate. Source is public,
-> but npm packages are not published yet, and native/desktop platforms remain
-> explicit roadmap work rather than claimed support.
+> the `@bidilens` npm scope is maintainer-controlled, and a protected
+> provenance-capable publication workflow is prepared. Native/desktop
+> platforms remain explicit roadmap work rather than claimed support.
 
 BidiLens is an offline, standards-first toolkit for mixed right-to-left and
 left-to-right text in AI chat, Markdown, streaming interfaces, web
@@ -270,9 +271,10 @@ for security-sensitive findings.
 The implemented web/JavaScript packages are release-candidate quality, not a
 guarantee about every proprietary renderer. Native Android, Flutter, React
 Native, SwiftUI, Electron, VS Code, PDF, screen-reader laboratory validation,
-and downstream product patches are not shipped in this repository. npm scope
-ownership, trusted-publishing provenance, and release credentials remain
-external package-publication prerequisites.
+and downstream product patches are not shipped in this repository. The npm
+scope and bootstrap maintainer identity are verified; first publication,
+per-package trusted-publisher activation, and downstream adoption evidence
+remain release/adoption gates.
 
 See [limitations](docs/LIMITATIONS.md), [architecture](docs/ARCHITECTURE.md),
 [security](docs/SECURITY.md), [publishing](docs/PUBLISHING.md), the

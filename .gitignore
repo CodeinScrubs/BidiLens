@@ -11,6 +11,7 @@ playwright-report/
 .DS_Store
 *.log
 *.tgz
+npm-release-artifacts/
 bidilens-sbom.cdx.json
 benchmarks/results/*.json
 .env

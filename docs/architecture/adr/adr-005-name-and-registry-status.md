@@ -1,8 +1,9 @@
-# ADR-005: BidiLens repository identity and provisional registry status
+# ADR-005: BidiLens repository and registry identity
 
 ## Status
 
-Accepted for the GitHub source identity; npm and other registries remain unresolved.
+Accepted for the GitHub source identity and maintainer-controlled npm scope;
+other ecosystems and trademark review remain unresolved.
 
 ## Context
 
@@ -17,22 +18,24 @@ and package endpoint, PyPI JSON API, pub.dev package API, crates.io API, Maven
 Central search, and GitHub repository search. Each returned either HTTP 404 or
 zero exact `bidilens` results at that time. On 2026-07-20, the maintainer
 created the canonical public repository at
-`https://github.com/CodeinScrubs/BidiLens`. The local npm client is not
-authenticated, so registry searches remain collision evidence, not ownership
-evidence.
+`https://github.com/CodeinScrubs/BidiLens`. On 2026-07-26, verified npm user
+`shayanay80` created and proved owner access to the `bidilens` organization,
+which controls the `@bidilens` npm scope. Package publication and trademark
+clearance are separate decisions from namespace control.
 
 ## Decision
 
 - Use `CodeinScrubs/BidiLens` as the canonical source, issue, and documentation
   identity and record its real maintainer metadata.
-- Keep `@bidilens/*` for package release preparation, without implying that the
-  npm scope is owned or that any package is published.
-- Treat npm scope ownership, trademark review, and final cross-registry
-  collision checks as external package-publication gates.
-- Rename all packages atomically if the human maintainer cannot prove control.
+- Keep `@bidilens/*` under the verified maintainer-controlled npm organization.
+- Treat package publication, trademark review, and final cross-registry
+  collision checks as separate release/legal gates.
+- Use the protected `publish.yml` workflow for registry mutation and migrate
+  from the one-time bootstrap credential to per-package OIDC trusted
+  publishing immediately after the initial versions exist.
 
 ## Consequences
 
 Source can be distributed under MIT from the canonical GitHub repository.
-Package artifacts remain “prepared, not published” until the maintainer proves
-registry control and completes provenance and release approval.
+Registry control no longer blocks the initial release, but immutable package
+versions still require provenance-capable publication and explicit approval.

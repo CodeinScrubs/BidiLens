@@ -129,9 +129,9 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
 | CI: VS Code and native builds | Missing | Follows missing platform implementations |
-| Changesets and inactive human-controlled release workflow | Complete | Changesets configuration and opt-in release-preparation workflow; no automatic publication step |
+| Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in release preparation, and protected manual npm publication with exact confirmation, integrity-safe retries, and provenance |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
-| Registry ownership, provenance, public repo metadata, credentials | Partial/external | Canonical GitHub source and package metadata are real and public. npm scope ownership, trusted-publishing provenance, and release credentials still require maintainer verification; npm E404 is not ownership proof |
+| Registry ownership, provenance, public repo metadata, credentials | Partial/external | Canonical GitHub source/package metadata and `@bidilens` scope ownership are verified. Initial publication and post-bootstrap per-package OIDC activation remain |
 | Name/trademark decision | Partial/external | ADR records provisional `BidiLens`; final registry/legal review is still required |
 
 ## Milestone gate status

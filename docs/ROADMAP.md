@@ -38,7 +38,8 @@ implementation or adoption claim.
 - a downstream pilot in a real AI interface with performance and rollback data;
 - an additional maintainer-controlled private conduct channel if community
   activity expands beyond GitHub;
-- npm scope control, trusted-publishing provenance, and human release approval.
+- initial npm publication, per-package trusted-publishing activation, and
+  human release approval.
 
 ## Planned web and desktop work
 

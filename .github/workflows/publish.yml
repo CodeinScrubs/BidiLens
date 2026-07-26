@@ -1,0 +1,76 @@
+name: Publish packages to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact aligned package version to publish
+        required: true
+        default: 0.1.0
+        type: string
+      confirmation:
+        description: Type "PUBLISH @bidilens/* <version>"
+        required: true
+        type: string
+      authentication:
+        description: Bootstrap once with the protected token, then use npm trusted publishing
+        required: true
+        default: trusted-publishing
+        type: choice
+        options:
+          - trusted-publishing
+          - bootstrap-token
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: npm-release
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 10.27.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.12.0
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Pin the current npm publishing client
+        run: npm install --global npm@12.0.1
+      - name: Verify release toolchain
+        run: |
+          node --version
+          npm --version
+          pnpm --version
+      - run: pnpm install --frozen-lockfile
+      - name: Verify source, tests, packages, and release consumers
+        run: |
+          pnpm run check
+          pnpm run deps:audit
+          pnpm run release:check
+      - name: Publish verified tarballs
+        run: pnpm run npm:release:publish -- --version "${{ inputs.version }}"
+        env:
+          BIDILENS_RELEASE_CONFIRMATION: ${{ inputs.confirmation }}
+          BIDILENS_RELEASE_AUTHENTICATION: ${{ inputs.authentication }}
+          NODE_AUTH_TOKEN: ${{ inputs.authentication == 'bootstrap-token' && secrets.NPM_TOKEN || '' }}
+      - name: Retain exact release artifacts and checksums
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bidilens-npm-${{ inputs.version }}
+          path: npm-release-artifacts/
+          if-no-files-found: error
+          retention-days: 90
