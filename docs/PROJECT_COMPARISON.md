@@ -1,8 +1,9 @@
 # Sibling-project audit and idea traceability
 
-This audit compares the local project folders available on 2026-07-21. It is
-not a marketing comparison with external libraries. Counts come from files in
-those folders and do not treat README claims as proof.
+This audit began with the local project folders available on 2026-07-21 and
+was extended through the `v1.5-Her` working tree on 2026-07-27. It is not a
+marketing comparison with external libraries. Counts come from files in those
+folders and do not treat README claims as proof.
 
 ## Reproducible inventory
 
@@ -14,9 +15,10 @@ those folders and do not treat README claims as proof.
 | `v1.2-Her` | 9 | 9 | 67 | 0 / 0 | 2 |
 | `v1.3-Her` | 11 | 11 | 197 | 3 / 64 | 200 |
 | `v1.4-Her` working tree | 16 | 21 | 745 | 1 / 18 | 310 |
-| canonical BidiLens checkout | 12 | 14 | 837 | 3 / 63 | 918 |
+| `v1.5-Her` working tree | 16 | 23 | 997 | 4 / 82 | 616 |
+| canonical BidiLens checkout | 12 | 15 | 1,226 | 3 / 63 | 918 |
 
-Static assertion counts are only a depth signal; the canonical total is 900
+Static assertion counts are only a depth signal; the canonical total is 1,289
 across package and visual tests. The canonical checkout also runs those tests,
 coverage thresholds, examples, the three-browser visual suite,
 dependency audit, Unicode reproducibility, tarball inspection, and isolated
@@ -150,6 +152,91 @@ this repository, this observation is deliberately not presented as a
 reproducible product benchmark or a universal latency claim; BidiLens' own
 committed benchmark remains the release regression evidence.
 
+## `v1.5-Her` audit
+
+`v1.5-Her` expands the sibling working tree to 616 on-disk fixtures and
+1,233 passing test invocations, including 21 screenshot cases across
+Chromium, Firefox, and WebKit. It also fixes the earlier HTML no-op predicate,
+adds cross-isolate security reporting, makes Unicode 17 data reproducible, and
+adds useful benchmark cases. Those are genuine improvements over
+`v1.4-Her`, and the review did not dismiss them merely because their package
+names differ from BidiLens.
+
+The live tree is nevertheless not a releasable or reproducible project. It has
+58 modified tracked files and 705 untracked files. Of the 616 corpus fixtures,
+306 are untracked. The following commands were run after a successful frozen
+lockfile install:
+
+- `pnpm run test`, `pnpm run lint`, `pnpm run unicode:check`,
+  `pnpm run sbom:check`, and `pnpm run bench` pass;
+- `pnpm run build` and `pnpm run typecheck` fail because
+  `@bidiguard/cli` does not provide Node types for `node:fs/promises`,
+  `node:path`, `Buffer`, and `process`;
+- `pnpm audit --audit-level low` reports 17 findings in the workspace
+  development and peer-test dependency graph: five high, eleven moderate, and
+  one low. The audit did not establish exposure in shipped runtime tarballs;
+- the root coverage command forwards `"--" "--coverage"` and does not refresh
+  its only existing `lcov.info`, which predates the audit by three days;
+- the normal release check rejects the dirty tree, while
+  `node scripts/release-check.mjs --allow-dirty` passes by inspecting existing
+  `dist` folders without rebuilding, packing, installing, importing, or
+  executing them;
+- the primary CI matrix uses a valid pinned `pnpm/action-setup` commit and
+  reaches the same CLI build failure described above. A different, malformed
+  pin in the security self-scan job prevents that job from reaching its scan;
+- the declared GitHub repository does not exist and npm returns `E404` for
+  both `@bidiguard/core` and `@bidiguard/react-native`. Canonical BidiLens is
+  public and its 12 packages resolve at version `0.1.1`.
+
+Passing tests also miss release- and behavior-critical defects reproduced
+against the built sibling artifacts:
+
+- after `finish()`, a stream may auto-reopen. If appended text creates a new
+  block, the old block-index cache can return analysis for the pre-append
+  source. A reproduced block whose source was `Hello سلام` still reported the
+  counts for `Hello` alone;
+- `stabilityThreshold` is calculated but never used. Hysteresis changes only
+  `analysis.direction`, so a live result can claim an LTR block while its
+  paragraph, counts, confidence, and isolation plan still describe an RTL
+  analysis;
+- the DOM adapter analyzes all descendant text but mutates only direct child
+  text nodes. On `Hello <strong>سلام</strong> world`, it left the Persian word
+  untouched and wrapped ` wor` as RTL. BidiLens traverses the real text-node
+  tree, preserves author markup, is idempotent, and restores the original
+  subtree; this exact adversarial case is now a named regression test;
+- all 15 React Native tests bypass `BidiText` and `useBidiStream` and call
+  core analysis directly. No component, Android, iOS, Expo, or device renderer
+  is exercised, and the `streaming` prop does not change rendering behavior;
+- the Playwright helper named `expectTextOrder` compares `textContent` indexes,
+  which are logical source order rather than visual order. BidiLens checks
+  physical edge geometry in real browsers as well as logical copy/selection;
+- changing the Web Component's observed `streaming` attribute does not
+  rerender it. The component called `bidi-markdown` also splits plain text on
+  blank lines rather than parsing Markdown;
+- corpus tests assert exact block direction, but expected isolations are only
+  checked for source-span coverage. Their declared direction and kind are
+  ignored. Only 251 fixtures contain any isolation expectation, and only 25
+  fixtures carry a provenance field;
+- the mixed-script scanner treats any Latin/Cyrillic or Latin/Greek mixture as
+  a confusable without UTS #39 data, while identifiers separated by common
+  punctuation can evade the word regex. BidiLens deliberately does not market
+  this heuristic as a confusable engine;
+- citation and security metadata claim a placeholder DOI, non-existent
+  project destinations, a complete UAX #9 implementation, published packages,
+  and universal false-positive freedom that the source and registry do not
+  substantiate.
+
+The useful `v1.5-Her` changes were already present in stronger form in
+canonical BidiLens: context-aware default non-interference, cross-isolate
+security checks with dual offsets, exact final stream reconciliation,
+three-browser geometry tests, reproducible Unicode sources and checksums,
+CycloneDX 1.7 generation, and a clean packed-consumer release gate. Its one
+unambiguously broader low-level API is a public full Unicode `BidiClass`
+lookup. That API was not copied: adding a second Unicode standards package
+would expand bundle, compatibility, and long-term conformance obligations
+without improving the browser rendering policy. Mature UAX #9 engines remain
+the appropriate dependency for consumers that need full reordering.
+
 ## Material ideas reviewed
 
 | Idea found across siblings | Canonical disposition |
@@ -175,8 +262,8 @@ committed benchmark remains the release regression evidence.
 | Corpus schemas and numbered words | Implemented with JSON Schema and 918 direction-exact cases; 197 also carry exact isolation expectations, five carry security-code expectations, and numbered-order arrays are schema/permutation fixtures rather than rendered-geometry oracles |
 | Package/release evidence | Implemented with examples executed from all tarballs, licenses, ESM type analysis, pack/install consumer, audit, and SBOM command |
 | Reusable Playwright assertions | Implemented as a public package and exercised for direction, source text, isolation metadata, logical selection/clipboard, and physical edge geometry in the three-browser suite |
-| React Native adapter | Not copied from `v1.4-Her`: its tests never import the adapter and there is no iOS/Android rendering gate. A native package remains deferred until it has actual component tests plus device-level evidence, so a web-only repository is not burdened with an unverified platform claim |
-| Public full Unicode `BidiClass` lookup | `v1.4-Her` is broader here. Canonical deliberately exposes generated strong-direction/natural-letter helpers used by application policy, while mature UAX #9 engines remain the correct dependency for full class/reordering work. Copying a second public standards surface would increase size and long-term compatibility obligations without improving browser message rendering |
+| React Native adapter | Not copied from `v1.4-Her` or `v1.5-Her`: their tests never import the adapter and there is no iOS/Android rendering gate. A native package remains deferred until it has actual component tests plus device-level evidence, so a web-only repository is not burdened with an unverified platform claim |
+| Public full Unicode `BidiClass` lookup | `v1.4-Her` and `v1.5-Her` are broader here. Canonical deliberately exposes generated strong-direction/natural-letter helpers used by application policy, while mature UAX #9 engines remain the correct dependency for full class/reordering work. Copying a second public standards surface would increase size and long-term compatibility obligations without improving browser message rendering |
 | API compatibility aliases and character helpers | Equivalent analysis, direction, run segmentation, control inspection, evidence, and sanitization primitives already exist; aliases are accepted only where they do not create ambiguous duplicate contracts |
 | Target matrices and upstream contribution dossiers | Reviewed as archival research; their issue/PR routing principle is retained in adoption guidance, but dated product-policy claims are not presented as current integrations. Fresh 2026-07-27 host research and submissions are recorded separately in the [outreach log](OUTREACH_LOG.md) |
 | Honest limitations and publishing guide | Implemented; false badges and fake repository metadata rejected |
@@ -218,6 +305,7 @@ interest.
 | `v1.2-Her` | 67 | 45 | 61 | Substantively the same executable implementation as `v1.1-Her` |
 | `v1.3-Her` | 74 | 55 | 70 | Stronger scope and tests, but broken/omitted visuals and unsafe/incomplete distribution details |
 | `v1.4-Her` working tree | 78 | 42 | 74 | Broad and test-rich, but build/type/release/audit failures plus correctness bugs in its no-op, stream, Web Component, Action, and corpus gates |
+| `v1.5-Her` working tree | 80 | 39 | 76 | Broader fixtures and three-browser screenshots, but no clean source release, broken build/type/CI gates, stale package checks, workspace dev-tool advisories, and reproduced stream/DOM defects |
 | canonical BidiLens | **88** | **93** | **94** | External native-speaker/accessibility/security review, native surfaces, upstream integrations, and a downstream pilot remain |
 
 A score of 100 would be false today. Even the canonical web artifact cannot
@@ -249,10 +337,11 @@ canonical checkout is objectively deeper and better verified than every
 sibling: stronger package-local test depth, a much larger direction-exact
 corpus with a documented subset of exact isolation/security expectations,
 generated current Unicode data, property/visual/security coverage, safe
-serialization, and clean tarball consumers. `v1.4-Her` has more package folders,
-but several of those folders split capabilities already provided by canonical
-core into separate packages, and its extra React Native surface lacks
-adapter-level or device evidence.
+serialization, and clean tarball consumers. `v1.4-Her` and `v1.5-Her` have
+more package folders, but several split capabilities already provided by
+canonical core into separate packages. Their extra React Native surface lacks
+adapter-level or device evidence; `v1.5-Her`'s full Unicode-class lookup is a
+deliberately separate low-level concern rather than a rendering advantage.
 
 It is not “100% better” in every conceivable dimension: some sibling documents
 describe a wider future platform vision. This repository records that wider

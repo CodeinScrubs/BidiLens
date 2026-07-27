@@ -282,6 +282,24 @@ describe('DOM adapter', () => {
     expect(paragraph.textContent).toBe(source);
   });
 
+  it('isolates text inside nested author markup without shifting the surrounding text', () => {
+    const authoredMarkup = '<p id="message">Hello <strong>سلام</strong> world.</p>';
+    document.body.innerHTML = authoredMarkup;
+    const paragraph = document.querySelector<HTMLElement>('#message')!;
+
+    const result = applyBidi(document.body);
+
+    expect(paragraph.dir).toBe('ltr');
+    expect(paragraph.textContent).toBe('Hello سلام world.');
+    expect(paragraph.querySelector('strong > bdi[dir="rtl"]')?.textContent).toBe('سلام');
+    expect(paragraph.querySelector('bdi')?.parentElement?.tagName).toBe('STRONG');
+    expect(paragraph.querySelector('bdi')?.textContent).not.toContain('world');
+    expect(result.isolated).toBe(1);
+
+    expect(restoreBidi(document.body)).toBe(1);
+    expect(document.body.innerHTML).toBe(authoredMarkup);
+  });
+
   it('restores original attributes, inline style, and logical text exactly', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     document.body.innerHTML = `<p id="message" dir="ltr" data-custom="original" style="unicode-bidi:isolate">${source}</p>`;
