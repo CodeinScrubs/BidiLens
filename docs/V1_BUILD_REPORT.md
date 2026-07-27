@@ -1,8 +1,12 @@
-# BidiLens 0.1.1 reliability-patch report
+# BidiLens 0.2.0 release report
 
 **Evidence date:** 2026-07-27
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
+
+**0.2.0 release status:** source, package manifests, changelogs, and protected
+release gates are aligned for the minor release; registry and provenance
+evidence must be recorded only after the protected OIDC workflow succeeds
 
 **Publication status:** all 12 `0.1.1` packages are public with verified
 registry integrity and SLSA provenance; the exact source commit has an
