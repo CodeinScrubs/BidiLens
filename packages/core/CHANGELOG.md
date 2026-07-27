@@ -1,5 +1,13 @@
 # @bidilens/core
 
+## 0.2.0
+
+### Minor Changes
+
+- bd39a0d: Add atomic control-family sanitization, contextual invisible-character
+  diagnostics, broad representative RTL-script coverage, and multiline fenced
+  code recognition inside surrounding raw-text prose.
+
 ## 0.1.1
 
 ### Patch Changes

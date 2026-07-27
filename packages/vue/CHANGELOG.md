@@ -1,5 +1,12 @@
 # @bidilens/vue
 
+## 0.2.0
+
+### Patch Changes
+
+- Updated dependencies [bd39a0d]
+  - @bidilens/core@0.2.0
+
 ## 0.1.1
 
 ### Patch Changes
