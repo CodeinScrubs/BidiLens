@@ -16,9 +16,9 @@ folders and do not treat README claims as proof.
 | `v1.3-Her` | 11 | 11 | 197 | 3 / 64 | 200 |
 | `v1.4-Her` working tree | 16 | 21 | 745 | 1 / 18 | 310 |
 | `v1.5-Her` working tree | 16 | 23 | 997 | 4 / 82 | 616 |
-| canonical BidiLens checkout | 12 | 15 | 1,226 | 3 / 63 | 918 |
+| canonical BidiLens checkout | 12 | 15 | 1,248 | 3 / 63 | 918 |
 
-Static assertion counts are only a depth signal; the canonical total is 1,289
+Static assertion counts are only a depth signal; the canonical total is 1,311
 across package and visual tests. The canonical checkout also runs those tests,
 coverage thresholds, examples, the three-browser visual suite,
 dependency audit, Unicode reproducibility, tarball inspection, and isolated
@@ -213,6 +213,10 @@ against the built sibling artifacts:
 - changing the Web Component's observed `streaming` attribute does not
   rerender it. The component called `bidi-markdown` also splits plain text on
   blank lines rather than parsing Markdown;
+- the Action still launches an untracked CLI `dist` file relative to the
+  downstream `GITHUB_WORKSPACE`. Its apparent end-to-end test passes the
+  sibling repository root as the working directory and therefore masks the
+  consumer failure. Canonical ships and probes a self-contained Action bundle;
 - corpus tests assert exact block direction, but expected isolations are only
   checked for source-span coverage. Their declared direction and kind are
   ignored. Only 251 fixtures contain any isolation expectation, and only 25
@@ -226,16 +230,27 @@ against the built sibling artifacts:
   and universal false-positive freedom that the source and registry do not
   substantiate.
 
-The useful `v1.5-Her` changes were already present in stronger form in
-canonical BidiLens: context-aware default non-interference, cross-isolate
+The second pass retained the sibling's useful intent while replacing its
+weaker implementations: canonical raw analysis now recognizes closed
+multiline fences embedded in prose without changing standalone/incomplete
+raw-text policy; invisible-character auditing covers contextual
+ASCII-identifier ZWNJ/ZWJ, WORD JOINER, and midstream BOM without flagging
+ordinary Persian or emoji joining; category-selective sanitization keeps
+opener/closer families atomic; and packed artifacts execute mixed-direction
+plus pure-LTR non-interference probes across the actual adapters. Existing
+advantages remain context-aware default non-interference, cross-isolate
 security checks with dual offsets, exact final stream reconciliation,
 three-browser geometry tests, reproducible Unicode sources and checksums,
-CycloneDX 1.7 generation, and a clean packed-consumer release gate. Its one
-unambiguously broader low-level API is a public full Unicode `BidiClass`
-lookup. That API was not copied: adding a second Unicode standards package
-would expand bundle, compatibility, and long-term conformance obligations
-without improving the browser rendering policy. Mature UAX #9 engines remain
-the appropriate dependency for consumers that need full reordering.
+CycloneDX 1.7 generation, and a clean packed-consumer release gate.
+
+The sibling's one unambiguously broader low-level API is a public full Unicode
+`BidiClass` lookup. That API was not copied: adding a second Unicode standards
+package would expand bundle, compatibility, and long-term conformance
+obligations without improving the browser rendering policy. Mature UAX #9
+engines remain the appropriate dependency for consumers that need full
+reordering. Its Apache-2.0 license also supplies an explicit patent grant that
+MIT does not; licensing suitability is a procurement decision, not evidence
+of rendering correctness, and BidiLens retains the user-selected MIT license.
 
 ## Material ideas reviewed
 
@@ -247,6 +262,9 @@ the appropriate dependency for consumers that need full reordering.
 | Block evidence and language-neutral offsets | Implemented in `analyzeBlock` with UTF-16 and code-point ranges |
 | Versioned language-neutral output contracts | Implemented in `@bidilens/spec` with strict analysis/security/stream JSON Schemas validated against real core output |
 | Technical-token exclusion and inline planning | Implemented with monotonic range traversal, a conservative expanded built-in vocabulary, and caller-supplied `technicalIdentifiers` propagated through every applicable adapter |
+| Complete multiline fences in raw core analysis | Adopted with linear line scanning for closed backtick/tilde fences embedded in prose, including longer closers and CR/LF variants; standalone/incomplete raw fences retain literal evidence and the Markdown package remains the richer parser-aware path |
+| Selective bidi-control preservation | Adopted as risk plus semantic `removeGroups`; embedding/override/PDF and isolate/PDI are atomic families, with exact removed-control metadata |
+| Extra invisible-character diagnostics | Adopted with tighter context than the sibling heuristic: ASCII-identifier ZWNJ/ZWJ, WORD JOINER, and midstream BOM are reported while Persian ZWNJ, emoji ZWJ, and a leading byte-order signature remain accepted |
 | Semantic HTML compiler | Implemented as an escaped package with a conservative non-executable tag allowlist |
 | DOM mutation support | Implemented with custom selectors, idempotence, restoration, and isolation |
 | unified plus markdown-it support | Implemented in one deep Markdown package, with batch adapters for both and a rich checkpointed Markdown-It stream |

@@ -98,7 +98,7 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 | Package | Bytes | Enforced budget |
 |---|---:|---:|
 | CLI | 16,241 | 32,768 |
-| Core | 116,291 | 118,784 |
+| Core | 120,452 | 122,880 |
 | DOM | 18,297 | 20,480 |
 | HTML | 4,361 | 12,288 |
 | Markdown | 79,375 | 81,920 |
@@ -108,14 +108,16 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 | Svelte | 1,855 | 8,192 |
 | Terminal | 4,273 | 8,192 |
 | Vue | 4,478 | 12,288 |
-| Web Component | 34,941 | 81,920 |
+| Web Component | 35,595 | 81,920 |
 
-The core artifact is 24,428 bytes with gzip and 18,243 bytes with Brotli on
-this build. Its unminified increase funds exact batch/final token-policy parity
-across the tested token grammar and stream chunk boundaries; applications that
-do not import the stream API can still tree-shake that implementation. Live
-snapshots remain intentionally revisable while an unfinished token can still
-change classification; `finish()` is the exact finalization boundary.
+The core artifact is 25,500 bytes with gzip and 19,110 bytes with Brotli on
+this build. Its unminified increase funds exact batch/final token-policy parity,
+invisible-character auditing, atomic control-family sanitization, and
+closed-fence recognition across the tested token grammar and stream chunk
+boundaries; applications that do not import the stream API can still tree-shake
+that implementation. Live snapshots remain intentionally revisable while an
+unfinished token can still change classification; `finish()` is the exact
+finalization boundary.
 
 The Markdown artifact is 14,916 bytes with gzip and 12,980 bytes with Brotli on
 this build. Its increase contains the serializable token AST, block-analysis

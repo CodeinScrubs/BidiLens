@@ -47,8 +47,20 @@ pops/openers, formatting that crosses an isolate boundary, and U+200B.
 
 Ordinary Persian ZWNJ (U+200C), Arabic/Hebrew combining marks, emoji ZWJ
 sequences, and normal RTL letters are not security findings. Dedicated core
-tests and corpus cases enforce this. U+200B is treated separately because it is
-not the Persian joining control and can disguise machine tokens.
+tests and corpus cases enforce this. ZWNJ/ZWJ is reported only when embedded
+between ASCII identifier characters. U+200B, U+2060, and a midstream U+FEFF
+are reported separately because they can disguise machine tokens or
+boundaries; a leading U+FEFF is accepted as a decoded byte-order signature.
+
+`sanitizeBidiControls` removes every recognized directional control by default.
+Callers can combine risk selection with `removeGroups` to preserve directional
+marks or complete isolate/PDI pairs while removing the `embedding-override`
+family and deprecated formatting. PDF stays in the atomic embedding/override
+family and PDI stays in the isolate family so the sanitizer does not preserve
+an opener while silently removing its closer. When groups are supplied, risk
+selection uses the family's maximum risk (`high` for embedding/override,
+`medium` for isolate/deprecated, and `low` for marks); risk-only calls retain
+the original per-control behavior.
 
 ## Non-goals
 

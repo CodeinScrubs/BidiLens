@@ -54,6 +54,7 @@
     "sbom": "pnpm dlx @cyclonedx/cdxgen@12.7.1 -t js --no-install-deps --fail-on-error --spec-version 1.7 --json-pretty -o bidilens-sbom.cdx.json .",
     "sbom:check": "tsx scripts/check-sbom.ts",
     "deps:audit": "pnpm audit --audit-level low",
+    "verify:production": "pnpm run check && pnpm run test:visual && pnpm run packages:types && pnpm run deps:audit && pnpm run sbom && pnpm run sbom:check && pnpm run release:check",
     "changeset": "changeset",
     "changeset:status": "changeset status"
   },

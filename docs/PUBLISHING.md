@@ -57,22 +57,22 @@ From a clean checkout with Node.js 22.12+ or 24 and pnpm 10.27.0:
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
-pnpm run check
-pnpm run test:visual
-pnpm -r --if-present run example
-pnpm run packages:types
-pnpm run deps:audit
-pnpm run release:check
-pnpm run sbom
-pnpm run sbom:check
+pnpm run verify:production
 git status --short
 ```
 
+`verify:production` expands to the quality, three-browser visual, package type,
+dependency-audit, SBOM, and clean-release gate set that CI and release
+preparation enforce as separate steps.
+
 `release:check` rejects a dirty tree, packs each public package, checks files
 and dependency protocols, installs all local tarballs into a temporary strict
-consumer, type-checks with `skipLibCheck: false`, and runs runtime assertions.
-It also extracts and executes the exact `examples/basic.mjs` shipped in every
-tarball with documented host/peer dependencies installed in that consumer.
+consumer, type-checks with `skipLibCheck: false`, and runs runtime assertions
+for the core, DOM, HTML, Markdown, React, Svelte, terminal, Vue, Web Component,
+spec, Playwright-import, and CLI surfaces. Its packed-adapter probes enforce
+that ordinary LTR content remains observably untouched. It also extracts and
+executes the exact `examples/basic.mjs` shipped in every tarball with
+documented host/peer dependencies installed in that consumer.
 
 ## Release workflow
 

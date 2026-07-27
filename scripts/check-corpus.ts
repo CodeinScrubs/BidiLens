@@ -101,6 +101,9 @@ for (const item of cases) {
     }
   }
   for (const range of findTechnicalTokenRanges(item.text)) {
+    // A complete fenced block is one semantic technical region even though
+    // the fixture's numbered-word view intentionally tokenizes its lines.
+    if (range.kind === 'code' && /[\r\n]/u.test(range.text)) continue;
     if (!item.words?.includes(range.text)) {
       failed += 1;
       console.error(`${item.id}: technical span must be one semantic numbered token: ${range.text}`);
