@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/spec",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Versioned language-neutral JSON Schemas for BidiLens analysis, security, and streaming output.",
   "license": "MIT",
   "author": {
