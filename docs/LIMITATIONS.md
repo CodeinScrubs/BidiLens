@@ -49,6 +49,10 @@ stateful unified streaming backend.
 - source and all 12 JavaScript packages are public, but no downstream
   production deployment or company adoption is claimed.
 
+Public issues, discussions, and an unmerged integration pull request are listed
+in the [outreach log](OUTREACH_LOG.md). They prove that review was requested,
+not that any host validated, merged, deployed, or endorsed BidiLens.
+
 ## Compatibility
 
 The automatic LTR fast path is context-sensitive, not a universal promise that

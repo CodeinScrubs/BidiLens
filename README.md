@@ -279,6 +279,7 @@ See [limitations](docs/LIMITATIONS.md), [architecture](docs/ARCHITECTURE.md),
 [security](docs/SECURITY.md), [publishing](docs/PUBLISHING.md), the
 [accessibility checklist](docs/ACCESSIBILITY.md), [migration guide](docs/MIGRATION.md),
 [adoption strategy](docs/ADOPTION.md), [maintainer outreach kit](docs/OUTREACH.md),
+[public outreach log](docs/OUTREACH_LOG.md),
 [FAQ](docs/FAQ.md), [build report](docs/V1_BUILD_REPORT.md),
 [sibling-project comparison](docs/PROJECT_COMPARISON.md), and
 [roadmap](docs/ROADMAP.md), or request help through [SUPPORT.md](SUPPORT.md).

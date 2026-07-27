@@ -3,6 +3,11 @@
 No downstream production adoption is claimed. The safest first use is a small,
 measured pilot in an open-source web chat renderer.
 
+The [public outreach log](OUTREACH_LOG.md) records the first submitted code
+integration and repository-specific review requests. Those submissions are
+evidence of contact only; none is a merge, pilot, external audit, adoption, or
+endorsement.
+
 ## Integration sequence
 
 1. Add `@bidilens/core` analysis in telemetry-free shadow mode.
@@ -36,8 +41,9 @@ measured pilot in an open-source web chat renderer.
 - at least one real downstream pilot and maintainer feedback;
 - native-speaker review of relevant corpus templates;
 - real accessibility laboratory results;
-- current contribution-policy research and narrowly scoped integration
-  dossiers for eligible AI products.
+- maintainer review and disposition of the current integration submissions;
+- refreshed contribution-policy research before contacting any additional AI
+  product or following a repository to a successor.
 
 Targets such as merged pull requests, downloads, users, grants, or sponsorship
 are future goals and must never be reported as achievements without external
