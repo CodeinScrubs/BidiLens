@@ -3,6 +3,26 @@
 All notable changes to this project are recorded here. The complete package set
 is published under the public `@bidilens` npm scope.
 
+## 0.2.0 - 2026-07-27
+
+### Direction and security
+
+- Added representative coverage for 32 RTL scripts and linear recognition of
+  closed multiline Markdown fences inside surrounding raw-text prose.
+- Added contextual findings for identifier-like ZWNJ/ZWJ, WORD JOINER, and
+  midstream BOM while preserving ordinary Persian and emoji joining behavior.
+- Added category-selective bidi-control sanitization with atomic
+  opener/closer families and backward-compatible risk-only behavior.
+
+### Release engineering
+
+- Expanded the packed consumer to execute mixed-direction and pure-LTR
+  non-interference checks across the public adapters.
+- Added the unified `verify:production` gate and regenerated the self-contained
+  GitHub Action bundle from the hardened source.
+- Audited the sibling `v1.5-Her` implementation and documented adopted ideas,
+  rejected scope, remaining limitations, and reproducible evidence.
+
 ## 0.1.1 - 2026-07-26
 
 ### Public release
