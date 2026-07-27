@@ -5,6 +5,10 @@ not a native-platform solution or evidence of adoption. Contact maintainers
 with one concrete renderer and one reproducible failure rather than a request
 to replace every bidi layer at once.
 
+The dated [public outreach log](OUTREACH_LOG.md) records actual submissions,
+deliberate deferrals, state vocabulary, and the follow-up policy. Do not copy a
+template into unrelated repositories or treat an open thread as adoption.
+
 ## Suggested subject
 
 Mixed Persian/English AI output: tested application-level bidi toolkit for a

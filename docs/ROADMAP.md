@@ -38,6 +38,8 @@ implementation or adoption claim.
   [accessibility checklist](ACCESSIBILITY.md);
 - external security review appropriate to the deployment risk;
 - a downstream pilot in a real AI interface with performance and rollback data;
+- maintainer review and disposition of the submitted host integration and
+  evidence bundles in the [public outreach log](OUTREACH_LOG.md);
 - an additional maintainer-controlled private conduct channel if community
   activity expands beyond GitHub.
 
@@ -49,7 +51,9 @@ implementation or adoption claim.
 - CSP-safe VS Code extension demonstration;
 - secure Electron example with clipboard and print/PDF verification;
 - browser HTML-to-PDF conformance;
-- current-policy integration dossiers and narrowly scoped upstream patches.
+- two additional host-tested patch-quality upstream integrations; the first
+  submitted patch and current evidence bundles are recorded in the [outreach
+  log](OUTREACH_LOG.md).
 
 The complete specification-to-evidence audit lives in
 [REQUIREMENT_MATRIX.md](REQUIREMENT_MATRIX.md).

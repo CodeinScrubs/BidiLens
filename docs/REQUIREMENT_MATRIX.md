@@ -1,6 +1,6 @@
 # Build-specification traceability matrix
 
-**Evidence date:** 2026-07-22
+**Evidence date:** 2026-07-27
 
 This file maps the binding “Ultimate Build Instruction — Cross-Platform
 Bidirectional Text Toolkit for AI Interfaces, version 2.0” to the source and
@@ -28,7 +28,7 @@ Status vocabulary:
 | LTR-only non-interference | Complete and tested for shipped web surfaces | In the default `auto` mode, ordinary LTR content in an LTR context emits no BidiLens direction attributes, wrappers, inline styles, or controls. Exact-output/tree/DOM tests cover core, HTML, DOM, Markdown, React, Vue, Svelte, Web Component, terminal, CLI, and Playwright helpers; inherited RTL and hidden-control counterexamples prevent an unsafe fast-path bypass |
 | Every public package has implementation, ≥25 package-local assertions, README/install, and example | Complete and executable | `pnpm run packages:depth` enforces this for all 12 packages; packed examples are also exercised by `pnpm run release:check` |
 | Full source lives in Git; annotated milestone tag after every gate | Partial | Reviewed source is committed to the canonical public Git repository, but only historical tags `m0` and `m1` exist. Missing history is not retroactively fabricated |
-| No fabricated badges, counts, adoption, or publication | Complete for the current tree | README/report label local results and unsupported surfaces; no publication/adoption claim or unverified passing badge |
+| No fabricated badges, counts, adoption, or publication | Complete for the current tree | Publication is tied to registry/release evidence; the [outreach log](OUTREACH_LOG.md) labels submissions as contact only and makes no merge, audit, pilot, adoption, endorsement, or unverified badge claim |
 | ≥300 corpus fixtures | Complete as a technical corpus; external review incomplete | 918 schema-valid entries; 721 authored template-matrix cases, 196 attributed sibling-project seeds, one user fixture; zero are marked native-speaker-reviewed |
 | Automated wrong-versus-correct visual proof | Complete and tested | `tests/visual/flagship.spec.ts` and committed Windows/Arial baselines; Chromium, Firefox, and WebKit gate |
 
@@ -124,8 +124,8 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 | English and Persian main README | Complete | `README.md` and `README.fa.md` |
 | Architecture, security, limitations, accessibility, migration, FAQ, contributing, governance, conduct, roadmap, changelog | Complete for the public web beta | Checked by `scripts/check-docs.ts`; platform guides for missing surfaces necessarily remain incomplete |
 | Reproducible performance matrix and budgets | Complete for current JS surfaces | `scripts/benchmark.ts`, `docs/PERFORMANCE.md`, scheduled workflow, package byte budgets in release checker |
-| 3 patch-quality upstream integrations | Missing | No patch is represented as ready. Archived sibling dossiers were planning/evidence notes, not host-tested patches, so they were not copied as completed deliverables |
-| 2 issue-quality evidence bundles | Missing in canonical repository | Archived sibling Claude/Grok notes show a useful shape but contain dated policy claims requiring fresh research |
+| 3 patch-quality upstream integrations | Partial/external | One host-tested patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508), with focused tests and local host gates. It is unmerged and does not satisfy the minimum of three integrations |
+| 2 issue-quality evidence bundles | Complete as public submissions, not product fixes | Current-policy, non-duplicate evidence is public for Antigravity, Claude Code, Codex, Cline, Continue, and assistant-ui; routes and exact states are recorded in the [outreach log](OUTREACH_LOG.md) |
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
 | CI: VS Code and native builds | Missing | Follows missing platform implementations |
@@ -150,7 +150,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 918 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal exists; Android/Flutter/RN/Swift do not; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
-| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, and immutable `v0.1.1` release. The required upstream integration minimum remains missing |
+| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, and immutable `v0.1.1` release. One of the required three host-tested integrations is submitted but unmerged, so the integration minimum remains incomplete |
 
 ## Definition-of-done audit
 
@@ -168,7 +168,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 10 | Complete as schema-valid technical corpus; native review remains a publication-quality gap |
 | 11 | Complete — no-backend bilingual playground and EN/FA repository docs exist |
 | 12 | Complete for current packages — workflows validate, SBOM/license/notices exist |
-| 13 | Missing — zero host-tested ready-to-submit integration patches |
+| 13 | Partial — one host-tested integration patch is submitted; fewer than three exist and none is merged or piloted |
 | 14 | Complete for current documented claims; continue checking after every change |
 | 15 | Partial — the reviewed source and current `v0.1.1` package release are public, but historical intermediate milestone tags were not fabricated retroactively |
 

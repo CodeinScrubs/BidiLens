@@ -1,6 +1,6 @@
 # BidiLens 0.1.1 reliability-patch report
 
-**Evidence date:** 2026-07-26
+**Evidence date:** 2026-07-27
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
@@ -48,7 +48,7 @@ opposite-direction runs.
 | Corpus | Partial (with exact missing functionality) | 918 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
 | VS Code, Electron, PDF | Unsupported (with technical reason) | No implementations exist; hollow packages were rejected and these require host-specific security/print tests |
 | Android, Flutter, React Native, Swift | Unsupported (with technical reason) | No implementations or executable SDK evidence exist in this repository |
-| Upstream AI-product patches | Unsupported (with technical reason) | No current-policy dossiers or patch sets exist; external research/submission was not authorized or fabricated |
+| Upstream AI-product integrations | External review in progress; no adoption | One host-tested Hermes TUI patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508); tailored evidence requests are public for six additional project families. No review, merge, pilot, deployment, or endorsement is claimed; see the [outreach log](OUTREACH_LOG.md). |
 
 ## Reproduced validation
 
@@ -75,6 +75,16 @@ opposite-direction runs.
 | Protected npm publication | [workflow run `30187675015`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30187675015) passed the full release gate, published all 12 `0.1.1` packages through OIDC, and retained the exact tarballs, manifest, and SBOM |
 | Immutable GitHub release | [`v0.1.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.1.1) resolves to the audited source commit; GitHub's immutable-release verification covers the 12 package tarballs, release manifest, and SBOM |
 | External npm consumer | all 12 public packages installed from the registry; runtime imports, mixed Persian/English direction, streaming, CLI, and the pure-LTR no-op passed; current production dependency audit reported zero findings |
+
+## Post-release outreach evidence
+
+The `0.1.1` packages and immutable release predate the public submissions
+recorded on 2026-07-27. The [outreach log](OUTREACH_LOG.md) links every live
+route, records one focused host-code PR, explains why other routes are
+issue/discussion proposals, and lists deliberate anti-spam deferrals. This
+post-release activity does not change the published package bytes and does not
+count as an audit, merge, pilot, production deployment, adoption, or company
+endorsement.
 
 Visual coverage includes the four-way flagship comparison, geometry, English
 mirror, per-paragraph direction, logical selection in three engines, actual
