@@ -10,7 +10,13 @@ npm install @bidilens/core
 ```
 
 ```ts
-import { analyzeText, createBidiStream, planInlineIsolation, scanBidiSecurity } from '@bidilens/core';
+import {
+  analyzeText,
+  createBidiStream,
+  planInlineIsolation,
+  sanitizeBidiControls,
+  scanBidiSecurity
+} from '@bidilens/core';
 
 const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 const analysis = analyzeText(source);
@@ -21,6 +27,11 @@ const isolations = planInlineIsolation(source, 'rtl');
 // React is an LTR identifier isolation.
 
 const security = scanBidiSecurity(source, { mode: 'strict' });
+const sanitized = sanitizeBidiControls(source, {
+  removeGroups: ['embedding-override', 'deprecated']
+});
+// Directional marks and complete isolate/PDI pairs are preserved.
+// With removeGroups, risk filtering applies to the whole atomic family.
 
 const stream = createBidiStream();
 stream.push('old response');
@@ -43,8 +54,12 @@ inside the current paragraph. If both options are supplied, the explicit
 Markdown boundary policy takes precedence in core and framework rendering.
 
 The default `content-majority` policy excludes technical tokens before
-counting natural-language evidence. Use `first-strong` or `strict-uax9` only
-when compatibility with first-strong host behavior is required.
+counting natural-language evidence. Raw-text analysis recognizes closed
+multiline backtick/tilde fences embedded in surrounding prose; standalone and
+incomplete fences retain their literal evidence. Parser-aware Markdown
+integrations remain the preferred path for structured documents. Use
+`first-strong` or `strict-uax9` only when compatibility with first-strong host
+behavior is required.
 
 Built-in recognition covers conservative, unambiguous tool and product names.
 Add private or domain-specific single-token identifiers without changing global

@@ -29,10 +29,11 @@ const CANONICAL_REPOSITORY = 'git+https://github.com/CodeinScrubs/BidiLens.git';
 const CANONICAL_HOMEPAGE = 'https://github.com/CodeinScrubs/BidiLens#readme';
 const CANONICAL_ISSUES = 'https://github.com/CodeinScrubs/BidiLens/issues';
 const DIST_BUDGETS = new Map<string, number>([
-  // Unicode 17 tables plus auditable evidence, security, configurable token
+  // Unicode 17 tables plus auditable evidence, invisible-character security,
+  // atomic control sanitization, fenced-code detection, configurable token
   // policy, and the chunk-invariant streaming classifier remain below a
-  // 116 KiB unminified ceiling (the current artifact is about 24 KiB gzip).
-  ['@bidilens/core', 116 * 1024],
+  // 120 KiB unminified ceiling (the current artifact is about 25 KiB gzip).
+  ['@bidilens/core', 120 * 1024],
   // Ownership-aware live direction/style restoration adds deliberate DOM
   // integration code; keep a tight but realistic unminified ceiling.
   ['@bidilens/dom', 20 * 1024],
@@ -294,24 +295,26 @@ void [applyBidi, analyzeBidiMarkdown, createBidiMarkdownStream, markdownItBidi, 
 `);
   await writeFile(resolve(consumer, 'index.mjs'), `
 import { strict as assert } from 'node:assert';
-import { analyzeBlock, createBidiStream } from '@bidilens/core';
+import { analyzeBlock, createBidiStream, needsBidiIntervention } from '@bidilens/core';
+import { applyBidi } from '@bidilens/dom';
 import { renderBidiHtml } from '@bidilens/html';
 import MarkdownIt from 'markdown-it';
-import { createBidiMarkdownStream } from '@bidilens/markdown';
+import { analyzeBidiMarkdown, createBidiMarkdownStream } from '@bidilens/markdown';
+import { BidiMessage as ReactBidiMessage } from '@bidilens/react';
 import { formatTerminalText } from '@bidilens/terminal';
 import { createBidiMessage } from '@bidilens/svelte';
 import { schemaIds, schemas } from '@bidilens/spec';
+import { BidiMessage as VueBidiMessage } from '@bidilens/vue';
+import { JSDOM } from 'jsdom';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { get } from 'svelte/store';
-await import('@bidilens/dom');
-await import('@bidilens/markdown');
+import { createSSRApp } from 'vue';
+import { renderToString } from '@vue/server-renderer';
 await import('@bidilens/playwright');
-await import('@bidilens/react');
-await import('@bidilens/vue');
-await import('@bidilens/web-component');
-await import('@bidilens/web-component/auto');
-await import('@bidilens/web-component/standalone');
 await import('@bidilens/cli');
 const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+const plainLtr = 'Plain English text stays byte-for-byte unchanged.';
 const block = analyzeBlock(source);
 assert.equal(block.direction, 'rtl');
 assert.equal(block.rawFirstStrong, 'ltr');
@@ -321,6 +324,64 @@ assert.equal(analyzeBlock('internalplatform خوب است.', {
 assert.equal(renderBidiHtml(source).blocks[0].direction, 'rtl');
 assert.equal(formatTerminalText(source).text, source);
 assert.equal(get(createBidiMessage(source)).direction, 'rtl');
+assert.equal(needsBidiIntervention(plainLtr), false);
+assert.equal(analyzeBlock(plainLtr).isolations.length, 0);
+assert.equal(renderBidiHtml(plainLtr).html, '<p>Plain English text stays byte-for-byte unchanged.</p>');
+const plainTerminal = formatTerminalText(plainLtr);
+assert.equal(plainTerminal.text, plainLtr);
+assert.equal(plainTerminal.controlsInserted, false);
+assert.equal(get(createBidiMessage(plainLtr)).isolations.length, 0);
+const markdown = new MarkdownIt({ html: false });
+assert.equal(analyzeBidiMarkdown(markdown, plainLtr).html, markdown.render(plainLtr));
+assert.equal(
+  renderToStaticMarkup(createElement(ReactBidiMessage, { text: plainLtr })),
+  '<article>Plain English text stays byte-for-byte unchanged.</article>'
+);
+assert.match(
+  renderToStaticMarkup(createElement(ReactBidiMessage, { text: source })),
+  /^<article dir="rtl"[^>]*>.*<bdi dir="ltr"[^>]*>React<\\/bdi>/u
+);
+assert.equal(
+  await renderToString(createSSRApp(VueBidiMessage, { text: plainLtr })),
+  '<p>Plain English text stays byte-for-byte unchanged.</p>'
+);
+assert.match(
+  await renderToString(createSSRApp(VueBidiMessage, { text: source })),
+  /^<p dir="rtl"[^>]*>.*<bdi dir="ltr"[^>]*>React<\\/bdi>/u
+);
+const dom = new JSDOM('<main><p>Plain English text stays byte-for-byte unchanged.</p></main>');
+const originalDom = dom.window.document.body.innerHTML;
+const domResult = applyBidi(dom.window.document.body);
+assert.equal(domResult.annotated, 0);
+assert.equal(dom.window.document.body.innerHTML, originalDom);
+dom.window.document.body.innerHTML = \`<main><p>\${source}</p></main>\`;
+const mixedDomResult = applyBidi(dom.window.document.body);
+const mixedParagraph = dom.window.document.querySelector('p');
+assert.equal(mixedDomResult.annotated, 1);
+assert.equal(mixedParagraph?.dir, 'rtl');
+assert.equal(mixedParagraph?.textContent, source);
+assert.equal(mixedParagraph?.querySelector('bdi[dir="ltr"]')?.textContent, 'React');
+Object.assign(globalThis, {
+  HTMLElement: dom.window.HTMLElement,
+  customElements: dom.window.customElements,
+  document: dom.window.document
+});
+const webComponent = await import('@bidilens/web-component');
+webComponent.defineBidiMessageElement(dom.window.customElements);
+const message = dom.window.document.createElement('bidi-message');
+message.textContent = plainLtr;
+dom.window.document.body.append(message);
+assert.equal(message.textContent, plainLtr);
+assert.equal(message.hasAttribute('dir'), false);
+assert.equal(message.hasAttribute('data-bidilens-block'), false);
+const mixedMessage = dom.window.document.createElement('bidi-message');
+mixedMessage.textContent = source;
+dom.window.document.body.append(mixedMessage);
+assert.equal(mixedMessage.getAttribute('dir'), 'rtl');
+assert.equal(mixedMessage.textContent, source);
+assert.equal(mixedMessage.querySelector('bdi[dir="ltr"]')?.textContent, 'React');
+await import('@bidilens/web-component/auto');
+await import('@bidilens/web-component/standalone');
 assert.equal(schemas.length, 5);
 assert.match(schemaIds.blockAnalysis, /block-analysis/);
 const stream = createBidiStream();

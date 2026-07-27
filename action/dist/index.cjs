@@ -6189,11 +6189,57 @@ function isIpv6(value) {
   return compression >= 0 ? groups.length < 8 : groups.length === 8;
 }
 function addCodeRanges(text, ranges) {
+  let fence;
+  const closedFences = [];
+  let lineStart = 0;
+  while (lineStart < text.length) {
+    let lineEnd = lineStart;
+    while (lineEnd < text.length && text[lineEnd] !== "\r" && text[lineEnd] !== "\n") lineEnd += 1;
+    let nextLine = lineEnd;
+    if (text[nextLine] === "\r") nextLine += 1;
+    if (text[nextLine] === "\n") nextLine += 1;
+    const line2 = text.slice(lineStart, lineEnd);
+    if (!fence) {
+      const openerMatch = /^ {0,3}(`{3,}|~{3,})(.*)$/u.exec(line2);
+      const opener = openerMatch?.[1];
+      const info = openerMatch?.[2] ?? "";
+      if (opener && !(opener[0] === "`" && info.includes("`"))) fence = {
+        marker: opener[0],
+        length: opener.length,
+        start: lineStart
+      };
+    } else {
+      const closer = /^ {0,3}(`+|~+)[ \t]*$/u.exec(line2)?.[1];
+      if (closer?.[0] === fence.marker && closer.length >= fence.length) {
+        closedFences.push({ start: fence.start, end: nextLine });
+        fence = void 0;
+      }
+    }
+    lineStart = nextLine;
+  }
+  let fenceIndex = 0;
+  let utf16Index = 0;
+  let hasOutsideNaturalText = false;
+  for (const character of text) {
+    while (fenceIndex < closedFences.length && utf16Index >= closedFences[fenceIndex].end) {
+      fenceIndex += 1;
+    }
+    const span = closedFences[fenceIndex];
+    const insideFence = span !== void 0 && utf16Index >= span.start && utf16Index < span.end;
+    if (!insideFence && classifyCharacter(character) !== "neutral") {
+      hasOutsideNaturalText = true;
+      break;
+    }
+    utf16Index += character.length;
+  }
+  if (hasOutsideNaturalText) {
+    for (const span of closedFences) addRange(ranges, text, span.start, span.end, "code");
+  }
   const lineExpression = /[^\r\n]*/gu;
   let lineMatch;
   while ((lineMatch = lineExpression.exec(text)) !== null) {
     const line2 = lineMatch[0];
-    const lineStart = lineMatch.index;
+    const lineStart2 = lineMatch.index;
     const runs = [];
     for (let index = 0; index < line2.length; ) {
       if (line2[index] !== "`") {
@@ -6241,7 +6287,7 @@ function addCodeRanges(text, ranges) {
         closingStart = runs[closingRunIndex].start;
       }
       const end = closingStart + delimiterLength;
-      addRange(ranges, text, lineStart + cursor, lineStart + end, "code");
+      addRange(ranges, text, lineStart2 + cursor, lineStart2 + end, "code");
       runIndex = closingRunIndex;
       cursor = end;
     }
@@ -6619,25 +6665,57 @@ function balanceFindings(controls) {
   }
   return findings;
 }
-function zeroWidthSpaceFindings(text) {
+function isAsciiIdentifierCharacter(value) {
+  return value !== void 0 && /^[A-Za-z0-9_$]$/u.test(value);
+}
+function invisibleCharacterFindings(text) {
   const findings = [];
+  const characters = [...text];
   let utf16Index = 0;
-  let codePointIndex = 0;
-  for (const character of text) {
+  for (let codePointIndex = 0; codePointIndex < characters.length; codePointIndex += 1) {
+    const character = characters[codePointIndex];
+    const sourceRange = {
+      utf16: { start: utf16Index, end: utf16Index + character.length },
+      codePoint: { start: codePointIndex, end: codePointIndex + 1 }
+    };
     if (character === "\u200B") {
       findings.push({
         code: "HIDDEN_ZERO_WIDTH_SPACE",
         severity: "warning",
         message: "ZERO WIDTH SPACE (U+200B) is hidden and can disguise identifiers, links, or filenames.",
-        sourceRange: {
-          utf16: { start: utf16Index, end: utf16Index + 1 },
-          codePoint: { start: codePointIndex, end: codePointIndex + 1 }
-        },
+        sourceRange,
         remediation: "Remove it from identifiers and source-like content unless its use is explicitly required."
       });
     }
+    if ((character === "\u200C" || character === "\u200D") && isAsciiIdentifierCharacter(characters[codePointIndex - 1]) && isAsciiIdentifierCharacter(characters[codePointIndex + 1])) {
+      const name = character === "\u200C" ? "ZERO WIDTH NON-JOINER" : "ZERO WIDTH JOINER";
+      findings.push({
+        code: "HIDDEN_IDENTIFIER_JOINER",
+        severity: "warning",
+        message: `${name} is hidden inside an ASCII identifier-like token.`,
+        sourceRange,
+        remediation: "Remove the joiner from machine identifiers, or document and validate the identifier protocol that requires it."
+      });
+    }
+    if (character === "\u2060") {
+      findings.push({
+        code: "HIDDEN_WORD_JOINER",
+        severity: "info",
+        message: "WORD JOINER (U+2060) is invisible and can disguise token boundaries.",
+        sourceRange,
+        remediation: "Confirm that non-breaking behavior is required; remove it from identifiers and source-like content."
+      });
+    }
+    if (character === "\uFEFF" && codePointIndex > 0) {
+      findings.push({
+        code: "HIDDEN_MIDSTREAM_BOM",
+        severity: "warning",
+        message: "ZERO WIDTH NO-BREAK SPACE/BOM (U+FEFF) appears inside the text.",
+        sourceRange,
+        remediation: "Remove the midstream BOM unless a documented protocol explicitly requires it."
+      });
+    }
     utf16Index += character.length;
-    codePointIndex += 1;
   }
   return findings;
 }
@@ -6648,7 +6726,7 @@ function scanBidiSecurity(text, options = {}) {
   const findings = [
     ...controls.map(controlFinding),
     ...balanceFindings(controls),
-    ...zeroWidthSpaceFindings(text)
+    ...invisibleCharacterFindings(text)
   ].sort((a, b) => a.sourceRange.utf16.start - b.sourceRange.utf16.start || a.code.localeCompare(b.code));
   const hasHigh = findings.some((finding) => finding.severity === "high");
   return {
@@ -6659,8 +6737,30 @@ function scanBidiSecurity(text, options = {}) {
     findings
   };
 }
+var ALL_SANITIZATION_GROUPS = [
+  "mark",
+  "embedding-override",
+  "isolate",
+  "deprecated"
+];
+var SANITIZATION_GROUP_RISK = {
+  mark: "low",
+  "embedding-override": "high",
+  isolate: "medium",
+  deprecated: "medium"
+};
+function sanitizationGroup(codePoint, category) {
+  if (codePoint === 8236 || category === "embedding" || category === "override") {
+    return "embedding-override";
+  }
+  if (codePoint === 8297 || category === "isolate") return "isolate";
+  if (category === "mark" || category === "deprecated") return category;
+  return "deprecated";
+}
 function sanitizeBidiControls(text, options = {}) {
   const remove = new Set(options.remove ?? ["high", "medium", "low"]);
+  const removeGroups = new Set(options.removeGroups ?? ALL_SANITIZATION_GROUPS);
+  const grouped = options.removeGroups !== void 0;
   const removed = [];
   let output = "";
   let utf16Index = 0;
@@ -6668,7 +6768,9 @@ function sanitizeBidiControls(text, options = {}) {
   for (const character of text) {
     const codePoint = character.codePointAt(0);
     const metadata = CONTROL_METADATA.get(codePoint);
-    if (metadata && remove.has(metadata.risk)) {
+    const group = metadata && sanitizationGroup(codePoint, metadata.category);
+    const selected = metadata && group && removeGroups.has(group) && remove.has(grouped ? SANITIZATION_GROUP_RISK[group] : metadata.risk);
+    if (metadata && selected) {
       removed.push({
         character,
         codePoint: `U+${codePoint.toString(16).toUpperCase().padStart(4, "0")}`,

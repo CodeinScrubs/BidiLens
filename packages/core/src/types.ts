@@ -144,6 +144,9 @@ export interface BidiStreamSnapshot {
 }
 
 export type BidiControlRisk = 'low' | 'medium' | 'high';
+export type BidiControlCategory = 'mark' | 'embedding' | 'override' | 'isolate' | 'pop' | 'deprecated';
+/** Semantic groups used by the sanitizer; opener/closer families stay atomic. */
+export type BidiControlSanitizationGroup = 'mark' | 'embedding-override' | 'isolate' | 'deprecated';
 
 export interface BidiControlFinding {
   character: string;
@@ -153,7 +156,7 @@ export interface BidiControlFinding {
   end: number;
   codePointIndex: number;
   risk: BidiControlRisk;
-  category: 'mark' | 'embedding' | 'override' | 'isolate' | 'pop' | 'deprecated';
+  category: BidiControlCategory;
 }
 
 export type BidiSecurityMode = 'off' | 'audit' | 'warn' | 'strict';

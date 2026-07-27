@@ -237,19 +237,16 @@ does not alter source.
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
-pnpm run check
-pnpm run test:visual
-pnpm run packages:types
-pnpm run deps:audit
-pnpm run release:check
-pnpm run sbom
-pnpm run sbom:check
+pnpm run verify:production
 ```
 
-`release:check` builds and packs every public package, inspects tarball
-contents, installs all tarballs into a temporary consumer, compiles with
-`skipLibCheck: false`, and runs real imports/assertions. It requires a clean
-worktree unless `--allow-dirty` is explicitly used during development.
+`verify:production` runs the complete quality, three-browser visual, package
+type, dependency-audit, SBOM, and clean-release sequence. `release:check`
+builds and packs every public package, inspects tarball contents, installs all
+tarballs into a temporary consumer, compiles with `skipLibCheck: false`, and
+executes adapter/runtime assertions—including the pure-LTR non-interference
+contract—from the packed artifacts. It requires a clean worktree unless
+`--allow-dirty` is explicitly used during development.
 
 The reusable Action is documented in [action/README.md](action/README.md). It
 bundles the real CLI implementation, requires no npm install at runtime, and

@@ -92,6 +92,37 @@ describe('direction detection', () => {
       .map((range) => range.text)).toContain('https://example.com');
   });
 
+  it('treats closed multiline Markdown fences inside prose as technical ranges in raw text', () => {
+    const closed = 'شغل الكود:\n```bash\necho hello world\n```\nالناتج صحيح.';
+    const closedRanges = findTechnicalTokenRanges(closed);
+    expect(closedRanges).toContainEqual(expect.objectContaining({
+      text: '```bash\necho hello world\n```\n',
+      kind: 'code'
+    }));
+    expect(detectDirection(closed)).toBe('rtl');
+
+    const longerCloser = 'متن\n~~~js\nconst answer = 42;\n~~~~\nادامه';
+    expect(findTechnicalTokenRanges(longerCloser)).toContainEqual(expect.objectContaining({
+      text: '~~~js\nconst answer = 42;\n~~~~\n',
+      kind: 'code'
+    }));
+    expect(detectDirection(longerCloser)).toBe('rtl');
+
+    const unclosed = '```\nconst value = 42;\n\nتوضیح هنوز ادامه دارد';
+    expect(findTechnicalTokenRanges(unclosed))
+      .not.toContainEqual(expect.objectContaining({ text: unclosed, kind: 'code' }));
+    expect(detectDirection(unclosed)).toBe('rtl');
+
+    const standaloneFences = '```js\nconst first = 1;\n```\n```js\nconst second = 2;\n```';
+    expect(findTechnicalTokenRanges(standaloneFences)
+      .filter((range) => range.kind === 'code' && range.text.includes('\n'))).toEqual([]);
+    expect(detectDirection(standaloneFences)).toBe('ltr');
+
+    const invalidBacktickInfo = 'متن\n```bad`info\nconst english = true;\n```\nادامه';
+    expect(findTechnicalTokenRanges(invalidBacktickInfo)
+      .filter((range) => range.kind === 'code' && range.text.includes('\n'))).toEqual([]);
+  });
+
   it('recognizes absolute paths after punctuation without swallowing delimiters', () => {
     const source = 'Open (C:\\Users\\dev\\app.ts), then check [/usr/local/bin/node].';
     const values = findTechnicalTokenRanges(source).map((range) => range.text);
@@ -150,6 +181,43 @@ describe('direction detection', () => {
     expect(analyzeBlock(sideticLetter, { strategy: 'strict-uax9' }).evidence).toEqual([
       expect.objectContaining({ text: sideticLetter, direction: 'rtl', excluded: false })
     ]);
+  });
+
+  it.each([
+    ['Hebrew', 0x05d0],
+    ['Arabic', 0x0627],
+    ['Syriac', 0x0710],
+    ['Thaana', 0x0780],
+    ['NKo', 0x07ca],
+    ['Samaritan', 0x0800],
+    ['Mandaic', 0x0840],
+    ['Imperial Aramaic', 0x10840],
+    ['Nabataean', 0x10880],
+    ['Hatran', 0x108e0],
+    ['Phoenician', 0x10900],
+    ['Lydian', 0x10920],
+    ['Sidetic', 0x10940],
+    ['Kharoshthi', 0x10a00],
+    ['Old South Arabian', 0x10a60],
+    ['Old North Arabian', 0x10a80],
+    ['Manichaean', 0x10ac0],
+    ['Avestan', 0x10b00],
+    ['Inscriptional Parthian', 0x10b40],
+    ['Inscriptional Pahlavi', 0x10b60],
+    ['Psalter Pahlavi', 0x10b80],
+    ['Old Turkic', 0x10c00],
+    ['Old Hungarian', 0x10c80],
+    ['Hanifi Rohingya', 0x10d00],
+    ['Garay', 0x10d50],
+    ['Yezidi', 0x10e80],
+    ['Old Sogdian', 0x10f00],
+    ['Sogdian', 0x10f30],
+    ['Old Uyghur', 0x10f70],
+    ['Chorasmian', 0x10fb0],
+    ['Elymaic', 0x10fe0],
+    ['Adlam', 0x1e900]
+  ])('classifies a representative %s letter as RTL from generated Unicode data', (_script, codePoint) => {
+    expect(classifyCharacter(String.fromCodePoint(codePoint))).toBe('rtl');
   });
 
   it('detects Persian and English', () => {
@@ -785,6 +853,11 @@ describe('streaming', () => {
     findTechnicalTokenRanges(backticks);
     expect(performance.now() - backtickBatchStart).toBeLessThan(1_500);
 
+    const manyFences = `متن\n${'```\nx\n```\n\n'.repeat(1_000)}ادامه`;
+    const manyFencesStart = performance.now();
+    findTechnicalTokenRanges(manyFences);
+    expect(performance.now() - manyFencesStart).toBeLessThan(1_500);
+
     const source = 'سلام React '.repeat(8_000);
     const isolationStart = performance.now();
     expect(planInlineIsolation(source, 'rtl')).toHaveLength(8_000);
@@ -819,6 +892,39 @@ describe('security', () => {
     expect(sanitizeBidiControls(input).text).toBe('safeevil');
   });
 
+  it('selectively removes dangerous formatting while preserving marks and complete isolate pairs', () => {
+    const input = [
+      BIDI_CONTROLS.LRM,
+      BIDI_CONTROLS.RLO,
+      'override',
+      BIDI_CONTROLS.PDF,
+      BIDI_CONTROLS.LRI,
+      'isolated',
+      BIDI_CONTROLS.PDI,
+      '\u206A'
+    ].join('');
+    const result = sanitizeBidiControls(input, {
+      removeGroups: ['embedding-override', 'deprecated']
+    });
+    expect(result.text).toBe(`${BIDI_CONTROLS.LRM}override${BIDI_CONTROLS.LRI}isolated${BIDI_CONTROLS.PDI}`);
+    expect(result.removed.map((finding) => finding.codePoint)).toEqual(['U+202E', 'U+202C', 'U+206A']);
+
+    const isolateOnly = sanitizeBidiControls(input, { removeGroups: ['isolate'] });
+    expect(isolateOnly.text).toBe(`${BIDI_CONTROLS.LRM}${BIDI_CONTROLS.RLO}override${BIDI_CONTROLS.PDF}isolated\u206A`);
+    expect(isolateOnly.removed.map((finding) => finding.codePoint)).toEqual(['U+2066', 'U+2069']);
+
+    const highRiskFamily = sanitizeBidiControls(
+      `${BIDI_CONTROLS.LRE}embedded${BIDI_CONTROLS.PDF}`,
+      { remove: ['high'], removeGroups: ['embedding-override'] }
+    );
+    expect(highRiskFamily.text).toBe('embedded');
+    expect(highRiskFamily.removed.map((finding) => finding.codePoint)).toEqual(['U+202A', 'U+202C']);
+    expect(sanitizeBidiControls(
+      `${BIDI_CONTROLS.LRE}embedded${BIDI_CONTROLS.PDF}`,
+      { remove: ['medium'], removeGroups: ['embedding-override'] }
+    ).removed).toEqual([]);
+  });
+
   it('detects unbalanced controls and Trojan-Source-style overrides', () => {
     const report = scanBidiSecurity(`safe${BIDI_CONTROLS.RLO}evil`, { mode: 'strict' });
     expect(report.safe).toBe(false);
@@ -833,6 +939,22 @@ describe('security', () => {
     expect(report.controls).toHaveLength(0);
     expect(report.findings).toHaveLength(0);
     expect(report.safe).toBe(true);
+  });
+
+  it('reports identifier joiners, word joiners, and midstream BOM without flagging linguistic or emoji joining', () => {
+    const report = scanBidiSecurity('😀ab\u200Ccd ef\u200Dgh\u2060ij\uFEFFkl');
+    expect(report.findings.map((finding) => finding.code)).toEqual([
+      'HIDDEN_IDENTIFIER_JOINER',
+      'HIDDEN_IDENTIFIER_JOINER',
+      'HIDDEN_WORD_JOINER',
+      'HIDDEN_MIDSTREAM_BOM'
+    ]);
+    expect(report.findings[0]?.sourceRange).toEqual({
+      utf16: { start: 4, end: 5 },
+      codePoint: { start: 3, end: 4 }
+    });
+    expect(scanBidiSecurity('\uFEFFheader').findings).toEqual([]);
+    expect(scanBidiSecurity('می\u200Cخواهم 👨‍👩‍👧‍👦').findings).toEqual([]);
   });
 
   it.each(benignMultilingualText)('has no false positives for ordinary %s text', (_language, text) => {

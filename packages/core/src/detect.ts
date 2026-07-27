@@ -143,6 +143,60 @@ function isIpv6(value: string): boolean {
 }
 
 function addCodeRanges(text: string, ranges: TechnicalTokenRange[]): void {
+  let fence: { marker: '`' | '~'; length: number; start: number } | undefined;
+  const closedFences: Array<{ start: number; end: number }> = [];
+  let lineStart = 0;
+  while (lineStart < text.length) {
+    let lineEnd = lineStart;
+    while (lineEnd < text.length && text[lineEnd] !== '\r' && text[lineEnd] !== '\n') lineEnd += 1;
+    let nextLine = lineEnd;
+    if (text[nextLine] === '\r') nextLine += 1;
+    if (text[nextLine] === '\n') nextLine += 1;
+    const line = text.slice(lineStart, lineEnd);
+    if (!fence) {
+      const openerMatch = /^ {0,3}(`{3,}|~{3,})(.*)$/u.exec(line);
+      const opener = openerMatch?.[1];
+      const info = openerMatch?.[2] ?? '';
+      if (opener && !(opener[0] === '`' && info.includes('`'))) fence = {
+        marker: opener[0] as '`' | '~',
+        length: opener.length,
+        start: lineStart
+      };
+    } else {
+      const closer = /^ {0,3}(`+|~+)[ \t]*$/u.exec(line)?.[1];
+      if (closer?.[0] === fence.marker && closer.length >= fence.length) {
+        closedFences.push({ start: fence.start, end: nextLine });
+        fence = undefined;
+      }
+    }
+    lineStart = nextLine;
+  }
+  // Decide once over the union of all closed spans. Scanning each fence's
+  // complementary text separately would be quadratic and would mistake code
+  // inside a second standalone fence for prose outside the first.
+  let fenceIndex = 0;
+  let utf16Index = 0;
+  let hasOutsideNaturalText = false;
+  for (const character of text) {
+    while (fenceIndex < closedFences.length && utf16Index >= closedFences[fenceIndex]!.end) {
+      fenceIndex += 1;
+    }
+    const span = closedFences[fenceIndex];
+    const insideFence = span !== undefined && utf16Index >= span.start && utf16Index < span.end;
+    if (!insideFence && classifyCharacter(character) !== 'neutral') {
+      hasOutsideNaturalText = true;
+      break;
+    }
+    utf16Index += character.length;
+  }
+  // Standalone fenced code keeps its historical raw-text direction evidence.
+  // Parser-aware Markdown adapters force code blocks LTR. Excluding complete
+  // fences is useful when surrounding prose—not code literals—must decide the
+  // containing raw block's natural direction.
+  if (hasOutsideNaturalText) {
+    for (const span of closedFences) addRange(ranges, text, span.start, span.end, 'code');
+  }
+
   const lineExpression = /[^\r\n]*/gu;
   let lineMatch: RegExpExecArray | null;
   while ((lineMatch = lineExpression.exec(text)) !== null) {
