@@ -4,14 +4,10 @@
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
-**0.2.0 release status:** source, package manifests, changelogs, and protected
-release gates are aligned for the minor release; registry and provenance
-evidence must be recorded only after the protected OIDC workflow succeeds
-
-**Publication status:** all 12 `0.1.1` packages are public with verified
-registry integrity and SLSA provenance; the exact source commit has an
-annotated `v0.1.1` tag and an immutable GitHub release containing the retained
-tarballs, release manifest, and validated SBOM
+**Publication status:** all 12 `0.2.0` packages are public with verified
+registry integrity, `latest` tags, and SLSA provenance; the exact source commit
+has an annotated `v0.2.0` tag and an immutable GitHub release containing the
+retained tarballs, release manifest, and validated SBOM
 
 **Recommendation:** suitable for bounded, maintainer-controlled web pilots;
 not a universal cross-platform production release
@@ -35,7 +31,7 @@ opposite-direction runs.
 
 | Surface | Status | Evidence / boundary |
 |---|---|---|
-| `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 95.64% lines |
+| `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 95.73% lines |
 | `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, styles, observer lifecycle, detached/cross-realm DOM |
 | `@bidilens/html` | Complete and tested | escaped semantic blocks and `<bdi>` isolation, tag validation, source preservation |
 | `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed Markdown-It batch adapters; blocks/lists/tables/quotes/code/math/XSS; rich Markdown-It stream with AST/HTML/isolation/security final parity, dirty/pending ranges, and 97.29% lines |
@@ -59,8 +55,8 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
-| Vitest within `check` | 16 files, 355 tests pass |
-| Coverage (seeded run) | 91.76% statements, 85.51% branches, 94.45% functions, 94.71% lines; core 95.64%, Markdown 97.29%, Playwright helpers 100% lines |
+| Vitest within `check` | 16 files, 391 tests pass |
+| Coverage (seeded run) | 91.85% statements, 85.80% branches, 94.48% functions, 94.76% lines; core 95.73%, Markdown 97.29%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 918/918; 0 native-speaker-reviewed |
 | `pnpm run test:visual` | 24/24 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS, including real standalone-module loading and the bilingual playground's controls/corpus/copy/theme/exports; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
 | `pnpm -r --if-present run example` | all 12 public package examples run in the workspace |
@@ -71,24 +67,23 @@ opposite-direction runs.
 | `pnpm outdated -r` | only `@types/node` 26 and TypeScript 7 are newer majors; types stay aligned to supported Node 24 and TypeScript 6.0.3 is the newest line accepted by the installed `typescript-eslint` peer range |
 | `pnpm run sbom` + `pnpm run sbom:check` | CycloneDX 1.7; 585 components, 599 dependency relationships. cdxgen also reports inherited process environment warnings in the local execution environment; validation does not treat those environment warnings as component findings |
 | actionlint 1.7.12 | CI, release-preparation, benchmark, and opt-in Pages workflows pass |
-| `pnpm run action:check` | 190,859-byte bundle; Node 24 metadata/notices and unresolved-import checks pass; built artifact returns 0 for safe source and 2 for a strict high-risk control without mutation |
+| `pnpm run action:check` | 195,023-byte bundle; Node 24 metadata/notices and unresolved-import checks pass; built artifact returns 0 for safe source and 2 for a strict high-risk control without mutation |
 | Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
 | Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.8, Vue 3.5.40, and Svelte 5 |
 | `pnpm run release:check` | strict clean-worktree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 12 tarballs execute. The pre-commit development tree also passed with `--allow-dirty` |
-| GitHub CI for published commit | [11/11 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30187521175): Node 22/24 quality and packed consumers, Windows/macOS quality, three browser engines, actionlint, dependency audit, and SBOM |
-| Protected npm publication | [workflow run `30187675015`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30187675015) passed the full release gate, published all 12 `0.1.1` packages through OIDC, and retained the exact tarballs, manifest, and SBOM |
-| Immutable GitHub release | [`v0.1.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.1.1) resolves to the audited source commit; GitHub's immutable-release verification covers the 12 package tarballs, release manifest, and SBOM |
+| GitHub CI for published commit | [11/11 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30297267976): Node 22/24 quality and packed consumers, Windows/macOS quality, three browser engines, actionlint, dependency audit, and SBOM |
+| Protected npm publication | [workflow run `30297697861`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30297697861) passed the full release gate, published all 12 `0.2.0` packages through OIDC, verified registry integrity, and retained the exact tarballs and manifest |
+| Immutable GitHub release | [`v0.2.0`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.2.0) resolves to the published source commit; GitHub's immutable-release verification covers the 12 package tarballs, release manifest, and validated SBOM |
 | External npm consumer | all 12 public packages installed from the registry; runtime imports, mixed Persian/English direction, streaming, CLI, and the pure-LTR no-op passed; current production dependency audit reported zero findings |
 
 ## Post-release outreach evidence
 
-The `0.1.1` packages and immutable release predate the public submissions
-recorded on 2026-07-27. The [outreach log](OUTREACH_LOG.md) links every live
-route, records one focused host-code PR, explains why other routes are
-issue/discussion proposals, and lists deliberate anti-spam deferrals. This
-post-release activity does not change the published package bytes and does not
-count as an audit, merge, pilot, production deployment, adoption, or company
-endorsement.
+The outreach recorded before `0.2.0` remains independent of publication. The
+[outreach log](OUTREACH_LOG.md) links every live route, records one focused
+host-code PR, explains why other routes are issue/discussion proposals, and
+lists deliberate anti-spam deferrals. This activity does not change the
+published package bytes and does not count as an audit, merge, pilot,
+production deployment, adoption, or company endorsement.
 
 Visual coverage includes the four-way flagship comparison, geometry, English
 mirror, per-paragraph direction, logical selection in three engines, actual
@@ -186,17 +181,17 @@ local numbers, not a service-level objective.
 
 The canonical checkout is the strongest reproducible JavaScript/web
 implementation among the local sibling folders: 12 public packages, 16 test
-files with 355 tests, 918 fixtures, current generated Unicode data, real
+files with 391 tests, 918 fixtures, current generated Unicode data, real
 three-engine visual evidence, and clean package-consumer gates. Broader
 native/desktop ideas found in sibling documentation are retained in the
 [traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.
 
 ## Release decision
 
-The `0.1.1` code artifacts are published as a **maintainer-controlled public
+The `0.2.0` code artifacts are published as a **maintainer-controlled public
 web beta**. npm publication, package provenance, registry-integrity
 verification, per-package trusted publishing, protected human approval, the
-annotated `v0.1.1` tag, and the immutable release are complete. Broad rollout
+annotated `v0.2.0` tag, and the immutable release are complete. Broad rollout
 still requires:
 
 1. final name/trademark review appropriate to the adopter;
@@ -208,6 +203,6 @@ Broad production or “all platforms” readiness is **not** claimed because nat
 packages, Tier-2 desktop/PDF surfaces, upstream integrations, native-speaker
 certification, accessibility laboratory testing, an external security audit,
 and a real downstream pilot remain absent. Historical milestone tags between
-`m1` and the current `v0.1.1` release tag were not retroactively fabricated;
+`m1` and the current `v0.2.0` release tag were not retroactively fabricated;
 publishing
 the reviewed source does not reconstruct the original stepwise tag history.
