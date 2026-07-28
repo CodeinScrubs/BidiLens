@@ -24,7 +24,7 @@ jobs:
           go-version: '1.26.5'
           cache: false
       - run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
-      - uses: gradle/actions/wrapper-validation@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
+      - uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
 
   quality:
     name: Quality (Node ${{ matrix.node }})
