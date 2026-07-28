@@ -9,8 +9,12 @@ required for future releases.
 
 The Android modules under `android/` are configured as Maven publications and
 can be verified with `./android/gradlew -p android publishToMavenLocal`.
-Release AARs and sources jars are built by CI. They must not be described as
-Maven Central artifacts until all of the following are complete:
+Release AARs and sources jars are built by CI. The verified
+[`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
+contains the CI AARs, an external-consumer-tested Maven repository bundle, a
+sample APK, an SBOM, and SHA-256 checksums tied to commit `85b80c0`. These
+artifacts must not be described as Maven Central artifacts until all of the
+following are complete:
 
 - Central namespace ownership for `io.github.codeinscrubs.bidilens`;
 - GPG/signing material managed outside the repository;
@@ -31,7 +35,8 @@ registry publication.
 - verified `shayanay80` owner access to the `bidilens` npm organization and
   `@bidilens` scope;
 - identified bootstrap maintainer and CODEOWNERS;
-- strict `main` protection requires all 11 CI job contexts on an up-to-date
+- strict `main` protection requires all 13 CI job contexts, including the
+  Android library/sample build and API 35 UI-test gate, on an up-to-date
   branch and linear history, while blocking force-pushes, branch deletion, and
   unresolved review conversations; the sole-maintainer administrative bypass
   remains available for CI-outage recovery;

@@ -18,6 +18,27 @@ type UiLanguage = 'en' | 'fa';
 type Theme = 'light' | 'dark';
 type PlaygroundPolicy = Extract<DetectionStrategy, 'content-majority' | 'first-strong'>;
 
+const CLIPBOARD_TIMEOUT_MS = 2_000;
+
+function settleWithin<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(
+      () => reject(new Error(`Operation exceeded ${timeoutMs}ms`)),
+      timeoutMs
+    );
+    operation.then(
+      (value) => {
+        window.clearTimeout(timeout);
+        resolve(value);
+      },
+      (error: unknown) => {
+        window.clearTimeout(timeout);
+        reject(error);
+      }
+    );
+  });
+}
+
 interface CorpusFixture {
   id: string;
   description: string;
@@ -212,7 +233,7 @@ export function App() {
     window.history.replaceState(null, '', target);
     if (navigator.clipboard?.writeText) {
       try {
-        await navigator.clipboard.writeText(target.href);
+        await settleWithin(navigator.clipboard.writeText(target.href), CLIPBOARD_TIMEOUT_MS);
         setActionStatus(t.shareCopied);
         return;
       } catch {
@@ -260,8 +281,8 @@ export function App() {
     }
     if (navigator.clipboard?.writeText && navigator.clipboard?.readText) {
       try {
-        await navigator.clipboard.writeText(markdown);
-        const copied = await navigator.clipboard.readText();
+        await settleWithin(navigator.clipboard.writeText(markdown), CLIPBOARD_TIMEOUT_MS);
+        const copied = await settleWithin(navigator.clipboard.readText(), CLIPBOARD_TIMEOUT_MS);
         setActionStatus(copied === markdown ? t.copyPassed : t.copyFailed);
         return;
       } catch {
