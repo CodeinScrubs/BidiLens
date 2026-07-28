@@ -7,7 +7,9 @@
 **Publication status:** all 12 `0.2.0` packages are public with verified
 registry integrity, `latest` tags, and SLSA provenance; the exact source commit
 has an annotated `v0.2.0` tag and an immutable GitHub release containing the
-retained tarballs, release manifest, and validated SBOM
+retained tarballs, release manifest, and validated SBOM. The later native
+Android `0.1.1` core, Views, and Compose modules are signed and public on Maven
+Central with an annotated tag, immutable release, and public-consumer evidence
 
 **Recommendation:** suitable for bounded, maintainer-controlled web pilots;
 not a universal cross-platform production release
@@ -47,7 +49,7 @@ opposite-direction runs.
 | React/Vite playground | Complete and tested | Static/offline; EN/FA UI, policy/security controls, adjustable stream, live four-way comparison, AST/evidence/isolation/security, searchable 918-case asset, copy verification, JSON/semantic HTML export, hash state and explicit theme; three-browser flow |
 | Corpus | Partial (with exact missing functionality) | 918 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
 | VS Code, Electron, PDF | Unsupported (with technical reason) | No implementations exist; hollow packages were rejected and these require host-specific security/print tests |
-| Native Android | Implemented after the immutable 0.2.0 web release; Maven publication pending | Pure Kotlin core, Views and Compose adapters, sample APK, generated 918-case parity, JVM/Robolectric tests, lint/AAR build, and API 35/36 emulator UI evidence. This does not alter the historical 0.2.0 npm artifacts |
+| Native Android | Implemented and published after the immutable 0.2.0 web release | Signed Maven Central `0.1.1` core, Views, and Compose artifacts; sample APK; generated 918-case parity; JVM/Robolectric tests; lint/AAR build; and API 35/36 emulator UI evidence. This does not alter the historical 0.2.0 npm artifacts |
 | Flutter, React Native, Swift | Unsupported (with technical reason) | No implementations or executable SDK evidence exist in this repository |
 | Upstream AI-product integrations | External review in progress; no adoption | One host-tested Hermes TUI patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508); tailored evidence requests are public for six additional project families. No review, merge, pilot, deployment, or endorsement is claimed; see the [outreach log](OUTREACH_LOG.md). |
 
@@ -56,7 +58,7 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
-| Vitest within `check` | 16 files, 391 tests pass |
+| Vitest within `check` | 16 files, 392 tests pass |
 | Coverage (seeded run) | 91.85% statements, 85.80% branches, 94.48% functions, 94.76% lines; core 95.73%, Markdown 97.29%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 918/918; 0 native-speaker-reviewed |
 | `pnpm run android:check` | Kotlin core/Views/Compose unit suites, Android lint, all debug assemblies, and the sample APK pass with JDK 21 and SDK 36 |
@@ -78,6 +80,10 @@ opposite-direction runs.
 | Protected npm publication | [workflow run `30297697861`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30297697861) passed the full release gate, published all 12 `0.2.0` packages through OIDC, verified registry integrity, and retained the exact tarballs and manifest |
 | Immutable GitHub release | [`v0.2.0`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.2.0) resolves to the published source commit; GitHub's immutable-release verification covers the 12 package tarballs, release manifest, and validated SBOM |
 | External npm consumer | all 12 public packages installed from the registry; runtime imports, mixed Persian/English direction, streaming, CLI, and the pure-LTR no-op passed; current production dependency audit reported zero findings |
+| Android release CI | [13/13 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30337482079), including Android libraries/sample, isolated Maven consumer, and API 35 device tests |
+| Protected Android publication | [workflow run `30339097846`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30339097846) signed and published all three Android `0.1.1` modules to Maven Central |
+| Public Maven consumer | all 15 primary files matched retained workflow bytes; 15 detached signatures and 30 Central checksums verified; an empty-Maven-Local consumer resolved all three public coordinates and built |
+| Immutable Android release | [`android-v0.1.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1) resolves to the exact published commit and retains the AARs, sample APK, Maven repository, Central evidence, public key, and SHA-256 checksums |
 
 ## Post-release outreach evidence
 
@@ -204,10 +210,10 @@ still requires:
 
 Broad production or “all platforms” readiness is **not** claimed. Native
 Android Kotlin, Views, and Compose modules now have JVM, lint, sample-app, and
-emulator evidence, but signed Maven Central distribution, physical OEM/IME and
-TalkBack validation, iOS/desktop/PDF surfaces, upstream integrations,
-native-speaker certification, an external security audit, and a real downstream
-pilot remain absent. Historical milestone tags between
+emulator evidence plus signed Maven Central distribution, but physical OEM/IME
+and TalkBack validation, iOS/desktop/PDF surfaces, upstream integrations,
+native-speaker certification, an external security audit, and a real
+downstream pilot remain absent. Historical milestone tags between
 `m1` and the current `v0.2.0` release tag were not retroactively fabricated;
 publishing
 the reviewed source does not reconstruct the original stepwise tag history.

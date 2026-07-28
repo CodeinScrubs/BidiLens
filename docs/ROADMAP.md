@@ -3,7 +3,7 @@
 The roadmap separates executable evidence from targets. A target is not an
 implementation or adoption claim.
 
-## Implemented and published in the 0.1.1 web beta
+## Implemented and published in the current releases
 
 - reproducible Unicode 17.0.0 bidi data and dual-offset evidence;
 - versioned language-neutral block-analysis, security, and stream schemas;
@@ -31,7 +31,8 @@ implementation or adoption claim.
   an annotated source tag, and a protected human-approved release workflow.
 - native Android Kotlin core, Views and Compose adapters, photographed-case
   sample, generated 918-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
-  and API 35 plus local API 36.1 UI tests.
+  API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.1`
+  publication, and independently verified public-consumer resolution.
 
 ## Required before broad production recommendation
 
@@ -63,8 +64,8 @@ The complete specification-to-evidence audit lives in
 
 ## Planned native work
 
-- signed Maven Central publication and physical-device/TalkBack validation for
-  the implemented Android libraries;
+- physical-device/OEM/IME and TalkBack validation for the published Android
+  libraries;
 - Flutter package and golden tests;
 - React Native component and platform notes;
 - Swift Package for SwiftUI/TextKit;

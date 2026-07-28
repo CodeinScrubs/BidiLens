@@ -2,14 +2,16 @@
 
 The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
-checklist records the completed `0.2.0` minor release and the controls
-required for future releases.
+checklist records the completed web/npm `0.2.0` and Android/Maven `0.1.1`
+releases and the controls required for future releases.
 
 ## Android distribution boundary
 
-The three Android `0.1.1` libraries under `android/` are configured as signed
-Maven Central publications and can be verified locally with
-`./android/gradlew -p android publishToMavenLocal`. The verified
+The three Android `0.1.1` libraries under `android/` are signed and public on
+Maven Central. They can also be verified locally with
+`./android/gradlew -p android publishToMavenLocal`. The
+[`android-v0.1.1` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
+retains the exact release assets and public verification evidence. The verified
 [`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
 remains the immutable pre-Central fallback tied to commit `85b80c0`.
 
@@ -25,7 +27,8 @@ documentation jar, and detached signature for all three coordinates; compiles
 a clean consumer against an isolated Maven repository; retains SHA-256
 evidence; and only then uploads. The libraries must not be described as
 publicly available from Maven Central until Central accepts the deployment and
-a clean consumer resolves it from the public repository.
+a clean consumer resolves it from the public repository. Android `0.1.1`
+completed both gates on 2026-07-28.
 
 ### Android release workflow
 
@@ -36,16 +39,22 @@ Central, and has read-only repository permissions. Registry credentials and
 the private signing key are exposed only to the specific steps that require
 them.
 
-For Android `0.1.1`:
+Android `0.1.1` completed this workflow:
 
-1. merge only after all protected CI checks pass;
-2. dispatch `publish-android.yml` with version `0.1.1` and confirmation
+1. all 13 protected CI checks passed in
+   [`30337482079`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30337482079);
+2. `publish-android.yml` was dispatched with version `0.1.1` and confirmation
    `PUBLISH ANDROID 0.1.1`;
-3. approve the protected `maven-release` deployment;
-4. wait for Central validation and public synchronization;
-5. resolve all three exact coordinates from a clean public-only consumer;
-6. create `android-v0.1.1` on the exact published commit and retain the signed
-   Maven inputs, sample APK, checksum manifest, and release notes.
+3. the protected `maven-release` deployment was approved and
+   [`30339097846`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30339097846)
+   published Central deployment `82599fc9-fc43-44ba-8268-f7bd6c68a9a6`;
+4. all three exact coordinates synchronized publicly;
+5. a clean public-only consumer with an empty Maven Local resolved and built
+   all three modules; all 15 primary files, 15 signatures, and 30 Central
+   checksums independently verified;
+6. annotated tag and immutable release `android-v0.1.1` were created on exact
+   published commit `c59a5b674482081980fc886f6d38036f88af5dc8`, retaining the
+   Maven inputs, sample APK, public evidence, signing key, and checksums.
 
 Maven Central versions are immutable. A failed or partially visible release is
 never repaired by replacing `0.1.1`; the next corrected source must use a new
@@ -74,6 +83,10 @@ version.
   `Require two-factor authentication and disallow tokens` package setting;
 - annotated `v0.2.0` tag and immutable GitHub release for the exact published
   source commit, with all package tarballs, release manifest, and SBOM attached.
+- signed Android `0.1.1` artifacts published under the verified
+  `io.github.codeinscrubs.bidilens` namespace, with protected release evidence,
+  public-only consumer verification, annotated `android-v0.1.1` tag, and
+  immutable GitHub release.
 
 ## Remaining external adoption prerequisites
 
@@ -104,8 +117,9 @@ the tracked Action bundle. PR
 [#13](https://github.com/CodeinScrubs/BidiLens/pull/13) corrected that generated
 artifact and repeated the complete matrix before the successful publication.
 
-Registry availability and provenance are verified facts. Adoption, independent
-review, native support, and company endorsement remain unclaimed.
+Registry availability, provenance, and the published Android surface are
+verified facts. Adoption, independent review, additional native-platform
+support, and company endorsement remain unclaimed.
 
 ## Reproducible local gate
 

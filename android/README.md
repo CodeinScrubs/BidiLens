@@ -32,8 +32,7 @@ Android Gradle Plugin 9.2.1, compile SDK 36, and Kotlin 2.3.10.
 
 ## Use with Jetpack Compose
 
-The `0.1.1` source is prepared for the first signed Maven Central publication.
-After the coordinate below resolves from Central, normal Gradle setup is:
+Version `0.1.1` is signed and public on Maven Central. Normal Gradle setup is:
 
 ```kotlin
 dependencyResolutionManagement {
@@ -48,30 +47,13 @@ dependencies {
 }
 ```
 
-Until Central confirms that release, download and extract the immutable
-pre-Central
-[`bidilens-android-v0.1.0-maven-repository.zip`](https://github.com/CodeinScrubs/BidiLens/releases/download/android-v0.1.0/bidilens-android-v0.1.0-maven-repository.zip)
-inside your project, then point Gradle at the extracted repository:
+The other coordinates are
+`io.github.codeinscrubs.bidilens:bidilens-core:0.1.1` and
+`io.github.codeinscrubs.bidilens:bidilens-android-views:0.1.1`. Choose the
+surface used by the application; adapter dependencies bring in the core
+transitively.
 
-```kotlin
-dependencyResolutionManagement {
-    repositories {
-        maven { url = uri("$rootDir/vendor/bidilens-android-v0.1.0") }
-        google()
-        mavenCentral()
-    }
-}
-```
-
-Use `0.1.0` with that archived repository:
-
-```kotlin
-dependencies {
-    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.0")
-}
-```
-
-Alternatively, build the current `0.1.1` modules from this checkout once:
+For source-checkout development, publish the current modules to Maven Local:
 
 ```bash
 ./android/gradlew -p android publishToMavenLocal
@@ -181,14 +163,18 @@ Current executable evidence includes:
 
 ## Distribution status
 
-The native modules are source-complete. Version `0.1.1` has signed
-Central-complete publication metadata and a protected release workflow, but it
-is not claimed as publicly available from Maven Central until the deployment
-and a public-only consumer are verified. The
+Version `0.1.1` is publicly available from Maven Central as three signed
+modules. After publication, all 15 primary artifacts were downloaded and
+matched byte-for-byte against the protected workflow outputs; all detached
+signatures and published checksums verified; and a clean Gradle consumer with
+an empty Maven Local resolved all three coordinates and built successfully.
+The immutable
+[`android-v0.1.1` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
+retains the individual AARs, sample APK, Maven repository, public Central
+evidence, public signing key, and SHA-256 checksums. The older
 [`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
-remains available as an external-consumer-tested Maven repository bundle,
-individual AARs, a sample APK, an SBOM, and SHA-256 checksums. Source checkout
-and `publishToMavenLocal` remain supported. The npm packages remain a separate
+remains available only as the immutable pre-Central archive. Source checkout
+and `publishToMavenLocal` remain supported. The npm packages are a separate
 JavaScript/web distribution.
 
 See the repository [limitations](../docs/LIMITATIONS.md), [architecture](../docs/ARCHITECTURE.md),

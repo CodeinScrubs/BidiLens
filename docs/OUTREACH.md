@@ -1,10 +1,11 @@
 # Maintainer outreach kit
 
-BidiLens `0.2.0` is published for source review and bounded web pilots. Native
-Android source modules are implemented and device-tested, with signed Maven
-distribution and production validation still pending. Neither availability is
-evidence of adoption. Contact maintainers with one concrete renderer and one
-reproducible failure rather than a request to replace every bidi layer at once.
+BidiLens web `0.2.0` and signed Android `0.1.1` are published for source review
+and bounded pilots. Android has emulator and public-consumer evidence;
+physical-device/OEM/IME/TalkBack and production validation remain pending.
+Neither availability is evidence of adoption. Contact maintainers with one
+concrete renderer and one reproducible failure rather than a request to replace
+every bidi layer at once.
 
 The dated [public outreach log](OUTREACH_LOG.md) records actual submissions,
 deliberate deferrals, state vocabulary, and the follow-up policy. Do not copy a
@@ -29,8 +30,8 @@ The repository includes Unicode 17-derived classification, per-block direction,
 semantic isolation, streaming reconciliation, bidi-control auditing, adapters
 for major web renderers, native Kotlin/Views/Compose modules, 918 direction
 fixtures, three-browser tests, and Android emulator tests. Twelve public npm
-packages include provenance; Android Maven publication and missing external
-validation are documented explicitly.
+packages include provenance; three signed Maven Central modules and missing
+external validation are documented explicitly.
 
 Would you be open to reviewing a small, reversible pilot in [specific renderer
 or component]? I can provide a focused integration patch and host-specific
@@ -44,6 +45,7 @@ Thank you,
 - Problem and quick start: [README](../README.md)
 - Published packages: [`@bidilens` on npm](https://www.npmjs.com/org/bidilens)
 - Versioned web release: [`v0.2.0` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.2.0)
+- Versioned Android release: [`android-v0.1.1` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
 - Native Android integration: [Android guide](../android/README.md)
 - Exact boundaries: [Limitations](LIMITATIONS.md)
 - Pilot and rollback criteria: [Adoption strategy](ADOPTION.md)
@@ -62,11 +64,13 @@ pnpm run test:visual
 pnpm run release:check
 ```
 
-For an initial review, install `@bidilens/core@0.1.1` and ask for one of these outcomes: confirmation of the host
-bug, feedback on the API boundary, or permission to prepare a small draft pull
-request. Do not claim universal rendering, zero defects, native support,
-adoption, or company endorsement. npm availability is verifiable, but adoption
-is not. Browser/OS layout engines still perform
+For an initial web review, install `@bidilens/core@0.2.0`; for Android, use one
+exact `io.github.codeinscrubs.bidilens:*:0.1.1` coordinate. Ask for confirmation
+of the host bug, feedback on the API boundary, or permission to prepare a small
+draft pull request. Do not claim universal rendering, zero defects,
+native-platform coverage beyond Android, adoption, or company endorsement.
+Registry availability is verifiable, but adoption is not. Browser/OS layout
+engines still perform
 Unicode reordering and shaping; BidiLens supplies the application structure and
 policy they need.
 
