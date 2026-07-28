@@ -1,5 +1,12 @@
 # @bidilens/core
 
+## 0.3.0
+
+### Patch Changes
+
+- 85b80c0: Keep whitespace-joined opposite-direction phrases such as `page 97` in source
+  order while preserving hard punctuation as semantic fragment boundaries.
+
 ## 0.2.0
 
 ### Minor Changes

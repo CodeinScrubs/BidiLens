@@ -1,5 +1,12 @@
 # @bidilens/markdown
 
+## 0.3.0
+
+### Patch Changes
+
+- Updated dependencies [85b80c0]
+  - @bidilens/core@0.3.0
+
 ## 0.2.0
 
 ### Patch Changes

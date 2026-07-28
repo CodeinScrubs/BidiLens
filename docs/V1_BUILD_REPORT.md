@@ -1,5 +1,9 @@
 # BidiLens 0.2.0 release report
 
+> This is the immutable historical report for 0.2.0. The current web/package
+> release is 0.3.0; its changes are recorded in the root changelog and its
+> release evidence is retained by the protected publication workflow.
+
 **Evidence date:** 2026-07-28
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
