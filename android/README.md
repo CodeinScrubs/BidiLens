@@ -32,7 +32,21 @@ Android Gradle Plugin 9.2.1, compile SDK 36, and Kotlin 2.3.10.
 
 ## Use with Jetpack Compose
 
-Build the modules from this checkout once:
+For the current public release, download and extract
+[`bidilens-android-v0.1.0-maven-repository.zip`](https://github.com/CodeinScrubs/BidiLens/releases/download/android-v0.1.0/bidilens-android-v0.1.0-maven-repository.zip)
+inside your project, then point Gradle at the extracted repository:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        maven { url = uri("$rootDir/vendor/bidilens-android-v0.1.0") }
+        google()
+        mavenCentral()
+    }
+}
+```
+
+Alternatively, build the modules from this checkout once:
 
 ```bash
 ./android/gradlew -p android publishToMavenLocal
@@ -142,11 +156,13 @@ Current executable evidence includes:
 
 ## Distribution status
 
-The native modules are source-complete and Maven-publication-ready, but their
-coordinates are not claimed as Maven Central artifacts until the first signed
-Central release exists. Today, use `publishToMavenLocal`, include the modules
-from a source checkout, or consume AARs attached to an applicable GitHub
-release. The npm packages remain a separate JavaScript/web distribution.
+The native modules are source-complete and available in the
+[`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
+as an external-consumer-tested Maven repository bundle, individual AARs, a
+sample APK, an SBOM, and SHA-256 checksums. Their coordinates are not claimed
+as Maven Central artifacts until the first signed Central release exists.
+Source checkout and `publishToMavenLocal` remain supported. The npm packages
+remain a separate JavaScript/web distribution.
 
 See the repository [limitations](../docs/LIMITATIONS.md), [architecture](../docs/ARCHITECTURE.md),
 and [security policy](../SECURITY.md) before production rollout.
