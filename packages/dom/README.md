@@ -22,6 +22,9 @@ const watcher = observeBidi(document.querySelector('#messages')!);
 Its default `auto` gate performs no DOM mutation at all for an LTR-only scope
 in an LTR context, including code elements. RTL ancestors are detected. Set
 `intervention: 'always'` only when every block must receive stable markers.
+Installed default alignment rules use `:where(...)` and therefore zero
+specificity: an authored class or inline `text-align: left`, `right`, or
+`center` wins without disabling BidiLens direction/isolation.
 `restoreBidi` restores the original direction attributes and inline
 `unicode-bidi` values remembered in the current JavaScript session. Reapplying
 after dynamic content becomes ordinary LTR removes BidiLens-owned presentation,

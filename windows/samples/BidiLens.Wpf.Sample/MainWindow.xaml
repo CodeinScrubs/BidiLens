@@ -1,0 +1,31 @@
+<Window x:Class="BidiLens.Wpf.Sample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BidiLens WPF sample"
+        Height="360"
+        Width="720">
+    <StackPanel Margin="24">
+        <TextBlock FontSize="22"
+                   FontWeight="SemiBold"
+                   Text="RTL direction with physical-left alignment" />
+        <TextBlock x:Name="MixedText"
+                   Margin="0,16,0,24"
+                   Padding="12"
+                   Background="#FFF4F4F4"
+                   FontSize="20"
+                   Text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."
+                   TextAlignment="Left"
+                   TextWrapping="Wrap" />
+        <TextBlock FontSize="22"
+                   FontWeight="SemiBold"
+                   Text="Pure LTR remains untouched" />
+        <TextBlock x:Name="PlainText"
+                   Margin="0,16,0,0"
+                   Padding="12"
+                   Background="#FFF4F4F4"
+                   FontSize="20"
+                   Text="Plain English content stays exactly as authored."
+                   TextAlignment="Center"
+                   TextWrapping="Wrap" />
+    </StackPanel>
+</Window>

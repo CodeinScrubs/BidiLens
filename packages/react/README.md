@@ -25,6 +25,9 @@ String content is isolated automatically without injecting invisible controls.
 LTR-only string content emits none of BidiLens's attributes or inline styles
 by default. Supply `inheritedDirection="rtl"` for an RTL parent that SSR cannot
 inspect, or `intervention="always"` when stable markers are required.
+Normal React `style` ownership is preserved, so
+`style={{ textAlign: 'left' }}` keeps an RTL paragraph physically left
+aligned while BidiLens still applies direction and isolation.
 For structured children, use `BidiIsolate` and `BidiCode` at semantic
 boundaries. The Node SSR example additionally needs
 `npm install --save-dev react-dom`.

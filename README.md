@@ -25,11 +25,14 @@
 > are signed and public on Maven Central, with a verified sample and evidence
 > bundle in the
 > [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
-> Other native/desktop platforms remain explicit roadmap work.
+> Native Swift/iOS and .NET/WPF implementations are present in source with
+> dedicated CI gates, but are not yet registry-published or validated in a
+> physical-device/accessibility lab. Other native/desktop platforms remain
+> explicit roadmap work.
 
 BidiLens is an offline, standards-first toolkit for mixed right-to-left and
-left-to-right text in AI chat, Markdown, streaming interfaces, web and native
-Android applications, terminal tools, and security pipelines.
+left-to-right text in AI chat, Markdown, streaming interfaces, web, Android,
+iOS, and Windows applications, terminal tools, and security pipelines.
 
 It preserves source order. It does not reverse strings or replace the Unicode
 Bidirectional Algorithm. Instead, it supplies the application layer that host
@@ -93,6 +96,8 @@ reordering and shaping; BidiLens supplies the application structure they need.
   HTML, or Web Component boundaries;
 - Android teams using Jetpack Compose, `TextView`, or `EditText` for
   user-generated multilingual values;
+- Apple teams using the Swift core or UIKit text controls, and Windows teams
+  using the .NET core or WPF text controls;
 - security and developer-tool teams auditing invisible bidi controls;
 - maintainers building regression evidence for upstream RTL fixes.
 
@@ -120,6 +125,10 @@ reordering and shaping; BidiLens supplies the application structure they need.
   display/editable components, and a runnable photographed-case sample;
 - Android JVM, Robolectric, lint, APK/AAR, and API 35/36 device gates using the
   same generated 918-case corpus;
+- a Swift Package with UIKit `UILabel`, `UITextView`, and `UITextField`
+  adapters, and a .NET 8 core with WPF `TextBlock`/`TextBox` adapters;
+- explicit alignment policy on native adapters, allowing an RTL paragraph to
+  remain physically left-aligned without changing its base direction;
 - Chromium, Firefox, and WebKit visual regression coverage;
 - bundled GitHub Action for downstream security audits and corpus conformance.
 
@@ -142,6 +151,9 @@ reordering and shaping; BidiLens supplies the application structure they need.
 | `android/:core` | Native Kotlin Unicode analysis, isolation, and security |
 | `android/:views` | `TextView`/`EditText` integration without source mutation |
 | `android/:compose` | Compose text, editable field, semantics, and visual isolation |
+| `apple/BidiLens` | Swift Unicode analysis plus non-destructive UIKit adapters |
+| `windows/BidiLens.Core` | Platform-neutral .NET Unicode analysis |
+| `windows/BidiLens.Wpf` | WPF direction/alignment integration with state restoration |
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
@@ -159,6 +171,9 @@ each package README for its exact command and supported peer range.
 
 Native Android setup, manifest requirements, Compose and Views examples, and
 the current distribution status are in the [Android guide](android/README.md).
+Source integration for Apple and Windows is documented in the
+[Apple guide](apple/README.md) and [Windows guide](windows/README.md).
+Those two native packages are not yet published to a registry.
 
 For a no-build browser page, the published Web Component also exposes a
 standalone entry that bundles the core and needs no import map:

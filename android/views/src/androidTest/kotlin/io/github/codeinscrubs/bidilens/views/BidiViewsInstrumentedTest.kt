@@ -57,6 +57,39 @@ class BidiViewsInstrumentedTest {
     }
 
     @Test
+    fun realTextViewKeepsRtlParagraphWhenPhysicallyAlignedLeft() {
+        val source = "React یک کتابخانه بسیار محبوب است."
+        val viewRef = AtomicReference<TextView>()
+        ActivityScenario.launch(BidiViewsTestActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                val view = TextView(activity).apply {
+                    text = source
+                    textAlignment = TextView.TEXT_ALIGNMENT_GRAVITY
+                    gravity = Gravity.LEFT
+                    activity.content.addView(
+                        this,
+                        FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.WRAP_CONTENT,
+                        ),
+                    )
+                }
+                view.applyBidiLens(alignToContent = true)
+                view.applyBidiLens(alignToContent = false)
+                viewRef.set(view)
+            }
+
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            scenario.onActivity {
+                val view = viewRef.get()
+                assertEquals(source, view.text.toString())
+                assertEquals(Layout.DIR_RIGHT_TO_LEFT, view.layout.getParagraphDirection(0))
+                assertEquals(Gravity.LEFT, view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK)
+            }
+        }
+    }
+
+    @Test
     fun realEditTextKeepsEditableAndCursorStable() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         instrumentation.runOnMainSync {

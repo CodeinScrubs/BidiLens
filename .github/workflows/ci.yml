@@ -157,6 +157,40 @@ jobs:
             :compose:connectedDebugAndroidTest
             --stacktrace --console=plain
 
+  apple:
+    name: Apple Swift package and iOS adapter
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Test Swift core and shared corpus
+        run: swift test
+      - name: Compile the UIKit adapter
+        run: >-
+          xcodebuild
+          -scheme BidiLens
+          -destination 'generic/platform=iOS Simulator'
+          -sdk iphonesimulator
+          CODE_SIGNING_ALLOWED=NO
+          build
+
+  windows-native:
+    name: Windows core, WPF adapter, and sample
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        with:
+          dotnet-version: 8.0.423
+          cache: false
+      - name: Build and run native verification
+        working-directory: windows
+        run: |
+          dotnet build tests/BidiLens.Tests/BidiLens.Tests.csproj --configuration Release
+          dotnet run --project tests/BidiLens.Tests/BidiLens.Tests.csproj --configuration Release --no-build
+          dotnet build samples/BidiLens.Wpf.Sample/BidiLens.Wpf.Sample.csproj --configuration Release
+          dotnet pack src/BidiLens.Core/BidiLens.Core.csproj --configuration Release --no-build
+          dotnet pack src/BidiLens.Wpf/BidiLens.Wpf.csproj --configuration Release --no-build
+
   security-and-sbom:
     name: Dependency audit and SBOM
     runs-on: ubuntu-latest

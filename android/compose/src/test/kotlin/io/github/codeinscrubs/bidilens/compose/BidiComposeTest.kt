@@ -37,6 +37,18 @@ class BidiComposeTest {
     }
 
     @Test
+    fun rtlDirectionCanUsePhysicalLeftAlignment() {
+        val source = TextStyle.Default.copy(textAlign = TextAlign.Left)
+        val style = bidiTextStyle(
+            source,
+            analyzeBidi("React یک کتابخانه بسیار محبوب است."),
+            alignToContent = false,
+        )
+        assertEquals(TextDirection.Rtl, style.textDirection)
+        assertEquals(TextAlign.Left, style.textAlign)
+    }
+
+    @Test
     fun visualTransformationDoesNotChangeLogicalSource() {
         val source = "React یک کتابخانه است."
         val transformed = BidiVisualTransformation(analyzeBidi(source))

@@ -19,6 +19,7 @@ const sourcePath = resolve('corpus/cases.json');
 const outputPath = resolve(
   'android/core/src/test/kotlin/io/github/codeinscrubs/bidilens/core/GeneratedCorpusFixtures.kt'
 );
+const appleOutputPath = resolve('apple/Tests/BidiLensTests/Resources/cases.json');
 
 function kotlinString(value: string): string {
   const jsonBody = JSON.stringify(value).slice(1, -1);
@@ -82,9 +83,16 @@ if (process.argv.includes('--check')) {
   if (current !== generated) {
     throw new Error('Generated Android corpus is stale. Run pnpm corpus:generate.');
   }
-  console.log(`Android corpus representation is reproducible (${cases.length} fixtures).`);
+  const appleCurrent = await readFile(appleOutputPath, 'utf8');
+  const source = await readFile(sourcePath, 'utf8');
+  if (appleCurrent !== source) {
+    throw new Error('Generated Apple corpus is stale. Run pnpm corpus:generate.');
+  }
+  console.log(`Android and Apple corpus representations are reproducible (${cases.length} fixtures).`);
 } else {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, generated, 'utf8');
-  console.log(`Generated Android corpus representation (${cases.length} fixtures).`);
+  await mkdir(dirname(appleOutputPath), { recursive: true });
+  await writeFile(appleOutputPath, await readFile(sourcePath, 'utf8'), 'utf8');
+  console.log(`Generated Android and Apple corpus representations (${cases.length} fixtures).`);
 }

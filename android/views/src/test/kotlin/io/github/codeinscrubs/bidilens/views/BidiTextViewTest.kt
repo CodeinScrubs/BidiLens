@@ -58,6 +58,38 @@ class BidiTextViewTest {
     }
 
     @Test
+    fun rtlDirectionCanKeepAuthoredPhysicalLeftAlignment() {
+        val view = TextView(context).apply {
+            text = "React یک کتابخانه بسیار محبوب است."
+            textAlignment = View.TEXT_ALIGNMENT_GRAVITY
+            gravity = Gravity.LEFT or Gravity.CENTER_VERTICAL
+        }
+
+        val analysis = view.applyBidiLens(alignToContent = false)
+
+        assertEquals(BidiDirection.RTL, analysis.resolvedDirection)
+        assertEquals(View.TEXT_ALIGNMENT_GRAVITY, view.textAlignment)
+        assertEquals(Gravity.LEFT, view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK)
+        assertEquals(Gravity.CENTER_VERTICAL, view.gravity and Gravity.VERTICAL_GRAVITY_MASK)
+    }
+
+    @Test
+    fun switchingAlignmentPolicyRestoresAuthoredLeftWithoutLosingRtlDirection() {
+        val view = TextView(context).apply {
+            text = "سلام دنیا"
+            textAlignment = View.TEXT_ALIGNMENT_GRAVITY
+            gravity = Gravity.LEFT
+        }
+        view.applyBidiLens(alignToContent = true)
+        assertEquals(Gravity.RIGHT, view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK)
+
+        view.applyBidiLens(alignToContent = false)
+
+        assertEquals(View.TEXT_ALIGNMENT_GRAVITY, view.textAlignment)
+        assertEquals(Gravity.LEFT, view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK)
+    }
+
+    @Test
     fun mixedPersianSourceKeepsLogicalString() {
         val source = "از جلد سه qb، page 97"
         val view = TextView(context).apply { text = source }

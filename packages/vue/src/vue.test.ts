@@ -119,6 +119,18 @@ describe('Vue adapter', () => {
     expect(html).toContain('text-align:start');
   });
 
+  it('keeps an RTL paragraph base while honoring physical-left alignment', async () => {
+    const source = 'React یک کتابخانه بسیار محبوب است.';
+    const app = createSSRApp({
+      render: () => h(BidiMessage, { text: source, textAlign: 'left' })
+    });
+    const html = await renderToString(app);
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('text-align:left');
+    expect(html).not.toContain('text-align:start');
+    expect(html).toContain('>React</bdi>');
+  });
+
   it('uses caller-specific identifiers for direction and isolation', async () => {
     const source = 'internalplatform \u062e\u0648\u0628 \u0627\u0633\u062a.';
     expect(useBidiDirection(source, { technicalIdentifiers: ['InternalPlatform'] }).value).toBe('rtl');

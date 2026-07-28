@@ -74,12 +74,15 @@ batch plugin path; it is not misrepresented as a stateful streaming backend.
 | Android/Jetpack Compose | Implemented, signed, and published; external validation pending | Maven Central `0.1.1` pure Kotlin core, Views and Compose libraries; sample app; generated 918-case corpus; JVM/Robolectric suites; lint/AAR/APK tasks; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
 | Flutter/Dart | Missing | No package/demo, generated corpus representation, widget/golden tests, or SDK build report |
 | React Native | Missing | No component, generated corpus representation, native tests, or platform build report |
-| Swift Package/SwiftUI/TextKit | Missing | No package/demo, generated corpus representation, tests, or toolchain report |
+| Swift Package/UIKit | Implemented in source; release validation pending | Swift Package, generated Unicode 17 ranges, copied 918-case corpus, core tests/example, UIKit `UILabel`/`UITextView`/`UITextField` adapters, independent physical alignment, and macOS/iOS compiler gates. Physical iOS/VoiceOver evidence, sample app, hosted passing run, dedicated SwiftUI view, and registry publication remain open |
+| Windows .NET/WPF | Implemented in source; release validation pending | Dependency-free .NET 8 core, generated Unicode ranges, 918-case executable test, WPF `TextBlock`/`TextBox` adapter, selection/source preservation, physical-left RTL test, runnable sample, and pack/build CI gate. WinUI/WinForms/MAUI, accessibility/IME lab evidence, hosted passing run, and NuGet publication remain open |
 | Terminal/TUI | Complete and tested within documented limits | `@bidilens/terminal`; ANSI-aware, source-preserving compatibility mode and emulator limitations. A real multi-emulator manual matrix remains external/manual |
 
 Absent platform directories are intentional: the anti-hollow rule forbids
-counting scaffolds or unexecuted pseudocode as support. Android is present
-because it now has executable implementation and device evidence.
+counting scaffolds or unexecuted pseudocode as support. Android, Apple, and
+Windows directories contain implementation, corpus tests, examples, and
+compiler gates; their differing validation and publication maturity is
+recorded explicitly.
 
 ## Standards, architecture, and security
 
@@ -116,7 +119,7 @@ because it now has executable implementation and device evidence.
 | Four-way, flagship, structured Markdown, stream, dark, zoom | Complete and tested | Playwright flagship suite and screenshots |
 | Selection and copy/paste invariant | Complete for web evidence; partial for Android | Three-engine logical selection and Chromium clipboard test; Android editable callbacks and Compose semantics remain control-free in device tests. Firefox/WebKit clipboard, physical Android OEM/IME copy, and other native surfaces remain environment-specific gaps |
 | Accessibility | Partial/external | Automated semantic, selection, dark-mode and zoom evidence plus `docs/ACCESSIBILITY.md`; real screen-reader/browser/OS laboratory matrix is not complete |
-| Native test matrix | Partial | Android has JVM/Robolectric plus API 35/36 emulator coverage; physical Android OEM devices and the unimplemented Flutter/RN/Swift surfaces remain open |
+| Native test matrix | Partial | Android has JVM/Robolectric plus API 35/36 emulator coverage; Apple and Windows have shared-corpus/native-build jobs. Physical Android/iOS devices, accessibility/IME labs, Flutter/RN, and unimplemented Windows UI frameworks remain open |
 
 ## Docs, performance, adoption, and release
 
@@ -129,7 +132,7 @@ because it now has executable implementation and device evidence.
 | 2 issue-quality evidence bundles | Complete as public submissions, not product fixes | Current-policy, non-duplicate evidence is public for Antigravity, Claude Code, Codex, Cline, Continue, and assistant-ui; routes and exact states are recorded in the [outreach log](OUTREACH_LOG.md) |
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
-| CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; signed Android publication has an isolated-consumer gate; VS Code and other native-platform builds follow their missing implementations |
+| CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; signed Android publication has an isolated-consumer gate; Apple Swift/iOS and Windows .NET/WPF compiler jobs are defined. Hosted passing evidence for the new native jobs and VS Code work remain open |
 | Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in web release preparation, protected manual npm publication with exact confirmation and provenance, and protected manual Maven Central publication with signing and version-reuse rejection |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
 | Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata, `@bidilens` ownership, and `io.github.codeinscrubs` namespace verified; all 12 npm `0.2.0` packages are public with SLSA provenance and matching integrity; all three Android `0.1.1` modules are signed and public with matching Central artifacts, signatures, and checksums; release credentials are protected outside the repository |
