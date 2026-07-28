@@ -21,12 +21,14 @@
 > [!IMPORTANT]
 > The JavaScript/web surface is published as the public `0.2.0` beta. All 12
 > `@bidilens/*` packages are public on npm with verified registry integrity and
-> SLSA provenance. Native/desktop platforms remain explicit roadmap work rather
-> than claimed support.
+> SLSA provenance. Native Android core, Views, Compose, and sample modules are
+> implemented and device-tested in this repository; they are not yet claimed
+> as signed Maven Central artifacts. Other native/desktop platforms remain
+> explicit roadmap work.
 
 BidiLens is an offline, standards-first toolkit for mixed right-to-left and
-left-to-right text in AI chat, Markdown, streaming interfaces, web
-applications, terminal tools, and security pipelines.
+left-to-right text in AI chat, Markdown, streaming interfaces, web and native
+Android applications, terminal tools, and security pipelines.
 
 It preserves source order. It does not reverse strings or replace the Unicode
 Bidirectional Algorithm. Instead, it supplies the application layer that host
@@ -88,6 +90,8 @@ reordering and shaping; BidiLens supplies the application structure they need.
 - Markdown/documentation renderers with mixed prose, code, links, and tables;
 - design-system and framework teams needing reusable React, Vue, Svelte, DOM,
   HTML, or Web Component boundaries;
+- Android teams using Jetpack Compose, `TextView`, or `EditText` for
+  user-generated multilingual values;
 - security and developer-tool teams auditing invisible bidi controls;
 - maintainers building regression evidence for upstream RTL fixes.
 
@@ -111,6 +115,10 @@ reordering and shaping; BidiLens supplies the application structure they need.
   Web Component adapters;
 - a conservative terminal adapter and a scriptable CLI;
 - 918 schema-validated direction fixtures plus property-based random chunking;
+- native Android pure-Kotlin core, non-destructive Views adapter, Compose
+  display/editable components, and a runnable photographed-case sample;
+- Android JVM, Robolectric, lint, APK/AAR, and API 35/36 device gates using the
+  same generated 918-case corpus;
 - Chromium, Firefox, and WebKit visual regression coverage;
 - bundled GitHub Action for downstream security audits and corpus conformance.
 
@@ -130,6 +138,9 @@ reordering and shaping; BidiLens supplies the application structure they need.
 | `@bidilens/web-component` | Framework-independent `<bidi-message>` element |
 | `@bidilens/terminal` | ANSI-aware plain-text formatting and diagnostics |
 | `@bidilens/cli` | Inspect, render, corpus-test, audit, SARIF, and sanitize |
+| `android/:core` | Native Kotlin Unicode analysis, isolation, and security |
+| `android/:views` | `TextView`/`EditText` integration without source mutation |
+| `android/:compose` | Compose text, editable field, semantics, and visual isolation |
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
@@ -144,6 +155,9 @@ npm install @bidilens/core @bidilens/html
 
 Framework and Markdown peers are installed by the consuming application. See
 each package README for its exact command and supported peer range.
+
+Native Android setup, manifest requirements, Compose and Views examples, and
+the current distribution status are in the [Android guide](android/README.md).
 
 For a no-build browser page, the published Web Component also exposes a
 standalone entry that bundles the core and needs no import map:
@@ -238,6 +252,9 @@ does not alter source.
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run verify:production
+
+# Native Android (JDK 21 and an Android SDK)
+pnpm run android:check
 ```
 
 `verify:production` runs the complete quality, three-browser visual, package
@@ -264,13 +281,14 @@ for security-sensitive findings.
 
 ## Honest scope
 
-The implemented web/JavaScript packages are public-beta quality, not a guarantee
-about every proprietary renderer. Native Android, Flutter, React
-Native, SwiftUI, Electron, VS Code, PDF, screen-reader laboratory validation,
-and downstream product patches are not shipped in this repository. The npm
-scope, maintainer identity, first publication, package integrity, and
-provenance are verified; independent review and downstream adoption evidence
-remain adoption gates.
+The implemented web/JavaScript packages are public-beta quality, not a
+guarantee about every proprietary renderer. Native Android is implemented and
+device-tested but has not yet had a signed Maven Central release or an external
+production pilot. Flutter, React Native, SwiftUI, Electron, VS Code, PDF,
+screen-reader laboratory validation, and downstream product patches are not
+shipped. The npm scope, maintainer identity, package integrity, and provenance
+are verified; independent review and downstream adoption evidence remain
+adoption gates.
 
 See [limitations](docs/LIMITATIONS.md), [architecture](docs/ARCHITECTURE.md),
 [security](docs/SECURITY.md), [publishing](docs/PUBLISHING.md), the

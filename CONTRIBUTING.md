@@ -17,6 +17,21 @@ pnpm run check
 pnpm run test:visual
 ```
 
+Android changes additionally require JDK 21 and an Android SDK:
+
+```bash
+pnpm run corpus:generate
+pnpm run android:check
+./android/gradlew -p android \
+  :views:connectedDebugAndroidTest \
+  :compose:connectedDebugAndroidTest
+```
+
+Direction or isolation changes must update TypeScript and Kotlin together. The
+generated Kotlin Unicode/corpus files are reproducibility outputs; do not edit
+them by hand. Views changes must preserve the host manifest/layout boundary,
+and editable integrations must never store isolation controls.
+
 Run package examples with:
 
 ```bash

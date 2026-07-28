@@ -5,6 +5,26 @@ The canonical source is published at
 checklist records the completed `0.2.0` minor release and the controls
 required for future releases.
 
+## Android distribution boundary
+
+The Android modules under `android/` are configured as Maven publications and
+can be verified with `./android/gradlew -p android publishToMavenLocal`.
+Release AARs and sources jars are built by CI. They must not be described as
+Maven Central artifacts until all of the following are complete:
+
+- Central namespace ownership for `io.github.codeinscrubs.bidilens`;
+- GPG/signing material managed outside the repository;
+- signed POM, sources, and documentation artifacts accepted by Central;
+- a clean external Gradle consumer that resolves all three coordinates from
+  the public repository;
+- checksum retention and a GitHub release tied to the exact source commit.
+
+GitHub Packages is not the default public distribution route because even
+public packages impose authentication friction on Gradle consumers. Until a
+signed Central release exists, the [Android guide](../android/README.md)
+documents source checkout, Maven Local, and release-AAR use without implying
+registry publication.
+
 ## Completed repository prerequisites
 
 - canonical public repository and real package source/homepage/issue metadata;

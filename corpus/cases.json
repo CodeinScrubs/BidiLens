@@ -30251,14 +30251,9 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "React",
+        "text": "React 19",
         "direction": "ltr",
-        "kind": "identifier"
-      },
-      {
-        "text": "19",
-        "direction": "ltr",
-        "kind": "number"
+        "kind": "opposite-direction-run"
       },
       {
         "text": "Facebook",
@@ -32850,14 +32845,9 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "React",
+        "text": "React 19",
         "direction": "ltr",
-        "kind": "identifier"
-      },
-      {
-        "text": "19",
-        "direction": "ltr",
-        "kind": "number"
+        "kind": "opposite-direction-run"
       }
     ]
   },
@@ -34231,12 +34221,7 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "Docker",
-        "direction": "ltr",
-        "kind": "identifier"
-      },
-      {
-        "text": "container",
+        "text": "Docker container",
         "direction": "ltr",
         "kind": "opposite-direction-run"
       }
@@ -34274,14 +34259,9 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "React",
+        "text": "React 19",
         "direction": "ltr",
-        "kind": "identifier"
-      },
-      {
-        "text": "19",
-        "direction": "ltr",
-        "kind": "number"
+        "kind": "opposite-direction-run"
       }
     ]
   },

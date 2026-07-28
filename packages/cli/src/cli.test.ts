@@ -92,7 +92,7 @@ describe('BidiLens CLI', () => {
     expect(report.html).toContain('<p dir="rtl"');
     expect(report.html).toContain('&lt;img src=x onerror=alert(1)&gt;');
     expect(report.html).not.toContain('<img');
-    expect(report.html).toContain('>React</bdi>');
+    expect(report.html).toContain('&gt; React</bdi>');
   });
 
   it('renders every paragraph with an independent base direction', async () => {

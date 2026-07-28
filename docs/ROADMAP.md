@@ -29,6 +29,9 @@ implementation or adoption claim.
   isolated consumer install/runtime/CLI execution, audit, and validated SBOM.
 - public npm packages with SLSA provenance, registry-integrity verification,
   an annotated source tag, and a protected human-approved release workflow.
+- native Android Kotlin core, Views and Compose adapters, photographed-case
+  sample, generated 918-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
+  and API 35 plus local API 36.1 UI tests.
 
 ## Required before broad production recommendation
 
@@ -60,16 +63,18 @@ The complete specification-to-evidence audit lives in
 
 ## Planned native work
 
-- Android/Jetpack Compose library and UI tests;
+- signed Maven Central publication and physical-device/TalkBack validation for
+  the implemented Android libraries;
 - Flutter package and golden tests;
 - React Native component and platform notes;
 - Swift Package for SwiftUI/TextKit;
-- generated platform representations of the shared corpus.
+- generated platform representations of the shared corpus for those remaining
+  platforms.
 
-Native and desktop targets are deliberately not scaffolded as hollow packages.
-Each enters the shipped workspace only with a real implementation, at least 25
+New native and desktop targets are not scaffolded as hollow packages. Each
+enters the shipped workspace only with a real implementation, at least 25
 meaningful assertions, a runnable example, documentation, and a platform build
-report.
+report. Android is the first target to meet that implementation gate.
 
 ## Research
 

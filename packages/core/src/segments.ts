@@ -5,6 +5,8 @@ import { needsBidiIntervention } from './intervention.js';
 import type { BidiInterventionMode } from './intervention.js';
 import type { Direction, DirectionalRun, InlineIsolation } from './types.js';
 
+type PlannedIsolation = Omit<InlineIsolation, 'sourceRange'>;
+
 function attachSourceRanges(text: string, isolations: Omit<InlineIsolation, 'sourceRange'>[]): InlineIsolation[] {
   const codePointAtUtf16 = new Uint32Array(text.length + 1);
   let utf16Offset = 0;
@@ -87,6 +89,70 @@ function trimNeutralBoundaries(text: string, start: number, end: number): { star
   return { start, end };
 }
 
+const HARD_FRAGMENT_SEPARATOR = /[,،;؛:!?؟|]/u;
+
+/**
+ * Punctuation separates semantic LTR fragments in an RTL paragraph, while
+ * whitespace joins adjacent fragments into one ordered phrase. Without this
+ * normalization, two neighboring isolates such as `page` and `97` are
+ * reordered as independent RTL atoms.
+ */
+function normalizeIsolationPlan(text: string, isolations: PlannedIsolation[]): PlannedIsolation[] {
+  const split: PlannedIsolation[] = [];
+  for (const isolation of isolations) {
+    if (isolation.kind !== 'opposite-direction-run') {
+      split.push(isolation);
+      continue;
+    }
+    let pieceStart = isolation.start;
+    let cursor = isolation.start;
+    for (const character of text.slice(isolation.start, isolation.end)) {
+      const index = cursor;
+      cursor += character.length;
+      if (HARD_FRAGMENT_SEPARATOR.test(character)) {
+        const trimmed = trimNeutralBoundaries(text, pieceStart, index);
+        if (trimmed.start < trimmed.end) {
+          split.push({
+            ...isolation,
+            text: text.slice(trimmed.start, trimmed.end),
+            start: trimmed.start,
+            end: trimmed.end
+          });
+        }
+        pieceStart = cursor;
+      }
+    }
+    const trimmed = trimNeutralBoundaries(text, pieceStart, isolation.end);
+    if (trimmed.start < trimmed.end) {
+      split.push({
+        ...isolation,
+        text: text.slice(trimmed.start, trimmed.end),
+        start: trimmed.start,
+        end: trimmed.end
+      });
+    }
+  }
+
+  const ordered = split.sort((a, b) => a.start - b.start || a.end - b.end);
+  const merged: PlannedIsolation[] = [];
+  for (const isolation of ordered) {
+    const previous = merged.at(-1);
+    if (
+      previous &&
+      previous.direction === isolation.direction &&
+      previous.end <= isolation.start &&
+      /^\s*$/u.test(text.slice(previous.end, isolation.start))
+    ) {
+      previous.end = isolation.end;
+      previous.text = text.slice(previous.start, previous.end);
+      if (previous.kind !== isolation.kind) previous.kind = 'opposite-direction-run';
+    } else {
+      merged.push({ ...isolation });
+    }
+  }
+  return merged;
+}
+
 export function segmentDirectionalRuns(text: string): DirectionalRun[] {
   if (!text) return [];
   const runs: DirectionalRun[] = [];
@@ -156,7 +222,7 @@ export function planInlineIsolation(
   }));
 
   if (options.isolateOppositeRuns === false) {
-    return attachSourceRanges(text, isolations.sort((a, b) => a.start - b.start));
+    return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
   }
 
   let technicalIndex = 0;
@@ -196,5 +262,5 @@ export function planInlineIsolation(
     }
   }
 
-  return attachSourceRanges(text, isolations.sort((a, b) => a.start - b.start || a.end - b.end));
+  return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
 }

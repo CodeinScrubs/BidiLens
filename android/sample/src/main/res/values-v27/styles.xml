@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.BidiLens" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

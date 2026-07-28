@@ -15,6 +15,10 @@ uses logical CSS alignment.
   streaming settlement, structured Markdown, dark mode, and 150% zoom.
 - Adapter tests preserve heading/list/table/blockquote semantics and avoid
   inserting focusable wrappers.
+- Android Compose UI tests verify that display-only controls are not exposed
+  as the semantic text and editable callbacks remain control-free.
+- Android Views device tests verify the real paragraph direction, source
+  equality, and `Editable`/cursor identity on API 36.1.
 
 These checks are valuable but are not a screen-reader certification.
 
@@ -26,6 +30,8 @@ The following must be executed and recorded for any broad production claim:
 - JAWS with a supported Windows browser, if the target organization requires it;
 - VoiceOver with Safari on macOS and iOS;
 - TalkBack with Chrome on Android for any mobile web deployment;
+- TalkBack with the native Views and Compose sample on at least one AOSP and
+  one OEM device;
 - keyboard navigation through links, controls, tables, and code without a
   direction-induced focus change;
 - character, word, line, and select-all reading order for the flagship and

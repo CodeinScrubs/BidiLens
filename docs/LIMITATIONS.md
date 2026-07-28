@@ -43,8 +43,11 @@ stateful unified streaming backend.
   testing;
 - visual snapshots cover three browser engines but only the committed test
   fixtures and test environment;
-- Android, Flutter, React Native, SwiftUI, Electron, VS Code, and PDF packages
-  are not implemented in this repository;
+- native Android has JVM, Robolectric, and API 35/36 emulator evidence, but no
+  physical-device OEM matrix, signed Maven Central release, TalkBack lab, or
+  downstream production pilot;
+- Flutter, React Native, SwiftUI, Electron, VS Code, and PDF packages are not
+  implemented in this repository;
 - no external security audit or downstream production pilot has occurred;
 - source and all 12 JavaScript packages are public, but no downstream
   production deployment or company adoption is claimed.
@@ -60,6 +63,12 @@ English never receives metadata. English under an RTL parent must establish an
 LTR base. DOM integrations can inspect ancestors; SSR/framework callers should
 pass `inheritedDirection="rtl"` when that context is not otherwise visible.
 Explicit `intervention: 'always'` also disables the fast path by design.
+
+Android Views hosts must declare `android:supportsRtl="true"`. BidiLens does
+not inject that application-wide manifest flag because enabling it can mirror
+unrelated layouts. Compose and Views preserve logical values, but final cursor,
+font, shaping, OEM IME, and accessibility behavior remains Android-version and
+device dependent.
 
 DOM ownership is determined from observable attribute/property changes. A
 same-value inline-style assignment made while BidiLens already owns that exact
