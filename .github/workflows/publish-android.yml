@@ -1,0 +1,170 @@
+name: Publish Android libraries to Maven Central
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact Android library version to publish
+        required: true
+        type: string
+      confirmation:
+        description: Type "PUBLISH ANDROID <version>"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-maven-central-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: maven-release
+    timeout-minutes: 90
+    env:
+      ANDROID_RELEASE_VERSION: '0.1.1'
+      SIGNING_KEY_FINGERPRINT: ${{ vars.MAVEN_SIGNING_KEY_FINGERPRINT }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            android/**/*.gradle.kts
+            android/gradle/wrapper/gradle-wrapper.properties
+      - name: Validate immutable release request
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+          RELEASE_CONFIRMATION: ${{ inputs.confirmation }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          SIGNING_IN_MEMORY_KEY: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+        run: |
+          set -euo pipefail
+          test "$REQUESTED_VERSION" = "$ANDROID_RELEASE_VERSION"
+          test "$RELEASE_CONFIRMATION" = "PUBLISH ANDROID $ANDROID_RELEASE_VERSION"
+          test -n "$MAVEN_CENTRAL_USERNAME"
+          test -n "$MAVEN_CENTRAL_PASSWORD"
+          test -n "$SIGNING_IN_MEMORY_KEY"
+          test -n "$SIGNING_KEY_FINGERPRINT"
+          grep -F 'version = "'"$ANDROID_RELEASE_VERSION"'"' android/build.gradle.kts
+          test "$(git rev-parse --abbrev-ref HEAD)" = "main"
+          status="$(
+            curl --location --silent --show-error --retry 3 \
+              --output /dev/null --write-out '%{http_code}' \
+            "https://repo.maven.apache.org/maven2/io/github/codeinscrubs/bidilens/bidilens-core/$ANDROID_RELEASE_VERSION/bidilens-core-$ANDROID_RELEASE_VERSION.pom" \
+          )"
+          case "$status" in
+            404) ;;
+            200)
+              echo "Version $ANDROID_RELEASE_VERSION is already immutable on Maven Central." >&2
+              exit 1
+              ;;
+            *)
+              echo "Maven Central preflight returned unexpected HTTP $status." >&2
+              exit 1
+              ;;
+          esac
+      - name: Verify libraries, sample, and isolated consumer
+        env:
+          MAVEN_REPO: ${{ runner.temp }}/bidilens-m2/repository
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+        run: |
+          set -euo pipefail
+          chmod +x android/gradlew
+          ./android/gradlew -p android \
+            :core:testDebugUnitTest \
+            :views:testDebugUnitTest \
+            :compose:testDebugUnitTest \
+            :core:lintRelease \
+            :views:lintRelease \
+            :compose:lintRelease \
+            :sample:lintDebug \
+            :core:assembleRelease \
+            :views:assembleRelease \
+            :compose:assembleRelease \
+            :sample:assembleDebug \
+            publishToMavenLocal \
+            -Dmaven.repo.local="$MAVEN_REPO" \
+            --no-configuration-cache \
+            --stacktrace --console=plain
+          ./android/gradlew -p android/consumer-smoke \
+            clean assembleDebug \
+            -Dmaven.repo.local="$MAVEN_REPO" \
+            --no-configuration-cache \
+            --stacktrace --console=plain
+      - name: Verify signed Central inputs and retain checksums
+        env:
+          MAVEN_REPO: ${{ runner.temp }}/bidilens-m2/repository
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+        run: |
+          set -euo pipefail
+          release_root="$MAVEN_REPO/io/github/codeinscrubs/bidilens"
+          verify_home="$(mktemp -d)"
+          chmod 700 "$verify_home"
+          printf '%s' "$ORG_GRADLE_PROJECT_signingInMemoryKey" |
+            gpg --batch --homedir "$verify_home" --import
+          imported_fingerprint="$(
+            gpg --batch --homedir "$verify_home" --with-colons --list-keys |
+              awk -F: '$1 == "fpr" { print $10; exit }'
+          )"
+          test "$imported_fingerprint" = "$SIGNING_KEY_FINGERPRINT"
+
+          for artifact in bidilens-core bidilens-android-views bidilens-android-compose; do
+            artifact_dir="$release_root/$artifact/$ANDROID_RELEASE_VERSION"
+            test -f "$artifact_dir/$artifact-$ANDROID_RELEASE_VERSION.aar"
+            test -f "$artifact_dir/$artifact-$ANDROID_RELEASE_VERSION-sources.jar"
+            test -f "$artifact_dir/$artifact-$ANDROID_RELEASE_VERSION-javadoc.jar"
+            test -f "$artifact_dir/$artifact-$ANDROID_RELEASE_VERSION.pom"
+            grep -F '<url>https://github.com/CodeinScrubs/BidiLens</url>' \
+              "$artifact_dir/$artifact-$ANDROID_RELEASE_VERSION.pom"
+            grep -F '<name>MIT License</name>' \
+              "$artifact_dir/$artifact-$ANDROID_RELEASE_VERSION.pom"
+            for signature in "$artifact_dir"/*.asc; do
+              signed_file="${signature%.asc}"
+              test -f "$signed_file"
+              gpg --batch --homedir "$verify_home" --verify "$signature" "$signed_file"
+            done
+          done
+
+          test "$(
+            find "$release_root" -type f -name '*.asc' | wc -l
+          )" -ge 15
+          (
+            cd "$MAVEN_REPO"
+            find io/github/codeinscrubs/bidilens -type f -print0 |
+              sort -z |
+              xargs -0 sha256sum > "$RUNNER_TEMP/bidilens-android-$ANDROID_RELEASE_VERSION-sha256.txt"
+          )
+      - name: Publish signed deployment and wait for Maven Central
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+        run: |
+          set -euo pipefail
+          ./android/gradlew -p android \
+            publishAndReleaseToMavenCentral \
+            --no-configuration-cache \
+            --stacktrace --console=plain
+      - name: Retain exact signed release inputs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bidilens-android-maven-${{ inputs.version }}
+          path: |
+            ${{ runner.temp }}/bidilens-m2/repository/io/github/codeinscrubs/bidilens/
+            ${{ runner.temp }}/bidilens-android-${{ inputs.version }}-sha256.txt
+            android/*/build/outputs/aar/*.aar
+            android/sample/build/outputs/apk/debug/*.apk
+            android/*/build/reports/lint-results-*.html
+          if-no-files-found: error
+          retention-days: 90

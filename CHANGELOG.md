@@ -15,6 +15,10 @@ is published under the public `@bidilens` npm scope.
   coordinates and their published dependency graph.
 - Kept editable values free of bidi controls, preserved Compose accessibility
   semantics, restored View state, and retained an exact pure-LTR no-op path.
+- Prepared Android `0.1.1` as the first signed Maven Central release, with
+  Central-complete POM metadata, source and documentation jars, detached
+  signatures, isolated-consumer verification, and a protected manual release
+  workflow that rejects version reuse.
 
 ### Direction correctness
 

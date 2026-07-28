@@ -7,27 +7,49 @@ required for future releases.
 
 ## Android distribution boundary
 
-The Android modules under `android/` are configured as Maven publications and
-can be verified with `./android/gradlew -p android publishToMavenLocal`.
-Release AARs and sources jars are built by CI. The verified
+The three Android `0.1.1` libraries under `android/` are configured as signed
+Maven Central publications and can be verified locally with
+`./android/gradlew -p android publishToMavenLocal`. The verified
 [`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
-contains the CI AARs, an external-consumer-tested Maven repository bundle, a
-sample APK, an SBOM, and SHA-256 checksums tied to commit `85b80c0`. These
-artifacts must not be described as Maven Central artifacts until all of the
-following are complete:
-
-- Central namespace ownership for `io.github.codeinscrubs.bidilens`;
-- GPG/signing material managed outside the repository;
-- signed POM, sources, and documentation artifacts accepted by Central;
-- a clean external Gradle consumer that resolves all three coordinates from
-  the public repository;
-- checksum retention and a GitHub release tied to the exact source commit.
+remains the immutable pre-Central fallback tied to commit `85b80c0`.
 
 GitHub Packages is not the default public distribution route because even
-public packages impose authentication friction on Gradle consumers. Until a
-signed Central release exists, the [Android guide](../android/README.md)
-documents source checkout, Maven Local, and release-AAR use without implying
-registry publication.
+public packages impose authentication friction on Gradle consumers.
+
+The `io.github.codeinscrubs` Central namespace is verified. Signing material is
+kept outside the repository in the protected `maven-release` GitHub
+environment, and its public fingerprint is
+[`B635C6985216FC5DEB5DDCDD68BE2D5CE18F72C6`](https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xB635C6985216FC5DEB5DDCDD68BE2D5CE18F72C6).
+The release gate creates and checks the AAR, POM, Gradle metadata, sources jar,
+documentation jar, and detached signature for all three coordinates; compiles
+a clean consumer against an isolated Maven repository; retains SHA-256
+evidence; and only then uploads. The libraries must not be described as
+publicly available from Maven Central until Central accepts the deployment and
+a clean consumer resolves it from the public repository.
+
+### Android release workflow
+
+The manual `publish-android.yml` workflow is restricted to `main` and the
+protected `maven-release` environment. It requires the exact version and exact
+`PUBLISH ANDROID <version>` confirmation, rejects a version already visible on
+Central, and has read-only repository permissions. Registry credentials and
+the private signing key are exposed only to the specific steps that require
+them.
+
+For Android `0.1.1`:
+
+1. merge only after all protected CI checks pass;
+2. dispatch `publish-android.yml` with version `0.1.1` and confirmation
+   `PUBLISH ANDROID 0.1.1`;
+3. approve the protected `maven-release` deployment;
+4. wait for Central validation and public synchronization;
+5. resolve all three exact coordinates from a clean public-only consumer;
+6. create `android-v0.1.1` on the exact published commit and retain the signed
+   Maven inputs, sample APK, checksum manifest, and release notes.
+
+Maven Central versions are immutable. A failed or partially visible release is
+never repaired by replacing `0.1.1`; the next corrected source must use a new
+version.
 
 ## Completed repository prerequisites
 
