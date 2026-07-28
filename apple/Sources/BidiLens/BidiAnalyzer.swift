@@ -552,8 +552,9 @@ public enum BidiAnalyzer {
                         text: UnicodeClassifier.substring(text, utf16Range: range),
                         direction: previous.direction,
                         utf16Range: range,
-                        codePointRange: previous.codePointRange.lowerBound
-                            ..<UnicodeClassifier.codePointOffset(
+                        codePointRange: (
+                            previous.codePointRange.lowerBound
+                        )..<UnicodeClassifier.codePointOffset(
                                 text,
                                 utf16Offset: range.upperBound
                             ),
