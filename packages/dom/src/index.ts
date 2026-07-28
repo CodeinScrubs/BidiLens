@@ -9,7 +9,7 @@ import {
 } from '@bidilens/core';
 
 export const BIDILENS_CSS = `
-[data-bidilens-block] {
+:where([data-bidilens-block]) {
   text-align: start;
 }
 [data-bidilens-isolate],
@@ -24,8 +24,8 @@ bdi {
 [data-bidilens-block] table {
   direction: inherit;
 }
-[data-bidilens-block] th,
-[data-bidilens-block] td {
+:where([data-bidilens-block]) th,
+:where([data-bidilens-block]) td {
   text-align: start;
 }
 `;

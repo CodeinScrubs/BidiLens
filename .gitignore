@@ -23,3 +23,9 @@ android/**/build/
 android/local.properties
 android/.idea/
 android/captures/
+apple/.build/
+apple/.swiftpm/
+.build/
+.swiftpm/
+windows/**/bin/
+windows/**/obj/

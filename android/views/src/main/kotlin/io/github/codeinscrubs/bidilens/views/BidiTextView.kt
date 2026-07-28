@@ -58,11 +58,6 @@ private fun TextView.applyAnalysis(
         return
     }
     rememberOriginalState()
-    textDirection = when (analysis.resolvedDirection) {
-        BidiDirection.RTL -> View.TEXT_DIRECTION_RTL
-        BidiDirection.LTR -> View.TEXT_DIRECTION_LTR
-        BidiDirection.NEUTRAL -> View.TEXT_DIRECTION_INHERIT
-    }
     if (alignToContent) {
         textAlignment = View.TEXT_ALIGNMENT_GRAVITY
         val horizontal = if (analysis.resolvedDirection == BidiDirection.RTL) {
@@ -71,6 +66,19 @@ private fun TextView.applyAnalysis(
             Gravity.LEFT
         }
         gravity = (gravity and Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK.inv()) or horizontal
+    } else {
+        // Direction and alignment are independent. A caller may switch an
+        // already-managed RTL value back to its authored physical alignment.
+        val original = originalState() ?: return
+        textAlignment = original.textAlignment
+        gravity = original.gravity
+    }
+    // Android alignment/gravity setters can recalculate text-direction state.
+    // Apply the paragraph base last so physical alignment remains independent.
+    textDirection = when (analysis.resolvedDirection) {
+        BidiDirection.RTL -> View.TEXT_DIRECTION_RTL
+        BidiDirection.LTR -> View.TEXT_DIRECTION_LTR
+        BidiDirection.NEUTRAL -> View.TEXT_DIRECTION_INHERIT
     }
 }
 

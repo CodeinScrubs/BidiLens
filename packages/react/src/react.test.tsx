@@ -87,6 +87,16 @@ describe('React adapter', () => {
     expect(html).toContain('data-bidilens-block');
   });
 
+  it('keeps an RTL paragraph base while honoring physical-left alignment', () => {
+    const html = renderToStaticMarkup(
+      <BidiMessage text="React یک کتابخانه بسیار محبوب است." style={{ textAlign: 'left' }} />
+    );
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('text-align:left');
+    expect(html).not.toContain('text-align:start');
+    expect(html).toContain('>React</bdi>');
+  });
+
   it('isolates code and identifiers', () => {
     const html = renderToStaticMarkup(
       <p dir="rtl">

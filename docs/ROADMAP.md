@@ -34,6 +34,18 @@ implementation or adoption claim.
   API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.1`
   publication, and independently verified public-consumer resolution.
 
+## Implemented in source; native release evidence pending
+
+- Swift Package core and UIKit adapters with generated Unicode 17 data,
+  independent direction/alignment policy, shared 918-case corpus tests, a
+  runnable core example, and macOS/iOS compiler gates;
+- .NET 8 core and WPF adapters with generated Unicode 17 data, independent
+  direction/alignment policy, shared 918-case executable verification, a
+  runnable WPF sample, package builds, and a Windows compiler gate.
+
+These are not yet registry releases or physical-device/accessibility
+validation claims.
+
 ## Required before broad production recommendation
 
 - native-speaker certification across Persian, Arabic, Hebrew, Urdu, Pashto,
@@ -68,14 +80,20 @@ The complete specification-to-evidence audit lives in
   libraries;
 - Flutter package and golden tests;
 - React Native component and platform notes;
-- Swift Package for SwiftUI/TextKit;
-- generated platform representations of the shared corpus for those remaining
-  platforms.
+- dedicated SwiftUI view, iOS sample app, physical-device/VoiceOver validation,
+  and Swift package release evidence;
+- WinUI 3, Windows Forms, and MAUI adapters plus accessibility/IME validation
+  and NuGet release evidence;
+- generated platform representations of the shared corpus for Flutter and
+  React Native.
 
 New native and desktop targets are not scaffolded as hollow packages. Each
 enters the shipped workspace only with a real implementation, at least 25
 meaningful assertions, a runnable example, documentation, and a platform build
-report. Android is the first target to meet that implementation gate.
+report. Android is the first published target to meet that gate. Apple and
+Windows now have hosted source/compiler evidence but still await the physical
+device, accessibility/IME, and registry-release evidence applicable to each
+platform.
 
 ## Research
 

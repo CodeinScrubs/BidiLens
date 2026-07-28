@@ -34,8 +34,20 @@ inherited or explicit direction when a technical-only block needs a fixed base.
 ## Why did my custom CSS appear to undo the result?
 
 Inspect ancestors for `direction`, `text-align: left/right`, or
-`unicode-bidi: bidi-override`. Prefer `text-align: start` and do not apply a
-global RTL direction to code or opposite-direction runs.
+`unicode-bidi: bidi-override`. BidiLens defaults use zero-specificity CSS so
+authored class or inline alignment wins. Use `start` for content-relative
+alignment, or deliberately use `left` when an RTL paragraph must remain on the
+physical left. Do not apply a global RTL direction to code or
+opposite-direction runs.
+
+## Can Persian text stay left-aligned?
+
+Yes. Paragraph direction controls character ordering; alignment controls where
+the paragraph sits. Use `alignToContent = false` with a left-aligned Android
+style, `textAlign="left"` or authored CSS on web adapters,
+`BidiAlignment.physicalLeft` on Apple, or
+`BidiAlignment.PhysicalLeft` on WPF. BidiLens still resolves and applies RTL
+direction and inline isolation.
 
 ## Can I store the rendered HTML as model output?
 
@@ -64,12 +76,15 @@ Provide the exact logical source, expected base direction, numbered words,
 technical tokens, language/script, host renderer, and a minimal screenshot.
 Add a corpus fixture and policy regression test; do not patch the stored order.
 
-## Where are Android, Flutter, Swift, React Native, VS Code, Electron, and PDF?
+## Where are Android, Apple, Windows, Flutter, React Native, VS Code, Electron, and PDF?
 
 Android core, Views, and Compose `0.1.1` are signed and public on Maven Central;
 the sample and verification evidence are in the
 [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
 Physical OEM/IME/TalkBack and external product validation remain open; see the
-[Android guide](../android/README.md). Flutter, Swift, React Native, VS Code,
-Electron, and PDF remain explicit [roadmap](ROADMAP.md) work because empty
-platform folders would create false confidence.
+[Android guide](../android/README.md). A source Swift Package with UIKit
+adapters and a .NET 8/WPF implementation now live in the
+[Apple](../apple/README.md) and [Windows](../windows/README.md) guides. They
+have build/corpus gates but are not registry-published or physical-device lab
+validated. Flutter, React Native, WinUI, Windows Forms, MAUI, VS Code,
+Electron, and PDF remain explicit [roadmap](ROADMAP.md) work.

@@ -18,6 +18,9 @@ const stream = useBidiStream(answer);
 <template><BidiMessage :text="answer" /></template>
 ```
 
+Use `text-align="left"` when an RTL paragraph must stay physically left
+aligned. Direction detection and inline isolation still run normally.
+
 The component emits semantic `dir`, block metadata, and `<bdi>`/`<code>`
 isolations when bidi handling is needed. LTR-only content emits no BidiLens
 attributes/styles by default; use `inherited-direction="rtl"` or

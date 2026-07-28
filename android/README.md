@@ -84,6 +84,17 @@ The rest of the screen can remain LTR. Each value is analyzed independently.
 For pure English content, the original `TextStyle` instance and unmodified
 modifier path are retained.
 
+Direction does not force alignment. To keep a Persian paragraph physically on
+the left while still applying an RTL paragraph base:
+
+```kotlin
+BidiText(
+    text = "این پاراگراف فارسی چپ‌چین می‌ماند.",
+    style = TextStyle(textAlign = TextAlign.Left),
+    alignToContent = false,
+)
+```
+
 ## Use with Android Views
 
 Android Views require the normal application-level RTL capability flag. Add
@@ -105,6 +116,16 @@ For a displayed value:
 titleTextView.text = source
 titleTextView.applyBidiLens()
 ```
+
+To preserve an authored physical-left alignment:
+
+```kotlin
+titleTextView.gravity = Gravity.LEFT
+titleTextView.applyBidiLens(alignToContent = false)
+```
+
+Switching `alignToContent` from `true` to `false` restores the original
+alignment/gravity immediately while retaining the detected text direction.
 
 For an editable field:
 

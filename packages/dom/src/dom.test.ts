@@ -83,6 +83,22 @@ describe('DOM adapter', () => {
     expect(first.textContent).not.toContain('unicode-bidi: plaintext');
     expect(first.textContent).toContain('unicode-bidi: isolate');
     expect(first.textContent).toContain('[data-bidilens-code]');
+    expect(first.textContent).toContain(':where([data-bidilens-block])');
+  });
+
+  it('keeps direction correction independent from authored physical-left alignment', () => {
+    document.head.innerHTML = '<style>.author-left { text-align: left; }</style>';
+    document.body.innerHTML =
+      '<main id="root"><p id="message" class="author-left">React یک کتابخانه بسیار محبوب است.</p></main>';
+    const root = document.querySelector<HTMLElement>('#root')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+    installBidiStyles(document);
+
+    applyBidi(root);
+
+    expect(message.dir).toBe('rtl');
+    expect(message.querySelector('bdi')?.textContent).toBe('React');
+    expect(getComputedStyle(message).textAlign).toBe('left');
   });
 
   it('supports skipped blocks, neutral fallback, and annotation callbacks', () => {

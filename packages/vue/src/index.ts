@@ -69,7 +69,11 @@ export const BidiMessage = defineComponent({
     minimumStrongCharacters: { type: Number, default: undefined },
     majorityThreshold: { type: Number, default: undefined },
     technicalIdentifiers: { type: Array as PropType<readonly string[]>, default: undefined },
-    intervention: { type: String as PropType<BidiInterventionMode>, default: 'auto' }
+    intervention: { type: String as PropType<BidiInterventionMode>, default: 'auto' },
+    textAlign: {
+      type: String as PropType<'start' | 'end' | 'left' | 'right' | 'center' | 'justify'>,
+      default: 'start'
+    }
   },
   setup(props) {
     return () => {
@@ -113,7 +117,7 @@ export const BidiMessage = defineComponent({
         dir: direction,
         class: props.className ?? 'bidilens-block',
         'data-bidilens-block': '',
-        style: { textAlign: 'start' }
+        style: { textAlign: props.textAlign }
       }, children);
     };
   }

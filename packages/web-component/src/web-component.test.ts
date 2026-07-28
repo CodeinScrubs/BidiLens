@@ -24,6 +24,16 @@ describe('BidiMessageElement', () => {
     expect(element.style.unicodeBidi).toBe('');
   });
 
+  it('preserves authored physical-left alignment while correcting direction', () => {
+    const element = document.createElement('bidi-message') as BidiMessageElement;
+    element.style.textAlign = 'left';
+    element.textContent = 'React یک کتابخانه بسیار محبوب است.';
+    document.body.append(element);
+    expect(element.dir).toBe('rtl');
+    expect(element.style.textAlign).toBe('left');
+    expect(element.querySelector('bdi')?.textContent).toBe('React');
+  });
+
   it('isolates the leading identifier and preserves textContent', () => {
     const element = document.createElement('bidi-message') as BidiMessageElement;
     const source = 'React یک کتابخانه است.';

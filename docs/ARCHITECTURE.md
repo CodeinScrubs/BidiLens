@@ -186,6 +186,41 @@ state value, IME callbacks, copy source, validation, and storage remain free of
 controls. The pure-LTR fast path returns the caller's original `TextStyle`
 instance and adds no BidiLens semantics.
 
+## Native Apple
+
+The Swift Package uses generated copies of the canonical Unicode 17 ranges:
+
+```text
+String
+  -> immutable BidiAnalysis / BidiPresentation
+  -> UIKit base-writing-direction + independent NSTextAlignment
+  -> TextKit/Core Text rendering
+```
+
+The core has no UIKit dependency. UIKit adapters preserve logical strings and
+editable selection. `UITextView` and `UITextField` use the native
+`UITextInput.setBaseWritingDirection` API; `UILabel` uses a copied paragraph
+style whose base direction and alignment are separate fields. The adapter does
+not force the layout direction of a screen or mirror sibling controls.
+
+## Native Windows
+
+The `net8.0` core is independent of WPF and uses generated copies of the same
+Unicode tables:
+
+```text
+String
+  -> immutable BidiAnalysis / BidiPresentation
+  -> WPF FlowDirection + independent TextAlignment
+  -> Windows text rendering
+```
+
+The WPF layer supports `TextBlock` and `TextBox`, saves original state in a
+weak table, preserves source and selection, and restores authored properties
+when content returns to the pure-LTR no-op path. Physical-left and
+content-relative-start alignment are explicit policies rather than consequences
+of direction detection.
+
 ## Plain text and terminals
 
 Markup is preferred whenever it exists. `@bidilens/terminal` preserves plain
