@@ -90,8 +90,10 @@ The complete specification-to-evidence audit lives in
 New native and desktop targets are not scaffolded as hollow packages. Each
 enters the shipped workspace only with a real implementation, at least 25
 meaningful assertions, a runnable example, documentation, and a platform build
-report. Android is the first published target to meet that gate; Apple and
-Windows are source implementations awaiting their hosted/release evidence.
+report. Android is the first published target to meet that gate. Apple and
+Windows now have hosted source/compiler evidence but still await the physical
+device, accessibility/IME, and registry-release evidence applicable to each
+platform.
 
 ## Research
 
