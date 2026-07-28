@@ -6,6 +6,32 @@ const DEMO_ORIGIN = 'http://127.0.0.1:4173';
 const FLAGSHIP = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 const SHARED = 'The Persian word کتاب means “book”.';
 
+test('falls back when the browser clipboard API never settles', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        readText: () => new Promise<string>(() => undefined),
+        writeText: () => new Promise<void>(() => undefined)
+      }
+    });
+  });
+  await page.goto(DEMO_ORIGIN);
+  await page.getByLabel('Load a mixed-direction preset').selectOption('flagship');
+
+  const status = page.locator('.action-status');
+  await page.getByRole('button', { name: 'Copy share link' }).click();
+  await expect(status).toHaveText('Share state added to the address bar; copy the URL manually.', {
+    timeout: 5_000
+  });
+
+  await page.getByRole('button', { name: 'Verify logical copy' }).click();
+  await expect(status).toHaveText(
+    'Logical selection matches the immutable source; clipboard readback is unavailable.',
+    { timeout: 5_000 }
+  );
+});
+
 test('exercises the offline bilingual playground, controls, corpus, copy, and exports', async ({ page }) => {
   const initialHash = new URLSearchParams({ text: SHARED }).toString();
   await page.goto(`${DEMO_ORIGIN}/#${initialHash}`);
