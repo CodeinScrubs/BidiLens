@@ -158,21 +158,19 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: |
+          script: >-
             for attempt in $(seq 1 60); do
-              if adb -s "emulator-${EMULATOR_PORT}" shell cmd package list packages >/dev/null 2>&1; then
-                break
-              fi
-              if [ "$attempt" -eq 60 ]; then
-                echo "::error::Android package service did not become ready."
-                exit 1
-              fi
-              sleep 2
-            done
-            ./android/gradlew -p android \
-              :views:connectedDebugAndroidTest \
-              :compose:connectedDebugAndroidTest \
-              --stacktrace --console=plain
+            if adb -s "emulator-${EMULATOR_PORT}" shell cmd package list packages >/dev/null 2>&1;
+            then break; fi;
+            if [ "$attempt" -eq 60 ];
+            then echo "::error::Android package service did not become ready.";
+            exit 1; fi;
+            sleep 2;
+            done;
+            ./android/gradlew -p android
+            :views:connectedDebugAndroidTest
+            :compose:connectedDebugAndroidTest
+            --stacktrace --console=plain
 
   apple:
     name: Apple Swift package and iOS adapter
