@@ -66,8 +66,10 @@ Add a corpus fixture and policy regression test; do not patch the stored order.
 
 ## Where are Android, Flutter, Swift, React Native, VS Code, Electron, and PDF?
 
-Android core, Views, Compose, and a sample app are implemented and device-tested;
-see the [Android guide](../android/README.md). A signed Maven Central release
-and external device/product validation remain open. Flutter, Swift, React
-Native, VS Code, Electron, and PDF remain explicit [roadmap](ROADMAP.md) work
-because empty platform folders would create false confidence.
+Android core, Views, and Compose `0.1.1` are signed and public on Maven Central;
+the sample and verification evidence are in the
+[`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
+Physical OEM/IME/TalkBack and external product validation remain open; see the
+[Android guide](../android/README.md). Flutter, Swift, React Native, VS Code,
+Electron, and PDF remain explicit [roadmap](ROADMAP.md) work because empty
+platform folders would create false confidence.

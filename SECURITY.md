@@ -2,9 +2,9 @@
 
 ## Supported versions
 
-The public `0.1.x` npm line is supported. The latest patch release receives
-security fixes; earlier source snapshots and superseded patches are not
-supported.
+The public `0.2.x` npm line and `0.1.x` Android line are supported. The latest
+patch release on each line receives security fixes; earlier source snapshots
+and superseded patches are not supported.
 
 ## Reporting a vulnerability
 

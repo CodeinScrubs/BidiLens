@@ -5,6 +5,10 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+No unreleased changes.
+
+## Android 0.1.1 - 2026-07-28
+
 ### Native Android
 
 - Added a pure Kotlin core, Android Views adapter, Jetpack Compose adapter, and
@@ -15,10 +19,13 @@ is published under the public `@bidilens` npm scope.
   coordinates and their published dependency graph.
 - Kept editable values free of bidi controls, preserved Compose accessibility
   semantics, restored View state, and retained an exact pure-LTR no-op path.
-- Prepared Android `0.1.1` as the first signed Maven Central release, with
+- Published Android `0.1.1` as the first signed Maven Central release, with
   Central-complete POM metadata, source and documentation jars, detached
-  signatures, isolated-consumer verification, and a protected manual release
-  workflow that rejects version reuse.
+  signatures, public-only isolated-consumer verification, and a protected
+  manual release workflow that rejects version reuse.
+- Added the annotated `android-v0.1.1` tag and immutable GitHub release with
+  individual AARs, a sample APK, Maven and public-Central evidence bundles, the
+  public signing key, and SHA-256 checksums.
 
 ### Direction correctness
 

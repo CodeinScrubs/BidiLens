@@ -71,7 +71,7 @@ batch plugin path; it is not misrepresented as a stateful streaming backend.
 
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
-| Android/Jetpack Compose | Implemented and locally device-tested; distribution pilot pending | Pure Kotlin core, Views and Compose libraries, sample app, generated 918-case corpus, JVM/Robolectric suites, lint/AAR/APK tasks, 3 Views plus 3 Compose UI tests on local API 36.1, and an API 35 emulator CI gate. Signed Maven Central publication, physical-device/OEM/TalkBack evidence, and a downstream pilot remain open |
+| Android/Jetpack Compose | Implemented, signed, and published; external validation pending | Maven Central `0.1.1` pure Kotlin core, Views and Compose libraries; sample app; generated 918-case corpus; JVM/Robolectric suites; lint/AAR/APK tasks; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
 | Flutter/Dart | Missing | No package/demo, generated corpus representation, widget/golden tests, or SDK build report |
 | React Native | Missing | No component, generated corpus representation, native tests, or platform build report |
 | Swift Package/SwiftUI/TextKit | Missing | No package/demo, generated corpus representation, tests, or toolchain report |
@@ -123,16 +123,16 @@ because it now has executable implementation and device evidence.
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
 | English and Persian main README | Complete | `README.md` and `README.fa.md` |
-| Architecture, security, limitations, accessibility, migration, FAQ, contributing, governance, conduct, roadmap, changelog | Complete for the public web beta and Android source release | Checked by `scripts/check-docs.ts`; Android has a dedicated integration guide; guides for missing surfaces necessarily remain incomplete |
+| Architecture, security, limitations, accessibility, migration, FAQ, contributing, governance, conduct, roadmap, changelog | Complete for the public web beta and Android Maven release | Checked by `scripts/check-docs.ts`; Android has a dedicated integration guide; guides for missing surfaces necessarily remain incomplete |
 | Reproducible performance matrix and budgets | Complete for current JS surfaces | `scripts/benchmark.ts`, `docs/PERFORMANCE.md`, scheduled workflow, package byte budgets in release checker |
 | 3 patch-quality upstream integrations | Partial/external | One host-tested patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508), with focused tests and local host gates. It is unmerged and does not satisfy the minimum of three integrations |
 | 2 issue-quality evidence bundles | Complete as public submissions, not product fixes | Current-policy, non-duplicate evidence is public for Antigravity, Claude Code, Codex, Cline, Continue, and assistant-ui; routes and exact states are recorded in the [outreach log](OUTREACH_LOG.md) |
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
-| CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; VS Code and other native-platform builds follow their missing implementations |
-| Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in release preparation, and protected manual npm publication with exact confirmation, integrity-safe retries, and provenance |
+| CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; signed Android publication has an isolated-consumer gate; VS Code and other native-platform builds follow their missing implementations |
+| Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in web release preparation, protected manual npm publication with exact confirmation and provenance, and protected manual Maven Central publication with signing and version-reuse rejection |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
-| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata and `@bidilens` ownership verified; all 12 `0.1.1` packages are public with SLSA provenance and matching registry integrity; per-package OIDC trust is bound to the protected workflow, the bootstrap credential was removed, and traditional token publishing is disabled |
+| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata, `@bidilens` ownership, and `io.github.codeinscrubs` namespace verified; all 12 npm `0.2.0` packages are public with SLSA provenance and matching integrity; all three Android `0.1.1` modules are signed and public with matching Central artifacts, signatures, and checksums; release credentials are protected outside the repository |
 | Name/trademark decision | Partial/external | ADR records provisional `BidiLens`; final registry/legal review is still required |
 
 ## Milestone gate status
@@ -151,7 +151,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 918 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal and Android exist; Flutter/RN/Swift do not; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
-| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, and immutable `v0.1.1` release. One of the required three host-tested integrations is submitted but unmerged, so the integration minimum remains incomplete |
+| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.2.0` web release, and signed `android-v0.1.1` Maven release. One of the required three host-tested integrations is submitted but unmerged, so the integration minimum remains incomplete |
 
 ## Definition-of-done audit
 
@@ -171,7 +171,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 12 | Complete for current packages — workflows validate, SBOM/license/notices exist |
 | 13 | Partial — one host-tested integration patch is submitted; fewer than three exist and none is merged or piloted |
 | 14 | Complete for current documented claims; continue checking after every change |
-| 15 | Partial — the reviewed source and current `v0.1.1` package release are public, but historical intermediate milestone tags were not fabricated retroactively |
+| 15 | Partial — the reviewed source, current `v0.2.0` web release, and `android-v0.1.1` Maven release are public, but historical intermediate milestone tags were not fabricated retroactively |
 
 ## Prior-attempt idea coverage
 
@@ -185,9 +185,10 @@ rows above are the active backlog, not hidden omissions.
 
 ## Honest release conclusion
 
-The current tree is a verified and published **public web beta**, not the
-completed cross-platform v2.0 mission. Registry identity, package publication,
-provenance, OIDC trust, and the current immutable `v0.1.1` release are complete.
+The current tree is a verified and published **public web beta plus signed
+Android release**, not the completed cross-platform v2.0 mission. Registry
+identity, npm and Maven publication, provenance, OIDC trust, and the current
+immutable web and Android releases are complete.
 The original
 specification's broader definition of done remains red until the missing
 Tier-2/Tier-3 surfaces, integrations, native-language/accessibility review, and

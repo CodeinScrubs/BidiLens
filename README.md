@@ -21,10 +21,11 @@
 > [!IMPORTANT]
 > The JavaScript/web surface is published as the public `0.2.0` beta. All 12
 > `@bidilens/*` packages are public on npm with verified registry integrity and
-> SLSA provenance. Native Android core, Views, Compose, and sample modules are
-> implemented and device-tested in this repository; they are not yet claimed
-> as signed Maven Central artifacts. Other native/desktop platforms remain
-> explicit roadmap work.
+> SLSA provenance. Native Android core, Views, and Compose `0.1.1` artifacts
+> are signed and public on Maven Central, with a verified sample and evidence
+> bundle in the
+> [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
+> Other native/desktop platforms remain explicit roadmap work.
 
 BidiLens is an offline, standards-first toolkit for mixed right-to-left and
 left-to-right text in AI chat, Markdown, streaming interfaces, web and native
@@ -282,11 +283,12 @@ for security-sensitive findings.
 ## Honest scope
 
 The implemented web/JavaScript packages are public-beta quality, not a
-guarantee about every proprietary renderer. Native Android is implemented and
-device-tested but has not yet had a signed Maven Central release or an external
-production pilot. Flutter, React Native, SwiftUI, Electron, VS Code, PDF,
-screen-reader laboratory validation, and downstream product patches are not
-shipped. The npm scope, maintainer identity, package integrity, and provenance
+guarantee about every proprietary renderer. Native Android is implemented,
+emulator-tested, and published as signed Maven Central `0.1.1` artifacts, but
+physical OEM/IME/TalkBack validation and an external production pilot remain
+open. Flutter, React Native, SwiftUI, Electron, VS Code, PDF, screen-reader
+laboratory validation, and downstream product patches are not shipped. The npm
+scope, maintainer identity, package integrity, Maven signatures, and provenance
 are verified; independent review and downstream adoption evidence remain
 adoption gates.
 
