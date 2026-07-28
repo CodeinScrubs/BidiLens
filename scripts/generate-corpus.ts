@@ -260,13 +260,33 @@ for (const [id, text, expected, tags] of structuredCases) {
 
 const siblingSeedDirectory = resolve('corpus', 'v1.3-her-seeds');
 const importedPolicyOverrides = new Map<string, Pick<ReviewedSiblingSeed, 'expected' | 'expectedIsolations'>>([
+  // Whitespace-joined LTR words and version numbers are one semantic phrase.
+  // Keeping them in separate isolates reverses their visual order in RTL.
+  ['v13-ar-mixed-en-ar-002', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: 'React 19', direction: 'ltr', kind: 'opposite-direction-run' },
+      { text: 'Facebook', direction: 'ltr', kind: 'opposite-direction-run' }
+    ]
+  }],
+  ['v13-fa-mixed-en-fa-002', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: 'React 19', direction: 'ltr', kind: 'opposite-direction-run' }
+    ]
+  }],
   // Docker is technical evidence. The surrounding Hebrew phrase remains the
   // natural-language base; the imported seed counted the product name as prose.
   ['v13-he-mixed-en-he-002', {
     expected: 'rtl',
     expectedIsolations: [
-      { text: 'Docker', direction: 'ltr', kind: 'identifier' },
-      { text: 'container', direction: 'ltr', kind: 'opposite-direction-run' }
+      { text: 'Docker container', direction: 'ltr', kind: 'opposite-direction-run' }
+    ]
+  }],
+  ['v13-he-mixed-en-he-003', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: 'React 19', direction: 'ltr', kind: 'opposite-direction-run' }
     ]
   }]
 ]);

@@ -24,6 +24,7 @@ jobs:
           go-version: '1.26.5'
           cache: false
       - run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - uses: gradle/actions/wrapper-validation@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
 
   quality:
     name: Quality (Node ${{ matrix.node }})
@@ -87,6 +88,74 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run packages:types
       - run: pnpm run release:check
+
+  android:
+    name: Android libraries and sample
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            android/**/*.gradle.kts
+            android/gradle/wrapper/gradle-wrapper.properties
+      - run: chmod +x android/gradlew
+      - run: >-
+          ./android/gradlew -p android
+          :core:testDebugUnitTest
+          :views:testDebugUnitTest
+          :compose:testDebugUnitTest
+          :core:lintRelease
+          :views:lintRelease
+          :compose:lintRelease
+          :sample:lintDebug
+          :core:assembleRelease
+          :views:assembleRelease
+          :compose:assembleRelease
+          :sample:assembleDebug
+          publishToMavenLocal
+          --stacktrace --console=plain
+      - run: >-
+          ./android/gradlew -p android/consumer-smoke
+          clean assembleDebug
+          --stacktrace --console=plain
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bidilens-android-artifacts
+          path: |
+            android/*/build/outputs/aar/*.aar
+            android/sample/build/outputs/apk/debug/*.apk
+            android/*/build/reports/lint-results-*.html
+          if-no-files-found: error
+
+  android-device:
+    name: Android UI tests (API 35)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            android/**/*.gradle.kts
+            android/gradle/wrapper/gradle-wrapper.properties
+      - run: chmod +x android/gradlew
+      - uses: ReactiveCircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808 # v2.38.0
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: >-
+            ./android/gradlew -p android
+            :views:connectedDebugAndroidTest
+            :compose:connectedDebugAndroidTest
+            --stacktrace --console=plain
 
   security-and-sbom:
     name: Dependency audit and SBOM

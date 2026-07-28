@@ -155,6 +155,37 @@ Code-like elements stay LTR and isolated. Block direction is computed for
 paragraphs, headings, list items, blockquotes, and table cells rather than once
 for an entire response.
 
+## Native Android
+
+The native implementation mirrors the same boundary in Kotlin:
+
+```text
+String
+  -> :core immutable BidiAnalysis
+  -> :views metadata or :compose TextStyle/VisualTransformation
+  -> Android Minikin/ICU text layout
+```
+
+`:core` is independent of Compose and Android widgets. Its Unicode 17 range
+tables and 918-case fixtures are generated from the same canonical inputs as
+the TypeScript core. Kotlin APIs report both UTF-16 and code-point offsets so
+editable/selection integrations do not reinterpret Java string indices.
+
+`:views` modifies only `textDirection`, `textAlignment`, and horizontal
+gravity when intervention is required. It saves the original widget state,
+restores it when text becomes ordinary LTR or a controller detaches, and never
+replaces an `Editable`. The host must declare `android:supportsRtl="true"`;
+the library deliberately does not merge this application-wide flag because
+that could change unrelated layouts.
+
+`:compose` applies an explicit paragraph `TextDirection` and content-relative
+alignment. Display-only isolation uses a transient visual string while
+accessibility semantics retain the original source. Editable isolation uses a
+`VisualTransformation` with monotonic original/transformed offset maps; the
+state value, IME callbacks, copy source, validation, and storage remain free of
+controls. The pure-LTR fast path returns the caller's original `TextStyle`
+instance and adds no BidiLens semantics.
+
 ## Plain text and terminals
 
 Markup is preferred whenever it exists. `@bidilens/terminal` preserves plain

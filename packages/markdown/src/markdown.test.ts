@@ -25,6 +25,11 @@ async function render(markdown: string): Promise<string> {
     .process(markdown));
 }
 
+function cpuMillisecondsSince(started: NodeJS.CpuUsage): number {
+  const elapsed = process.cpuUsage(started);
+  return (elapsed.user + elapsed.system) / 1_000;
+}
+
 describe('Markdown plugins', () => {
   it('is output-identical to unconfigured Markdown-It for an LTR-only document', () => {
     const source = '# React guide\n\nUse `npm test` in a normal English project.';
@@ -360,7 +365,7 @@ describe('rich Markdown streaming', () => {
     const session = createBidiMarkdownStream(new MarkdownIt({ html: false }));
     session.push('a'.repeat(size));
     expect(session.getUpdate().parseCount).toBe(1);
-    const started = performance.now();
+    const started = process.cpuUsage();
     for (let index = 0; index < size - 1; index += 1) {
       session.push('x');
       session.getUpdate();
@@ -368,14 +373,15 @@ describe('rich Markdown streaming', () => {
     const update = session.getUpdate();
     expect(update.parseCount).toBe(1);
     expect(update.pendingSourceRange).toEqual({ start: size, end: (size * 2) - 1 });
-    // Coverage instrumentation and shared CI load add substantial fixed cost;
-    // parseCount and the 32k one-character workload retain the O(n²) alarm.
-    expect(performance.now() - started).toBeLessThan(3_000);
-  });
+    // CPU time preserves the regression budget without turning unrelated
+    // machine contention into a false failure. parseCount and the 32k
+    // one-character workload retain the O(n²) alarm.
+    expect(cpuMillisecondsSince(started)).toBeLessThan(3_000);
+  }, 15_000);
 
   it('coalesces dense streamed list lines instead of reparsing every item', () => {
     const session = createBidiMarkdownStream(new MarkdownIt({ html: false }));
-    const started = performance.now();
+    const started = process.cpuUsage();
     let update = session.getUpdate();
     for (let index = 0; index < 400; index += 1) {
       session.push(`- item ${index} سلام\n`);
@@ -383,8 +389,8 @@ describe('rich Markdown streaming', () => {
     }
     expect(update.parseCount).toBeLessThanOrEqual(12);
     expect(update.direction.paragraphs.length).toBeGreaterThan(1);
-    expect(performance.now() - started).toBeLessThan(1_500);
-  });
+    expect(cpuMillisecondsSince(started)).toBeLessThan(1_500);
+  }, 10_000);
 
   it('tracks a new Markdown block correctly inside a pending checkpoint gap', () => {
     const first = 'این یک پاراگراف فارسی بسیار طولانی و روشن برای آزمایش است.';

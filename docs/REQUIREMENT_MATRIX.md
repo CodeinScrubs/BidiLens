@@ -71,14 +71,15 @@ batch plugin path; it is not misrepresented as a stateful streaming backend.
 
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
-| Android/Jetpack Compose | Missing | No library/demo, generated corpus representation, unit/UI tests, or SDK build report |
+| Android/Jetpack Compose | Implemented and locally device-tested; distribution pilot pending | Pure Kotlin core, Views and Compose libraries, sample app, generated 918-case corpus, JVM/Robolectric suites, lint/AAR/APK tasks, 3 Views plus 3 Compose UI tests on local API 36.1, and an API 35 emulator CI gate. Signed Maven Central publication, physical-device/OEM/TalkBack evidence, and a downstream pilot remain open |
 | Flutter/Dart | Missing | No package/demo, generated corpus representation, widget/golden tests, or SDK build report |
 | React Native | Missing | No component, generated corpus representation, native tests, or platform build report |
 | Swift Package/SwiftUI/TextKit | Missing | No package/demo, generated corpus representation, tests, or toolchain report |
 | Terminal/TUI | Complete and tested within documented limits | `@bidilens/terminal`; ANSI-aware, source-preserving compatibility mode and emulator limitations. A real multi-emulator manual matrix remains external/manual |
 
-The absent native/desktop directories are intentional: the anti-hollow rule
-forbids counting scaffolds or unexecuted pseudocode as platform support.
+Absent platform directories are intentional: the anti-hollow rule forbids
+counting scaffolds or unexecuted pseudocode as support. Android is present
+because it now has executable implementation and device evidence.
 
 ## Standards, architecture, and security
 
@@ -113,22 +114,22 @@ forbids counting scaffolds or unexecuted pseudocode as platform support.
 | Unit/property/serialization/range tests | Complete for shipped packages | `pnpm run check`; package-local suites and fast-check properties |
 | Visual Chromium + Firefox + WebKit | Complete and tested | 24 Playwright cases across three engines on the committed Windows/Arial baseline |
 | Four-way, flagship, structured Markdown, stream, dark, zoom | Complete and tested | Playwright flagship suite and screenshots |
-| Selection and copy/paste invariant | Complete for web evidence | Three-engine logical selection and Chromium clipboard test. Firefox/WebKit clipboard and native surfaces remain environment-specific gaps |
+| Selection and copy/paste invariant | Complete for web evidence; partial for Android | Three-engine logical selection and Chromium clipboard test; Android editable callbacks and Compose semantics remain control-free in device tests. Firefox/WebKit clipboard, physical Android OEM/IME copy, and other native surfaces remain environment-specific gaps |
 | Accessibility | Partial/external | Automated semantic, selection, dark-mode and zoom evidence plus `docs/ACCESSIBILITY.md`; real screen-reader/browser/OS laboratory matrix is not complete |
-| Native test matrix | Missing except terminal | Follows missing Tier-3 implementations |
+| Native test matrix | Partial | Android has JVM/Robolectric plus API 35/36 emulator coverage; physical Android OEM devices and the unimplemented Flutter/RN/Swift surfaces remain open |
 
 ## Docs, performance, adoption, and release
 
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
 | English and Persian main README | Complete | `README.md` and `README.fa.md` |
-| Architecture, security, limitations, accessibility, migration, FAQ, contributing, governance, conduct, roadmap, changelog | Complete for the public web beta | Checked by `scripts/check-docs.ts`; platform guides for missing surfaces necessarily remain incomplete |
+| Architecture, security, limitations, accessibility, migration, FAQ, contributing, governance, conduct, roadmap, changelog | Complete for the public web beta and Android source release | Checked by `scripts/check-docs.ts`; Android has a dedicated integration guide; guides for missing surfaces necessarily remain incomplete |
 | Reproducible performance matrix and budgets | Complete for current JS surfaces | `scripts/benchmark.ts`, `docs/PERFORMANCE.md`, scheduled workflow, package byte budgets in release checker |
 | 3 patch-quality upstream integrations | Partial/external | One host-tested patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508), with focused tests and local host gates. It is unmerged and does not satisfy the minimum of three integrations |
 | 2 issue-quality evidence bundles | Complete as public submissions, not product fixes | Current-policy, non-duplicate evidence is public for Antigravity, Claude Code, Codex, Cline, Continue, and assistant-ui; routes and exact states are recorded in the [outreach log](OUTREACH_LOG.md) |
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
-| CI: VS Code and native builds | Missing | Follows missing platform implementations |
+| CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; VS Code and other native-platform builds follow their missing implementations |
 | Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in release preparation, and protected manual npm publication with exact confirmation, integrity-safe retries, and provenance |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
 | Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata and `@bidilens` ownership verified; all 12 `0.1.1` packages are public with SLSA provenance and matching registry integrity; per-package OIDC trust is bound to the protected workflow, the bootstrap credential was removed, and traditional token publishing is disabled |
@@ -148,7 +149,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M4 frameworks/Electron | Partial | Web Component/React/Vue/Svelte pass anti-hollow and SSR gates; Electron is missing; no `m4` tag |
 | M5 CLI/Playwright Action/VS Code | Partial | CLI, reusable Playwright helpers, and bundled conformance Action pass; VS Code extension is missing; no `m5` tag |
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 918 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
-| M7 native + terminal | Partial | Terminal exists; Android/Flutter/RN/Swift do not; no `m7` tag |
+| M7 native + terminal | Partial | Terminal and Android exist; Flutter/RN/Swift do not; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
 | M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, and immutable `v0.1.1` release. One of the required three host-tested integrations is submitted but unmerged, so the integration minimum remains incomplete |
 

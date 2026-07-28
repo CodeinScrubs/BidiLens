@@ -1,6 +1,6 @@
 # BidiLens 0.2.0 release report
 
-**Evidence date:** 2026-07-27
+**Evidence date:** 2026-07-28
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
@@ -47,7 +47,8 @@ opposite-direction runs.
 | React/Vite playground | Complete and tested | Static/offline; EN/FA UI, policy/security controls, adjustable stream, live four-way comparison, AST/evidence/isolation/security, searchable 918-case asset, copy verification, JSON/semantic HTML export, hash state and explicit theme; three-browser flow |
 | Corpus | Partial (with exact missing functionality) | 918 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
 | VS Code, Electron, PDF | Unsupported (with technical reason) | No implementations exist; hollow packages were rejected and these require host-specific security/print tests |
-| Android, Flutter, React Native, Swift | Unsupported (with technical reason) | No implementations or executable SDK evidence exist in this repository |
+| Native Android | Implemented after the immutable 0.2.0 web release; Maven publication pending | Pure Kotlin core, Views and Compose adapters, sample APK, generated 918-case parity, JVM/Robolectric tests, lint/AAR build, and API 35/36 emulator UI evidence. This does not alter the historical 0.2.0 npm artifacts |
+| Flutter, React Native, Swift | Unsupported (with technical reason) | No implementations or executable SDK evidence exist in this repository |
 | Upstream AI-product integrations | External review in progress; no adoption | One host-tested Hermes TUI patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508); tailored evidence requests are public for six additional project families. No review, merge, pilot, deployment, or endorsement is claimed; see the [outreach log](OUTREACH_LOG.md). |
 
 ## Reproduced validation
@@ -58,6 +59,8 @@ opposite-direction runs.
 | Vitest within `check` | 16 files, 391 tests pass |
 | Coverage (seeded run) | 91.85% statements, 85.80% branches, 94.48% functions, 94.76% lines; core 95.73%, Markdown 97.29%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 918/918; 0 native-speaker-reviewed |
+| `pnpm run android:check` | Kotlin core/Views/Compose unit suites, Android lint, all debug assemblies, and the sample APK pass with JDK 21 and SDK 36 |
+| Android device gates | 3/3 Views and 3/3 Compose UI tests pass locally on Android 16/API 36.1; CI defines a pinned API 35 emulator gate |
 | `pnpm run test:visual` | 24/24 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS, including real standalone-module loading and the bilingual playground's controls/corpus/copy/theme/exports; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
 | `pnpm -r --if-present run example` | all 12 public package examples run in the workspace |
 | `pnpm run packages:types` | all 12 ESM package layouts and the spec package's five JSON subpaths pass real ATTW packing; CJS is intentionally unsupported |
@@ -199,10 +202,12 @@ still requires:
 3. independent security review appropriate to the deployment risk;
 4. a real downstream pilot with performance and rollback evidence.
 
-Broad production or “all platforms” readiness is **not** claimed because native
-packages, Tier-2 desktop/PDF surfaces, upstream integrations, native-speaker
-certification, accessibility laboratory testing, an external security audit,
-and a real downstream pilot remain absent. Historical milestone tags between
+Broad production or “all platforms” readiness is **not** claimed. Native
+Android Kotlin, Views, and Compose modules now have JVM, lint, sample-app, and
+emulator evidence, but signed Maven Central distribution, physical OEM/IME and
+TalkBack validation, iOS/desktop/PDF surfaces, upstream integrations,
+native-speaker certification, an external security audit, and a real downstream
+pilot remain absent. Historical milestone tags between
 `m1` and the current `v0.2.0` release tag were not retroactively fabricated;
 publishing
 the reviewed source does not reconstruct the original stepwise tag history.

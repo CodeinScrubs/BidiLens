@@ -66,5 +66,8 @@ Add a corpus fixture and policy regression test; do not patch the stored order.
 
 ## Where are Android, Flutter, Swift, React Native, VS Code, Electron, and PDF?
 
-They are not shipped. They remain explicit [roadmap](ROADMAP.md) work because
-empty platform folders would create false confidence.
+Android core, Views, Compose, and a sample app are implemented and device-tested;
+see the [Android guide](../android/README.md). A signed Maven Central release
+and external device/product validation remain open. Flutter, Swift, React
+Native, VS Code, Electron, and PDF remain explicit [roadmap](ROADMAP.md) work
+because empty platform folders would create false confidence.

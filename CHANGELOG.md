@@ -3,6 +3,25 @@
 All notable changes to this project are recorded here. The complete package set
 is published under the public `@bidilens` npm scope.
 
+## Unreleased
+
+### Native Android
+
+- Added a pure Kotlin core, Android Views adapter, Jetpack Compose adapter, and
+  runnable sample for mixed Persian/Arabic/Hebrew and English values.
+- Generated the complete 918-case canonical corpus and Unicode 17 tables for
+  Kotlin, with JVM, Robolectric, lint, AAR/APK, and API 35/36 emulator gates.
+- Added an isolated consumer build that compiles only against generated Maven
+  coordinates and their published dependency graph.
+- Kept editable values free of bidi controls, preserved Compose accessibility
+  semantics, restored View state, and retained an exact pure-LTR no-op path.
+
+### Direction correctness
+
+- Kept whitespace-joined LTR phrases such as `page 97` in one isolate while
+  leaving Arabic/Latin punctuation between semantic fragments outside, so
+  adjacent isolates cannot reverse phrase order inside RTL paragraphs.
+
 ## 0.2.0 - 2026-07-27
 
 ### Direction and security

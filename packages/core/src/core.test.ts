@@ -284,9 +284,18 @@ describe('isolation and segmentation', () => {
 
   it('isolates natural-language runs adjacent to technical tokens', () => {
     const plans = planInlineIsolation('שלום React library', 'rtl');
-    expect(plans).toContainEqual(expect.objectContaining({ text: 'React', kind: 'identifier' }));
-    expect(plans).toContainEqual(expect.objectContaining({ text: 'library', direction: 'ltr', kind: 'opposite-direction-run' }));
+    expect(plans).toContainEqual(expect.objectContaining({
+      text: 'React library',
+      direction: 'ltr',
+      kind: 'opposite-direction-run'
+    }));
     expect(plans.every((plan, index) => index === 0 || plans[index - 1]!.end <= plan.start)).toBe(true);
+  });
+
+  it('keeps whitespace-joined LTR phrases ordered across RTL punctuation', () => {
+    const plans = planInlineIsolation('از جلد سه qb، page 97', 'rtl');
+    expect(plans.map(({ text }) => text)).toEqual(['qb', 'page 97']);
+    expect(plans.every(({ direction }) => direction === 'ltr')).toBe(true);
   });
 
   it('wraps text with isolates', () => {

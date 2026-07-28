@@ -6873,6 +6873,56 @@ function trimNeutralBoundaries(text, start, end) {
   }
   return { start, end };
 }
+var HARD_FRAGMENT_SEPARATOR = /[,،;؛:!?؟|]/u;
+function normalizeIsolationPlan(text, isolations) {
+  const split = [];
+  for (const isolation of isolations) {
+    if (isolation.kind !== "opposite-direction-run") {
+      split.push(isolation);
+      continue;
+    }
+    let pieceStart = isolation.start;
+    let cursor = isolation.start;
+    for (const character of text.slice(isolation.start, isolation.end)) {
+      const index = cursor;
+      cursor += character.length;
+      if (HARD_FRAGMENT_SEPARATOR.test(character)) {
+        const trimmed2 = trimNeutralBoundaries(text, pieceStart, index);
+        if (trimmed2.start < trimmed2.end) {
+          split.push({
+            ...isolation,
+            text: text.slice(trimmed2.start, trimmed2.end),
+            start: trimmed2.start,
+            end: trimmed2.end
+          });
+        }
+        pieceStart = cursor;
+      }
+    }
+    const trimmed = trimNeutralBoundaries(text, pieceStart, isolation.end);
+    if (trimmed.start < trimmed.end) {
+      split.push({
+        ...isolation,
+        text: text.slice(trimmed.start, trimmed.end),
+        start: trimmed.start,
+        end: trimmed.end
+      });
+    }
+  }
+  const ordered = split.sort((a, b) => a.start - b.start || a.end - b.end);
+  const merged = [];
+  for (const isolation of ordered) {
+    const previous = merged.at(-1);
+    if (previous && previous.direction === isolation.direction && previous.end <= isolation.start && /^\s*$/u.test(text.slice(previous.end, isolation.start))) {
+      previous.end = isolation.end;
+      previous.text = text.slice(previous.start, previous.end);
+      if (previous.kind !== isolation.kind) previous.kind = "opposite-direction-run";
+    } else {
+      merged.push({ ...isolation });
+    }
+  }
+  return merged;
+}
 function segmentDirectionalRuns(text) {
   if (!text) return [];
   const runs = [];
@@ -6915,7 +6965,7 @@ function planInlineIsolation(text, blockDirection, options = {}) {
     kind: range.kind
   }));
   if (options.isolateOppositeRuns === false) {
-    return attachSourceRanges(text, isolations.sort((a, b) => a.start - b.start));
+    return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
   }
   let technicalIndex = 0;
   for (const run of segmentDirectionalRuns(text)) {
@@ -6953,7 +7003,7 @@ function planInlineIsolation(text, blockDirection, options = {}) {
       });
     }
   }
-  return attachSourceRanges(text, isolations.sort((a, b) => a.start - b.start || a.end - b.end));
+  return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
 }
 
 // packages/html/src/index.ts
