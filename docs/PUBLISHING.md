@@ -31,7 +31,8 @@ registry publication.
 - verified `shayanay80` owner access to the `bidilens` npm organization and
   `@bidilens` scope;
 - identified bootstrap maintainer and CODEOWNERS;
-- strict `main` protection requires all 11 CI job contexts on an up-to-date
+- strict `main` protection requires all 13 CI job contexts, including the
+  Android library/sample build and API 35 UI-test gate, on an up-to-date
   branch and linear history, while blocking force-pushes, branch deletion, and
   unresolved review conversations; the sole-maintainer administrative bypass
   remains available for CI-outage recovery;
