@@ -1,6 +1,10 @@
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
+
 plugins {
     id("com.android.library")
-    id("maven-publish")
+    id("com.vanniktech.maven.publish")
 }
 
 android {
@@ -25,12 +29,6 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 dependencies {
@@ -43,38 +41,50 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                artifactId = "bidilens-android-views"
-                from(components["release"])
-                pom {
-                    name = "BidiLens Android Views"
-                    description = "Non-destructive TextView and EditText integration for mixed-direction text."
-                    url = "https://github.com/CodeinScrubs/BidiLens"
-                    inceptionYear = "2026"
-                    licenses {
-                        license {
-                            name = "MIT License"
-                            url = "https://opensource.org/license/mit"
-                            distribution = "repo"
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = "CodeinScrubs"
-                            name = "CodeinScrubs"
-                            url = "https://github.com/CodeinScrubs"
-                        }
-                    }
-                    scm {
-                        url = "https://github.com/CodeinScrubs/BidiLens"
-                        connection = "scm:git:https://github.com/CodeinScrubs/BidiLens.git"
-                        developerConnection = "scm:git:ssh://git@github.com/CodeinScrubs/BidiLens.git"
-                    }
-                }
+mavenPublishing {
+    configure(
+        AndroidSingleVariantLibrary(
+            javadocJar = JavadocJar.Empty(),
+            sourcesJar = SourcesJar.Sources(),
+            variant = "release",
+        ),
+    )
+    publishToMavenCentral()
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
+    coordinates(project.group.toString(), "bidilens-android-views", project.version.toString())
+    pom {
+        name = "BidiLens Android Views"
+        description = "Non-destructive TextView and EditText integration for mixed-direction text."
+        url = "https://github.com/CodeinScrubs/BidiLens"
+        inceptionYear = "2026"
+        licenses {
+            license {
+                name = "MIT License"
+                url = "https://opensource.org/license/mit"
+                distribution = "repo"
             }
+        }
+        developers {
+            developer {
+                id = "CodeinScrubs"
+                name = "CodeinScrubs"
+                url = "https://github.com/CodeinScrubs"
+            }
+        }
+        scm {
+            url = "https://github.com/CodeinScrubs/BidiLens"
+            connection = "scm:git:https://github.com/CodeinScrubs/BidiLens.git"
+            developerConnection = "scm:git:ssh://git@github.com/CodeinScrubs/BidiLens.git"
+        }
+        issueManagement {
+            system = "GitHub"
+            url = "https://github.com/CodeinScrubs/BidiLens/issues"
+        }
+        ciManagement {
+            system = "GitHub Actions"
+            url = "https://github.com/CodeinScrubs/BidiLens/actions"
         }
     }
 }

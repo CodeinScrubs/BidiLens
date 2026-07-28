@@ -32,7 +32,24 @@ Android Gradle Plugin 9.2.1, compile SDK 36, and Kotlin 2.3.10.
 
 ## Use with Jetpack Compose
 
-For the current public release, download and extract
+The `0.1.1` source is prepared for the first signed Maven Central publication.
+After the coordinate below resolves from Central, normal Gradle setup is:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+dependencies {
+    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.1")
+}
+```
+
+Until Central confirms that release, download and extract the immutable
+pre-Central
 [`bidilens-android-v0.1.0-maven-repository.zip`](https://github.com/CodeinScrubs/BidiLens/releases/download/android-v0.1.0/bidilens-android-v0.1.0-maven-repository.zip)
 inside your project, then point Gradle at the extracted repository:
 
@@ -46,7 +63,15 @@ dependencyResolutionManagement {
 }
 ```
 
-Alternatively, build the modules from this checkout once:
+Use `0.1.0` with that archived repository:
+
+```kotlin
+dependencies {
+    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.0")
+}
+```
+
+Alternatively, build the current `0.1.1` modules from this checkout once:
 
 ```bash
 ./android/gradlew -p android publishToMavenLocal
@@ -56,7 +81,7 @@ Then add:
 
 ```kotlin
 dependencies {
-    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.0")
+    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.1")
 }
 ```
 
@@ -156,13 +181,15 @@ Current executable evidence includes:
 
 ## Distribution status
 
-The native modules are source-complete and available in the
+The native modules are source-complete. Version `0.1.1` has signed
+Central-complete publication metadata and a protected release workflow, but it
+is not claimed as publicly available from Maven Central until the deployment
+and a public-only consumer are verified. The
 [`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
-as an external-consumer-tested Maven repository bundle, individual AARs, a
-sample APK, an SBOM, and SHA-256 checksums. Their coordinates are not claimed
-as Maven Central artifacts until the first signed Central release exists.
-Source checkout and `publishToMavenLocal` remain supported. The npm packages
-remain a separate JavaScript/web distribution.
+remains available as an external-consumer-tested Maven repository bundle,
+individual AARs, a sample APK, an SBOM, and SHA-256 checksums. Source checkout
+and `publishToMavenLocal` remain supported. The npm packages remain a separate
+JavaScript/web distribution.
 
 See the repository [limitations](../docs/LIMITATIONS.md), [architecture](../docs/ARCHITECTURE.md),
 and [security policy](../SECURITY.md) before production rollout.

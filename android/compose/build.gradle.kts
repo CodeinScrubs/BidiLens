@@ -1,7 +1,11 @@
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("maven-publish")
+    id("com.vanniktech.maven.publish")
 }
 
 android {
@@ -23,12 +27,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 dependencies {
@@ -43,38 +41,50 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.11.4")
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                artifactId = "bidilens-android-compose"
-                from(components["release"])
-                pom {
-                    name = "BidiLens Android Compose"
-                    description = "Jetpack Compose text and text-field integration for mixed-direction content."
-                    url = "https://github.com/CodeinScrubs/BidiLens"
-                    inceptionYear = "2026"
-                    licenses {
-                        license {
-                            name = "MIT License"
-                            url = "https://opensource.org/license/mit"
-                            distribution = "repo"
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = "CodeinScrubs"
-                            name = "CodeinScrubs"
-                            url = "https://github.com/CodeinScrubs"
-                        }
-                    }
-                    scm {
-                        url = "https://github.com/CodeinScrubs/BidiLens"
-                        connection = "scm:git:https://github.com/CodeinScrubs/BidiLens.git"
-                        developerConnection = "scm:git:ssh://git@github.com/CodeinScrubs/BidiLens.git"
-                    }
-                }
+mavenPublishing {
+    configure(
+        AndroidSingleVariantLibrary(
+            javadocJar = JavadocJar.Empty(),
+            sourcesJar = SourcesJar.Sources(),
+            variant = "release",
+        ),
+    )
+    publishToMavenCentral()
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
+    coordinates(project.group.toString(), "bidilens-android-compose", project.version.toString())
+    pom {
+        name = "BidiLens Android Compose"
+        description = "Jetpack Compose text and text-field integration for mixed-direction content."
+        url = "https://github.com/CodeinScrubs/BidiLens"
+        inceptionYear = "2026"
+        licenses {
+            license {
+                name = "MIT License"
+                url = "https://opensource.org/license/mit"
+                distribution = "repo"
             }
+        }
+        developers {
+            developer {
+                id = "CodeinScrubs"
+                name = "CodeinScrubs"
+                url = "https://github.com/CodeinScrubs"
+            }
+        }
+        scm {
+            url = "https://github.com/CodeinScrubs/BidiLens"
+            connection = "scm:git:https://github.com/CodeinScrubs/BidiLens.git"
+            developerConnection = "scm:git:ssh://git@github.com/CodeinScrubs/BidiLens.git"
+        }
+        issueManagement {
+            system = "GitHub"
+            url = "https://github.com/CodeinScrubs/BidiLens/issues"
+        }
+        ciManagement {
+            system = "GitHub Actions"
+            url = "https://github.com/CodeinScrubs/BidiLens/actions"
         }
     }
 }
