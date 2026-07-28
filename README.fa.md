@@ -13,7 +13,7 @@
 [مشارکت](CONTRIBUTING.md) · [وضعیت پروژه](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> بخش وب و JavaScript به‌عنوان نسخهٔ آزمایشی عمومی `0.2.0` منتشر شده است. هر
+> بخش وب و JavaScript به‌عنوان نسخهٔ آزمایشی عمومی `0.3.0` منتشر شده است. هر
 > ۱۲ بستهٔ `@bidilens/*` در npm عمومی هستند و یکپارچگی و provenance آن‌ها
 > بررسی شده است. نسخهٔ `0.1.1` هستهٔ Kotlin و ماژول‌های Android Views و
 > Jetpack Compose نیز امضاشده و در Maven Central عمومی است؛ برنامهٔ نمونه و
@@ -83,7 +83,7 @@ The Persian word کتاب means “book”.
 Compose و Views در [راهنمای Android](android/README.md) قرار دارد.
 
 تمام بسته‌های عمومی ESM-only هستند و برای استفادهٔ سمت سرور به Node.js 22.12 یا
-جدیدتر نیاز دارند. مجموعهٔ کامل نسخهٔ `0.2.0` در
+جدیدتر نیاز دارند. مجموعهٔ کامل نسخهٔ `0.3.0` در
 [سازمان `@bidilens` در npm](https://www.npmjs.com/org/bidilens) منتشر شده است.
 
 پروژه با [مجوز MIT](LICENSE) متن‌باز است. شرایط داده‌های Unicode و بخش
@@ -98,7 +98,7 @@ Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حف
 استفاده است:
 
 ```html
-<script type="module" src="https://unpkg.com/@bidilens/web-component@0.2.0"></script>
+<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.0"></script>
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 

@@ -1,5 +1,18 @@
 # @bidilens/vue
 
+## 0.3.0
+
+### Minor Changes
+
+- 4389798: Preserve authored physical alignment independently from detected paragraph
+  direction, including an explicit Vue `textAlign` prop and zero-specificity DOM
+  alignment defaults.
+
+### Patch Changes
+
+- Updated dependencies [85b80c0]
+  - @bidilens/core@0.3.0
+
 ## 0.2.0
 
 ### Patch Changes

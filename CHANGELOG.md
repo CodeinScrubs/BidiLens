@@ -7,6 +7,27 @@ is published under the public `@bidilens` npm scope.
 
 No unreleased changes.
 
+## 0.3.0 - 2026-07-28
+
+### Direction and alignment
+
+- Kept whitespace-joined opposite-direction phrases such as `page 97` in
+  source order while retaining hard punctuation as semantic boundaries.
+- Made paragraph direction independent from visual alignment, including
+  caller-owned physical-left RTL rendering and a public Vue `textAlign` prop.
+- Lowered installed DOM alignment defaults to zero specificity so application
+  classes and inline styles continue to win.
+
+### Native platforms and verification
+
+- Added a Swift Package with a generated Unicode 17 core, shared-corpus tests,
+  UIKit adapters, selection preservation, and an iOS Simulator compiler gate.
+- Added dependency-free .NET 8 analysis, WPF adapters, source/selection/state
+  restoration, a runnable sample, package builds, and executable corpus tests.
+- Added Android Views and Compose alignment regressions and hardened the API 35
+  emulator gate with KVM access, package-service readiness, and a finite
+  timeout.
+
 ## Android 0.1.1 - 2026-07-28
 
 ### Native Android

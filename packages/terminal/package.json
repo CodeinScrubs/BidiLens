@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/terminal",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Honest best-effort bidi formatting and diagnostics for terminals and plain-text channels.",
   "license": "MIT",
   "author": {

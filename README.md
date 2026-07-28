@@ -19,7 +19,7 @@
 [Project status](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> The JavaScript/web surface is published as the public `0.2.0` beta. All 12
+> The JavaScript/web surface is published as the public `0.3.0` beta. All 12
 > `@bidilens/*` packages are public on npm with verified registry integrity and
 > SLSA provenance. Native Android core, Views, and Compose `0.1.1` artifacts
 > are signed and public on Maven Central, with a verified sample and evidence
@@ -157,7 +157,7 @@ reordering and shaping; BidiLens supplies the application structure they need.
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
-Browser packages target current standards-based browsers. The complete `0.2.0`
+Browser packages target current standards-based browsers. The complete `0.3.0`
 package set is [published under the `@bidilens` npm scope](https://www.npmjs.com/org/bidilens).
 
 ## Consumer install
@@ -179,7 +179,7 @@ For a no-build browser page, the published Web Component also exposes a
 standalone entry that bundles the core and needs no import map:
 
 ```html
-<script type="module" src="https://unpkg.com/@bidilens/web-component@0.2.0"></script>
+<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.0"></script>
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 
