@@ -68,8 +68,11 @@ public enum BidiUIKit {
             direction: analysis.resolvedDirection,
             alignment: label.textAlignment
         )
-        state?.renderedText = rendered
         label.attributedText = rendered
+        // UILabel may normalize or copy attributed content when it is assigned.
+        // Track the value the label actually exposes so a later BidiLens update
+        // can distinguish its own rendering from an external host mutation.
+        state?.renderedText = label.attributedText?.copy() as? NSAttributedString
         return analysis
     }
 
