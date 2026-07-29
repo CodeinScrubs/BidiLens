@@ -200,7 +200,7 @@ jobs:
           '
           )"
           xcodebuild test \
-            -scheme BidiLens \
+            -scheme BidiLens-Package \
             -destination "platform=iOS Simulator,id=${device_id}" \
             -sdk iphonesimulator \
             CODE_SIGNING_ALLOWED=NO
