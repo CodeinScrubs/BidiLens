@@ -150,7 +150,6 @@ final class AppleAdapterTests: XCTestCase {
         let label = UILabel()
         label.text = rtl
         label.textAlignment = .center
-        let original = try XCTUnwrap(label.attributedText?.copy() as? NSAttributedString)
 
         let first = BidiUIKit.apply(
             to: label,
@@ -166,9 +165,28 @@ final class AppleAdapterTests: XCTestCase {
         XCTAssertEqual(second.resolvedDirection, .rightToLeft)
         XCTAssertEqual(label.textAlignment, .right)
 
+        let hostColor = UIColor.systemPurple
+        let hostUpdate = NSMutableAttributedString(
+            attributedString: try XCTUnwrap(label.attributedText)
+        )
+        hostUpdate.addAttribute(
+            .foregroundColor,
+            value: hostColor,
+            range: NSRange(location: 0, length: hostUpdate.length)
+        )
+        label.attributedText = hostUpdate
+
         BidiUIKit.restore(label)
         XCTAssertEqual(label.textAlignment, .center)
-        XCTAssertTrue(try XCTUnwrap(label.attributedText).isEqual(to: original))
+        XCTAssertEqual(label.attributedText?.string, rtl)
+        XCTAssertEqual(
+            label.attributedText?.attribute(
+                .foregroundColor,
+                at: 0,
+                effectiveRange: nil
+            ) as? UIColor,
+            hostColor
+        )
         let paragraph = try XCTUnwrap(
             label.attributedText?.attribute(
                 .paragraphStyle,
@@ -177,6 +195,7 @@ final class AppleAdapterTests: XCTestCase {
             ) as? NSParagraphStyle
         )
         XCTAssertEqual(paragraph.baseWritingDirection, .natural)
+        XCTAssertEqual(paragraph.alignment, .natural)
     }
 
     @MainActor

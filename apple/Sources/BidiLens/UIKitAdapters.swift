@@ -7,14 +7,24 @@ private var textViewStateKey: UInt8 = 0
 private var textFieldStateKey: UInt8 = 0
 
 public enum BidiUIKit {
+    private struct ParagraphState {
+        let range: NSRange
+        let direction: NSWritingDirection
+        let alignment: NSTextAlignment
+    }
+
     private final class LabelState: NSObject {
         let alignment: NSTextAlignment
-        let attributedText: NSAttributedString?
-        var renderedText: NSAttributedString?
+        let source: String
+        let paragraphs: [ParagraphState]
+        var renderedAlignment: NSTextAlignment?
+        var renderedDirection: NSWritingDirection?
 
-        init(_ label: UILabel) {
+        init(_ label: UILabel, source: String) {
             alignment = label.textAlignment
-            attributedText = label.attributedText?.copy() as? NSAttributedString
+            self.source = source
+            let attributed = label.attributedText ?? NSAttributedString(string: source)
+            paragraphs = BidiUIKit.paragraphStates(attributed)
         }
     }
 
@@ -38,8 +48,7 @@ public enum BidiUIKit {
         let source = label.text ?? label.attributedText?.string ?? ""
         let analysis = BidiAnalyzer.analyze(source, options: options)
         var state = objc_getAssociatedObject(label, &labelStateKey) as? LabelState
-        if let existing = state,
-           !attributedTextMatches(label.attributedText, existing.renderedText) {
+        if let existing = state, !ownsRendering(label, state: existing) {
             objc_setAssociatedObject(label, &labelStateKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             state = nil
         }
@@ -48,7 +57,7 @@ public enum BidiUIKit {
             return analysis
         }
         if state == nil {
-            state = LabelState(label)
+            state = LabelState(label, source: source)
             objc_setAssociatedObject(
                 label,
                 &labelStateKey,
@@ -63,16 +72,14 @@ public enum BidiUIKit {
             original: state?.alignment ?? label.textAlignment
         )
         let rendered = paragraphAttributedText(
-            state?.attributedText ?? label.attributedText ?? NSAttributedString(string: source),
+            label.attributedText ?? NSAttributedString(string: source),
             source: source,
             direction: analysis.resolvedDirection,
             alignment: label.textAlignment
         )
         label.attributedText = rendered
-        // UILabel may normalize or copy attributed content when it is assigned.
-        // Track the value the label actually exposes so a later BidiLens update
-        // can distinguish its own rendering from an external host mutation.
-        state?.renderedText = label.attributedText?.copy() as? NSAttributedString
+        state?.renderedAlignment = label.textAlignment
+        state?.renderedDirection = writingDirection(analysis.resolvedDirection)
         return analysis
     }
 
@@ -81,26 +88,48 @@ public enum BidiUIKit {
         guard let state = objc_getAssociatedObject(label, &labelStateKey) as? LabelState else {
             return
         }
-        label.textAlignment = state.alignment
-        if attributedTextMatches(label.attributedText, state.renderedText),
-           state.attributedText?.string == label.attributedText?.string {
-            label.attributedText = state.attributedText
+        defer {
+            objc_setAssociatedObject(label, &labelStateKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
-        objc_setAssociatedObject(label, &labelStateKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        guard ownsRendering(label, state: state) else {
+            return
+        }
+        if let current = label.attributedText, current.string == state.source {
+            label.attributedText = restoringParagraphState(current, from: state.paragraphs)
+        }
+        label.textAlignment = state.alignment
     }
 
-    private static func attributedTextMatches(
-        _ current: NSAttributedString?,
-        _ rendered: NSAttributedString?
+    private static func ownsRendering(
+        _ label: UILabel,
+        state: LabelState
     ) -> Bool {
-        switch (current, rendered) {
-        case (nil, nil):
-            return true
-        case let (current?, rendered?):
-            return current.isEqual(to: rendered)
-        default:
+        guard let expectedAlignment = state.renderedAlignment,
+              let expectedDirection = state.renderedDirection,
+              label.textAlignment == expectedAlignment else {
             return false
         }
+        let current = label.attributedText
+        guard (current?.string ?? label.text ?? "") == state.source else {
+            return false
+        }
+        guard let current, current.length > 0 else {
+            return state.source.isEmpty
+        }
+        var matches = true
+        current.enumerateAttribute(
+            .paragraphStyle,
+            in: NSRange(location: 0, length: current.length)
+        ) { value, _, stop in
+            guard let paragraph = value as? NSParagraphStyle,
+                  paragraph.alignment == expectedAlignment,
+                  paragraph.baseWritingDirection == expectedDirection else {
+                matches = false
+                stop.pointee = true
+                return
+            }
+        }
+        return matches
     }
 
     /// Uses UITextInput's native paragraph direction API and preserves selection.
@@ -257,6 +286,48 @@ public enum BidiUIKit {
         case .center: return .center
         case .justified: return .justified
         }
+    }
+
+    private static func paragraphStates(
+        _ attributed: NSAttributedString
+    ) -> [ParagraphState] {
+        guard attributed.length > 0 else { return [] }
+        var states: [ParagraphState] = []
+        attributed.enumerateAttribute(
+            .paragraphStyle,
+            in: NSRange(location: 0, length: attributed.length)
+        ) { value, range, _ in
+            let paragraph = value as? NSParagraphStyle
+            states.append(
+                ParagraphState(
+                    range: range,
+                    direction: paragraph?.baseWritingDirection ?? .natural,
+                    alignment: paragraph?.alignment ?? .natural
+                )
+            )
+        }
+        return states
+    }
+
+    private static func restoringParagraphState(
+        _ attributed: NSAttributedString,
+        from states: [ParagraphState]
+    ) -> NSAttributedString {
+        let restored = NSMutableAttributedString(attributedString: attributed)
+        for state in states where NSMaxRange(state.range) <= restored.length {
+            var updates: [(NSRange, NSMutableParagraphStyle)] = []
+            restored.enumerateAttribute(.paragraphStyle, in: state.range) { value, range, _ in
+                let paragraph = ((value as? NSParagraphStyle)?.mutableCopy()
+                    as? NSMutableParagraphStyle) ?? NSMutableParagraphStyle()
+                paragraph.baseWritingDirection = state.direction
+                paragraph.alignment = state.alignment
+                updates.append((range, paragraph))
+            }
+            for (range, paragraph) in updates {
+                restored.addAttribute(.paragraphStyle, value: paragraph, range: range)
+            }
+        }
+        return restored
     }
 
     private static func paragraphAttributedText(
