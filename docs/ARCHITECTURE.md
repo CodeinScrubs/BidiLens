@@ -193,6 +193,7 @@ The Swift Package uses generated copies of the canonical Unicode 17 ranges:
 ```text
 String
   -> immutable BidiAnalysis / BidiPresentation
+  -> SwiftUI BidiText -> private UIKit label
   -> UIKit base-writing-direction + independent NSTextAlignment
   -> TextKit/Core Text rendering
 ```
@@ -202,6 +203,10 @@ editable selection. `UITextView` and `UITextField` use the native
 `UITextInput.setBaseWritingDirection` API; `UILabel` uses a copied paragraph
 style whose base direction and alignment are separate fields. The adapter does
 not force the layout direction of a screen or mirror sibling controls.
+`BidiText` is a read-only `UIViewRepresentable` that owns its label, restores
+prior BidiLens state before each SwiftUI update, reapplies caller styling, and
+then assigns and analyzes the immutable source. Editable SwiftUI bridging is
+deferred until native marked-text and IME behavior have dedicated evidence.
 
 ## Native Windows
 

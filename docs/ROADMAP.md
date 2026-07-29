@@ -36,9 +36,10 @@ implementation or adoption claim.
 
 ## Implemented in source; native release evidence pending
 
-- Swift Package core and UIKit adapters with generated Unicode 17 data,
-  independent direction/alignment policy, shared 918-case corpus tests, a
-  runnable core example, and macOS/iOS compiler gates;
+- Swift Package core, UIKit adapters, and a UIKit-backed SwiftUI `BidiText`
+  renderer with generated Unicode 17 data, independent direction/alignment
+  policy, shared 918-case corpus tests, a runnable core example, macOS
+  verification, and iOS Simulator adapter tests;
 - .NET 8 core and WPF adapters with generated Unicode 17 data, independent
   direction/alignment policy, shared 918-case executable verification, a
   runnable WPF sample, package builds, and a Windows compiler gate.
@@ -80,8 +81,8 @@ The complete specification-to-evidence audit lives in
   libraries;
 - Flutter package and golden tests;
 - React Native component and platform notes;
-- dedicated SwiftUI view, iOS sample app, physical-device/VoiceOver validation,
-  and Swift package release evidence;
+- editable SwiftUI integration, iOS sample app, physical-device/VoiceOver
+  validation, and Swift package release evidence;
 - WinUI 3, Windows Forms, and MAUI adapters plus accessibility/IME validation
   and NuGet release evidence;
 - generated platform representations of the shared corpus for Flutter and

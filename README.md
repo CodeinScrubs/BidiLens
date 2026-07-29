@@ -25,7 +25,7 @@
 > are signed and public on Maven Central, with a verified sample and evidence
 > bundle in the
 > [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
-> Native Swift/iOS and .NET/WPF implementations are present in source with
+> Native Swift/UIKit/SwiftUI and .NET/WPF implementations are present in source with
 > dedicated CI gates, but are not yet registry-published or validated in a
 > physical-device/accessibility lab. Other native/desktop platforms remain
 > explicit roadmap work.
@@ -96,8 +96,8 @@ reordering and shaping; BidiLens supplies the application structure they need.
   HTML, or Web Component boundaries;
 - Android teams using Jetpack Compose, `TextView`, or `EditText` for
   user-generated multilingual values;
-- Apple teams using the Swift core or UIKit text controls, and Windows teams
-  using the .NET core or WPF text controls;
+- Apple teams using the Swift core, SwiftUI `BidiText`, or UIKit text controls,
+  and Windows teams using the .NET core or WPF text controls;
 - security and developer-tool teams auditing invisible bidi controls;
 - maintainers building regression evidence for upstream RTL fixes.
 
@@ -126,7 +126,8 @@ reordering and shaping; BidiLens supplies the application structure they need.
 - Android JVM, Robolectric, lint, APK/AAR, and API 35/36 device gates using the
   same generated 918-case corpus;
 - a Swift Package with UIKit `UILabel`, `UITextView`, and `UITextField`
-  adapters, and a .NET 8 core with WPF `TextBlock`/`TextBox` adapters;
+  adapters, a UIKit-backed SwiftUI `BidiText` view, and a .NET 8 core with WPF
+  `TextBlock`/`TextBox` adapters;
 - explicit alignment policy on native adapters, allowing an RTL paragraph to
   remain physically left-aligned without changing its base direction;
 - Chromium, Firefox, and WebKit visual regression coverage;
@@ -151,7 +152,7 @@ reordering and shaping; BidiLens supplies the application structure they need.
 | `android/:core` | Native Kotlin Unicode analysis, isolation, and security |
 | `android/:views` | `TextView`/`EditText` integration without source mutation |
 | `android/:compose` | Compose text, editable field, semantics, and visual isolation |
-| `apple/BidiLens` | Swift Unicode analysis plus non-destructive UIKit adapters |
+| `apple/BidiLens` | Swift Unicode analysis plus non-destructive SwiftUI and UIKit adapters |
 | `windows/BidiLens.Core` | Platform-neutral .NET Unicode analysis |
 | `windows/BidiLens.Wpf` | WPF direction/alignment integration with state restoration |
 
@@ -301,7 +302,7 @@ The implemented web/JavaScript packages are public-beta quality, not a
 guarantee about every proprietary renderer. Native Android is implemented,
 emulator-tested, and published as signed Maven Central `0.1.1` artifacts, but
 physical OEM/IME/TalkBack validation and an external production pilot remain
-open. Flutter, React Native, SwiftUI, Electron, VS Code, PDF, screen-reader
+open. Flutter, React Native, editable SwiftUI, Electron, VS Code, PDF, screen-reader
 laboratory validation, and downstream product patches are not shipped. The npm
 scope, maintainer identity, package integrity, Maven signatures, and provenance
 are verified; independent review and downstream adoption evidence remain

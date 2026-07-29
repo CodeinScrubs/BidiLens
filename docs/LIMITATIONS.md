@@ -45,15 +45,16 @@ stateful unified streaming backend.
   fixtures and test environment;
 - native Android has JVM, Robolectric, and API 35/36 emulator evidence, but no
   physical-device OEM matrix, TalkBack lab, or downstream production pilot;
-- the Swift core/UIKit and .NET core/WPF implementations have shared-corpus
-  and platform build gates, but no physical iOS device, VoiceOver, Windows
-  screen-reader, IME matrix, registry release, or downstream production pilot;
+- the Swift core/UIKit/SwiftUI and .NET core/WPF implementations have
+  shared-corpus and platform build gates, but no physical iOS device,
+  VoiceOver, Windows screen-reader, IME matrix, registry release, or downstream
+  production pilot;
 - Swift and .NET currently inventory bidi controls and high-risk overrides,
   but do not yet claim parity with the richer JavaScript/Android
   balance-and-context security findings;
-- SwiftUI has no dedicated renderer yet; callers can consume the Swift
-  analysis, while exact physical-left alignment plus RTL direction is provided
-  by the UIKit adapters;
+- SwiftUI has a UIKit-backed read-only `BidiText` renderer. Generic editable
+  SwiftUI integration remains unclaimed until marked-text composition,
+  dictation, selection, and third-party IMEs have dedicated validation;
 - WinUI 3, Windows Forms, MAUI, Flutter, React Native, Electron, VS Code, and
   PDF adapters are not implemented;
 - no external security audit or downstream production pilot has occurred;
@@ -85,9 +86,11 @@ does not mirror an entire screen or override unrelated layout containers.
 
 UIKit adapters preserve the source string and editable selection. Applying
 paragraph style to a `UILabel` necessarily produces an attributed display
-value, although its `.string` is unchanged. WPF adapters preserve `Text` and
-selection and restore the original `FlowDirection`/`TextAlignment` when an
-intervention is no longer required.
+value, although its `.string` is unchanged. SwiftUI `BidiText` owns a private
+UIKit label, does not alter the surrounding SwiftUI layout direction, and
+restores its previous intervention before every update. WPF adapters preserve
+`Text` and selection and restore the original
+`FlowDirection`/`TextAlignment` when an intervention is no longer required.
 
 DOM ownership is determined from observable attribute/property changes. A
 same-value inline-style assignment made while BidiLens already owns that exact

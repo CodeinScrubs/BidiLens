@@ -19,6 +19,9 @@ uses logical CSS alignment.
   as the semantic text and editable callbacks remain control-free.
 - Android Views device tests verify the real paragraph direction, source
   equality, and `Editable`/cursor identity on API 36.1.
+- iOS Simulator tests verify SwiftUI/UILabel paragraph direction, physical
+  alignment independent from view layout direction, pure-LTR non-interference,
+  and `UITextView`/`UITextField` source and selection preservation.
 
 These checks are valuable but are not a screen-reader certification.
 

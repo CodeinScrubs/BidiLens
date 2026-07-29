@@ -389,7 +389,10 @@ describe('rich Markdown streaming', () => {
     }
     expect(update.parseCount).toBeLessThanOrEqual(12);
     expect(update.direction.paragraphs.length).toBeGreaterThan(1);
-    expect(cpuMillisecondsSince(started)).toBeLessThan(1_500);
+    // The parse-count bound is the deterministic O(n²) alarm. Keep a separate
+    // CPU ceiling with enough headroom for V8 coverage instrumentation: an
+    // isolated instrumented run is about 1.25 seconds on the Windows gate.
+    expect(cpuMillisecondsSince(started)).toBeLessThan(2_000);
   }, 10_000);
 
   it('tracks a new Markdown block correctly inside a pending checkpoint gap', () => {
