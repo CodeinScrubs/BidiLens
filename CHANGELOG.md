@@ -5,7 +5,16 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
-No unreleased changes.
+### Apple platforms
+
+- Added a UIKit-backed SwiftUI `BidiText` renderer that keeps paragraph
+  direction independent from physical alignment without changing the
+  surrounding SwiftUI layout direction or logical source string.
+- Added iOS Simulator regression tests for SwiftUI bridging, UIKit paragraph
+  direction, physical-left RTL rendering, pure-LTR non-interference, and
+  editable source/selection preservation.
+- Kept the dense Markdown streaming performance gate deterministic under
+  coverage instrumentation while retaining its strict rich-parse-count bound.
 
 ## 0.3.0 - 2026-07-28
 

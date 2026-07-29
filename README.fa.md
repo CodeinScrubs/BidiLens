@@ -78,6 +78,8 @@ The Persian word کتاب means “book”.
 - هستهٔ Kotlin، اتصال بدون تغییر متن برای `TextView` و `EditText`، اجزای
   نمایشی و ویرایشی Compose، برنامهٔ نمونه، lint، ساخت AAR/APK و آزمون واقعی
   رابط کاربری روی Android 15 و 16.
+- بستهٔ Swift با نمای خواندنی `BidiText` برای SwiftUI و اتصال‌های UIKit،
+  جداسازی جهت پاراگراف از ترازبندی فیزیکی و آزمون‌های شبیه‌ساز iOS.
 
 راهنمای نصب از source، تنظیم `android:supportsRtl="true"` و نمونه‌کدهای
 Compose و Views در [راهنمای Android](android/README.md) قرار دارد.
@@ -139,7 +141,7 @@ pnpm run android:check
 نسخهٔ `0.1.1` Android به‌صورت امضاشده در Maven Central منتشر شده و روی
 شبیه‌ساز آزموده شده است؛ آزمون دستگاه‌های فیزیکی OEM، صفحه‌کلیدهای مختلف،
 TalkBack و پایلوت محصول واقعی هنوز باقی مانده‌اند.
-Flutter، React Native، SwiftUI، Electron، افزونهٔ VS Code، PDF و آزمون
+Flutter، React Native، SwiftUI ویرایشی، Electron، افزونهٔ VS Code، PDF و آزمون
 آزمایشگاهی صفحه‌خوان‌ها هنوز ارائه نشده‌اند. مالکیت scope در npm، یکپارچگی
 بسته‌ها و provenance بررسی شده‌اند؛ ممیزی مستقل و شواهد استفاده در محصول
 واقعی هنوز باقی مانده‌اند.

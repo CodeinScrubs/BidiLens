@@ -82,8 +82,8 @@ Android core, Views, and Compose `0.1.1` are signed and public on Maven Central;
 the sample and verification evidence are in the
 [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
 Physical OEM/IME/TalkBack and external product validation remain open; see the
-[Android guide](../android/README.md). A source Swift Package with UIKit
-adapters and a .NET 8/WPF implementation now live in the
+[Android guide](../android/README.md). A source Swift Package with a SwiftUI
+`BidiText` renderer and UIKit adapters, plus a .NET 8/WPF implementation, now live in the
 [Apple](../apple/README.md) and [Windows](../windows/README.md) guides. They
 have build/corpus gates but are not registry-published or physical-device lab
 validated. Flutter, React Native, WinUI, Windows Forms, MAUI, VS Code,

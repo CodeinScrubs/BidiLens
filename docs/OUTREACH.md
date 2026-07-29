@@ -21,7 +21,7 @@ small renderer pilot
 Hello [team or maintainer],
 
 I maintain [BidiLens](https://github.com/CodeinScrubs/BidiLens), an MIT-licensed
-TypeScript and Android toolkit with Swift/UIKit and .NET/WPF source adapters
+TypeScript and Android toolkit with SwiftUI/UIKit and .NET/WPF source adapters
 for mixed RTL/LTR AI messages. It fixes a common failure in which a technically
 named sentence such as `React یک کتابخانه … است.` receives the wrong paragraph
 direction, while leaving ordinary LTR content free of BidiLens attributes,
@@ -30,8 +30,8 @@ wrappers, styles, or source changes.
 The repository includes Unicode 17-derived classification, per-block direction,
 semantic isolation, streaming reconciliation, bidi-control auditing, adapters
 for major web renderers, native Kotlin/Views/Compose modules, compiler-tested
-Swift/UIKit and .NET/WPF adapters, 918 direction fixtures, three-browser tests,
-and Android emulator tests. Twelve public npm packages include provenance;
+SwiftUI/UIKit and .NET/WPF adapters, 918 direction fixtures, three-browser
+tests, and Android/iOS simulator tests. Twelve public npm packages include provenance;
 three signed Maven Central modules, source-only Apple/Windows distribution, and
 missing external validation are documented explicitly.
 
@@ -49,7 +49,7 @@ Thank you,
 - Versioned web release: [`v0.3.0` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.0)
 - Versioned Android release: [`android-v0.1.1` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
 - Native Android integration: [Android guide](../android/README.md)
-- Apple integration: [Swift/UIKit guide](../apple/README.md)
+- Apple integration: [SwiftUI/UIKit guide](../apple/README.md)
 - Windows integration: [.NET/WPF guide](../windows/README.md)
 - Exact boundaries: [Limitations](LIMITATIONS.md)
 - Pilot and rollback criteria: [Adoption strategy](ADOPTION.md)
@@ -72,7 +72,7 @@ For an initial web review, install `@bidilens/core@0.3.0`; for Android, use one
 exact `io.github.codeinscrubs.bidilens:*:0.1.1` coordinate. Ask for confirmation
 of the host bug, feedback on the API boundary, or permission to prepare a small
 draft pull request. Do not claim universal rendering, zero defects,
-native-platform coverage beyond the documented Android, UIKit, and WPF
+native-platform coverage beyond the documented Android, SwiftUI/UIKit, and WPF
 surfaces, physical Apple/Windows validation, adoption, or company endorsement.
 Registry availability is verifiable, but adoption is not. Browser/OS layout
 engines still perform

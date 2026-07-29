@@ -175,11 +175,36 @@ jobs:
   apple:
     name: Apple Swift package and iOS adapter
     runs-on: macos-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Test Swift core and shared corpus
         run: swift test
-      - name: Compile the UIKit adapter
+      - name: Test UIKit and SwiftUI adapters
+        shell: bash
+        run: |
+          set -euo pipefail
+          device_id="$(
+            xcrun simctl list devices available -j |
+              python3 -c '
+          import json
+          import sys
+
+          devices = json.load(sys.stdin)["devices"]
+          for runtime in devices.values():
+              for device in runtime:
+                  if device.get("isAvailable") and device["name"].startswith("iPhone"):
+                      print(device["udid"])
+                      raise SystemExit(0)
+          raise SystemExit("No available iPhone simulator was found.")
+          '
+          )"
+          xcodebuild test \
+            -scheme BidiLens \
+            -destination "platform=iOS Simulator,id=${device_id}" \
+            -sdk iphonesimulator \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Compile the UIKit and SwiftUI adapters
         run: >-
           xcodebuild
           -scheme BidiLens
