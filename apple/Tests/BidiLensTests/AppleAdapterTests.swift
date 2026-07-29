@@ -77,7 +77,7 @@ final class AppleAdapterTests: XCTestCase {
     }
 
     @MainActor
-    func testPureLTRUpdateLeavesConfiguredDirectionPropertiesUntouched() {
+    func testPureLTRUpdateLeavesConfiguredDirectionPropertiesUntouched() throws {
         let label = UILabel()
 
         let analysis = BidiSwiftUIBridge.update(
@@ -93,13 +93,20 @@ final class AppleAdapterTests: XCTestCase {
         XCTAssertEqual(analysis.direction, .leftToRight)
         XCTAssertFalse(analysis.interventionRequired)
         XCTAssertEqual(label.text, ltr)
-        XCTAssertNil(label.attributedText)
         XCTAssertEqual(label.textAlignment, .center)
         XCTAssertEqual(label.semanticContentAttribute, .forceRightToLeft)
+        let paragraph = try XCTUnwrap(
+            label.attributedText?.attribute(
+                .paragraphStyle,
+                at: 0,
+                effectiveRange: nil
+            ) as? NSParagraphStyle
+        )
+        XCTAssertEqual(paragraph.baseWritingDirection, .natural)
     }
 
     @MainActor
-    func testTransitionBackToLTRRestoresStateBeforeCallerConfiguration() {
+    func testTransitionBackToLTRRestoresStateBeforeCallerConfiguration() throws {
         let label = UILabel()
         label.textAlignment = .natural
 
@@ -126,9 +133,50 @@ final class AppleAdapterTests: XCTestCase {
 
         XCTAssertFalse(ltrAnalysis.interventionRequired)
         XCTAssertEqual(label.text, ltr)
-        XCTAssertNil(label.attributedText)
         XCTAssertEqual(label.textAlignment, .center)
         XCTAssertEqual(label.accessibilityLabel, "English message")
+        let paragraph = try XCTUnwrap(
+            label.attributedText?.attribute(
+                .paragraphStyle,
+                at: 0,
+                effectiveRange: nil
+            ) as? NSParagraphStyle
+        )
+        XCTAssertEqual(paragraph.baseWritingDirection, .natural)
+    }
+
+    @MainActor
+    func testUILabelRestorationSurvivesUIKitAttributedTextCopying() throws {
+        let label = UILabel()
+        label.text = rtl
+        label.textAlignment = .center
+        let original = try XCTUnwrap(label.attributedText?.copy() as? NSAttributedString)
+
+        let first = BidiUIKit.apply(
+            to: label,
+            alignment: .physicalLeft
+        )
+        XCTAssertEqual(first.resolvedDirection, .rightToLeft)
+        XCTAssertEqual(label.textAlignment, .left)
+
+        let second = BidiUIKit.apply(
+            to: label,
+            alignment: .physicalRight
+        )
+        XCTAssertEqual(second.resolvedDirection, .rightToLeft)
+        XCTAssertEqual(label.textAlignment, .right)
+
+        BidiUIKit.restore(label)
+        XCTAssertEqual(label.textAlignment, .center)
+        XCTAssertTrue(try XCTUnwrap(label.attributedText).isEqual(to: original))
+        let paragraph = try XCTUnwrap(
+            label.attributedText?.attribute(
+                .paragraphStyle,
+                at: 0,
+                effectiveRange: nil
+            ) as? NSParagraphStyle
+        )
+        XCTAssertEqual(paragraph.baseWritingDirection, .natural)
     }
 
     @MainActor

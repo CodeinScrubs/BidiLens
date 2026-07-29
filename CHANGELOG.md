@@ -13,6 +13,9 @@ is published under the public `@bidilens` npm scope.
 - Added iOS Simulator regression tests for SwiftUI bridging, UIKit paragraph
   direction, physical-left RTL rendering, pure-LTR non-interference, and
   editable source/selection preservation.
+- Fixed `UILabel` state ownership and restoration when UIKit copies an assigned
+  attributed string, preventing stale RTL paragraph styling after an LTR
+  transition.
 - Kept the dense Markdown streaming performance gate deterministic under
   coverage instrumentation while retaining its strict rich-parse-count bound.
 

@@ -38,7 +38,8 @@ public enum BidiUIKit {
         let source = label.text ?? label.attributedText?.string ?? ""
         let analysis = BidiAnalyzer.analyze(source, options: options)
         var state = objc_getAssociatedObject(label, &labelStateKey) as? LabelState
-        if let existing = state, label.attributedText !== existing.renderedText {
+        if let existing = state,
+           !attributedTextMatches(label.attributedText, existing.renderedText) {
             objc_setAssociatedObject(label, &labelStateKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             state = nil
         }
@@ -78,11 +79,25 @@ public enum BidiUIKit {
             return
         }
         label.textAlignment = state.alignment
-        if label.attributedText === state.renderedText,
+        if attributedTextMatches(label.attributedText, state.renderedText),
            state.attributedText?.string == label.attributedText?.string {
             label.attributedText = state.attributedText
         }
         objc_setAssociatedObject(label, &labelStateKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+    }
+
+    private static func attributedTextMatches(
+        _ current: NSAttributedString?,
+        _ rendered: NSAttributedString?
+    ) -> Bool {
+        switch (current, rendered) {
+        case (nil, nil):
+            return true
+        case let (current?, rendered?):
+            return current.isEqual(to: rendered)
+        default:
+            return false
+        }
     }
 
     /// Uses UITextInput's native paragraph direction API and preserves selection.
