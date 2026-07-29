@@ -195,7 +195,7 @@ final class AppleAdapterTests: XCTestCase {
             ) as? NSParagraphStyle
         )
         XCTAssertEqual(paragraph.baseWritingDirection, .natural)
-        XCTAssertEqual(paragraph.alignment, .natural)
+        XCTAssertEqual(paragraph.alignment, .center)
     }
 
     @MainActor
