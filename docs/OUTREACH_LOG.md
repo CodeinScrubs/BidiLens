@@ -42,12 +42,20 @@ endorsement.
 | assistant-ui | [Show and tell #5211](https://github.com/assistant-ui/assistant-ui/discussions/5211) | Open | Distinguishes the project's completed logical-layout work from per-message mixed-content direction and offers a documented `@bidilens/react` streaming recipe, adapter, hook, or fixtures-only path. |
 | AnythingLLM | [comment on canonical RTL issue #3430](https://github.com/Mintplex-Labs/anything-llm/issues/3430#issuecomment-5126056699) | Parent issue open | Supplies a per-block acceptance fixture and integration guidance. A direct dependency patch was deferred because the host supports Node 18 and Markdown-It 13 while BidiLens 0.3 requires Node 22.12 and peers with Markdown-It 14; raising either compatibility floor would be a regression. |
 | Vercel Streamdown | [PR #569](https://github.com/vercel/streamdown/pull/569) | Open, mergeable, and ready for review; review and security automation passed; maintainer review required | Adds a dependency-free native rehype pass because Streamdown supports Node 18. It assigns direction per semantic block, keeps code LTR, uses content majority with a first-strong tie-breaker, preserves pure-LTR behavior, and includes 985 passing package tests plus a production ESM/declaration build. The Vercel preview remains blocked on external-fork deployment authorization. |
+| Sentry | [feature request #120893](https://github.com/getsentry/sentry/issues/120893) | Open; linked to Sentry's internal `ENG-8321`, labeled for the Issues product area, and waiting for product-owner triage | Proposes a feature-flagged pilot at Sentry's shared React Markdown renderer and Seer wrapper. The request identifies the current source boundaries, preserves alignment and technical tokens, discloses the unreviewed-corpus limitation, and offers either a local helper or BidiLens package according to Sentry's dependency policy. |
+| PostHog | [feature request #75474](https://github.com/PostHog/posthog/issues/75474) | Open | Proposes per-block handling in `LemonMarkdown` and PostHog AI's already memoized `MarkdownMessage` blocks. The public feature tracker was used instead of the automated email's sales-demo form, which requires company, role, and monthly-active-user data and is not an appropriate open-source engineering route. |
 
-The public endpoints above cover nine project families and twelve
+The public endpoints above cover eleven project families and fourteen
 repository-specific routes. Hermes, Cline, and Streamdown contain focused host
 code; the remaining routes are issue or discussion submissions. None had
 received a maintainer approval, merge, downstream pilot, or
 production-adoption confirmation when this evidence was recorded.
+
+## Pending authenticated follow-up
+
+| Project/channel | Current evidence | Next action |
+|---|---|---|
+| JetBrains AI Assistant YouTrack | JetBrains support directed the proposal to the public AI Assistant tracker. A duplicate search found the directly matching, open, assigned [LLM-25407](https://youtrack.jetbrains.com/issue/LLM-25407/Arabic-RTL-Bidirectional-text-rendering-issue-in-Codex-input-field), so no duplicate was created. | After the maintainer signs in to YouTrack, add one implementation-focused comment with the English-first/Persian-majority fixture, BidiLens corpus and limitation links, and an offer of a scoped renderer patch. |
 
 ## Direct organizational outreach
 
