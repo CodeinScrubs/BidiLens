@@ -66,12 +66,14 @@ version.
 - verified `shayanay80` owner access to the `bidilens` npm organization and
   `@bidilens` scope;
 - identified bootstrap maintainer and CODEOWNERS;
-- strict `main` protection requires all 18 CI job contexts, including the
-  Android library/sample build and API 35 UI-test gate plus Apple and Windows
-  compiler gates and the three-platform Rust gate, on an up-to-date branch and
-  linear history, while blocking force-pushes and branch deletion; repository
-  administrators are also subject to these checks, so CI-outage recovery
-  requires an explicit, auditable protection-setting change;
+- strict `main` protection requires all 23 verification contexts: the 18 CI
+  jobs (including the Android library/sample build, API 35 UI-test gate, Apple
+  and Windows compiler gates, and three-platform Rust gate) plus five CodeQL
+  language analyses for JavaScript/TypeScript, Kotlin, C#, Swift, and Rust. The
+  branch must be up to date and use linear history, while force-pushes and
+  branch deletion are blocked; repository administrators are also subject to
+  these checks, so CI-outage recovery requires an explicit, auditable
+  protection-setting change;
 - GitHub Private Vulnerability Reporting and least-privilege workflow defaults;
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication

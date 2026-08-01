@@ -18,6 +18,16 @@ support SLA.
 Include a minimal reproduction, affected package/version, expected impact,
 whether untrusted content is required, and any suggested remediation.
 
+## Automated security verification
+
+Pull requests, pushes to `main`, and weekly scheduled runs use CodeQL's
+`security-extended` queries for JavaScript/TypeScript, Kotlin, C#, Swift, and
+Rust. Compiled Kotlin and Swift analysis uses explicit production-relevant
+build commands so those sources are extracted rather than silently skipped.
+The regular CI workflow also performs the pinned dependency audit and validates
+the generated CycloneDX SBOM. These automated gates supplement, but do not
+replace, independent security review or private vulnerability reports.
+
 ## Bidi security scope
 
 Hidden directional controls can change visual order without changing logical
