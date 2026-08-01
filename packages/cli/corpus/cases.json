@@ -215,6 +215,99 @@
     ]
   },
   {
+    "id": "fa-identifier-trailing-punctuation-001",
+    "description": "Sentence punctuation after an identifier stays outside its LTR isolation.",
+    "text": "این React.",
+    "words": [
+      "این",
+      "React",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "identifier"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "React",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ]
+  },
+  {
+    "id": "fa-email-leading-punctuation-001",
+    "description": "Leading punctuation before an email stays outside its LTR isolation.",
+    "text": "ایمیل +user@example.com",
+    "words": [
+      "ایمیل",
+      "+",
+      "user@example.com"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "email"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "user@example.com",
+        "direction": "ltr",
+        "kind": "email"
+      }
+    ]
+  },
+  {
+    "id": "fa-path-trailing-punctuation-001",
+    "description": "Trailing punctuation after a path stays outside its LTR isolation.",
+    "text": "مسیر src/index.ts-",
+    "words": [
+      "مسیر",
+      "src/index.ts",
+      "-"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "path"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "src/index.ts",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ]
+  },
+  {
     "id": "fa-number-latin-adjacency-001",
     "description": "Digits immediately followed by Latin letters are not misclassified as a standalone number.",
     "text": "سلام 123abc",

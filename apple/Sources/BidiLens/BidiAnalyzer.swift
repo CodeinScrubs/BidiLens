@@ -16,9 +16,9 @@ public enum BidiAnalyzer {
         (#"</?[A-Za-z][^<>\r\n]*>"#, .html, []),
         (#"\$\$[^\r\n]*?\$\$|\$[^\$\r\n]+\$|\\\([^\r\n]*?\\\)"#, .math, []),
         (#"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}"']+"#, .url, [.caseInsensitive]),
-        (#"(?<![A-Za-z0-9_])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])"#, .email, [.caseInsensitive]),
+        (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])"#, .email, [.caseInsensitive]),
         (#"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}]+"#, .path, []),
-        (#"(?<![A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?![A-Za-z0-9_])"#, .path, []),
+        (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"#, .path, []),
         (#"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*"#, .identifier, [.caseInsensitive]),
         (#"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"#, .identifier, []),
         (#"(?<![A-Za-z0-9_])(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+"#, .command, []),
@@ -154,7 +154,7 @@ public enum BidiAnalyzer {
         }
 
         if let regex = try? NSRegularExpression(
-            pattern: #"(?<![A-Za-z0-9_])[A-Za-z][A-Za-z0-9_.-]*(?![A-Za-z0-9_])"#,
+            pattern: #"(?<![A-Za-z0-9_])[A-Za-z][A-Za-z0-9_.-]*(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"#,
             options: []
         ) {
             for match in regex.matches(in: text, range: fullRange) {

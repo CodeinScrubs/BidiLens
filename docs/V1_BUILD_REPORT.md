@@ -50,10 +50,10 @@ opposite-direction runs.
 | `@bidilens/terminal` | Complete and tested | ANSI-aware conservative output; emulator shaping remains host-dependent |
 | `@bidilens/cli` | Complete and tested | inspect/render/test/audit/lint/security-scan/sanitize; human/JSON/SARIF; real packed binary |
 | Bundled GitHub Action | Complete and tested | Node 24 audit/corpus action, human/JSON/SARIF, workspace-safe report path, real exit codes; source and generated-bundle probes |
-| React/Vite playground | Complete and tested | Static/offline; EN/FA UI, policy/security controls, adjustable stream, live four-way comparison, AST/evidence/isolation/security, searchable 925-case asset, copy verification, JSON/semantic HTML export, hash state and explicit theme; three-browser flow |
-| Corpus | Partial (with exact missing functionality) | 925 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
+| React/Vite playground | Complete and tested | Static/offline; EN/FA UI, policy/security controls, adjustable stream, live four-way comparison, AST/evidence/isolation/security, searchable 928-case asset, copy verification, JSON/semantic HTML export, hash state and explicit theme; three-browser flow |
+| Corpus | Partial (with exact missing functionality) | 928 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
 | VS Code, Electron, PDF | Unsupported (with technical reason) | No implementations exist; hollow packages were rejected and these require host-specific security/print tests |
-| Native Android | Implemented and published after the immutable 0.2.0 web release | Signed Maven Central `0.1.1` core, Views, and Compose artifacts; sample APK; current source verifies 925 cases while the published release predates the seven boundary-regression fixtures; JVM/Robolectric tests; lint/AAR build; and API 35/36 emulator UI evidence. This does not alter the historical 0.2.0 npm artifacts |
+| Native Android | Implemented and published after the immutable 0.2.0 web release | Signed Maven Central `0.1.1` core, Views, and Compose artifacts; sample APK; current source verifies 928 cases while the published release predates the ten boundary-regression fixtures; JVM/Robolectric tests; lint/AAR build; and API 35/36 emulator UI evidence. This does not alter the historical 0.2.0 npm artifacts |
 | Flutter, React Native, Swift | Unsupported (with technical reason) | No implementations or executable SDK evidence exist in this repository |
 | Upstream AI-product integrations | External review in progress; no adoption | One host-tested Hermes TUI patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508); tailored evidence requests are public for six additional project families. No review, merge, pilot, deployment, or endorsement is claimed; see the [outreach log](OUTREACH_LOG.md). |
 
@@ -64,7 +64,7 @@ opposite-direction runs.
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
 | Vitest within `check` | 16 files, 392 tests pass |
 | Coverage (seeded run) | 91.85% statements, 85.80% branches, 94.48% functions, 94.76% lines; core 95.73%, Markdown 97.29%, Playwright helpers 100% lines |
-| `pnpm run corpus:check` | 925/925; 0 native-speaker-reviewed |
+| `pnpm run corpus:check` | 928/928; 0 native-speaker-reviewed |
 | `pnpm run android:check` | Kotlin core/Views/Compose unit suites, Android lint, all debug assemblies, and the sample APK pass with JDK 21 and SDK 36 |
 | Android device gates | 3/3 Views and 3/3 Compose UI tests pass locally on Android 16/API 36.1; CI defines a pinned API 35 emulator gate |
 | `pnpm run test:visual` | 24/24 across Chromium, Firefox, WebKit on the Windows/Arial baseline OS, including real standalone-module loading and the bilingual playground's controls/corpus/copy/theme/exports; CI aligns pixel and geometry checks to that OS while Linux runs semantic/build/package gates |
@@ -194,7 +194,7 @@ local numbers, not a service-level objective.
 
 The canonical checkout is the strongest reproducible JavaScript/web
 implementation among the local sibling folders: 12 public packages, 16 test
-files with 391 tests, 925 fixtures, current generated Unicode data, real
+files with 391 tests, 928 fixtures, current generated Unicode data, real
 three-engine visual evidence, and clean package-consumer gates. Broader
 native/desktop ideas found in sibling documentation are retained in the
 [traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.

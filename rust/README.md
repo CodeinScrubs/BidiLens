@@ -74,7 +74,7 @@ cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D 
 cargo test --manifest-path rust/Cargo.toml --all-targets
 ```
 
-The conformance suite checks all 925 shared direction fixtures, every declared
+The conformance suite checks all 928 shared direction fixtures, every declared
 isolation plan, security expectations, index conversions, invalid options, and
 the LTR identity contract. CI repeats the gate on Linux, macOS, and Windows.
 See the [Rust build report](BUILD_REPORT.md) and project-wide

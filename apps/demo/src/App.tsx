@@ -102,7 +102,7 @@ const COPY = {
     share: 'Copy share link', exportJson: 'Export JSON', exportHtml: 'Export semantic HTML', verifyCopy: 'Verify logical copy',
     comparison: 'Live four-way comparison', comparisonHelp: 'The current immutable input under four base-direction approaches.',
     browser: 'Browser default', naive: 'Naive global RTL', auto: 'dir=auto', toolkit: 'BidiLens content-majority',
-    corpus: 'Offline corpus browser', corpusHelp: 'Search all 925 bundled cases and load one into the playground.',
+    corpus: 'Offline corpus browser', corpusHelp: 'Search all 928 bundled cases and load one into the playground.',
     corpusSearch: 'Search fixture ID, description, tag, or text', load: 'Load', reviewed: 'native reviewed',
     primitives: 'Isolation primitives', primitivesHelp: 'Identifiers remain readable inside RTL prose.',
     language: 'فارسی', theme: 'Dark theme',

@@ -206,6 +206,27 @@ const rtlAdjacentTechnicalCases = [
     text: 'یک@abcdefghij/pkg',
     token: '@abcdefghij/pkg',
     kind: 'identifier'
+  },
+  {
+    id: 'fa-identifier-trailing-punctuation-001',
+    description: 'Sentence punctuation after an identifier stays outside its LTR isolation.',
+    text: 'این React.',
+    token: 'React',
+    kind: 'identifier'
+  },
+  {
+    id: 'fa-email-leading-punctuation-001',
+    description: 'Leading punctuation before an email stays outside its LTR isolation.',
+    text: 'ایمیل +user@example.com',
+    token: 'user@example.com',
+    kind: 'email'
+  },
+  {
+    id: 'fa-path-trailing-punctuation-001',
+    description: 'Trailing punctuation after a path stays outside its LTR isolation.',
+    text: 'مسیر src/index.ts-',
+    token: 'src/index.ts',
+    kind: 'path'
   }
 ] as const;
 

@@ -72,6 +72,30 @@ internal val generatedCorpusFixtures = listOf(
             ),
         ),
         CorpusFixture(
+            id = "fa-identifier-trailing-punctuation-001",
+            text = "این React.",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("React", BidiDirection.LTR, BidiIsolationKind.IDENTIFIER)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-email-leading-punctuation-001",
+            text = "ایمیل +user@example.com",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("user@example.com", BidiDirection.LTR, BidiIsolationKind.EMAIL)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-path-trailing-punctuation-001",
+            text = "مسیر src/index.ts-",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("src/index.ts", BidiDirection.LTR, BidiIsolationKind.PATH)
+            ),
+        ),
+        CorpusFixture(
             id = "fa-number-latin-adjacency-001",
             text = "سلام 123abc",
             expected = BidiDirection.RTL,
