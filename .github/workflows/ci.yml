@@ -226,10 +226,15 @@ jobs:
         working-directory: windows
         run: |
           dotnet build tests/BidiLens.Tests/BidiLens.Tests.csproj --configuration Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet run --project tests/BidiLens.Tests/BidiLens.Tests.csproj --configuration Release --no-build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet build samples/BidiLens.Wpf.Sample/BidiLens.Wpf.Sample.csproj --configuration Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet pack src/BidiLens.Core/BidiLens.Core.csproj --configuration Release --no-build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet pack src/BidiLens.Wpf/BidiLens.Wpf.csproj --configuration Release --no-build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
   rust-native:
     name: Rust core (${{ matrix.os }})
