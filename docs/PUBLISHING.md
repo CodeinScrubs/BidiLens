@@ -66,12 +66,12 @@ version.
 - verified `shayanay80` owner access to the `bidilens` npm organization and
   `@bidilens` scope;
 - identified bootstrap maintainer and CODEOWNERS;
-- strict `main` protection requires all 15 CI job contexts, including the
+- strict `main` protection requires all 18 CI job contexts, including the
   Android library/sample build and API 35 UI-test gate plus Apple and Windows
-  compiler gates, on an up-to-date branch and linear history, while blocking
-  force-pushes, branch deletion, and unresolved review conversations; the
-  sole-maintainer administrative bypass remains available for CI-outage
-  recovery;
+  compiler gates and the three-platform Rust gate, on an up-to-date branch and
+  linear history, while blocking force-pushes and branch deletion; repository
+  administrators are also subject to these checks, so CI-outage recovery
+  requires an explicit, auditable protection-setting change;
 - GitHub Private Vulnerability Reporting and least-privilege workflow defaults;
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication
@@ -127,6 +127,7 @@ support, and company endorsement remain unclaimed.
 From a clean checkout with Node.js 22.12+ or 24 and pnpm 10.27.0:
 
 ```bash
+npm install --global corepack@0.34.1
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run verify:production

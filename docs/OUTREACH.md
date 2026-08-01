@@ -61,6 +61,7 @@ Thank you,
 ## Reviewer fast path
 
 ```bash
+npm install --global corepack@0.34.1
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run check

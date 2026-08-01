@@ -11,11 +11,16 @@ structured issue forms. See [SUPPORT.md](SUPPORT.md) for routing guidance.
 ## Development
 
 ```bash
+npm install --global corepack@0.34.1
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run check
 pnpm run test:visual
 ```
+
+Corepack `0.34.1` is pinned because it supports Node 22.12 and contains the
+current package-manager signing keys; the older Corepack bundled with Node
+22.12 cannot authenticate pnpm 10.27.0.
 
 Android changes additionally require JDK 21 and an Android SDK:
 

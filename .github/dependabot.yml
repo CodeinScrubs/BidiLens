@@ -27,6 +27,12 @@ updates:
       - dependency-name: "typescript"
         update-types:
           - version-update:semver-major
+      # jsdom 30 requires Node 22.22.2 or 24.15.0. Keep the development
+      # harness compatible with the public Node 22.12 runtime floor until a
+      # deliberate BidiLens major/minor compatibility decision raises it.
+      - dependency-name: "jsdom"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
