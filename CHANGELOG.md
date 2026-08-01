@@ -13,6 +13,9 @@ is published under the public `@bidilens` npm scope.
 - Documented a Node-22.12-compatible Corepack bootstrap and deferred jsdom 30,
   whose upstream runtime floor would otherwise narrow BidiLens contributor
   compatibility without an explicit support decision.
+- Added pinned, weekly and pull-request CodeQL `security-extended` analysis for
+  JavaScript/TypeScript, Kotlin, C#, Swift, and Rust, including explicit
+  compiler extraction for the native Kotlin and Swift surfaces.
 
 ### Windows platforms
 
