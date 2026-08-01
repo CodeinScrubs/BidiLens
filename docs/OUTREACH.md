@@ -30,7 +30,7 @@ wrappers, styles, or source changes.
 The repository includes Unicode 17-derived classification, per-block direction,
 semantic isolation, streaming reconciliation, bidi-control auditing, adapters
 for major web renderers, native Kotlin/Views/Compose modules, compiler-tested
-SwiftUI/UIKit and .NET/WPF adapters, 918 direction fixtures, three-browser
+SwiftUI/UIKit and .NET/WPF adapters, 923 direction fixtures, three-browser
 tests, and Android/iOS simulator tests. Twelve public npm packages include provenance;
 three signed Maven Central modules, source-only Apple/Windows distribution, and
 missing external validation are documented explicitly.

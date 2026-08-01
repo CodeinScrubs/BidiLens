@@ -31,6 +31,12 @@ pub struct TechnicalTokenRange {
     pub kind: TechnicalTokenKind,
 }
 
+#[derive(Clone, Debug)]
+struct RawTechnicalTokenRange {
+    byte_range: Range<usize>,
+    kind: TechnicalTokenKind,
+}
+
 const DEFAULT_TECHNICAL_IDENTIFIERS: &[&str] = &[
     "ai",
     "api",
@@ -106,38 +112,20 @@ fn built_in_regex(pattern: &'static str) -> Regex {
         .clone()
 }
 
-fn source_range(text: &str, bytes: Range<usize>) -> SourceRange {
-    let before = &text[..bytes.start];
-    let selected = &text[bytes.clone()];
-    let utf16_start = before.encode_utf16().count();
-    let code_point_start = before.chars().count();
-    SourceRange {
-        bytes,
-        utf16: utf16_start..utf16_start + selected.encode_utf16().count(),
-        code_points: code_point_start..code_point_start + selected.chars().count(),
-    }
-}
-
 fn add_range(
-    ranges: &mut Vec<TechnicalTokenRange>,
-    source: &str,
+    ranges: &mut Vec<RawTechnicalTokenRange>,
     byte_range: Range<usize>,
     kind: TechnicalTokenKind,
 ) {
     if byte_range.is_empty() {
         return;
     }
-    ranges.push(TechnicalTokenRange {
-        text: source[byte_range.clone()].to_owned(),
-        source_range: source_range(source, byte_range.clone()),
-        byte_range,
-        kind,
-    });
+    ranges.push(RawTechnicalTokenRange { byte_range, kind });
 }
 
 fn add_matches(
     source: &str,
-    ranges: &mut Vec<TechnicalTokenRange>,
+    ranges: &mut Vec<RawTechnicalTokenRange>,
     pattern: &'static str,
     kind: TechnicalTokenKind,
     group: usize,
@@ -158,7 +146,6 @@ fn add_matches(
         }
         add_range(
             ranges,
-            source,
             found.start()..found.start() + normalized.len(),
             kind,
         );
@@ -205,7 +192,7 @@ fn is_ipv6(value: &str) -> bool {
     }
 }
 
-fn add_code_ranges(source: &str, ranges: &mut Vec<TechnicalTokenRange>) {
+fn add_code_ranges(source: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
     #[derive(Clone, Copy)]
     struct Fence {
         marker: u8,
@@ -260,7 +247,7 @@ fn add_code_ranges(source: &str, ranges: &mut Vec<TechnicalTokenRange>) {
     });
     if has_outside_natural {
         for range in closed_fences {
-            add_range(ranges, source, range, TechnicalTokenKind::Code);
+            add_range(ranges, range, TechnicalTokenKind::Code);
         }
     }
 
@@ -321,7 +308,6 @@ fn add_code_ranges(source: &str, ranges: &mut Vec<TechnicalTokenRange>) {
             let end = closing_start + delimiter_length;
             add_range(
                 ranges,
-                source,
                 offset + cursor..offset + end,
                 TechnicalTokenKind::Code,
             );
@@ -373,7 +359,7 @@ pub fn find_technical_token_ranges(
         |_| true,
     );
 
-    let urls = built_in_regex(r#"(?i)\b(?:https?|ftp)://[^\s<>{}\"']+"#);
+    let urls = built_in_regex(r#"(?i)(?-u:\b)(?:https?|ftp)://[^\s<>{}\"']+"#);
     for found in urls.find_iter(text) {
         let mut value = trim_technical_punctuation(found.as_str());
         for (open, close) in [('(', ')'), ('[', ']'), ('{', '}')] {
@@ -391,7 +377,6 @@ pub fn find_technical_token_ranges(
         }
         add_range(
             &mut ranges,
-            text,
             found.start()..found.start() + value.len(),
             TechnicalTokenKind::Url,
         );
@@ -400,7 +385,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b",
+        r"(?i)(?-u:\b)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?-u:\b)",
         TechnicalTokenKind::Email,
         0,
         |value| value,
@@ -418,7 +403,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"\b(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)\b",
+        r"(?-u:\b)(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?-u:\b)",
         TechnicalTokenKind::Path,
         0,
         |value| value,
@@ -445,7 +430,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r#"\b(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|\"[^\"\r\n]*\"))+"#,
+        r#"(?-u:\b)(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|\"[^\"\r\n]*\"))+"#,
         TechnicalTokenKind::Command,
         0,
         |value| value,
@@ -454,7 +439,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b",
+        r"(?-u:\b)(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?-u:\b)",
         TechnicalTokenKind::Number,
         0,
         |value| value,
@@ -481,7 +466,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"\b[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?\b",
+        r"(?-u:\b)[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?-u:\b)",
         TechnicalTokenKind::Number,
         0,
         |value| value,
@@ -490,7 +475,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"(?i)\b[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?\b",
+        r"(?i)(?-u:\b)[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?-u:\b)",
         TechnicalTokenKind::Number,
         0,
         |value| value,
@@ -499,7 +484,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"\bv?[0-9]+(?:\.[0-9]+){1,}\b",
+        r"(?-u:\b)v?[0-9]+(?:\.[0-9]+){1,}(?-u:\b)",
         TechnicalTokenKind::Version,
         0,
         |value| value,
@@ -508,7 +493,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"(?i)\b[0-9a-f]{7,40}\b",
+        r"(?i)(?-u:\b)[0-9a-f]{7,40}(?-u:\b)",
         TechnicalTokenKind::Hash,
         0,
         |value| value,
@@ -529,15 +514,10 @@ pub fn find_technical_token_ranges(
         .filter(|value| built_in_regex(r"^[A-Za-z][A-Za-z0-9_.-]*$").is_match(value))
         .map(|value| value.to_ascii_lowercase())
         .collect();
-    let identifiers = built_in_regex(r"\b[A-Za-z][A-Za-z0-9_.-]*\b");
+    let identifiers = built_in_regex(r"(?-u:\b)[A-Za-z][A-Za-z0-9_.-]*(?-u:\b)");
     for found in identifiers.find_iter(text) {
         if is_technical_identifier(found.as_str(), &custom) {
-            add_range(
-                &mut ranges,
-                text,
-                found.range(),
-                TechnicalTokenKind::Identifier,
-            );
+            add_range(&mut ranges, found.range(), TechnicalTokenKind::Identifier);
         }
     }
 
@@ -547,19 +527,45 @@ pub fn find_technical_token_ranges(
             .cmp(&right.byte_range.start)
             .then_with(|| right.byte_range.end.cmp(&left.byte_range.end))
     });
-    let mut merged: Vec<TechnicalTokenRange> = Vec::new();
+    let mut merged: Vec<RawTechnicalTokenRange> = Vec::new();
     for range in ranges {
         if let Some(previous) = merged.last_mut() {
             if range.byte_range.start <= previous.byte_range.end {
                 if range.byte_range.end > previous.byte_range.end {
                     previous.byte_range.end = range.byte_range.end;
-                    previous.source_range = source_range(text, previous.byte_range.clone());
-                    previous.text = text[previous.byte_range.clone()].to_owned();
                 }
                 continue;
             }
         }
         merged.push(range);
     }
+    let mut byte_cursor = 0;
+    let mut utf16_cursor = 0;
+    let mut code_point_cursor = 0;
     merged
+        .into_iter()
+        .map(|range| {
+            for character in text[byte_cursor..range.byte_range.start].chars() {
+                utf16_cursor += character.len_utf16();
+                code_point_cursor += 1;
+            }
+            let utf16_start = utf16_cursor;
+            let code_point_start = code_point_cursor;
+            for character in text[range.byte_range.clone()].chars() {
+                utf16_cursor += character.len_utf16();
+                code_point_cursor += 1;
+            }
+            byte_cursor = range.byte_range.end;
+            TechnicalTokenRange {
+                text: text[range.byte_range.clone()].to_owned(),
+                source_range: SourceRange {
+                    bytes: range.byte_range.clone(),
+                    utf16: utf16_start..utf16_cursor,
+                    code_points: code_point_start..code_point_cursor,
+                },
+                byte_range: range.byte_range,
+                kind: range.kind,
+            }
+        })
+        .collect()
 }

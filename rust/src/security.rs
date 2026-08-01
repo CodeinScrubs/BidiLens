@@ -40,11 +40,21 @@ pub struct SecurityFinding {
 }
 
 /// Non-mutating hidden-control audit.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SecurityReport {
     pub safe: bool,
     pub controls: Vec<BidiControlFinding>,
     pub findings: Vec<SecurityFinding>,
+}
+
+impl Default for SecurityReport {
+    fn default() -> Self {
+        Self {
+            safe: true,
+            controls: Vec::new(),
+            findings: Vec::new(),
+        }
+    }
 }
 
 fn metadata(character: char) -> Option<(&'static str, BidiControlRisk, BidiControlCategory)> {
@@ -73,29 +83,36 @@ fn metadata(character: char) -> Option<(&'static str, BidiControlRisk, BidiContr
     })
 }
 
-fn source_range(text: &str, byte_start: usize, character: char) -> SourceRange {
-    let before = &text[..byte_start];
+fn source_range(
+    byte_start: usize,
+    utf16_start: usize,
+    code_point_start: usize,
+    character: char,
+) -> SourceRange {
     SourceRange {
         bytes: byte_start..byte_start + character.len_utf8(),
-        utf16: before.encode_utf16().count()..before.encode_utf16().count() + character.len_utf16(),
-        code_points: before.chars().count()..before.chars().count() + 1,
+        utf16: utf16_start..utf16_start + character.len_utf16(),
+        code_points: code_point_start..code_point_start + 1,
     }
 }
 
 pub(crate) fn find_bidi_controls(text: &str) -> Vec<BidiControlFinding> {
-    text.char_indices()
-        .filter_map(|(byte_start, character)| {
-            let (name, risk, category) = metadata(character)?;
-            Some(BidiControlFinding {
+    let mut controls = Vec::new();
+    let mut utf16_start = 0;
+    for (code_point_start, (byte_start, character)) in text.char_indices().enumerate() {
+        if let Some((name, risk, category)) = metadata(character) {
+            controls.push(BidiControlFinding {
                 character,
                 code_point: format!("U+{:04X}", u32::from(character)),
                 name,
-                source_range: source_range(text, byte_start, character),
+                source_range: source_range(byte_start, utf16_start, code_point_start, character),
                 risk,
                 category,
-            })
-        })
-        .collect()
+            });
+        }
+        utf16_start += character.len_utf16();
+    }
+    controls
 }
 
 fn control_code(category: BidiControlCategory) -> &'static str {
@@ -203,8 +220,19 @@ pub fn scan_bidi_security(text: &str) -> SecurityReport {
         });
     }
 
-    let characters: Vec<_> = text.char_indices().collect();
-    for (index, (byte_start, character)) in characters.iter().copied().enumerate() {
+    let mut utf16_start = 0;
+    let characters: Vec<_> = text
+        .char_indices()
+        .enumerate()
+        .map(|(code_point_start, (byte_start, character))| {
+            let positioned = (byte_start, character, utf16_start, code_point_start);
+            utf16_start += character.len_utf16();
+            positioned
+        })
+        .collect();
+    for (index, (byte_start, character, utf16_start, code_point_start)) in
+        characters.iter().copied().enumerate()
+    {
         let (code, message, risk) = match character {
             '\u{200B}' => (
                 "HIDDEN_ZERO_WIDTH_SPACE",
@@ -238,7 +266,7 @@ pub fn scan_bidi_security(text: &str) -> SecurityReport {
         findings.push(SecurityFinding {
             code,
             message: message.to_owned(),
-            source_range: source_range(text, byte_start, character),
+            source_range: source_range(byte_start, utf16_start, code_point_start, character),
             risk,
         });
     }

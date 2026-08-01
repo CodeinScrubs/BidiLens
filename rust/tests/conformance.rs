@@ -1,8 +1,9 @@
 use std::collections::BTreeSet;
+use std::time::{Duration, Instant};
 
 use bidilens_core::{
     AnalysisOptions, DetectionStrategy, Direction, Intervention, IsolationKind, OptionsError,
-    analyze, detect_direction, find_technical_token_ranges, format_for_display,
+    SecurityReport, analyze, detect_direction, find_technical_token_ranges, format_for_display,
     needs_bidi_intervention, plan_inline_isolation, scan_bidi_security,
 };
 use serde::Deserialize;
@@ -61,7 +62,7 @@ fn shared_corpus_direction_contract() {
     let fixtures = corpus();
     assert_eq!(
         fixtures.len(),
-        918,
+        923,
         "corpus size changed; review the Rust gate"
     );
     let options = AnalysisOptions::default();
@@ -303,6 +304,57 @@ fn security_reports_controls_balance_and_invisibles() {
     assert!(codes.contains("BIDI_UNCLOSED_EMBEDDING"));
     assert!(codes.contains("HIDDEN_ZERO_WIDTH_SPACE"));
     assert!(!report.safe);
+}
+
+#[test]
+fn default_security_report_matches_an_empty_scan() {
+    assert_eq!(SecurityReport::default(), scan_bidi_security(""));
+}
+
+#[test]
+fn security_scan_avoids_quadratic_offsets_for_dense_invisible_text() {
+    const FINDINGS: usize = 20_000;
+    let source = "\u{200B}".repeat(FINDINGS);
+    let started = Instant::now();
+    let report = scan_bidi_security(&source);
+    let elapsed = started.elapsed();
+
+    assert_eq!(report.findings.len(), FINDINGS);
+    assert_eq!(
+        report.findings.last().expect("last finding").source_range,
+        bidilens_core::SourceRange {
+            bytes: (source.len() - '\u{200B}'.len_utf8())..source.len(),
+            utf16: (FINDINGS - 1)..FINDINGS,
+            code_points: (FINDINGS - 1)..FINDINGS,
+        }
+    );
+    assert!(
+        elapsed < Duration::from_secs(2),
+        "dense security scan took {elapsed:?}; source offsets may have regressed to quadratic work"
+    );
+}
+
+#[test]
+fn technical_scan_attaches_dense_source_offsets_after_merging() {
+    const TOKENS: usize = 10_000;
+    let source = "React ".repeat(TOKENS);
+    let started = Instant::now();
+    let ranges = find_technical_token_ranges(&source, &[]);
+    let elapsed = started.elapsed();
+
+    assert_eq!(ranges.len(), TOKENS);
+    assert_eq!(
+        ranges.last().expect("last range").source_range,
+        bidilens_core::SourceRange {
+            bytes: ((TOKENS - 1) * 6)..((TOKENS - 1) * 6 + 5),
+            utf16: ((TOKENS - 1) * 6)..((TOKENS - 1) * 6 + 5),
+            code_points: ((TOKENS - 1) * 6)..((TOKENS - 1) * 6 + 5),
+        }
+    );
+    assert!(
+        elapsed < Duration::from_secs(2),
+        "dense technical scan took {elapsed:?}; source offsets may have regressed to quadratic work"
+    );
 }
 
 #[test]

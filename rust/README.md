@@ -2,7 +2,7 @@
 
 `bidilens-core` is the native Rust direction-analysis and inline-isolation core
 for mixed right-to-left and left-to-right text. It has no JavaScript runtime,
-network access, global state, or UI-framework dependency.
+network access, process-wide configuration, or UI-framework dependency.
 
 The crate is currently source-distributed and deliberately has
 `publish = false`. It is not on crates.io, is not a Zed plugin, and has no
@@ -74,7 +74,7 @@ cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D 
 cargo test --manifest-path rust/Cargo.toml --all-targets
 ```
 
-The conformance suite checks all 918 shared direction fixtures, every declared
+The conformance suite checks all 923 shared direction fixtures, every declared
 isolation plan, security expectations, index conversions, invalid options, and
 the LTR identity contract. CI repeats the gate on Linux, macOS, and Windows.
 See the [Rust build report](BUILD_REPORT.md) and project-wide
