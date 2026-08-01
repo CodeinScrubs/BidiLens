@@ -52,7 +52,7 @@
     "@bidilens/core": "workspace:*"
   },
   "devDependencies": {
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "tsup": "^8.5.1"
   },
   "engines": {
