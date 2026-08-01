@@ -70,6 +70,35 @@
     ]
   },
   {
+    "id": "fa-adjacent-uppercase-url-001",
+    "description": "An uppercase-scheme URL immediately following an RTL letter keeps its full technical range.",
+    "text": "یکHTTPS://example.com",
+    "words": [
+      "یک",
+      "HTTPS://example.com"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "url"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "HTTPS://example.com",
+        "direction": "ltr",
+        "kind": "url"
+      }
+    ]
+  },
+  {
     "id": "fa-adjacent-email-001",
     "description": "An email immediately following an RTL letter keeps its full technical range.",
     "text": "سلامuser@example.com",
@@ -302,6 +331,35 @@
     "expectedIsolations": [
       {
         "text": "src/index.ts",
+        "direction": "ltr",
+        "kind": "path"
+      }
+    ]
+  },
+  {
+    "id": "fa-path-dot-component-001",
+    "description": "A path with a dot-prefixed intermediate component remains one LTR isolation.",
+    "text": "مسیر src/.config/file",
+    "words": [
+      "مسیر",
+      "src/.config/file"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "path"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "src/.config/file",
         "direction": "ltr",
         "kind": "path"
       }

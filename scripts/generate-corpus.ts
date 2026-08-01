@@ -173,6 +173,13 @@ const rtlAdjacentTechnicalCases = [
     kind: 'url'
   },
   {
+    id: 'fa-adjacent-uppercase-url-001',
+    description: 'An uppercase-scheme URL immediately following an RTL letter keeps its full technical range.',
+    text: 'یکHTTPS://example.com',
+    token: 'HTTPS://example.com',
+    kind: 'url'
+  },
+  {
     id: 'fa-adjacent-email-001',
     description: 'An email immediately following an RTL letter keeps its full technical range.',
     text: 'سلامuser@example.com',
@@ -226,6 +233,13 @@ const rtlAdjacentTechnicalCases = [
     description: 'Trailing punctuation after a path stays outside its LTR isolation.',
     text: 'مسیر src/index.ts-',
     token: 'src/index.ts',
+    kind: 'path'
+  },
+  {
+    id: 'fa-path-dot-component-001',
+    description: 'A path with a dot-prefixed intermediate component remains one LTR isolation.',
+    text: 'مسیر src/.config/file',
+    token: 'src/.config/file',
     kind: 'path'
   }
 ] as const;

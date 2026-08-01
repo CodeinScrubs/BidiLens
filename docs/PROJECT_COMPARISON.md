@@ -16,7 +16,7 @@ folders and do not treat README claims as proof.
 | `v1.3-Her` | 11 | 11 | 197 | 3 / 64 | 200 |
 | `v1.4-Her` working tree | 16 | 21 | 745 | 1 / 18 | 310 |
 | `v1.5-Her` working tree | 16 | 23 | 997 | 4 / 82 | 616 |
-| canonical BidiLens checkout | 12 | 15 | 1,248 | 3 / 63 | 928 |
+| canonical BidiLens checkout | 12 | 15 | 1,248 | 3 / 63 | 930 |
 
 Static assertion counts are only a depth signal; the canonical total is 1,311
 across package and visual tests. The canonical checkout also runs those tests,
@@ -277,7 +277,7 @@ of rendering correctness, and BidiLens retains the user-selected MIT license.
 | Trojan-Source-style scanner | Implemented with balance/cross-isolate checks, modes, dual offsets, and SARIF |
 | Conservative terminal behavior | Implemented with complete ECMA-48 CSI/string-control masking; control insertion remains opt-in |
 | CLI inspection/audit/render/test/sanitize | Implemented with deterministic directory filtering, unconditional explicit-file scans, and symlink skipping |
-| Corpus schemas and numbered words | Implemented with JSON Schema and 928 direction-exact cases; 207 also carry exact isolation expectations, five carry security-code expectations, and numbered-order arrays are schema/permutation fixtures rather than rendered-geometry oracles |
+| Corpus schemas and numbered words | Implemented with JSON Schema and 930 direction-exact cases; 209 also carry exact isolation expectations, five carry security-code expectations, and numbered-order arrays are schema/permutation fixtures rather than rendered-geometry oracles |
 | Package/release evidence | Implemented with examples executed from all tarballs, licenses, ESM type analysis, pack/install consumer, audit, and SBOM command |
 | Reusable Playwright assertions | Implemented as a public package and exercised for direction, source text, isolation metadata, logical selection/clipboard, and physical edge geometry in the three-browser suite |
 | React Native adapter | Not copied from `v1.4-Her` or `v1.5-Her`: their tests never import the adapter and there is no iOS/Android rendering gate. Canonical instead implements native Android directly with Kotlin core, Views, Compose, a sample, generated corpus parity, and device tests. React Native remains deferred until it has equivalent adapter-level iOS/Android evidence |
@@ -294,7 +294,7 @@ of rendering correctness, and BidiLens retains the user-selected MIT license.
 | Reset with replacement text | Adopted atomically in the shared core stream and every framework adapter; one state transition replaces the source |
 | Wider multilingual examples | 196 substantive strings imported under their Apache-2.0 notice; four empty/whitespace-only cases were excluded because they add no linguistic oracle; canonical outputs were recomputed and 17 documented policy differences were retained rather than copying sibling labels blindly |
 | No-build custom element | Adopted as a genuinely self-contained `standalone.js`; normal imports remain externalized for deduplication, and all three browsers load the packed design without an import map |
-| Demo presets and inspectors | Adopted and extended into a complete offline bilingual playground: policy/security and stream controls, four-way live input, AST/evidence/isolation/security, searchable 928-case asset, copy verification, semantic HTML/JSON export, hash state, theme, and an opt-in Pages workflow |
+| Demo presets and inspectors | Adopted and extended into a complete offline bilingual playground: policy/security and stream controls, four-way live input, AST/evidence/isolation/security, searchable 930-case asset, copy verification, semantic HTML/JSON export, hash state, theme, and an opt-in Pages workflow |
 | Cross-platform CI | Complete `check` and example jobs pass on Windows and macOS in addition to Ubuntu Node 22/24; Android adds unit/lint/AAR/APK and API 35 emulator jobs; public hosted results are linked from the release report |
 | Machine-readable benchmark history | Adopted as manual/weekly JSON artifacts; kept advisory because shared CI hardware is noisy |
 | CLI color and `.gitignore` plan | Color work is unnecessary because canonical CLI output contains no ANSI styling. Recursive audits already restrict traversal to known text extensions, skip symlinks/common generated directories, and still scan explicitly named files. `.gitignore` is deliberately not an implicit security boundary; a future opt-in requires full nested-pattern semantics rather than a partial matcher |
@@ -304,7 +304,7 @@ of rendering correctness, and BidiLens retains the user-selected MIT license.
 | Simplistic mixed-script/confusable warning | Rejected pending a sourced UTS #39 policy to avoid false security claims and ordinary multilingual false positives |
 | `innerHTML` custom element and ambiguous package side effects | Rejected; canonical constructs text/element nodes, keeps its main import side-effect-free, and limits global registration to explicit `/auto` and standalone entries |
 
-The general corpus row above is now 928 cases, not 722: 732 authored/generated
+The general corpus row above is now 930 cases, not 722: 734 authored/generated
 canonical fixtures plus the 196 attributed comparison seeds.
 
 ## Evidence-calibrated ratings
