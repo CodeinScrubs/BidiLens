@@ -125,6 +125,7 @@ import '@bidilens/web-component/auto';
 ## توسعه و بررسی
 
 ```bash
+npm install --global corepack@0.34.1
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run check
