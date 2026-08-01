@@ -273,6 +273,7 @@ does not alter source.
 ## Reproduce the release evidence
 
 ```bash
+npm install --global corepack@0.34.1
 corepack enable
 pnpm install --frozen-lockfile
 pnpm run verify:production

@@ -5,6 +5,15 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+### Release and verification
+
+- Pinned the supported CI runtimes to exact Node 22.12.0 and 24.15.0 releases
+  so the documented minimum is exercised instead of silently floating to the
+  newest release in each major line.
+- Documented a Node-22.12-compatible Corepack bootstrap and deferred jsdom 30,
+  whose upstream runtime floor would otherwise narrow BidiLens contributor
+  compatibility without an explicit support decision.
+
 ### Windows platforms
 
 - Matched .NET technical-token boundaries to the shared ASCII-boundary policy,
