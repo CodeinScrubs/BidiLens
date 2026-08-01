@@ -186,6 +186,64 @@
     ]
   },
   {
+    "id": "fa-adjacent-scoped-package-001",
+    "description": "A scoped package immediately following an RTL letter keeps its full technical range.",
+    "text": "یک@abcdefghij/pkg",
+    "words": [
+      "یک",
+      "@abcdefghij/pkg"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "identifier"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "@abcdefghij/pkg",
+        "direction": "ltr",
+        "kind": "identifier"
+      }
+    ]
+  },
+  {
+    "id": "fa-number-latin-adjacency-001",
+    "description": "Digits immediately followed by Latin letters are not misclassified as a standalone number.",
+    "text": "سلام 123abc",
+    "words": [
+      "سلام",
+      "123abc"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "numeric-boundary",
+      "opposite-direction-run"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "abc",
+        "direction": "ltr",
+        "kind": "opposite-direction-run"
+      }
+    ]
+  },
+  {
     "id": "fa-technical-01-01",
     "description": "RTL fa prose with a identifier token in leading position.",
     "text": "React، این نسخه اکنون برای استفاده آماده است.",

@@ -64,6 +64,22 @@ internal val generatedCorpusFixtures = listOf(
             ),
         ),
         CorpusFixture(
+            id = "fa-adjacent-scoped-package-001",
+            text = "یک@abcdefghij/pkg",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("@abcdefghij/pkg", BidiDirection.LTR, BidiIsolationKind.IDENTIFIER)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-number-latin-adjacency-001",
+            text = "سلام 123abc",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("abc", BidiDirection.LTR, BidiIsolationKind.OPPOSITE_DIRECTION_RUN)
+            ),
+        ),
+        CorpusFixture(
             id = "fa-technical-01-01",
             text = "React، این نسخه اکنون برای استفاده آماده است.",
             expected = BidiDirection.RTL,

@@ -152,6 +152,31 @@ fn add_matches(
     }
 }
 
+fn add_matches_with_unicode_end_boundary(
+    source: &str,
+    ranges: &mut Vec<RawTechnicalTokenRange>,
+    pattern: &'static str,
+    kind: TechnicalTokenKind,
+    group: usize,
+) {
+    let expression = built_in_regex(pattern);
+    let unicode_word = built_in_regex(r"^[\p{L}\p{N}_]$");
+    for captures in expression.captures_iter(source) {
+        let Some(found) = captures.get(group) else {
+            continue;
+        };
+        let followed_by_word = source[found.end()..]
+            .chars()
+            .next()
+            .is_some_and(|character| {
+                unicode_word.is_match(&source[found.end()..found.end() + character.len_utf8()])
+            });
+        if !followed_by_word {
+            add_range(ranges, found.range(), kind);
+        }
+    }
+}
+
 fn trim_technical_punctuation(value: &str) -> &str {
     value.trim_end_matches([
         '.', ',', ';', ':', '!', '?', '\u{060C}', '\u{061B}', '\u{061F}', '\u{3002}', '\u{0964}',
@@ -412,7 +437,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"(?i)(?:^|[^\w@])(@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*)",
+        r"(?i)(?:^|[^A-Za-z0-9_@])(@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*)",
         TechnicalTokenKind::Identifier,
         1,
         |value| value,
@@ -454,14 +479,12 @@ pub fn find_technical_token_ranges(
         |value| value,
         is_ipv6,
     );
-    add_matches(
+    add_matches_with_unicode_end_boundary(
         text,
         &mut ranges,
         r"(?:^|[^\p{L}\p{N}_])(\+?[0-9][0-9 ()-]{6,}[0-9])",
         TechnicalTokenKind::Number,
         1,
-        |value| value,
-        |_| true,
     );
     add_matches(
         text,
@@ -499,14 +522,12 @@ pub fn find_technical_token_ranges(
         |value| value,
         |_| true,
     );
-    add_matches(
+    add_matches_with_unicode_end_boundary(
         text,
         &mut ranges,
         r"(?:^|[^\p{L}\p{N}_])([+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u{0660}-\u{0669}]+(?:[\u{066B}\u{066C}][\u{0660}-\u{0669}]+)?|[\u{06F0}-\u{06F9}]+(?:[.,][\u{06F0}-\u{06F9}]+)?))",
         TechnicalTokenKind::Number,
         1,
-        |value| value,
-        |_| true,
     );
 
     let custom: HashSet<String> = technical_identifiers

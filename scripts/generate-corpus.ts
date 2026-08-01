@@ -199,6 +199,13 @@ const rtlAdjacentTechnicalCases = [
     text: 'متنReact',
     token: 'React',
     kind: 'identifier'
+  },
+  {
+    id: 'fa-adjacent-scoped-package-001',
+    description: 'A scoped package immediately following an RTL letter keeps its full technical range.',
+    text: 'یک@abcdefghij/pkg',
+    token: '@abcdefghij/pkg',
+    kind: 'identifier'
   }
 ] as const;
 
@@ -214,6 +221,17 @@ for (const fixture of rtlAdjacentTechnicalCases) {
     }
   ));
 }
+
+fixtures.push(makeFixture(
+  'fa-number-latin-adjacency-001',
+  'Digits immediately followed by Latin letters are not misclassified as a standalone number.',
+  'سلام 123abc',
+  'rtl',
+  ['fa', 'mixed', 'numeric-boundary', 'opposite-direction-run'],
+  {
+    expectedIsolations: [{ text: 'abc', direction: 'ltr', kind: 'opposite-direction-run' }]
+  }
+));
 
 for (const [phraseIndex, phrase] of rtlPhrases.entries()) {
   for (const [tokenIndex, token] of technicalTokens.entries()) {
