@@ -4,16 +4,16 @@
 
 - 12 public JavaScript packages with implementations, declarations, README,
   license, runnable example, and package-local assertion coverage;
-- 928 schema-validated direction fixtures with numbered logical words;
+- 930 schema-validated direction fixtures with numbered logical words;
 - 0 fixtures currently certified by a native-language reviewer;
 - property-based stream/source/range checks;
-- 179 unit/property/action tests with 92.56% overall and 95.15% core line coverage,
+- 396 unit/property/action tests with 94.80% overall and 95.81% core line coverage,
   including multilingual strict-security false-positive regressions;
 - 24 browser/visual checks spanning Chromium, Firefox, and WebKit, including
   structured Markdown, real Chromium clipboard verification, and no-build
   standalone Web Component loading, plus the full offline bilingual playground
   controls, corpus, copy invariant, theme, and export flow;
-- a self-contained 181,907-byte Node 24 GitHub Action bundle with source tests
+- a self-contained 196,766-byte Node 24 GitHub Action bundle with source tests
   and built-artifact safe/strict-failure probes;
 - reproducible Unicode 17.0.0 source and generated tables;
 - clean tarball installation, strict consumer type-check, runtime imports, and

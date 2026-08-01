@@ -5,6 +5,14 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+### Windows platforms
+
+- Matched .NET technical-token boundaries to the shared ASCII-boundary policy,
+  including RTL-adjacent URLs, email addresses, versions, hashes, identifiers,
+  and scoped packages without absorbing sentence punctuation.
+- Made the Windows CI sequence stop on every failed `dotnet` command so corpus
+  regressions cannot be hidden by a later successful build or package step.
+
 ### Apple platforms
 
 - Added a UIKit-backed SwiftUI `BidiText` renderer that keeps paragraph

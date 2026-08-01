@@ -16,7 +16,7 @@ implementation or adoption claim.
   packages;
 - real typed framework/renderer integrations, SSR tests, examples, and
   package-local assertion depth;
-- 928 schema-validated fixtures and native-review metadata, including 196
+- 930 schema-validated fixtures and native-review metadata, including 196
   attributed comparison-project seeds awaiting native review;
 - Chromium, Firefox, and WebKit visual/geometry/selection tests, structured
   Markdown snapshots, Chromium clipboard verification, and real standalone
@@ -30,7 +30,7 @@ implementation or adoption claim.
 - public npm packages with SLSA provenance, registry-integrity verification,
   an annotated source tag, and a protected human-approved release workflow.
 - native Android Kotlin core, Views and Compose adapters, photographed-case
-  sample, generated 928-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
+  sample, generated 930-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
   API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.1`
   publication, and independently verified public-consumer resolution.
 
@@ -38,13 +38,13 @@ implementation or adoption claim.
 
 - Swift Package core, UIKit adapters, and a UIKit-backed SwiftUI `BidiText`
   renderer with generated Unicode 17 data, independent direction/alignment
-  policy, shared 928-case corpus tests, a runnable core example, macOS
+  policy, shared 930-case corpus tests, a runnable core example, macOS
   verification, and iOS Simulator adapter tests;
 - .NET 8 core and WPF adapters with generated Unicode 17 data, independent
-  direction/alignment policy, shared 928-case executable verification, a
+  direction/alignment policy, shared 930-case executable verification, a
   runnable WPF sample, package builds, and a Windows compiler gate;
 - native Rust core with generated Unicode 17 data, byte/UTF-16/code-point
-  ranges, shared 928-case direction conformance, declared isolation/security
+  ranges, shared 930-case direction conformance, declared isolation/security
   conformance, a runnable example, and Linux/macOS/Windows compiler gates.
 
 These are not yet registry releases or downstream production/accessibility

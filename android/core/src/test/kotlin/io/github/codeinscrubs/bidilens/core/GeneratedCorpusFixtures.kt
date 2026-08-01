@@ -32,6 +32,14 @@ internal val generatedCorpusFixtures = listOf(
             ),
         ),
         CorpusFixture(
+            id = "fa-adjacent-uppercase-url-001",
+            text = "یکHTTPS://example.com",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("HTTPS://example.com", BidiDirection.LTR, BidiIsolationKind.URL)
+            ),
+        ),
+        CorpusFixture(
             id = "fa-adjacent-email-001",
             text = "سلامuser@example.com",
             expected = BidiDirection.RTL,
@@ -93,6 +101,14 @@ internal val generatedCorpusFixtures = listOf(
             expected = BidiDirection.RTL,
             isolations = listOf(
             ExpectedIsolation("src/index.ts", BidiDirection.LTR, BidiIsolationKind.PATH)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-path-dot-component-001",
+            text = "مسیر src/.config/file",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("src/.config/file", BidiDirection.LTR, BidiIsolationKind.PATH)
             ),
         ),
         CorpusFixture(

@@ -22,19 +22,19 @@ public static partial class BidiAnalyzer
         (Pattern(@"```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\r\n]+`+"), TechnicalTokenKind.Code),
         (Pattern(@"</?[A-Za-z][^<>\r\n]*>"), TechnicalTokenKind.Html),
         (Pattern(@"\$\$[^\r\n]*?\$\$|\$[^\$\r\n]+\$|\\\([^\r\n]*?\\\)"), TechnicalTokenKind.Math),
-        (Pattern(@"\b(?:https?|ftp)://[^\s<>{}""']+"), TechnicalTokenKind.Url),
-        (Pattern(@"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", RegexOptions.IgnoreCase), TechnicalTokenKind.Email),
+        (Pattern(@"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}""']+", RegexOptions.IgnoreCase), TechnicalTokenKind.Url),
+        (Pattern(@"(?<![A-Za-z0-9_])[A-Z0-9_][A-Z0-9._%+-]*@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Email),
         (Pattern(@"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}]+"), TechnicalTokenKind.Path),
-        (Pattern(@"\b(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)\b"), TechnicalTokenKind.Path),
-        (Pattern(@"(?<![\w@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*", RegexOptions.IgnoreCase), TechnicalTokenKind.Identifier),
+        (Pattern(@"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"), TechnicalTokenKind.Path),
+        (Pattern(@"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*", RegexOptions.IgnoreCase), TechnicalTokenKind.Identifier),
         (Pattern(@"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"), TechnicalTokenKind.Identifier),
-        (Pattern(@"\b(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|""[^""\r\n]*""))+"), TechnicalTokenKind.Command),
-        (Pattern(@"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![A-Za-z0-9_])(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|""[^""\r\n]*""))+"), TechnicalTokenKind.Command),
+        (Pattern(@"(?<![A-Za-z0-9_])(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![A-Za-z0-9_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![\p{L}\p{N}_])\+?[0-9][0-9 ()-]{6,}[0-9](?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
-        (Pattern(@"\b[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?\b"), TechnicalTokenKind.Number),
-        (Pattern(@"\b[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?\b", RegexOptions.IgnoreCase), TechnicalTokenKind.Number),
-        (Pattern(@"\bv?[0-9]+(?:\.[0-9]+){1,}\b"), TechnicalTokenKind.Version),
-        (Pattern(@"\b[0-9a-f]{7,40}\b", RegexOptions.IgnoreCase), TechnicalTokenKind.Hash),
+        (Pattern(@"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"), TechnicalTokenKind.Version),
+        (Pattern(@"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Hash),
         (Pattern(@"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
     ];
 
@@ -139,7 +139,7 @@ public static partial class BidiAnalyzer
             var technical = DefaultTechnicalIdentifiers.Contains(token)
                 || customIdentifiers?.Contains(token) == true
                 || token.Any(character => char.IsDigit(character) || character is '_' or '.' or '-')
-                || token.All(character => !char.IsLetter(character) || char.IsUpper(character))
+                || token.Length >= 2 && token.All(character => character is >= 'A' and <= 'Z')
                 || Regex.IsMatch(token, "[a-z][A-Z]", RegexOptions.CultureInvariant);
             if (technical) ranges.Add(new(token, match.Index, match.Index + match.Length, TechnicalTokenKind.Identifier));
         }
@@ -531,6 +531,6 @@ public static partial class BidiAnalyzer
         return new(!controls.Any(control => control.Risk == "high"), controls);
     }
 
-    [GeneratedRegex(@"\b[A-Za-z][A-Za-z0-9_.-]*\b", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?<![A-Za-z0-9_])[A-Za-z][A-Za-z0-9_.-]*(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])", RegexOptions.CultureInvariant)]
     private static partial Regex IdentifierPattern();
 }
