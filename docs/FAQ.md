@@ -77,7 +77,7 @@ Provide the exact logical source, expected base direction, numbered words,
 technical tokens, language/script, host renderer, and a minimal screenshot.
 Add a corpus fixture and policy regression test; do not patch the stored order.
 
-## Where are Android, Apple, Windows, Flutter, React Native, VS Code, Electron, and PDF?
+## Where are Android, Apple, Windows, Rust, Flutter, React Native, VS Code, Electron, and PDF?
 
 Android core, Views, and Compose `0.1.1` are signed and public on Maven Central;
 the sample and verification evidence are in the
@@ -87,5 +87,8 @@ Physical OEM/IME/TalkBack and external product validation remain open; see the
 `BidiText` renderer and UIKit adapters, plus a .NET 8/WPF implementation, now live in the
 [Apple](../apple/README.md) and [Windows](../windows/README.md) guides. They
 have build/corpus gates but are not registry-published or physical-device lab
-validated. Flutter, React Native, WinUI, Windows Forms, MAUI, VS Code,
+validated. A source-native [Rust core](../rust/README.md) has generated Unicode
+17 data, shared direction/isolation/security corpus tests, and three-OS CI, but
+it is not published to crates.io and has no editor-specific adapter or adoption
+claim. Flutter, React Native, WinUI, Windows Forms, MAUI, VS Code,
 Electron, and PDF remain explicit [roadmap](ROADMAP.md) work.

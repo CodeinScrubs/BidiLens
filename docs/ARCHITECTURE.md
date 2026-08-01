@@ -226,6 +226,31 @@ when content returns to the pure-LTR no-op path. Physical-left and
 content-relative-start alignment are explicit policies rather than consequences
 of direction detection.
 
+## Native Rust
+
+The `bidilens-core` crate is an independent native implementation with no
+JavaScript runtime or UI-framework dependency:
+
+```text
+&str
+  -> immutable Analysis + SecurityReport
+  -> host-owned direction/alignment metadata or transient isolate controls
+  -> editor, terminal, GUI, or browser engine text layout
+```
+
+Generated copies of the canonical Unicode 17 tables drive binary-search
+classification. Public ranges report Rust byte offsets, UTF-16 code units, and
+Unicode scalar-value offsets so hosts can map results without guessing index
+semantics. The crate validates the same 918 direction fixtures and all declared
+isolation/security fixtures as the other native cores.
+
+Direction and alignment remain separate. The Rust core returns semantic text
+direction only; a GUI host may deliberately place an RTL paragraph at physical
+left without changing that result. Ordinary LTR text in an LTR context returns
+no isolation plan and its display helper returns the exact original value.
+The crate does not include a Zed/editor adapter and does not claim that a host
+has adopted it.
+
 ## Plain text and terminals
 
 Markup is preferred whenever it exists. `@bidilens/terminal` preserves plain
