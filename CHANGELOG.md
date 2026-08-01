@@ -39,6 +39,18 @@ is published under the public `@bidilens` npm scope.
 - Kept the dense Markdown streaming performance gate deterministic under
   coverage instrumentation while retaining its strict rich-parse-count bound.
 
+### Android platforms
+
+- Kept paragraph direction independent from physical alignment in Android
+  Views, including immediate restoration of the caller's original gravity
+  when content-driven alignment is disabled.
+- Expanded Kotlin parity to the 930-case canonical corpus and added Views and
+  Compose regressions for physical-left RTL rendering and pure-LTR no-op
+  behavior.
+- Aligned the root and standalone-consumer Compose compiler plugins on Kotlin
+  2.4.10 and pinned Gradle 9.5.0, the documented compatibility boundary for
+  that Kotlin release, while retaining Android Gradle Plugin 9.3.1.
+
 ## 0.3.0 - 2026-07-28
 
 ### Direction and alignment
