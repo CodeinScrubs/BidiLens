@@ -62,7 +62,7 @@ fn shared_corpus_direction_contract() {
     let fixtures = corpus();
     assert_eq!(
         fixtures.len(),
-        928,
+        930,
         "corpus size changed; review the Rust gate"
     );
     let options = AnalysisOptions::default();
