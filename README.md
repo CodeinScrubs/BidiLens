@@ -25,10 +25,10 @@
 > are signed and public on Maven Central, with a verified sample and evidence
 > bundle in the
 > [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
-> Native Swift/UIKit/SwiftUI and .NET/WPF implementations are present in source with
-> dedicated CI gates, but are not yet registry-published or validated in a
-> physical-device/accessibility lab. Other native/desktop platforms remain
-> explicit roadmap work.
+> Native Swift/UIKit/SwiftUI, .NET/WPF, and Rust core implementations are
+> present in source with dedicated CI gates, but are not yet registry-published
+> or validated in a downstream production/accessibility lab. Other
+> native/desktop platforms remain explicit roadmap work.
 
 BidiLens is an offline, standards-first toolkit for mixed right-to-left and
 left-to-right text in AI chat, Markdown, streaming interfaces, web, Android,
@@ -98,6 +98,8 @@ reordering and shaping; BidiLens supplies the application structure they need.
   user-generated multilingual values;
 - Apple teams using the Swift core, SwiftUI `BidiText`, or UIKit text controls,
   and Windows teams using the .NET core or WPF text controls;
+- Rust application and editor teams that need native, offline block analysis,
+  technical-token isolation, and hidden-control auditing without a JavaScript runtime;
 - security and developer-tool teams auditing invisible bidi controls;
 - maintainers building regression evidence for upstream RTL fixes.
 
@@ -120,14 +122,17 @@ reordering and shaping; BidiLens supplies the application structure they need.
 - safe HTML, DOM, unified/remark/rehype, markdown-it, React, Vue, Svelte, and
   Web Component adapters;
 - a conservative terminal adapter and a scriptable CLI;
-- 918 schema-validated direction fixtures plus property-based random chunking;
+- 928 schema-validated direction fixtures plus property-based random chunking;
 - native Android pure-Kotlin core, non-destructive Views adapter, Compose
   display/editable components, and a runnable photographed-case sample;
 - Android JVM, Robolectric, lint, APK/AAR, and API 35/36 device gates using the
-  same generated 918-case corpus;
+  same generated 928-case corpus;
 - a Swift Package with UIKit `UILabel`, `UITextView`, and `UITextField`
   adapters, a UIKit-backed SwiftUI `BidiText` view, and a .NET 8 core with WPF
   `TextBlock`/`TextBox` adapters;
+- a native Rust core with generated Unicode 17 tables, byte/UTF-16/code-point
+  ranges, all 928 direction fixtures, declared isolation/security conformance,
+  and Linux/macOS/Windows CI;
 - explicit alignment policy on native adapters, allowing an RTL paragraph to
   remain physically left-aligned without changing its base direction;
 - Chromium, Firefox, and WebKit visual regression coverage;
@@ -155,6 +160,7 @@ reordering and shaping; BidiLens supplies the application structure they need.
 | `apple/BidiLens` | Swift Unicode analysis plus non-destructive SwiftUI and UIKit adapters |
 | `windows/BidiLens.Core` | Platform-neutral .NET Unicode analysis |
 | `windows/BidiLens.Wpf` | WPF direction/alignment integration with state restoration |
+| `rust/bidilens-core` | Native Rust analysis, isolation planning, and hidden-control auditing |
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
@@ -172,9 +178,10 @@ each package README for its exact command and supported peer range.
 
 Native Android setup, manifest requirements, Compose and Views examples, and
 the current distribution status are in the [Android guide](android/README.md).
-Source integration for Apple and Windows is documented in the
-[Apple guide](apple/README.md) and [Windows guide](windows/README.md).
-Those two native packages are not yet published to a registry.
+Source integration for Apple, Windows, and Rust is documented in the
+[Apple guide](apple/README.md), [Windows guide](windows/README.md), and
+[Rust guide](rust/README.md). Those three native packages are not yet
+registry-published.
 
 For a no-build browser page, the published Web Component also exposes a
 standalone entry that bundles the core and needs no import map:
@@ -272,6 +279,10 @@ pnpm run verify:production
 
 # Native Android (JDK 21 and an Android SDK)
 pnpm run android:check
+
+# Native Rust (Rust 1.85+)
+cargo test --manifest-path rust/Cargo.toml --all-targets
+cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D warnings
 ```
 
 `verify:production` runs the complete quality, three-browser visual, package
@@ -303,7 +314,8 @@ guarantee about every proprietary renderer. Native Android is implemented,
 emulator-tested, and published as signed Maven Central `0.1.1` artifacts, but
 physical OEM/IME/TalkBack validation and an external production pilot remain
 open. Flutter, React Native, editable SwiftUI, Electron, VS Code, PDF, screen-reader
-laboratory validation, and downstream product patches are not shipped. The npm
+laboratory validation, crates.io publication, and downstream product patches
+are not shipped. The npm
 scope, maintainer identity, package integrity, Maven signatures, and provenance
 are verified; independent review and downstream adoption evidence remain
 adoption gates.

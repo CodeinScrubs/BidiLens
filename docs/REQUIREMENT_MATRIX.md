@@ -29,7 +29,7 @@ Status vocabulary:
 | Every public package has implementation, ≥25 package-local assertions, README/install, and example | Complete and executable | `pnpm run packages:depth` enforces this for all 12 packages; packed examples are also exercised by `pnpm run release:check` |
 | Full source lives in Git; annotated milestone tag after every gate | Partial | Reviewed source is committed to the canonical public Git repository, but only historical tags `m0` and `m1` exist. Missing history is not retroactively fabricated |
 | No fabricated badges, counts, adoption, or publication | Complete for the current tree | Publication is tied to registry/release evidence; the [outreach log](OUTREACH_LOG.md) labels submissions as contact only and makes no merge, audit, pilot, adoption, endorsement, or unverified badge claim |
-| ≥300 corpus fixtures | Complete as a technical corpus; external review incomplete | 918 schema-valid entries; 721 authored template-matrix cases, 196 attributed sibling-project seeds, one user fixture; zero are marked native-speaker-reviewed |
+| ≥300 corpus fixtures | Complete as a technical corpus; external review incomplete | 928 schema-valid entries; 731 authored template-matrix cases, 196 attributed sibling-project seeds, one user fixture; zero are marked native-speaker-reviewed |
 | Automated wrong-versus-correct visual proof | Complete and tested | `tests/visual/flagship.spec.ts` and committed Windows/Arial baselines; Chromium, Firefox, and WebKit gate |
 
 ## Mission and platform scope
@@ -51,7 +51,7 @@ Status vocabulary:
 | CLI commands and CI exit behavior | Complete and tested | `@bidilens/cli`: inspect, lint, render, test, audit/security-scan, sanitize; human/JSON/SARIF; packed binary consumer test |
 | Reusable Playwright helpers | Complete and tested | `@bidilens/playwright`: metadata, logical text, isolation, selection, clipboard and edge geometry; package-local tests plus real Chromium/Firefox/WebKit use |
 | Reusable conformance GitHub Action | Complete and tested | `action/action.yml`; self-contained Node 24 bundle around the real CLI; audit/test, human/JSON/SARIF, stable outputs and exit codes; 43 source assertions plus built safe/strict-failure probes |
-| Playground | Complete and tested | Static/offline Vite app; Markdown; adjustable chunk/speed simulation; policy/security selectors; live arbitrary-input four-way comparison; AST/evidence/isolation/security inspectors; searchable 918-case local corpus asset; logical-copy verifier; JSON/semantic-HTML export; URL state; explicit dark theme; responsive layout; complete EN/FA UI switch. The full flow passes all three browsers |
+| Playground | Complete and tested | Static/offline Vite app; Markdown; adjustable chunk/speed simulation; policy/security selectors; live arbitrary-input four-way comparison; AST/evidence/isolation/security inspectors; searchable 928-case local corpus asset; logical-copy verifier; JSON/semantic-HTML export; URL state; explicit dark theme; responsive layout; complete EN/FA UI switch. The full flow passes all three browsers |
 
 Keeping the dependency-free direction stream and security primitives inside
 `@bidilens/core` is intentional. Parser-specific rich state belongs in
@@ -71,16 +71,17 @@ batch plugin path; it is not misrepresented as a stateful streaming backend.
 
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
-| Android/Jetpack Compose | Implemented, signed, and published; external validation pending | Maven Central `0.1.1` pure Kotlin core, Views and Compose libraries; sample app; generated 918-case corpus; JVM/Robolectric suites; lint/AAR/APK tasks; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
+| Android/Jetpack Compose | Implemented, signed, and published; external validation pending | Maven Central `0.1.1` pure Kotlin core, Views, and Compose libraries; sample app; current source verifies the generated 928-case corpus (the published `0.1.1` release predates the ten boundary-regression fixtures); JVM/Robolectric suites; lint/AAR/APK tasks; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
 | Flutter/Dart | Missing | No package/demo, generated corpus representation, widget/golden tests, or SDK build report |
 | React Native | Missing | No component, generated corpus representation, native tests, or platform build report |
-| Swift Package/SwiftUI/UIKit | Source and hosted simulator/compiler validation complete; physical-device/release validation pending | Swift Package, generated Unicode 17 ranges, copied 918-case corpus, core tests/example, UIKit `UILabel`/`UITextView`/`UITextField` adapters, UIKit-backed SwiftUI `BidiText`, independent physical alignment, and protected macOS/iOS Simulator gates in [CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml). Physical iOS/VoiceOver evidence, sample app, editable SwiftUI integration, and registry publication remain open |
-| Windows .NET/WPF | Source and hosted compiler validation complete; physical-device/release validation pending | Dependency-free .NET 8 core, generated Unicode ranges, 918-case executable test, WPF `TextBlock`/`TextBox` adapter, selection/source preservation, physical-left RTL test, runnable sample, package builds, and a passing Windows compiler gate in [CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/30349088058/job/90242135865). WinUI/WinForms/MAUI, accessibility/IME lab evidence, and NuGet publication remain open |
+| Swift Package/SwiftUI/UIKit | Source and hosted simulator/compiler validation complete; physical-device/release validation pending | Swift Package, generated Unicode 17 ranges, copied 928-case corpus, core tests/example, UIKit `UILabel`/`UITextView`/`UITextField` adapters, UIKit-backed SwiftUI `BidiText`, independent physical alignment, and protected macOS/iOS Simulator gates in [CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml). Physical iOS/VoiceOver evidence, sample app, editable SwiftUI integration, and registry publication remain open |
+| Windows .NET/WPF | Source and hosted compiler validation complete; physical-device/release validation pending | Dependency-free .NET 8 core, generated Unicode ranges, 928-case executable test, WPF `TextBlock`/`TextBox` adapter, selection/source preservation, physical-left RTL test, runnable sample, package builds, and a passing Windows compiler gate in [CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/30349088058/job/90242135865). WinUI/WinForms/MAUI, accessibility/IME lab evidence, and NuGet publication remain open |
+| Rust core | Source and hosted compiler validation complete; integration/release validation pending | Native `bidilens-core`, generated Unicode 17 ranges, byte/UTF-16/code-point offsets, all 928 direction fixtures, all declared isolation/security fixtures, a runnable example, and Linux/macOS/Windows CI. crates.io publication, an editor adapter, independent audit, and a downstream pilot remain open |
 | Terminal/TUI | Complete and tested within documented limits | `@bidilens/terminal`; ANSI-aware, source-preserving compatibility mode and emulator limitations. A real multi-emulator manual matrix remains external/manual |
 
 Absent platform directories are intentional: the anti-hollow rule forbids
-counting scaffolds or unexecuted pseudocode as support. Android, Apple, and
-Windows directories contain implementation, corpus tests, examples, and
+counting scaffolds or unexecuted pseudocode as support. Android, Apple,
+Windows, and Rust directories contain implementation, corpus tests, examples, and
 compiler gates; their differing validation and publication maturity is
 recorded explicitly.
 
@@ -119,7 +120,7 @@ recorded explicitly.
 | Four-way, flagship, structured Markdown, stream, dark, zoom | Complete and tested | Playwright flagship suite and screenshots |
 | Selection and copy/paste invariant | Complete for web evidence; partial for Android | Three-engine logical selection and Chromium clipboard test; Android editable callbacks and Compose semantics remain control-free in device tests. Firefox/WebKit clipboard, physical Android OEM/IME copy, and other native surfaces remain environment-specific gaps |
 | Accessibility | Partial/external | Automated semantic, selection, dark-mode and zoom evidence plus `docs/ACCESSIBILITY.md`; real screen-reader/browser/OS laboratory matrix is not complete |
-| Native test matrix | Partial | Android has JVM/Robolectric plus API 35/36 emulator coverage; Apple has shared-corpus/macOS plus UIKit/SwiftUI iOS Simulator tests; Windows has shared-corpus/native-build jobs. Physical Android/iOS devices, accessibility/IME labs, Flutter/RN, and unimplemented Windows UI frameworks remain open |
+| Native test matrix | Partial | Android has JVM/Robolectric plus API 35/36 emulator coverage; Apple has shared-corpus/macOS plus UIKit/SwiftUI iOS Simulator tests; Windows has shared-corpus/native-build jobs; Rust has all shared direction/isolation/security fixtures on Linux, macOS, and Windows. Physical Android/iOS devices, accessibility/IME labs, Flutter/RN, editor-specific Rust integration, and unimplemented Windows UI frameworks remain open |
 
 ## Docs, performance, adoption, and release
 
@@ -132,7 +133,7 @@ recorded explicitly.
 | 2 issue-quality evidence bundles | Complete as public submissions, not product fixes | Current-policy, non-duplicate evidence is public for Antigravity, Claude Code, Codex, Cline, Continue, and assistant-ui; routes and exact states are recorded in the [outreach log](OUTREACH_LOG.md) |
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
-| CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; signed Android publication has an isolated-consumer gate; Apple Swift/macOS/iOS Simulator and Windows .NET/WPF jobs have passing hosted evidence. VS Code and unimplemented native-platform adapters remain open |
+| CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; signed Android publication has an isolated-consumer gate; Apple Swift/macOS/iOS Simulator, Windows .NET/WPF, and native Rust three-OS jobs have hosted compiler/test evidence. VS Code and unimplemented native-platform adapters remain open |
 | Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in web release preparation, protected manual npm publication with exact confirmation and provenance, and protected manual Maven Central publication with signing and version-reuse rejection |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
 | Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata, `@bidilens` ownership, and `io.github.codeinscrubs` namespace verified; all 12 npm `0.3.0` packages are public with SLSA provenance and matching integrity; all three Android `0.1.1` modules are signed and public with matching Central artifacts, signatures, and checksums; release credentials are protected outside the repository |
@@ -151,7 +152,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M3 streaming | Implemented; historical gate incomplete | Direction and rich Markdown-It stream gates pass now; no historical `m3` tag exists and is not fabricated retroactively |
 | M4 frameworks/Electron | Partial | Web Component/React/Vue/Svelte pass anti-hollow and SSR gates; Electron is missing; no `m4` tag |
 | M5 CLI/Playwright Action/VS Code | Partial | CLI, reusable Playwright helpers, and bundled conformance Action pass; VS Code extension is missing; no `m5` tag |
-| M6 ≥300/visual/copy | Implemented; historical gate incomplete | 918 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
+| M6 ≥300/visual/copy | Implemented; historical gate incomplete | 928 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal, Android, SwiftUI/UIKit, and .NET/WPF exist; Flutter, React Native, and other documented native adapters remain open; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
 | M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.0` web release, and signed `android-v0.1.1` Maven release. One of the required three host-tested integrations is submitted but unmerged, so the integration minimum remains incomplete |

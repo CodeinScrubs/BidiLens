@@ -49,6 +49,9 @@ stateful unified streaming backend.
   shared-corpus and platform build gates, but no physical iOS device,
   VoiceOver, Windows screen-reader, IME matrix, registry release, or downstream
   production pilot;
+- the native Rust core has shared-corpus and three-OS compiler gates, but no
+  crates.io release, editor-specific adapter, independent audit, downstream
+  product pilot, or claim of adoption by Zed or another Rust host;
 - Swift and .NET currently inventory bidi controls and high-risk overrides,
   but do not yet claim parity with the richer JavaScript/Android
   balance-and-context security findings;

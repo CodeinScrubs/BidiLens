@@ -164,6 +164,96 @@ const fixtures: Fixture[] = [
   )
 ];
 
+const rtlAdjacentTechnicalCases = [
+  {
+    id: 'fa-adjacent-url-001',
+    description: 'A URL immediately following an RTL letter keeps its full technical range.',
+    text: 'یکhttps://example.com',
+    token: 'https://example.com',
+    kind: 'url'
+  },
+  {
+    id: 'fa-adjacent-email-001',
+    description: 'An email immediately following an RTL letter keeps its full technical range.',
+    text: 'سلامuser@example.com',
+    token: 'user@example.com',
+    kind: 'email'
+  },
+  {
+    id: 'fa-adjacent-version-001',
+    description: 'A version immediately following an RTL letter keeps its full technical range.',
+    text: 'نسخهv2.1.0',
+    token: 'v2.1.0',
+    kind: 'version'
+  },
+  {
+    id: 'fa-adjacent-hash-001',
+    description: 'A hexadecimal hash immediately following an RTL letter keeps its full technical range.',
+    text: 'شناسهa1b2c3d4e5f6',
+    token: 'a1b2c3d4e5f6',
+    kind: 'hash'
+  },
+  {
+    id: 'fa-adjacent-identifier-001',
+    description: 'A known identifier immediately following an RTL letter keeps its full technical range.',
+    text: 'متنReact',
+    token: 'React',
+    kind: 'identifier'
+  },
+  {
+    id: 'fa-adjacent-scoped-package-001',
+    description: 'A scoped package immediately following an RTL letter keeps its full technical range.',
+    text: 'یک@abcdefghij/pkg',
+    token: '@abcdefghij/pkg',
+    kind: 'identifier'
+  },
+  {
+    id: 'fa-identifier-trailing-punctuation-001',
+    description: 'Sentence punctuation after an identifier stays outside its LTR isolation.',
+    text: 'این React.',
+    token: 'React',
+    kind: 'identifier'
+  },
+  {
+    id: 'fa-email-leading-punctuation-001',
+    description: 'Leading punctuation before an email stays outside its LTR isolation.',
+    text: 'ایمیل +user@example.com',
+    token: 'user@example.com',
+    kind: 'email'
+  },
+  {
+    id: 'fa-path-trailing-punctuation-001',
+    description: 'Trailing punctuation after a path stays outside its LTR isolation.',
+    text: 'مسیر src/index.ts-',
+    token: 'src/index.ts',
+    kind: 'path'
+  }
+] as const;
+
+for (const fixture of rtlAdjacentTechnicalCases) {
+  fixtures.push(makeFixture(
+    fixture.id,
+    fixture.description,
+    fixture.text,
+    'rtl',
+    ['fa', 'mixed', 'rtl-adjacent-technical', fixture.kind],
+    {
+      expectedIsolations: [{ text: fixture.token, direction: 'ltr', kind: fixture.kind }]
+    }
+  ));
+}
+
+fixtures.push(makeFixture(
+  'fa-number-latin-adjacency-001',
+  'Digits immediately followed by Latin letters are not misclassified as a standalone number.',
+  'سلام 123abc',
+  'rtl',
+  ['fa', 'mixed', 'numeric-boundary', 'opposite-direction-run'],
+  {
+    expectedIsolations: [{ text: 'abc', direction: 'ltr', kind: 'opposite-direction-run' }]
+  }
+));
+
 for (const [phraseIndex, phrase] of rtlPhrases.entries()) {
   for (const [tokenIndex, token] of technicalTokens.entries()) {
     const placement = (phraseIndex + tokenIndex) % 3;

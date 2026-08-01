@@ -3,7 +3,15 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/node_modules/**', 'coverage/**', 'android/**/build/**'] },
+  {
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      'coverage/**',
+      'android/**/build/**',
+      'rust/target/**'
+    ]
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

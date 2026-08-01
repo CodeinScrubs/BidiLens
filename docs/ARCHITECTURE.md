@@ -167,7 +167,7 @@ String
 ```
 
 `:core` is independent of Compose and Android widgets. Its Unicode 17 range
-tables and 918-case fixtures are generated from the same canonical inputs as
+tables and 928-case fixtures are generated from the same canonical inputs as
 the TypeScript core. Kotlin APIs report both UTF-16 and code-point offsets so
 editable/selection integrations do not reinterpret Java string indices.
 
@@ -225,6 +225,31 @@ weak table, preserves source and selection, and restores authored properties
 when content returns to the pure-LTR no-op path. Physical-left and
 content-relative-start alignment are explicit policies rather than consequences
 of direction detection.
+
+## Native Rust
+
+The `bidilens-core` crate is an independent native implementation with no
+JavaScript runtime or UI-framework dependency:
+
+```text
+&str
+  -> immutable Analysis + SecurityReport
+  -> host-owned direction/alignment metadata or transient isolate controls
+  -> editor, terminal, GUI, or browser engine text layout
+```
+
+Generated copies of the canonical Unicode 17 tables drive binary-search
+classification. Public ranges report Rust byte offsets, UTF-16 code units, and
+Unicode scalar-value offsets so hosts can map results without guessing index
+semantics. The crate validates the same 928 direction fixtures and all declared
+isolation/security fixtures as the other native cores.
+
+Direction and alignment remain separate. The Rust core returns semantic text
+direction only; a GUI host may deliberately place an RTL paragraph at physical
+left without changing that result. Ordinary LTR text in an LTR context returns
+no isolation plan and its display helper returns the exact original value.
+The crate does not include a Zed/editor adapter and does not claim that a host
+has adopted it.
 
 ## Plain text and terminals
 

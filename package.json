@@ -48,6 +48,7 @@
     "unicode:check": "tsx scripts/generate-bidi-data.ts --check",
     "release:check": "tsx scripts/release-check.ts",
     "android:check": "tsx scripts/run-android.ts",
+    "rust:check": "cargo fmt --manifest-path rust/Cargo.toml --all -- --check && cargo check --manifest-path rust/Cargo.toml --all-targets && cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D warnings && cargo test --manifest-path rust/Cargo.toml --all-targets",
     "npm:release:dry-run": "tsx scripts/publish-npm.ts",
     "npm:release:publish": "tsx scripts/publish-npm.ts --publish",
     "packages:types": "tsx scripts/check-package-types.ts",

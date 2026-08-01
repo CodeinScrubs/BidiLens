@@ -16,7 +16,7 @@ implementation or adoption claim.
   packages;
 - real typed framework/renderer integrations, SSR tests, examples, and
   package-local assertion depth;
-- 918 schema-validated fixtures and native-review metadata, including 196
+- 928 schema-validated fixtures and native-review metadata, including 196
   attributed comparison-project seeds awaiting native review;
 - Chromium, Firefox, and WebKit visual/geometry/selection tests, structured
   Markdown snapshots, Chromium clipboard verification, and real standalone
@@ -30,7 +30,7 @@ implementation or adoption claim.
 - public npm packages with SLSA provenance, registry-integrity verification,
   an annotated source tag, and a protected human-approved release workflow.
 - native Android Kotlin core, Views and Compose adapters, photographed-case
-  sample, generated 918-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
+  sample, generated 928-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
   API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.1`
   publication, and independently verified public-consumer resolution.
 
@@ -38,14 +38,17 @@ implementation or adoption claim.
 
 - Swift Package core, UIKit adapters, and a UIKit-backed SwiftUI `BidiText`
   renderer with generated Unicode 17 data, independent direction/alignment
-  policy, shared 918-case corpus tests, a runnable core example, macOS
+  policy, shared 928-case corpus tests, a runnable core example, macOS
   verification, and iOS Simulator adapter tests;
 - .NET 8 core and WPF adapters with generated Unicode 17 data, independent
-  direction/alignment policy, shared 918-case executable verification, a
-  runnable WPF sample, package builds, and a Windows compiler gate.
+  direction/alignment policy, shared 928-case executable verification, a
+  runnable WPF sample, package builds, and a Windows compiler gate;
+- native Rust core with generated Unicode 17 data, byte/UTF-16/code-point
+  ranges, shared 928-case direction conformance, declared isolation/security
+  conformance, a runnable example, and Linux/macOS/Windows compiler gates.
 
-These are not yet registry releases or physical-device/accessibility
-validation claims.
+These are not yet registry releases or downstream production/accessibility
+validation claims. The Rust core also has no editor-specific adapter yet.
 
 ## Required before broad production recommendation
 
@@ -85,16 +88,18 @@ The complete specification-to-evidence audit lives in
   validation, and Swift package release evidence;
 - WinUI 3, Windows Forms, and MAUI adapters plus accessibility/IME validation
   and NuGet release evidence;
+- downstream Rust editor integration and crates.io release evidence after API
+  review; the source crate is deliberately non-publishable until that review;
 - generated platform representations of the shared corpus for Flutter and
   React Native.
 
 New native and desktop targets are not scaffolded as hollow packages. Each
 enters the shipped workspace only with a real implementation, at least 25
 meaningful assertions, a runnable example, documentation, and a platform build
-report. Android is the first published target to meet that gate. Apple and
-Windows now have hosted source/compiler evidence but still await the physical
-device, accessibility/IME, and registry-release evidence applicable to each
-platform.
+report. Android is the first published target to meet that gate. Apple,
+Windows, and Rust now have hosted source/compiler evidence but still await the
+device, accessibility/IME, downstream-integration, and registry-release
+evidence applicable to each platform.
 
 ## Research
 

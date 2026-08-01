@@ -24,6 +24,86 @@ internal val generatedCorpusFixtures = listOf(
             ),
         ),
         CorpusFixture(
+            id = "fa-adjacent-url-001",
+            text = "یکhttps://example.com",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("https://example.com", BidiDirection.LTR, BidiIsolationKind.URL)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-adjacent-email-001",
+            text = "سلامuser@example.com",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("user@example.com", BidiDirection.LTR, BidiIsolationKind.EMAIL)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-adjacent-version-001",
+            text = "نسخهv2.1.0",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("v2.1.0", BidiDirection.LTR, BidiIsolationKind.VERSION)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-adjacent-hash-001",
+            text = "شناسهa1b2c3d4e5f6",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("a1b2c3d4e5f6", BidiDirection.LTR, BidiIsolationKind.HASH)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-adjacent-identifier-001",
+            text = "متنReact",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("React", BidiDirection.LTR, BidiIsolationKind.IDENTIFIER)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-adjacent-scoped-package-001",
+            text = "یک@abcdefghij/pkg",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("@abcdefghij/pkg", BidiDirection.LTR, BidiIsolationKind.IDENTIFIER)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-identifier-trailing-punctuation-001",
+            text = "این React.",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("React", BidiDirection.LTR, BidiIsolationKind.IDENTIFIER)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-email-leading-punctuation-001",
+            text = "ایمیل +user@example.com",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("user@example.com", BidiDirection.LTR, BidiIsolationKind.EMAIL)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-path-trailing-punctuation-001",
+            text = "مسیر src/index.ts-",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("src/index.ts", BidiDirection.LTR, BidiIsolationKind.PATH)
+            ),
+        ),
+        CorpusFixture(
+            id = "fa-number-latin-adjacency-001",
+            text = "سلام 123abc",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("abc", BidiDirection.LTR, BidiIsolationKind.OPPOSITE_DIRECTION_RUN)
+            ),
+        ),
+        CorpusFixture(
             id = "fa-technical-01-01",
             text = "React، این نسخه اکنون برای استفاده آماده است.",
             expected = BidiDirection.RTL,
