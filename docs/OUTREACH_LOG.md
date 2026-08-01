@@ -1,6 +1,8 @@
 # Public outreach log
 
-**Evidence date:** 2026-07-30
+**Initial outreach evidence date:** 2026-07-30
+
+**Last response audit:** 2026-08-01
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -76,6 +78,28 @@ current project metadata. The final failure audit found no additional immediate
 failure. This does not prove inbox placement, human review, or delivery after
 the audit window. Several automated acknowledgements arrived, but no
 acknowledgement is recorded as maintainer review or adoption.
+
+### Response audit (2026-08-01)
+
+The outreach inbox was reviewed after the initial delivery window. Replies were
+classified before responding so automated receipts, closed support threads,
+unmonitored addresses, and delivery failures did not receive follow-up mail.
+
+| Project/channel | Response | Action taken |
+|---|---|---|
+| Jupyter Community Building | A community maintainer welcomed the project and directed the proposal to Jupyter Zulip, suggesting `#jupyterlab` or `#ask-anything`. | Replied with a fixtures-first plan for Markdown and rich output and accepted the public-channel handoff. |
+| Zulip | The customer-experience lead identified [issue #39511](https://github.com/zulip/zulip/issues/39511) and the existing `#issues` topic for mixed LTR/RTL messages. | Replied that the issue directly overlaps the proposal, clarified the per-paragraph and inline-isolation scope, and committed to continue with small before/after fixtures in the public topic. |
+| Zed | A Zed representative confirmed that more RTL support is useful but stated that a non-Rust dependency is a non-starter. | Replied without proposing a JavaScript dependency, disclosed that no Rust port exists, and asked whether a future Rust-native core plus the language-neutral corpus would be an appropriate scoped PR. |
+| Ollama | The support AI requested product feedback in problem/current-behavior/expected-behavior form. After receiving that clarification, it confirmed the submission contains the information its team uses for feature review and made no timeline or adoption commitment. | Sent one structured clarification with the repository and regression-corpus context; stopped after the automated confirmation to avoid an AI-response loop. |
+| n8n | The support AI said it escalated the proposal to a human product/engineering review queue. | No acknowledgement reply was sent; wait for the promised human review. |
+| Nous Research | An automated receipt assigned a support reference and promised a later follow-up. | No reply was sent to the receipt; the existing Hermes PR remains the primary technical channel. |
+| JetBrains and Sentry | These responses routed the proposal to public trackers. | The resulting tracker evidence is recorded above; no redundant support-email reply was sent. |
+| PostHog | An automated response identified an unmonitored inbox and linked support and sales-oriented routes that were unsuitable for an open-source engineering proposal. | No email reply was sent. The public feature request recorded above was opened independently. |
+| Cohere, Supabase, Microsoft, and delivery systems | The messages were acknowledgements, account-verification instructions, unmonitored-address notices, or delivery failures. | No reply was sent because none represented maintainer review or an actionable technical question. |
+
+These responses are routing evidence, not adoption evidence. No organization in
+this table has approved a dependency, merged an integration, or confirmed a
+production rollout.
 
 ## Deliberate deferrals
 
