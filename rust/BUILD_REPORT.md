@@ -33,8 +33,12 @@ cargo run --manifest-path rust/Cargo.toml --example basic
 The complete command set passed locally on Windows 10 x64 with the declared
 minimum Rust `1.85.0` GNU toolchain on 2026-08-01. The conformance executable
 reported 15/15 test groups passing; the corpus groups cover all 918 direction
-cases and every declared isolation/security expectation. Hosted run links are
-added only after the protected pull-request matrix completes.
+cases and every declared isolation/security expectation. The protected
+[pull-request run](https://github.com/CodeinScrubs/BidiLens/actions/runs/30700753061)
+passed the Rust core gate on
+[Linux](https://github.com/CodeinScrubs/BidiLens/actions/runs/30700753061/job/91371228101),
+[macOS](https://github.com/CodeinScrubs/BidiLens/actions/runs/30700753061/job/91371228089),
+and [Windows](https://github.com/CodeinScrubs/BidiLens/actions/runs/30700753061/job/91371228108).
 
 ## Distribution and validation boundary
 
