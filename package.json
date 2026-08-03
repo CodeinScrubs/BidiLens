@@ -76,7 +76,7 @@
     "fast-check": "^4.3.0",
     "globals": "^17.8.0",
     "jsdom": "^29.1.1",
-    "markdown-it": "^14.1.0",
+    "markdown-it": "^15.0.0",
     "tsx": "^4.20.6",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.65.0",
