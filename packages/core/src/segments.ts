@@ -12,12 +12,11 @@ function attachSourceRanges(text: string, isolations: Omit<InlineIsolation, 'sou
   let utf16Offset = 0;
   let codePointOffset = 0;
   for (const character of text) {
-    codePointAtUtf16[utf16Offset] = codePointOffset;
-    if (character.length === 2) codePointAtUtf16[utf16Offset + 1] = codePointOffset;
+    codePointAtUtf16.fill(codePointOffset, utf16Offset, utf16Offset + character.length);
     utf16Offset += character.length;
     codePointOffset += 1;
-    codePointAtUtf16[utf16Offset] = codePointOffset;
   }
+  codePointAtUtf16.fill(codePointOffset, utf16Offset);
   return isolations.map((isolation) => ({
     ...isolation,
     sourceRange: {

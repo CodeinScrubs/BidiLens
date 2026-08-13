@@ -5,6 +5,16 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+### Security and performance
+
+- Replaced the raw-text math-delimiter regular expression with a single-pass
+  scanner, preventing quadratic work on repeated unmatched `\(` input while
+  preserving `$...$`, `$$...$$`, `$$$$`, and `\(...\)` recognition.
+- Expressed UTF-16-to-code-point range construction with bounded typed-array
+  fills so input-derived offsets cannot be interpreted as object properties.
+- Restricted downloaded Unicode data writes to the two repository-owned,
+  version-pinned destination paths after exact SHA-256 verification.
+
 ### Direction correctness
 
 - Kept ordinary hyphenated English compounds and block-level ALL-CAPS prose as

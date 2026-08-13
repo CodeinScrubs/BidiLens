@@ -86,6 +86,8 @@ API signal while a rich document is between checkpoints.
   at most 14 live Markdown parses;
 - a unit alarm permits 8,000 single-character pushes and dense isolation
   planning to finish within three seconds on the CI machine;
+- an adversarial unit alarm scans 128,000 UTF-16 units of repeated unmatched
+  `\(` delimiters within the batch budget, guarding the linear math scanner;
 - release checks enforce aggregate emitted-JavaScript budgets, including
   code-split chunks.
 

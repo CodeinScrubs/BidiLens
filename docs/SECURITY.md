@@ -42,6 +42,11 @@ pops/openers, formatting that crosses an isolate boundary, and U+200B.
 - markup adapters prefer `<bdi>`/`dir` to invisible control insertion;
 - terminal isolate insertion is opt-in and carries a warning;
 - recursive CLI scanning skips symbolic links.
+- raw-text math delimiter discovery is a single forward scan; repeated
+  unmatched delimiters cannot trigger polynomial regular-expression work.
+- the optional Unicode download command accepts only two source/destination
+  pairs pinned in repository code and verifies each exact SHA-256 before a
+  write; untrusted text never reaches that build-time path.
 
 ## False-positive policy
 

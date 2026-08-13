@@ -25,6 +25,23 @@ interface UnicodeSource {
   sha256: string;
 }
 
+const UNICODE_SOURCES = [
+  {
+    label: 'DerivedBidiClass',
+    url: BIDI_URL,
+    path: BIDI_PATH,
+    sha256: BIDI_SHA256
+  },
+  {
+    label: 'DerivedGeneralCategory',
+    url: GENERAL_CATEGORY_URL,
+    path: GENERAL_CATEGORY_PATH,
+    sha256: GENERAL_CATEGORY_SHA256
+  }
+] as const satisfies readonly UnicodeSource[];
+
+const PINNED_UNICODE_PATHS = new Set(UNICODE_SOURCES.map((source) => source.path));
+
 const CLASS = {
   L: 0,
   R: 1,
@@ -267,6 +284,9 @@ async function sourceBytes(source: UnicodeSource, download: boolean): Promise<Ui
     throw new Error(`${source.label} checksum mismatch: expected ${source.sha256}, received ${actualSha256}`);
   }
   if (download) {
+    if (!PINNED_UNICODE_PATHS.has(source.path)) {
+      throw new Error(`Refusing to write outside the pinned Unicode source paths: ${source.path}`);
+    }
     await mkdir(dirname(source.path), { recursive: true });
     await writeFile(source.path, bytes);
   }
@@ -276,15 +296,7 @@ async function sourceBytes(source: UnicodeSource, download: boolean): Promise<Ui
 async function main(): Promise<void> {
   const download = process.argv.includes('--download');
   const check = process.argv.includes('--check');
-  const bidiSource: UnicodeSource = {
-    label: 'DerivedBidiClass', url: BIDI_URL, path: BIDI_PATH, sha256: BIDI_SHA256
-  };
-  const generalCategorySource: UnicodeSource = {
-    label: 'DerivedGeneralCategory',
-    url: GENERAL_CATEGORY_URL,
-    path: GENERAL_CATEGORY_PATH,
-    sha256: GENERAL_CATEGORY_SHA256
-  };
+  const [bidiSource, generalCategorySource] = UNICODE_SOURCES;
   const [bidiBytes, generalCategoryBytes] = await Promise.all([
     sourceBytes(bidiSource, download),
     sourceBytes(generalCategorySource, download)

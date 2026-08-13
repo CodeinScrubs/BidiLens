@@ -136,6 +136,16 @@ describe('direction detection', () => {
       .map((range) => range.text)).toContain('https://example.com');
   });
 
+  it('recognizes inline math delimiters without crossing line boundaries', () => {
+    const source = 'Use $x + 1$, $$E = mc^2$$, \\(a + b\\), $$$$, then \\($z$.';
+    expect(findTechnicalTokenRanges(source)
+      .filter((range) => range.kind === 'math')
+      .map((range) => range.text))
+      .toEqual(['$x + 1$', '$$E = mc^2$$', '\\(a + b\\)', '$$$$', '$z$']);
+    expect(findTechnicalTokenRanges('\\(not closed\n\\)')
+      .filter((range) => range.kind === 'math')).toEqual([]);
+  });
+
   it('treats closed multiline Markdown fences inside prose as technical ranges in raw text', () => {
     const closed = 'شغل الكود:\n```bash\necho hello world\n```\nالناتج صحيح.';
     const closedRanges = findTechnicalTokenRanges(closed);
@@ -905,6 +915,18 @@ describe('streaming', () => {
     const backtickBatchStart = performance.now();
     findTechnicalTokenRanges(backticks);
     expect(performance.now() - backtickBatchStart).toBeLessThan(1_500);
+
+    // An unmatched `\(` used to restart the lazy regular-expression search at
+    // every later opener, making adversarial chat input quadratic.
+    const unmatchedParenthesizedMath = '\\('.repeat(64_000);
+    const parenthesizedMathStart = performance.now();
+    findTechnicalTokenRanges(unmatchedParenthesizedMath);
+    expect(performance.now() - parenthesizedMathStart).toBeLessThan(1_500);
+
+    const unmatchedMathLines = `${'\\(\n'.repeat(32_000)}\\)`;
+    const mathLinesStart = performance.now();
+    findTechnicalTokenRanges(unmatchedMathLines);
+    expect(performance.now() - mathLinesStart).toBeLessThan(1_500);
 
     const manyFences = `متن\n${'```\nx\n```\n\n'.repeat(1_000)}ادامه`;
     const manyFencesStart = performance.now();
