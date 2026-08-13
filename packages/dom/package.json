@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/dom",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "DOM annotation and streaming mutation support for bidirectional text.",
   "license": "MIT",
   "author": {

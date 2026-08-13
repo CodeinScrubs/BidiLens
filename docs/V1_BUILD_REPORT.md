@@ -1,7 +1,8 @@
 # BidiLens 0.2.0 release report
 
-> This is the immutable historical report for 0.2.0. The current web/package
-> release is 0.3.0; its changes are recorded in the root changelog and its
+> This is the immutable historical report for 0.2.0. Web/package `0.3.1` is
+> prepared for protected publication; `0.3.0` remains the latest verified
+> public release. Current changes are recorded in the root changelog, and
 > release evidence is retained by the protected publication workflow.
 
 **Evidence date:** 2026-07-28

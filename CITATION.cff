@@ -9,7 +9,7 @@ authors:
 repository-code: "https://github.com/CodeinScrubs/BidiLens"
 url: "https://github.com/CodeinScrubs/BidiLens"
 license: MIT
-version: 0.3.0
+version: 0.3.1
 keywords:
   - bidirectional text
   - RTL

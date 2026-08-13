@@ -19,9 +19,10 @@
 [Project status](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> The JavaScript/web surface is published as the public `0.3.0` beta. All 12
-> `@bidilens/*` packages are public on npm with verified registry integrity and
-> SLSA provenance. Native Android core, Views, and Compose `0.1.1` artifacts
+> The JavaScript/web `0.3.1` patch is prepared for protected publication. The
+> current public npm release remains `0.3.0` until registry integrity and SLSA
+> provenance for all 12 `@bidilens/*` packages are verified. Native Android
+> core, Views, and Compose `0.1.1` artifacts
 > are signed and public on Maven Central, with a verified sample and evidence
 > bundle in the
 > [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
@@ -164,8 +165,9 @@ reordering and shaping; BidiLens supplies the application structure they need.
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
-Browser packages target current standards-based browsers. The complete `0.3.0`
-package set is [published under the `@bidilens` npm scope](https://www.npmjs.com/org/bidilens).
+Browser packages target current standards-based browsers. The complete `0.3.1`
+package set is prepared for protected publication; the current public `0.3.0`
+set remains [available under the `@bidilens` npm scope](https://www.npmjs.com/org/bidilens).
 
 ## Consumer install
 
