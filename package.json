@@ -51,11 +51,12 @@
     "npm:release:dry-run": "tsx scripts/publish-npm.ts",
     "npm:release:publish": "tsx scripts/publish-npm.ts --publish",
     "packages:types": "tsx scripts/check-package-types.ts",
+    "markdown-it:compat": "tsx scripts/check-markdown-it-compat.ts",
     "packages:depth": "tsx scripts/check-package-depth.ts",
     "sbom": "pnpm dlx @cyclonedx/cdxgen@12.7.1 -t js --no-install-deps --fail-on-error --spec-version 1.7 --json-pretty -o bidilens-sbom.cdx.json .",
     "sbom:check": "tsx scripts/check-sbom.ts",
     "deps:audit": "pnpm audit --audit-level low",
-    "verify:production": "pnpm run check && pnpm run test:visual && pnpm run packages:types && pnpm run deps:audit && pnpm run sbom && pnpm run sbom:check && pnpm run release:check",
+    "verify:production": "pnpm run check && pnpm run test:visual && pnpm run packages:types && pnpm run markdown-it:compat && pnpm run deps:audit && pnpm run sbom && pnpm run sbom:check && pnpm run release:check",
     "changeset": "changeset",
     "changeset:status": "changeset status"
   },

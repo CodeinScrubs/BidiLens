@@ -175,9 +175,6 @@ importers:
       '@types/hast':
         specifier: ^3.0.4
         version: 3.0.5
-      '@types/markdown-it':
-        specifier: ^14.1.2
-        version: 14.1.2
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
@@ -185,6 +182,9 @@ importers:
         specifier: ^5.0.0
         version: 5.1.0
     devDependencies:
+      '@types/markdown-it':
+        specifier: ^14.1.2
+        version: 14.1.2
       markdown-it:
         specifier: ^14.1.0
         version: 14.3.0

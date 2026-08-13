@@ -1,7 +1,7 @@
 import type { Element, ElementContent, Root as HastRoot, Text as HastText } from 'hast';
 import type { Content, Root as MdastRoot } from 'mdast';
-import type MarkdownIt from 'markdown-it';
-import type Token from 'markdown-it/lib/token.mjs';
+import type InternalMarkdownIt from 'markdown-it';
+import type InternalToken from 'markdown-it/lib/token.mjs';
 import {
   detectDirection,
   needsBidiIntervention,
@@ -19,7 +19,8 @@ import type {
   BidiMarkdownDocument,
   BidiMarkdownStreamSession,
   BidiMarkdownStreamOptions,
-  MarkdownBidiOptions
+  MarkdownBidiOptions,
+  MarkdownItCompatible
 } from './types.js';
 
 export type {
@@ -33,9 +34,14 @@ export type {
   MarkdownBidiOptions,
   MarkdownBlockAnnotation,
   MarkdownDirtyRegion,
+  MarkdownItCompatible,
   MarkdownSecurityDelta,
   MarkdownSourceRange
 } from './types.js';
+
+function internalMarkdownIt(markdownIt: MarkdownItCompatible): InternalMarkdownIt {
+  return markdownIt as unknown as InternalMarkdownIt;
+}
 
 const MDAST_BLOCK_TYPES = new Set([
   'paragraph', 'heading', 'blockquote', 'listItem', 'tableCell', 'definition'
@@ -277,13 +283,13 @@ function markdownItConfigurationKey(options: MarkdownBidiOptions): string {
   });
 }
 
-function markdownItClass(token: Token | undefined, className: string): void {
+function markdownItClass(token: InternalToken | undefined, className: string): void {
   if (!token) return;
   if (token.attrJoin) token.attrJoin('class', className);
   else token.attrSet('class', className);
 }
 
-function markdownItBlockContent(tokens: Token[], index: number, closeType: string): string {
+function markdownItBlockContent(tokens: InternalToken[], index: number, closeType: string): string {
   const openType = tokens[index]?.type;
   let nested = 0;
   const values: string[] = [];
@@ -302,7 +308,8 @@ function markdownItBlockContent(tokens: Token[], index: number, closeType: strin
 }
 
 /** Markdown-It adapter with the same content-majority policy as the AST plugins. */
-export function markdownItBidi(md: MarkdownIt, inputOptions: MarkdownBidiOptions = {}): void {
+export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: MarkdownBidiOptions = {}): void {
+  const md = internalMarkdownIt(markdownIt);
   const options: MarkdownBidiOptions = {
     ...inputOptions,
     ...(inputOptions.technicalIdentifiers
@@ -321,8 +328,8 @@ export function markdownItBidi(md: MarkdownIt, inputOptions: MarkdownBidiOptions
   let activeDirection: 'ltr' | 'rtl' | null = null;
   const blockClassName = options.blockClassName ?? 'bidilens-block';
   const codeClassName = options.codeClassName ?? 'bidilens-code';
-  const interventionCache = new WeakMap<Token[], boolean>();
-  const tokensNeedIntervention = (tokens: Token[]): boolean => {
+  const interventionCache = new WeakMap<InternalToken[], boolean>();
+  const tokensNeedIntervention = (tokens: InternalToken[]): boolean => {
     const cached = interventionCache.get(tokens);
     if (cached !== undefined) return cached;
     const required = tokens.some((token) => (token.type === 'inline'
@@ -461,7 +468,7 @@ export function markdownItBidi(md: MarkdownIt, inputOptions: MarkdownBidiOptions
     const renderValue = (part: string): string => {
       if (!originalText) return escape(part);
       const copy = [...tokens];
-      copy[index] = { ...tokens[index]!, content: part } as Token;
+      copy[index] = { ...tokens[index]!, content: part } as InternalToken;
       return originalText(copy, index, renderOptions, env, self);
     };
     let rendered = '';
@@ -491,12 +498,12 @@ export function markdownItBidi(md: MarkdownIt, inputOptions: MarkdownBidiOptions
 
 /** Exact batch document used as the rich stream's final equivalence oracle. */
 export function analyzeBidiMarkdown(
-  markdownIt: MarkdownIt,
+  markdownIt: MarkdownItCompatible,
   source: string,
   options: BidiMarkdownStreamOptions = {}
 ): BidiMarkdownDocument {
   markdownItBidi(markdownIt, options);
-  return analyzeConfiguredBidiMarkdown(markdownIt, source, options);
+  return analyzeConfiguredBidiMarkdown(internalMarkdownIt(markdownIt), source, options);
 }
 
 /**
@@ -505,9 +512,9 @@ export function analyzeBidiMarkdown(
  * through the same batch pipeline as `analyzeBidiMarkdown()`.
  */
 export function createBidiMarkdownStream(
-  markdownIt: MarkdownIt,
+  markdownIt: MarkdownItCompatible,
   options: BidiMarkdownStreamOptions = {}
 ): BidiMarkdownStreamSession {
   markdownItBidi(markdownIt, options);
-  return new BidiMarkdownStream(markdownIt, options);
+  return new BidiMarkdownStream(internalMarkdownIt(markdownIt), options);
 }

@@ -51,12 +51,11 @@
   "dependencies": {
     "@bidilens/core": "workspace:*",
     "@types/hast": "^3.0.4",
-    "@types/markdown-it": "^14.1.2",
     "@types/mdast": "^4.0.4",
     "unist-util-visit": "^5.0.0"
   },
   "peerDependencies": {
-    "markdown-it": "^14.0.0"
+    "markdown-it": "^13.0.2 || ^14.0.0"
   },
   "peerDependenciesMeta": {
     "markdown-it": {
@@ -64,6 +63,7 @@
     }
   },
   "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
     "markdown-it": "^14.1.0",
     "rehype-stringify": "^10.0.1",
     "remark-parse": "^11.0.0",

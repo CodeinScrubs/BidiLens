@@ -137,8 +137,9 @@ git status --short
 ```
 
 `verify:production` expands to the quality, three-browser visual, package type,
-dependency-audit, SBOM, and clean-release gate set that CI and release
-preparation enforce as separate steps.
+packed Markdown-It 13/14 compatibility, dependency-audit, SBOM, and
+clean-release gate set that CI and release preparation enforce as separate
+steps.
 
 `release:check` rejects a dirty tree, packs each public package, checks files
 and dependency protocols, installs all local tarballs into a temporary strict

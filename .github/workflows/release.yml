@@ -30,6 +30,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm run test:visual
       - run: pnpm run packages:types
+      - run: pnpm run markdown-it:compat
       - run: pnpm run deps:audit
       - run: pnpm run release:check
       - run: pnpm run sbom
