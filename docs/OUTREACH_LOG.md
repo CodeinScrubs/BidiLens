@@ -2,7 +2,7 @@
 
 **Initial outreach evidence date:** 2026-07-30
 
-**Last response audit:** 2026-08-01
+**Last response audit:** 2026-08-13
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -32,19 +32,19 @@ endorsement.
 
 | Project | Public route | State on evidence date | Scope and boundary |
 |---|---|---|---|
-| NousResearch Hermes Agent | [PR #72508](https://github.com/NousResearch/hermes-agent/pull/72508) | Open and mergeable; rebased to current upstream on the evidence date; awaiting maintainer review | Focused TUI implementation and tests. Uses Hermes's existing `bidi-js`, preserves the earlier test contributor's authorship, adds majority/tie/no-op coverage, and keeps an ASCII identity fast path. After the rebase, the focused 8-test suite, TypeScript check, Ink build, ESLint, Prettier, and diff check passed. The host currently exposes no automated PR checks for this contribution. |
+| NousResearch Hermes Agent | [PR #72508](https://github.com/NousResearch/hermes-agent/pull/72508) | Open and mergeable; automated `hermes-sweeper` review recommended keeping it open with high salvageability; awaiting human maintainer review | Focused TUI implementation and tests. Uses Hermes's existing `bidi-js`, preserves the earlier test contributor's authorship, adds majority/tie/no-op coverage, and keeps an ASCII identity fast path. The focused 8-test suite, TypeScript check, Ink build, ESLint, Prettier, and diff check passed. The automated review rechecked current `main`, found the premise still present at the proposed renderer boundary, and reported no verified problem in the two-file diff. The host currently exposes no automated PR checks for this contribution, and automation is not maintainer approval. |
 | Google Antigravity CLI | [feature request #693](https://github.com/google-antigravity/antigravity-cli/issues/693) | Open | The public repository exposes documentation/examples rather than the product renderer. The request supplies the failure fixture and policy, asks for the correct contribution path, and offers a focused patch. |
 | Anthropic Claude Code | [comment on canonical RTL issue #76712](https://github.com/anthropics/claude-code/issues/76712#issuecomment-5088070430) | Parent issue open | Adds the English-first/Persian-majority gap left by first-strong CSS, a per-block webview plan, composer guidance, and an offer to patch a public renderer boundary. No duplicate issue was opened. |
 | OpenAI Codex app/extension | [comment on issue #21563](https://github.com/openai/codex/issues/21563#issuecomment-5088082477) | Parent issue open | Proposes a native render-boundary integration that does not patch application files or stored chats and distinguishes content direction from global layout. |
 | OpenAI Codex CLI | [comment on issue #34871](https://github.com/openai/codex/issues/34871#issuecomment-5088082730) | Parent issue open | Separates bidi ordering from Arabic shaping and terminal capabilities. It offers the policy/corpus for a native Rust design rather than proposing a JavaScript dependency. |
 | OpenAI Codex community | [Show and tell #35557](https://github.com/openai/codex/discussions/35557) | Open | Public technical introduction, package/corpus summary, current integration evidence, limitations, and request for renderer/i18n review. |
 | Cline | [comment on feature discussion #12089](https://github.com/cline/cline/discussions/12089#discussioncomment-17793649) | Discussion open | Links the open renderer regression, supplies the mixed-content acceptance case, and offers a React/webview pilot or fixtures-only patch. |
-| Cline VS Code webview | [PR #12724](https://github.com/cline/cline/pull/12724) | Open, mergeable, and ready for review; quality, unit, platform-integration, VS Code, Linux E2E, and security checks passed on the rebased head; maintainer review required | Applies `@bidilens/markdown` at the existing React Markdown render boundary and adds Persian-majority, English-majority, and pure-English identity tests. The macOS E2E job built and packaged the extension but could not launch any product test because its cached VS Code/Electron executable was absent (`ENOENT`); this is recorded as runner infrastructure, not a passing product test. |
+| Cline VS Code webview | [PR #12724](https://github.com/cline/cline/pull/12724) | Open, mergeable, and ready for review; all fresh hosted checks passed on the rebased head; maintainer review required | Applies `@bidilens/markdown` at the existing React Markdown render boundary and adds Persian-majority, English-majority, and pure-English identity tests. Quality, unit, platform-integration, VS Code on Ubuntu/Windows, E2E on Ubuntu/macOS/Windows, and both Socket security checks passed on 2026-08-13. |
 | Continue | [comment on issue #2767](https://github.com/continuedev/continue/issues/2767#issuecomment-5088124777) | Parent issue closed; reconsideration requested | Replaces the proposed global RTL rule with Auto/LTR/RTL policy and offers a focused GUI or fixtures-only patch. No new duplicate issue was created. |
 | assistant-ui | [Show and tell #5211](https://github.com/assistant-ui/assistant-ui/discussions/5211) | Open | Distinguishes the project's completed logical-layout work from per-message mixed-content direction and offers a documented `@bidilens/react` streaming recipe, adapter, hook, or fixtures-only path. |
 | AnythingLLM | [comment on canonical RTL issue #3430](https://github.com/Mintplex-Labs/anything-llm/issues/3430#issuecomment-5126056699) | Parent issue open | Supplies a per-block acceptance fixture and integration guidance. A direct dependency patch was deferred because the host supports Node 18 and Markdown-It 13 while BidiLens 0.3 requires Node 22.12 and peers with Markdown-It 14; raising either compatibility floor would be a regression. |
 | Vercel Streamdown | [PR #569](https://github.com/vercel/streamdown/pull/569) | Open, mergeable, and ready for review; review and security automation passed; maintainer review required | Adds a dependency-free native rehype pass because Streamdown supports Node 18. It assigns direction per semantic block, keeps code LTR, uses content majority with a first-strong tie-breaker, preserves pure-LTR behavior, and includes 985 passing package tests plus a production ESM/declaration build. The Vercel preview remains blocked on external-fork deployment authorization. |
-| Sentry | [feature request #120893](https://github.com/getsentry/sentry/issues/120893) | Open; linked to Sentry's internal `ENG-8321`, labeled for the Issues product area, and waiting for product-owner triage | Proposes a feature-flagged pilot at Sentry's shared React Markdown renderer and Seer wrapper. The request identifies the current source boundaries, preserves alignment and technical tokens, discloses the unreviewed-corpus limitation, and offers either a local helper or BidiLens package according to Sentry's dependency policy. |
+| Sentry | [feature request #120893](https://github.com/getsentry/sentry/issues/120893) | Open on the design-engineering backlog at low priority; a Sentry maintainer does not expect the BidiLens dependency to be adopted | Proposes content-aware behavior at Sentry's shared React Markdown renderer and Seer wrapper. After the maintainer noted Sentry's existing i18n tooling, the follow-up explicitly preferred a native/local implementation, offered fixtures only if requested, and committed not to bump the issue. This is backlog evidence, not dependency adoption. |
 | PostHog | [feature request #75474](https://github.com/PostHog/posthog/issues/75474) | Open | Proposes per-block handling in `LemonMarkdown` and PostHog AI's already memoized `MarkdownMessage` blocks. The public feature tracker was used instead of the automated email's sales-demo form, which requires company, role, and monthly-active-user data and is not an appropriate open-source engineering route. |
 
 The public endpoints above cover eleven project families and fourteen
@@ -53,11 +53,13 @@ code; the remaining routes are issue or discussion submissions. None had
 received a maintainer approval, merge, downstream pilot, or
 production-adoption confirmation when this evidence was recorded.
 
-## Pending authenticated follow-up
+## Authenticated follow-up routes
 
-| Project/channel | Current evidence | Next action |
+| Project/channel | Current evidence | Action taken |
 |---|---|---|
-| JetBrains AI Assistant YouTrack | JetBrains support directed the proposal to the public AI Assistant tracker. A duplicate search found the directly matching, open, assigned [LLM-25407](https://youtrack.jetbrains.com/issue/LLM-25407/Arabic-RTL-Bidirectional-text-rendering-issue-in-Codex-input-field), so no duplicate was created. | After the maintainer signs in to YouTrack, add one implementation-focused comment with the English-first/Persian-majority fixture, BidiLens corpus and limitation links, and an offer of a scoped renderer patch. |
+| JetBrains AI Assistant YouTrack | JetBrains support directed the proposal to the public AI Assistant tracker. A duplicate search found the directly matching, open, assigned [LLM-25407](https://youtrack.jetbrains.com/issue/LLM-25407/Arabic-RTL-Bidirectional-text-rendering-issue-in-Codex-input-field), so no duplicate was created. | Pending account authentication: add one implementation-focused comment with the English-first/Persian-majority fixture, BidiLens corpus and limitation links, and an offer of a scoped renderer patch. |
+| Nous Research support | The automated receipt for the original proposal assigned reference `T-1645`, while Hermes PR #72508 remained open without human review. | Sent one short follow-up on 2026-08-13 pointing directly to the PR and asking for routing to the Hermes TUI maintainer. |
+| n8n support | The support AI said the original proposal had been escalated to a human product/engineering queue, but no human response arrived. | Sent one short follow-up on 2026-08-13 asking whether the team received it or prefers a public feature-request route. |
 
 ## Direct organizational outreach
 
@@ -91,8 +93,8 @@ unmonitored addresses, and delivery failures did not receive follow-up mail.
 | Zulip | The customer-experience lead identified [issue #39511](https://github.com/zulip/zulip/issues/39511) and the existing `#issues` topic for mixed LTR/RTL messages. | Replied that the issue directly overlaps the proposal, clarified the per-paragraph and inline-isolation scope, and committed to continue with small before/after fixtures in the public topic. |
 | Zed | A Zed representative confirmed that more RTL support is useful but stated that a non-Rust dependency is a non-starter. | The original reply accurately disclosed that no Rust port existed at that time. After [native Rust core PR #31](https://github.com/CodeinScrubs/BidiLens/pull/31) merged, a focused follow-up supplied the source-only status, 928-case/207-isolation evidence, Rust 1.85 target, and final Linux/macOS/Windows CI result. No response to that follow-up, Zed integration, or adoption is claimed. |
 | Ollama | The support AI requested product feedback in problem/current-behavior/expected-behavior form. After receiving that clarification, it confirmed the submission contains the information its team uses for feature review and made no timeline or adoption commitment. | Sent one structured clarification with the repository and regression-corpus context; stopped after the automated confirmation to avoid an AI-response loop. |
-| n8n | The support AI said it escalated the proposal to a human product/engineering review queue. | No acknowledgement reply was sent; wait for the promised human review. |
-| Nous Research | An automated receipt assigned a support reference and promised a later follow-up. | No reply was sent to the receipt; the existing Hermes PR remains the primary technical channel. |
+| n8n | The support AI said it escalated the proposal to a human product/engineering review queue. | After no human response arrived, sent one short follow-up on 2026-08-13 asking whether the team received the proposal or prefers a public feature-request route. No further email will be sent without a reply. |
+| Nous Research | An automated receipt assigned support reference `T-1645` and promised a later follow-up. | After no human response arrived, sent one short follow-up on 2026-08-13 that points directly to Hermes PR #72508 and asks for routing to the TUI maintainer. The public PR remains the primary technical channel. |
 | JetBrains and Sentry | These responses routed the proposal to public trackers. | The resulting tracker evidence is recorded above; no redundant support-email reply was sent. |
 | PostHog | An automated response identified an unmonitored inbox and linked support and sales-oriented routes that were unsuitable for an open-source engineering proposal. | No email reply was sent. The public feature request recorded above was opened independently. |
 | Cohere, Supabase, Microsoft, and delivery systems | The messages were acknowledgements, account-verification instructions, unmonitored-address notices, or delivery failures. | No reply was sent because none represented maintainer review or an actionable technical question. |
@@ -100,6 +102,25 @@ unmonitored addresses, and delivery failures did not receive follow-up mail.
 These responses are routing evidence, not adoption evidence. No organization in
 this table has approved a dependency, merged an integration, or confirmed a
 production rollout.
+
+### Response audit (2026-08-13)
+
+The same outreach threads were checked again before any follow-up. No additional
+human reply was found after the previously recorded Jupyter, Zulip, and Zed
+exchanges. Automated receipts and support routing messages are not counted as
+human review.
+
+| Project/channel | New evidence | Action on the evidence date |
+|---|---|---|
+| Sentry | A design-engineering maintainer placed the behavior on the team's low-priority backlog, said Sentry already has i18n tooling, and did not expect to adopt the BidiLens dependency. | Replied once that the behavior is the request, not a dependency mandate; preferred a native/local implementation; offered a small fixture if requested; and committed not to bump the issue. |
+| Cline | PR #12724 had become conflicting with current upstream. After a narrow rebase, only the lockfile required regeneration; the component, package manifest, and regression tests applied cleanly. | Rebased with force-with-lease, preserved the host lockfile's formatting, and reran hosted CI. All quality, unit, platform, VS Code, three-OS E2E, and security checks passed. No maintainer approval is claimed. |
+| Nous Research | Support reference `T-1645` remains an automated receipt with no human follow-up. Separately, `hermes-sweeper` revalidated PR #72508 against current `main`, found no verified problem, and recommended keeping it open with high salvageability. | Kept the public PR as the primary technical channel and sent one short routing follow-up on 2026-08-13. Automation is not human review; no additional follow-up is planned without a reply. |
+| n8n | The support AI's promised human product/engineering follow-up had not arrived by the audit date. | Sent one short routing/status follow-up on 2026-08-13. No escalation or adoption is claimed, and no additional follow-up is planned without a reply. |
+| Jupyter, Zulip, Zed, Ollama, JetBrains, PostHog, Cohere, Supabase, Microsoft, and delivery systems | No new actionable human email response was found beyond the earlier audit. | No additional email was sent: these threads were already handled, routed to public channels, automated-only, unmonitored, rejected, or delivery failures. |
+
+The August 13 audit adds one maintainer backlog disposition and stronger hosted
+CI/automation evidence. It does not add a merge, downstream pilot, production
+deployment, endorsement, or company adoption claim.
 
 ## Deliberate deferrals
 
