@@ -57,6 +57,46 @@ describe('direction detection', () => {
     expect(detectDirection('React یک کتابخانه است.')).toBe('rtl');
   });
 
+  it('keeps hyphenated English compounds as natural-language evidence', () => {
+    // A hyphen is ordinary English compounding. Excluding these tokens removes
+    // only LTR evidence, which silently biases mixed blocks toward RTL.
+    const source = 'The well-known state-of-the-art open-source کتابخانه';
+    expect(findTechnicalTokenRanges(source)).toEqual([]);
+    expect(detectDirection(source)).toBe('ltr');
+    for (const compound of ['well-known', 'state-of-the-art', 'co-op', 'e-mail', 'twenty-one']) {
+      expect(findTechnicalTokenRanges(compound)).toEqual([]);
+      expect(needsBidiIntervention(compound)).toBe(false);
+    }
+  });
+
+  it('still excludes hyphenated tokens built from a known technical segment', () => {
+    expect(findTechnicalTokenRanges('react-markdown').map((range) => range.text))
+      .toEqual(['react-markdown']);
+    expect(findTechnicalTokenRanges('GPT-5').map((range) => range.text)).toEqual(['GPT-5']);
+    expect(findTechnicalTokenRanges('x86-64').map((range) => range.text)).toEqual(['x86-64']);
+    expect(detectDirection('react-markdown یک کتابخانه است.')).toBe('rtl');
+  });
+
+  it('treats emphasized uppercase prose as evidence but short acronyms as technical', () => {
+    const shouted = 'PLEASE READ THIS IMPORTANT WARNING کتاب';
+    expect(findTechnicalTokenRanges(shouted)).toEqual([]);
+    expect(detectDirection(shouted)).toBe('ltr');
+    expect(needsBidiIntervention('PLEASE READ THIS IMPORTANT WARNING')).toBe(false);
+    // Inside mixed-case prose the same shape is an acronym again.
+    expect(findTechnicalTokenRanges('Use the HTTP API for this').map((range) => range.text))
+      .toEqual(['HTTP', 'API']);
+    // A long all-capital word is emphasis, not an identifier, in either context.
+    expect(findTechnicalTokenRanges('An IMPORTANT note')).toEqual([]);
+  });
+
+  it('keeps live stream direction reconciled with batch for uppercase prose', () => {
+    const shouted = 'PLEASE READ THIS IMPORTANT WARNING کتاب';
+    const stream = createBidiStream();
+    stream.push(shouted);
+    expect(stream.snapshot().direction).toBe(detectDirection(shouted, { fallback: 'ltr' }));
+    expect(stream.finish().direction).toBe('ltr');
+  });
+
   it('covers unambiguous tool names and accepts caller-specific identifiers', () => {
     expect(detectDirection('Kubernetes \u062e\u0648\u0628 \u0627\u0633\u062a.')).toBe('rtl');
     expect(detectDirection('Playwright \u062e\u0648\u0628 \u0627\u0633\u062a.')).toBe('rtl');

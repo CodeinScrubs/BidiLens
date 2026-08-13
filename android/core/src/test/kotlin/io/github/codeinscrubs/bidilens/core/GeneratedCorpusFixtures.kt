@@ -24,6 +24,22 @@ internal val generatedCorpusFixtures = listOf(
             ),
         ),
         CorpusFixture(
+            id = "en-hyphenated-compounds-001",
+            text = "The well-known state-of-the-art open-source کتابخانه",
+            expected = BidiDirection.LTR,
+            isolations = listOf(
+            ExpectedIsolation("کتابخانه", BidiDirection.RTL, BidiIsolationKind.OPPOSITE_DIRECTION_RUN)
+            ),
+        ),
+        CorpusFixture(
+            id = "en-uppercase-emphasis-001",
+            text = "PLEASE READ THIS IMPORTANT WARNING کتاب",
+            expected = BidiDirection.LTR,
+            isolations = listOf(
+            ExpectedIsolation("کتاب", BidiDirection.RTL, BidiIsolationKind.OPPOSITE_DIRECTION_RUN)
+            ),
+        ),
+        CorpusFixture(
             id = "fa-adjacent-url-001",
             text = "یکhttps://example.com",
             expected = BidiDirection.RTL,

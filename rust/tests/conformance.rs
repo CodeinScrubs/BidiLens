@@ -62,7 +62,7 @@ fn shared_corpus_direction_contract() {
     let fixtures = corpus();
     assert_eq!(
         fixtures.len(),
-        930,
+        932,
         "corpus size changed; review the Rust gate"
     );
     let options = AnalysisOptions::default();
@@ -185,6 +185,33 @@ fn english_majority_keeps_persian_run_isolated() {
             && value.direction == Direction::Rtl
             && value.kind == IsolationKind::OppositeDirectionRun
     }));
+}
+
+#[test]
+fn hyphenated_english_compounds_stay_natural_language_evidence() {
+    // A hyphen is ordinary English compounding. Excluding these tokens removes
+    // only LTR evidence, which would silently bias mixed blocks toward RTL.
+    let source = "The well-known state-of-the-art open-source کتابخانه";
+    let analysis = analyze(source, &AnalysisOptions::default()).expect("valid defaults");
+    assert_eq!(analysis.direction, Direction::Ltr);
+    assert!(find_technical_token_ranges(source, &[]).is_empty());
+    // A segment that is itself a known technical word still excludes the token.
+    assert_eq!(
+        find_technical_token_ranges("react-markdown", &[]).len(),
+        1,
+        "a known technical segment must still be recognized"
+    );
+}
+
+#[test]
+fn emphasized_uppercase_prose_is_evidence_but_acronyms_are_technical() {
+    let shouted = "PLEASE READ THIS IMPORTANT WARNING کتاب";
+    let analysis = analyze(shouted, &AnalysisOptions::default()).expect("valid defaults");
+    assert_eq!(analysis.direction, Direction::Ltr);
+    assert!(find_technical_token_ranges(shouted, &[]).is_empty());
+    // Inside mixed-case prose the same shape is an acronym again.
+    let acronyms = find_technical_token_ranges("Use the HTTP API for this", &[]);
+    assert_eq!(acronyms.len(), 2);
 }
 
 #[test]

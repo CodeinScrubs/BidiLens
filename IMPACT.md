@@ -4,7 +4,7 @@
 
 - 12 public JavaScript packages with implementations, declarations, README,
   license, runnable example, and package-local assertion coverage;
-- 930 schema-validated direction fixtures with numbered logical words;
+- 932 schema-validated direction fixtures with numbered logical words;
 - 0 fixtures currently certified by a native-language reviewer;
 - property-based stream/source/range checks;
 - 396 unit/property/action tests with 94.80% overall and 95.81% core line coverage,

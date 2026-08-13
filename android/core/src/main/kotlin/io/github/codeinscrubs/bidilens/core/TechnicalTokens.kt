@@ -174,13 +174,55 @@ private fun addCodeRanges(source: String, ranges: MutableList<TechnicalTokenRang
     }
 }
 
-private fun isTechnicalIdentifier(token: String, custom: Set<String>): Boolean {
-    val normalized = token.lowercase()
-    return normalized in DEFAULT_TECHNICAL_IDENTIFIERS ||
-        normalized in custom ||
-        token.any { it.isDigit() || it == '_' || it == '.' || it == '-' } ||
-        token.matches(Regex("^[A-Z]{2,}$")) ||
-        Regex("[a-z][A-Z]").containsMatchIn(token)
+/**
+ * Acronyms are short. A longer all-capital word is emphasized prose, not an
+ * identifier, and must keep deciding the natural-language base direction.
+ */
+private const val ACRONYM_MAXIMUM_LENGTH = 5
+
+private fun isKnownTechnicalWord(value: String, custom: Set<String>): Boolean {
+    val normalized = value.lowercase()
+    return normalized in DEFAULT_TECHNICAL_IDENTIFIERS || normalized in custom
+}
+
+/**
+ * Reports whether capitals are the block's prose style rather than an
+ * identifier signal. `PLEASE READ THIS WARNING` is emphasized natural language;
+ * the same `API` token inside mixed-case prose is an acronym.
+ */
+private fun usesUppercaseProse(text: String): Boolean {
+    var total = 0
+    var capitalized = 0
+    for (match in Regex("\\b[A-Za-z]{2,}\\b").findAll(text)) {
+        total += 1
+        if (match.value.all { it in 'A'..'Z' }) capitalized += 1
+    }
+    return total >= 2 && capitalized * 2 > total
+}
+
+private fun isTechnicalIdentifier(
+    token: String,
+    custom: Set<String>,
+    uppercaseProse: Boolean,
+): Boolean {
+    if (isKnownTechnicalWord(token, custom)) return true
+    // A hyphenated token is technical when a segment is itself a known technical
+    // word (`react-markdown`), not merely because it is hyphenated. `well-known`
+    // and `state-of-the-art` are ordinary English and stay direction evidence.
+    if (token.contains('-') &&
+        token.split('-').any { it.isNotEmpty() && isKnownTechnicalWord(it, custom) }
+    ) {
+        return true
+    }
+    // The hyphen is deliberately absent here: only digits, underscores, and dots
+    // are structural identifier syntax.
+    return token.any { it.isDigit() || it == '_' || it == '.' } ||
+        Regex("[a-z][A-Z]").containsMatchIn(token) ||
+        (
+            !uppercaseProse &&
+                token.length <= ACRONYM_MAXIMUM_LENGTH &&
+                token.matches(Regex("^[A-Z]{2,}$"))
+            )
 }
 
 /** Finds technical spans that should not decide natural-language direction. */
@@ -294,8 +336,9 @@ fun findTechnicalTokenRanges(
         .filter { it.matches(Regex("^[A-Za-z][A-Za-z0-9_.-]*$")) }
         .map(String::lowercase)
         .toSet()
+    val uppercaseProse = usesUppercaseProse(text)
     for (match in Regex("\\b[A-Za-z][A-Za-z0-9_.-]*\\b").findAll(text)) {
-        if (isTechnicalIdentifier(match.value, custom)) {
+        if (isTechnicalIdentifier(match.value, custom, uppercaseProse)) {
             ranges.addRange(text, match.range.first, match.range.last + 1, TechnicalTokenKind.IDENTIFIER)
         }
     }

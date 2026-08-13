@@ -343,18 +343,61 @@ fn add_code_ranges(source: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
     }
 }
 
-fn is_technical_identifier(token: &str, custom: &HashSet<String>) -> bool {
-    let normalized = token.to_ascii_lowercase();
-    DEFAULT_TECHNICAL_IDENTIFIERS.contains(&normalized.as_str())
-        || custom.contains(&normalized)
-        || token
+/// Acronyms are short. A longer all-capital word is emphasized prose, not an
+/// identifier, and must keep deciding the natural-language base direction.
+const ACRONYM_MAXIMUM_LENGTH: usize = 5;
+
+fn is_known_technical_word(value: &str, custom: &HashSet<String>) -> bool {
+    let normalized = value.to_ascii_lowercase();
+    DEFAULT_TECHNICAL_IDENTIFIERS.contains(&normalized.as_str()) || custom.contains(&normalized)
+}
+
+/// Reports whether capitals are the block's prose style rather than an
+/// identifier signal. `PLEASE READ THIS WARNING` is emphasized natural
+/// language; the same `API` token inside mixed-case prose is an acronym.
+fn uses_uppercase_prose(text: &str) -> bool {
+    let words = built_in_regex(r"(?-u:\b)[A-Za-z]{2,}(?-u:\b)");
+    let mut total = 0usize;
+    let mut capitalized = 0usize;
+    for found in words.find_iter(text) {
+        total += 1;
+        if found
+            .as_str()
             .chars()
-            .any(|character| character.is_ascii_digit() || matches!(character, '_' | '.' | '-'))
-        || (token.len() >= 2
+            .all(|character| character.is_ascii_uppercase())
+        {
+            capitalized += 1;
+        }
+    }
+    total >= 2 && capitalized * 2 > total
+}
+
+fn is_technical_identifier(token: &str, custom: &HashSet<String>, uppercase_prose: bool) -> bool {
+    if is_known_technical_word(token, custom) {
+        return true;
+    }
+    // A hyphenated token is technical when a segment is itself a known technical
+    // word (`react-markdown`), not merely because it is hyphenated. `well-known`
+    // and `state-of-the-art` are ordinary English and stay direction evidence.
+    if token.contains('-')
+        && token
+            .split('-')
+            .any(|segment| !segment.is_empty() && is_known_technical_word(segment, custom))
+    {
+        return true;
+    }
+    // The hyphen is deliberately absent here: only digits, underscores, and dots
+    // are structural identifier syntax.
+    token
+        .chars()
+        .any(|character| character.is_ascii_digit() || matches!(character, '_' | '.'))
+        || built_in_regex(r"[a-z][A-Z]").is_match(token)
+        || (!uppercase_prose
+            && token.len() >= 2
+            && token.len() <= ACRONYM_MAXIMUM_LENGTH
             && token
                 .chars()
                 .all(|character| character.is_ascii_uppercase()))
-        || built_in_regex(r"[a-z][A-Z]").is_match(token)
 }
 
 /// Finds technical spans that should not decide natural-language direction.
@@ -536,8 +579,9 @@ pub fn find_technical_token_ranges(
         .map(|value| value.to_ascii_lowercase())
         .collect();
     let identifiers = built_in_regex(r"(?-u:\b)[A-Za-z][A-Za-z0-9_.-]*(?-u:\b)");
+    let uppercase_prose = uses_uppercase_prose(text);
     for found in identifiers.find_iter(text) {
-        if is_technical_identifier(found.as_str(), &custom) {
+        if is_technical_identifier(found.as_str(), &custom, uppercase_prose) {
             add_range(&mut ranges, found.range(), TechnicalTokenKind::Identifier);
         }
     }

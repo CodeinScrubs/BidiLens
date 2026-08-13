@@ -30,6 +30,26 @@ class BidiCoreTest {
     }
 
     @Test
+    fun hyphenatedEnglishCompoundsStayNaturalLanguageEvidence() {
+        // A hyphen is ordinary English compounding. Excluding these tokens
+        // removes only LTR evidence, biasing mixed blocks toward RTL.
+        val source = "The well-known state-of-the-art open-source کتابخانه"
+        assertEquals(BidiDirection.LTR, detectDirection(source))
+        assertTrue(findTechnicalTokenRanges(source).isEmpty())
+        // A segment that is itself a known technical word still excludes it.
+        assertEquals(1, findTechnicalTokenRanges("react-markdown").size)
+    }
+
+    @Test
+    fun emphasizedUppercaseProseIsEvidenceButAcronymsAreTechnical() {
+        val shouted = "PLEASE READ THIS IMPORTANT WARNING کتاب"
+        assertEquals(BidiDirection.LTR, detectDirection(shouted))
+        assertTrue(findTechnicalTokenRanges(shouted).isEmpty())
+        // Inside mixed-case prose the same shape is an acronym again.
+        assertEquals(2, findTechnicalTokenRanges("Use the HTTP API for this").size)
+    }
+
+    @Test
     fun photographedPersianTitleResolvesRtl() {
         val analysis = analyzeBidi("آپاندیسیت")
         assertEquals(BidiDirection.RTL, analysis.resolvedDirection)

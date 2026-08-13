@@ -164,6 +164,37 @@ const fixtures: Fixture[] = [
   )
 ];
 
+fixtures.push(
+  makeFixture(
+    'en-hyphenated-compounds-001',
+    'Ordinary hyphenated English compounds remain LTR evidence in a mixed paragraph.',
+    'The well-known state-of-the-art open-source کتابخانه',
+    'ltr',
+    ['en', 'fa', 'mixed', 'hyphenated-prose', 'natural-language-evidence'],
+    {
+      expectedIsolations: [{
+        text: 'کتابخانه',
+        direction: 'rtl',
+        kind: 'opposite-direction-run'
+      }]
+    }
+  ),
+  makeFixture(
+    'en-uppercase-emphasis-001',
+    'An all-capital English prose style remains LTR evidence instead of being discarded as acronyms.',
+    'PLEASE READ THIS IMPORTANT WARNING کتاب',
+    'ltr',
+    ['en', 'fa', 'mixed', 'uppercase-prose', 'natural-language-evidence'],
+    {
+      expectedIsolations: [{
+        text: 'کتاب',
+        direction: 'rtl',
+        kind: 'opposite-direction-run'
+      }]
+    }
+  )
+);
+
 const rtlAdjacentTechnicalCases = [
   {
     id: 'fa-adjacent-url-001',

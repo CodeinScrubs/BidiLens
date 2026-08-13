@@ -6305,9 +6305,24 @@ function customTechnicalIdentifiers(values) {
   if (cacheable) CUSTOM_TECHNICAL_IDENTIFIER_CACHE.set(values, identifiers);
   return identifiers;
 }
-function isTechnicalIdentifier(token, custom) {
-  const normalized = token.toLowerCase();
-  return KNOWN_TECHNICAL_TOKENS.has(normalized) || custom.has(normalized) || /[0-9_.-]/u.test(token) || /^[A-Z]{2,}$/u.test(token) || /[a-z][A-Z]/u.test(token);
+var ACRONYM_MAXIMUM_LENGTH = 5;
+function isKnownTechnicalWord(value, custom) {
+  const normalized = value.toLowerCase();
+  return KNOWN_TECHNICAL_TOKENS.has(normalized) || custom.has(normalized);
+}
+function usesUppercaseProse(text) {
+  const words = text.match(/\b[A-Za-z]{2,}\b/gu);
+  if (words === null || words.length < 2) return false;
+  let capitalized = 0;
+  for (const word of words) if (!/[a-z]/u.test(word)) capitalized += 1;
+  return capitalized * 2 > words.length;
+}
+function isTechnicalIdentifier(token, custom, uppercaseProse) {
+  if (isKnownTechnicalWord(token, custom)) return true;
+  if (token.includes("-") && token.split("-").some((segment) => segment !== "" && isKnownTechnicalWord(segment, custom))) {
+    return true;
+  }
+  return /[0-9_.]/u.test(token) || /[a-z][A-Z]/u.test(token) || !uppercaseProse && token.length <= ACRONYM_MAXIMUM_LENGTH && /^[A-Z]{2,}$/u.test(token);
 }
 function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   const ranges = [];
@@ -6364,10 +6379,11 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, "number");
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
+  const uppercaseProse = usesUppercaseProse(text);
   let match;
   while ((match = words.exec(text)) !== null) {
     const token = match[0];
-    if (isTechnicalIdentifier(token, customIdentifiers)) {
+    if (isTechnicalIdentifier(token, customIdentifiers, uppercaseProse)) {
       addRange(ranges, text, match.index, match.index + token.length, "identifier");
     }
   }

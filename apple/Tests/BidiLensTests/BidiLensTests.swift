@@ -11,6 +11,23 @@ final class BidiLensTests: XCTestCase {
         XCTAssertTrue(BidiAnalyzer.analyze(flagship).isolations.contains { $0.text == "React" })
     }
 
+    func testNaturalLanguageEvidenceIsNotMistakenForIdentifiers() {
+        let compounds = "The well-known state-of-the-art open-source کتابخانه"
+        XCTAssertEqual(BidiAnalyzer.detectDirection(compounds), .leftToRight)
+        XCTAssertTrue(BidiAnalyzer.findTechnicalTokenRanges(compounds).isEmpty)
+
+        let emphasized = "PLEASE READ THIS IMPORTANT WARNING کتاب"
+        XCTAssertEqual(BidiAnalyzer.detectDirection(emphasized), .leftToRight)
+        XCTAssertTrue(BidiAnalyzer.findTechnicalTokenRanges(emphasized).isEmpty)
+
+        let acronyms = BidiAnalyzer.findTechnicalTokenRanges("Use the HTTP API for this")
+        XCTAssertEqual(acronyms.map(\.text), ["HTTP", "API"])
+        XCTAssertEqual(
+            BidiAnalyzer.findTechnicalTokenRanges("react-markdown").map(\.text),
+            ["react-markdown"]
+        )
+    }
+
     func testPhysicalLeftDoesNotChangeRTLDirection() {
         let presentation = BidiAnalyzer.presentation(
             "این متن فارسی در سمت چپ باقی می‌ماند.",
@@ -51,7 +68,7 @@ final class BidiLensTests: XCTestCase {
         }
         let url = try XCTUnwrap(Bundle.module.url(forResource: "cases", withExtension: "json"))
         let cases = try JSONDecoder().decode([CorpusCase].self, from: Data(contentsOf: url))
-        XCTAssertEqual(cases.count, 930)
+        XCTAssertEqual(cases.count, 932)
         for item in cases {
             let expected: BidiDirection = switch item.expected {
             case "rtl": .rightToLeft
