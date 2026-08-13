@@ -270,13 +270,64 @@ function customTechnicalIdentifiers(values: readonly string[]): ReadonlySet<stri
   return identifiers;
 }
 
-function isTechnicalIdentifier(token: string, custom: ReadonlySet<string>): boolean {
-  const normalized = token.toLowerCase();
-  return KNOWN_TECHNICAL_TOKENS.has(normalized)
-    || custom.has(normalized)
-    || /[0-9_.-]/u.test(token)
-    || /^[A-Z]{2,}$/u.test(token)
-    || /[a-z][A-Z]/u.test(token);
+/**
+ * Acronyms are short. A longer all-capital word is emphasized prose, not an
+ * identifier, and must keep deciding the natural-language base direction.
+ */
+const ACRONYM_MAXIMUM_LENGTH = 5;
+
+function isKnownTechnicalWord(value: string, custom: ReadonlySet<string>): boolean {
+  const normalized = value.toLowerCase();
+  return KNOWN_TECHNICAL_TOKENS.has(normalized) || custom.has(normalized);
+}
+
+/**
+ * Reports whether capitals are the block's prose style rather than an
+ * identifier signal. `PLEASE READ THIS WARNING` is emphasized natural language;
+ * the same `API` token inside mixed-case prose is an acronym. Deciding this per
+ * block keeps the rule deterministic and needs no dictionary or language model.
+ */
+function usesUppercaseProse(text: string): boolean {
+  const words = text.match(/\b[A-Za-z]{2,}\b/gu);
+  if (words === null || words.length < 2) return false;
+  let capitalized = 0;
+  let hasLongCapitalizedWord = false;
+  // Every candidate is alphabetic, so "contains no lowercase" means all-capital.
+  for (const word of words) {
+    if (/[a-z]/u.test(word)) continue;
+    capitalized += 1;
+    if (word.length > ACRONYM_MAXIMUM_LENGTH) hasLongCapitalizedWord = true;
+  }
+  // `HTTP API` is an acronym sequence, not proof of an uppercase prose style.
+  // Requiring one long word keeps that short technical phrase excluded while
+  // still recognizing natural-language emphasis such as `PLEASE READ THIS`.
+  return hasLongCapitalizedWord && capitalized * 2 > words.length;
+}
+
+/**
+ * Only tokens starting with an ASCII letter reach this test, so every false
+ * exclusion removes LTR evidence and never RTL evidence. An over-broad rule
+ * therefore biases mixed blocks toward RTL — the mirror of the failure this
+ * project exists to fix — which is why the hyphen is not a signal on its own.
+ */
+function isTechnicalIdentifier(
+  token: string,
+  custom: ReadonlySet<string>,
+  uppercaseProse: boolean
+): boolean {
+  if (isKnownTechnicalWord(token, custom)) return true;
+  // A hyphenated token is technical when a segment is itself a known technical
+  // word (`react-markdown`, `web-app`), not merely because it is hyphenated.
+  if (token.includes('-')
+    && token.split('-').some((segment) => segment !== '' && isKnownTechnicalWord(segment, custom))) {
+    return true;
+  }
+  // Digits, underscores, and dots are structural identifier syntax.
+  return /[0-9_.]/u.test(token)
+    || /[a-z][A-Z]/u.test(token)
+    || (!uppercaseProse
+      && token.length <= ACRONYM_MAXIMUM_LENGTH
+      && /^[A-Z]{2,}$/u.test(token));
 }
 
 /** Finds ranges that should not decide the natural-language base direction. */
@@ -340,10 +391,11 @@ export function findTechnicalTokenRanges(
 
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
+  const uppercaseProse = usesUppercaseProse(text);
   let match: RegExpExecArray | null;
   while ((match = words.exec(text)) !== null) {
     const token = match[0];
-    if (isTechnicalIdentifier(token, customIdentifiers)) {
+    if (isTechnicalIdentifier(token, customIdentifiers, uppercaseProse)) {
       addRange(ranges, text, match.index, match.index + token.length, 'identifier');
     }
   }

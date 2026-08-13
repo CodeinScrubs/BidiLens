@@ -41,6 +41,80 @@
     ]
   },
   {
+    "id": "en-hyphenated-compounds-001",
+    "description": "Ordinary hyphenated English compounds remain LTR evidence in a mixed paragraph.",
+    "text": "The well-known state-of-the-art open-source کتابخانه",
+    "words": [
+      "The",
+      "well-known",
+      "state-of-the-art",
+      "open-source",
+      "کتابخانه"
+    ],
+    "expected": "ltr",
+    "expectedVisualOrderLeftToRight": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "tags": [
+      "en",
+      "fa",
+      "mixed",
+      "hyphenated-prose",
+      "natural-language-evidence"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "کتابخانه",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ]
+  },
+  {
+    "id": "en-uppercase-emphasis-001",
+    "description": "An all-capital English prose style remains LTR evidence instead of being discarded as acronyms.",
+    "text": "PLEASE READ THIS IMPORTANT WARNING کتاب",
+    "words": [
+      "PLEASE",
+      "READ",
+      "THIS",
+      "IMPORTANT",
+      "WARNING",
+      "کتاب"
+    ],
+    "expected": "ltr",
+    "expectedVisualOrderLeftToRight": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tags": [
+      "en",
+      "fa",
+      "mixed",
+      "uppercase-prose",
+      "natural-language-evidence"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "کتاب",
+        "direction": "rtl",
+        "kind": "opposite-direction-run"
+      }
+    ]
+  },
+  {
     "id": "fa-adjacent-url-001",
     "description": "A URL immediately following an RTL letter keeps its full technical range.",
     "text": "یکhttps://example.com",

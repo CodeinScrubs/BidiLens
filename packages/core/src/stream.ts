@@ -11,6 +11,8 @@ import type {
 const DEFAULT_SEPARATOR_SOURCE = '\\r\\n|\\n|\\r|\\u2029';
 const DEFAULT_SEPARATOR = new RegExp(DEFAULT_SEPARATOR_SOURCE, 'g');
 const COMMAND_STARTERS = new Set(['npm', 'pnpm', 'yarn', 'npx', 'git', 'pip', 'python', 'node', 'cargo', 'go', 'docker', 'kubectl']);
+/** Mirrors the batch acronym bound in `detect.ts`. */
+const ACRONYM_MAXIMUM_LENGTH = 5;
 
 interface IdentifierTrieNode {
   terminal: boolean;
@@ -121,6 +123,8 @@ export class BidiStream {
   #policyTokenIdentifierTechnical = false;
   #policyTokenIdentifierHasShapeMarker = false;
   #policyTokenTrailingSeparator = false;
+  #policyTokenPendingDotSeparator = false;
+  #policyTokenSegmentTechnical = false;
   #policyTokenLastWordTechnical = false;
   #policyTokenStableTechnical: 'url' | 'email' | 'path' | 'identifier' | null = null;
   #policyTokenStableLtr = 0;
@@ -781,6 +785,16 @@ export class BidiStream {
       if (!identifierCharacter) {
         this.#policyTokenDefaultTrieNode = null;
         this.#policyTokenCustomTrieNode = null;
+      } else if (character === '-') {
+        // A hyphen opens a new identifier segment. Recording a completed known
+        // segment here keeps `react-markdown` technical while `well-known`
+        // stays ordinary hyphenated English, matching the batch policy.
+        if (this.#policyTokenDefaultTrieNode?.terminal === true
+          || this.#policyTokenCustomTrieNode?.terminal === true) {
+          this.#policyTokenSegmentTechnical = true;
+        }
+        this.#policyTokenDefaultTrieNode = DEFAULT_TECHNICAL_TRIE;
+        this.#policyTokenCustomTrieNode = this.#customTechnicalTrie;
       } else {
         const normalized = character.toLowerCase();
         this.#policyTokenDefaultTrieNode = this.#policyTokenDefaultTrieNode?.children.get(normalized) ?? null;
@@ -795,13 +809,24 @@ export class BidiStream {
       if (/^[0-9_]$/u.test(character)) this.#policyTokenIdentifierHasShapeMarker = true;
       if (/^[.-]$/u.test(character)) {
         this.#policyTokenTrailingSeparator = true;
+        // Only the dot is structural identifier syntax. A hyphen alone is
+        // ordinary English compounding and must not mark the token technical.
+        if (character === '.') this.#policyTokenPendingDotSeparator = true;
       } else if (/^[A-Za-z0-9_]$/u.test(character)) {
-        if (this.#policyTokenTrailingSeparator) this.#policyTokenIdentifierHasShapeMarker = true;
+        if (this.#policyTokenPendingDotSeparator) this.#policyTokenIdentifierHasShapeMarker = true;
+        this.#policyTokenPendingDotSeparator = false;
         this.#policyTokenTrailingSeparator = false;
-        const acronym = this.#policyTokenAllUpper && this.#policyTokenUppercaseCount >= 2;
+        const allCapitalWord = this.#policyTokenAllUpper && this.#policyTokenUppercaseCount >= 2;
+        // Whether capitals mean "acronym" or "emphasized prose" depends on the
+        // whole block, which a per-character pass cannot know. Hand this block
+        // to the exact batch policy instead of guessing from the prefix.
+        if (allCapitalWord) this.#exactLiveAnalysisDue = true;
+        const acronym = allCapitalWord
+          && this.#policyTokenUppercaseCount <= ACRONYM_MAXIMUM_LENGTH;
         this.#policyTokenIdentifierTechnical = this.#policyTokenIdentifierHasShapeMarker
           || this.#policyTokenCamelCase
           || acronym
+          || this.#policyTokenSegmentTechnical
           || this.#policyTokenDefaultTrieNode?.terminal === true
           || this.#policyTokenCustomTrieNode?.terminal === true;
         this.#policyTokenLastWordTechnical = this.#policyTokenIdentifierTechnical;
@@ -1455,6 +1480,8 @@ export class BidiStream {
     this.#policyTokenIdentifierTechnical = false;
     this.#policyTokenIdentifierHasShapeMarker = false;
     this.#policyTokenTrailingSeparator = false;
+    this.#policyTokenPendingDotSeparator = false;
+    this.#policyTokenSegmentTechnical = false;
     this.#policyTokenLastWordTechnical = false;
     this.#policyTokenStableTechnical = null;
     this.#policyTokenStableLtr = 0;

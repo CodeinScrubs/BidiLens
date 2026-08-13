@@ -105,12 +105,47 @@ public enum BidiAnalyzer {
         )
     }
 
+    /// Acronyms are short. A longer all-capital word is emphasized prose, not an
+    /// identifier, and must keep deciding the natural-language base direction.
+    private static let acronymMaximumLength = 5
+
+    private static func isKnownTechnicalWord(_ value: String, _ normalizedCustom: Set<String>) -> Bool {
+        let lower = value.lowercased()
+        return defaultTechnicalIdentifiers.contains(lower)
+            || normalizedCustom.contains(lower)
+    }
+
+    /// Reports whether capitals are the block's prose style rather than an
+    /// identifier signal. `PLEASE READ THIS WARNING` is emphasized natural
+    /// language; the same `API` token inside mixed-case prose is an acronym.
+    private static func usesUppercaseProse(_ text: String) -> Bool {
+        guard let regex = try? NSRegularExpression(
+            pattern: #"(?<![A-Za-z0-9_])[A-Za-z]{2,}(?![A-Za-z0-9_])"#,
+            options: []
+        ) else { return false }
+        let string = text as NSString
+        let matches = regex.matches(in: text, range: NSRange(location: 0, length: string.length))
+        var capitalized = 0
+        var hasLongCapitalizedWord = false
+        for match in matches {
+            let word = string.substring(with: match.range)
+            guard word.allSatisfy({ $0.isUppercase && $0.isASCII }) else { continue }
+            capitalized += 1
+            if word.count > acronymMaximumLength { hasLongCapitalizedWord = true }
+        }
+        // `HTTP API` is an acronym sequence, not proof of uppercase prose.
+        return matches.count >= 2
+            && hasLongCapitalizedWord
+            && capitalized * 2 > matches.count
+    }
+
     public static func findTechnicalTokenRanges(
         _ text: String,
         customIdentifiers: Set<String> = []
     ) -> [TechnicalTokenRange] {
         let fullRange = NSRange(location: 0, length: (text as NSString).length)
         var ranges: [TechnicalTokenRange] = []
+        let normalizedCustomIdentifiers = Set(customIdentifiers.map { $0.lowercased() })
         for (pattern, kind, options) in technicalPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { continue }
             for match in regex.matches(in: text, range: fullRange) {
@@ -153,20 +188,27 @@ public enum BidiAnalyzer {
             }
         }
 
+        let uppercaseProse = usesUppercaseProse(text)
         if let regex = try? NSRegularExpression(
             pattern: #"(?<![A-Za-z0-9_])[A-Za-z][A-Za-z0-9_.-]*(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"#,
             options: []
         ) {
             for match in regex.matches(in: text, range: fullRange) {
                 let token = (text as NSString).substring(with: match.range)
-                let lower = token.lowercased()
-                let technical = defaultTechnicalIdentifiers.contains(lower)
-                    || customIdentifiers.map { $0.lowercased() }.contains(lower)
-                    || token.contains(where: { $0.isNumber || $0 == "_" || $0 == "." || $0 == "-" })
-                    || token.unicodeScalars.allSatisfy {
-                        !$0.properties.isAlphabetic || CharacterSet.uppercaseLetters.contains($0)
-                    }
+                let technical = isKnownTechnicalWord(token, normalizedCustomIdentifiers)
+                    // A hyphenated token is technical when a segment is itself a
+                    // known technical word ("react-markdown"), not merely because
+                    // it is hyphenated: "well-known" is ordinary English evidence.
+                    || (token.contains("-") && token.split(separator: "-").contains {
+                        !$0.isEmpty && isKnownTechnicalWord(String($0), normalizedCustomIdentifiers)
+                    })
+                    // Only digits, underscores, and dots are identifier syntax.
+                    || token.contains(where: { $0.isNumber || $0 == "_" || $0 == "." })
                     || token.range(of: #"[a-z][A-Z]"#, options: .regularExpression) != nil
+                    || (!uppercaseProse
+                        && token.count >= 2
+                        && token.count <= acronymMaximumLength
+                        && token.allSatisfy { $0.isUppercase && $0.isASCII })
                 if technical {
                     ranges.append(TechnicalTokenRange(
                         text: token,

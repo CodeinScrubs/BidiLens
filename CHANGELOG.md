@@ -5,6 +5,16 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+### Direction correctness
+
+- Kept ordinary hyphenated English compounds and block-level ALL-CAPS prose as
+  natural-language direction evidence while continuing to exclude technical
+  identifiers such as `react-markdown`, `GPT-5`, and mixed-case acronyms.
+- Added shared cross-platform regressions for both evidence classes, bringing
+  the canonical direction corpus to 932 cases.
+- Kept caller-supplied .NET technical identifiers case-insensitive regardless
+  of the comparer used by the caller's set.
+
 ### Release and verification
 
 - Pinned the supported CI runtimes to exact Node 22.12.0 and 24.15.0 releases
@@ -44,7 +54,7 @@ is published under the public `@bidilens` npm scope.
 - Kept paragraph direction independent from physical alignment in Android
   Views, including immediate restoration of the caller's original gravity
   when content-driven alignment is disabled.
-- Expanded Kotlin parity to the 930-case canonical corpus and added Views and
+- Expanded Kotlin parity to the 932-case canonical corpus and added Views and
   Compose regressions for physical-left RTL rendering and pure-LTR no-op
   behavior.
 - Aligned the root and standalone-consumer Compose compiler plugins on Kotlin

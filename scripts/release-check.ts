@@ -31,9 +31,10 @@ const CANONICAL_ISSUES = 'https://github.com/CodeinScrubs/BidiLens/issues';
 const DIST_BUDGETS = new Map<string, number>([
   // Unicode 17 tables plus auditable evidence, invisible-character security,
   // atomic control sanitization, fenced-code detection, configurable token
-  // policy, and the chunk-invariant streaming classifier remain below a
-  // 120 KiB unminified ceiling (the current artifact is about 25 KiB gzip).
-  ['@bidilens/core', 120 * 1024],
+  // policy, block-scoped natural-language evidence (hyphenated compounds and
+  // uppercase prose), and the chunk-invariant streaming classifier remain
+  // below a 124 KiB unminified ceiling (the current artifact is ~25 KiB gzip).
+  ['@bidilens/core', 124 * 1024],
   // Ownership-aware live direction/style restoration adds deliberate DOM
   // integration code; keep a tight but realistic unminified ceiling.
   ['@bidilens/dom', 20 * 1024],

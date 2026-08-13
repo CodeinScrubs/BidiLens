@@ -122,16 +122,16 @@ reordering and shaping; BidiLens supplies the application structure they need.
 - safe HTML, DOM, unified/remark/rehype, markdown-it, React, Vue, Svelte, and
   Web Component adapters;
 - a conservative terminal adapter and a scriptable CLI;
-- 930 schema-validated direction fixtures plus property-based random chunking;
+- 932 schema-validated direction fixtures plus property-based random chunking;
 - native Android pure-Kotlin core, non-destructive Views adapter, Compose
   display/editable components, and a runnable photographed-case sample;
 - Android JVM, Robolectric, lint, APK/AAR, and API 35/36 device gates using the
-  same generated 930-case corpus;
+  same generated 932-case corpus;
 - a Swift Package with UIKit `UILabel`, `UITextView`, and `UITextField`
   adapters, a UIKit-backed SwiftUI `BidiText` view, and a .NET 8 core with WPF
   `TextBlock`/`TextBox` adapters;
 - a native Rust core with generated Unicode 17 tables, byte/UTF-16/code-point
-  ranges, all 930 direction fixtures, declared isolation/security conformance,
+  ranges, all 932 direction fixtures, declared isolation/security conformance,
   and Linux/macOS/Windows CI;
 - explicit alignment policy on native adapters, allowing an RTL paragraph to
   remain physically left-aligned without changing its base direction;

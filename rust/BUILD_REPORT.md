@@ -13,7 +13,7 @@
   formatting, and hidden-control auditing;
 - byte, UTF-16, and Unicode scalar-value ranges;
 - exact pure-LTR/LTR-context no-op behavior;
-- shared `corpus/cases.json` gate: 930 direction fixtures, all explicitly
+- shared `corpus/cases.json` gate: 932 direction fixtures, all explicitly
   declared isolation plans, and all security-code fixtures;
 - focused option, offset, mixed-direction, source-immutability, formatting, and
   independent direction/alignment assertions;
@@ -32,7 +32,7 @@ cargo run --manifest-path rust/Cargo.toml --example basic
 
 The complete command set passed locally on Windows 10 x64 with the declared
 minimum Rust `1.85.0` GNU toolchain on 2026-08-01. The conformance executable
-reported 18/18 test groups passing; the corpus groups cover all 930 direction
+reported 18/18 test groups passing; the corpus groups cover all 932 direction
 cases and every declared isolation/security expectation. The protected
 [initial pull-request run](https://github.com/CodeinScrubs/BidiLens/actions/runs/30702127236)
 passed the Rust core gate with 928 fixtures at that commit on

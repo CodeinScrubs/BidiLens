@@ -107,6 +107,9 @@ public static partial class BidiAnalyzer
         IReadOnlySet<string>? customIdentifiers = null)
     {
         var ranges = new List<TechnicalTokenRange>();
+        var normalizedCustomIdentifiers = customIdentifiers is null
+            ? null
+            : new HashSet<string>(customIdentifiers, StringComparer.OrdinalIgnoreCase);
         foreach (var (regex, kind) in TechnicalPatterns)
         {
             foreach (Match match in regex.Matches(text))
@@ -133,14 +136,23 @@ public static partial class BidiAnalyzer
                     AddStandaloneFenceDelimiters(text, match.Index, length, ranges);
             }
         }
+        var uppercaseProse = UsesUppercaseProse(text);
         foreach (Match match in IdentifierPattern().Matches(text))
         {
             var token = match.Value;
-            var technical = DefaultTechnicalIdentifiers.Contains(token)
-                || customIdentifiers?.Contains(token) == true
-                || token.Any(character => char.IsDigit(character) || character is '_' or '.' or '-')
-                || token.Length >= 2 && token.All(character => character is >= 'A' and <= 'Z')
-                || Regex.IsMatch(token, "[a-z][A-Z]", RegexOptions.CultureInvariant);
+            var technical = IsKnownTechnicalWord(token, normalizedCustomIdentifiers)
+                // A hyphenated token is technical when a segment is itself a known
+                // technical word ("react-markdown"), not merely because it is
+                // hyphenated: "well-known" is ordinary English direction evidence.
+                || (token.Contains('-') && token.Split('-').Any(segment =>
+                    segment.Length > 0 && IsKnownTechnicalWord(segment, normalizedCustomIdentifiers)))
+                // Only digits, underscores, and dots are structural identifier syntax.
+                || token.Any(character => char.IsDigit(character) || character is '_' or '.')
+                || Regex.IsMatch(token, "[a-z][A-Z]", RegexOptions.CultureInvariant)
+                || (!uppercaseProse
+                    && token.Length >= 2
+                    && token.Length <= AcronymMaximumLength
+                    && token.All(character => character is >= 'A' and <= 'Z'));
             if (technical) ranges.Add(new(token, match.Index, match.Index + match.Length, TechnicalTokenKind.Identifier));
         }
         ranges.Sort((left, right) =>
@@ -531,6 +543,39 @@ public static partial class BidiAnalyzer
         return new(!controls.Any(control => control.Risk == "high"), controls);
     }
 
+    /// <summary>
+    /// Acronyms are short. A longer all-capital word is emphasized prose, not an
+    /// identifier, and must keep deciding the natural-language base direction.
+    /// </summary>
+    private const int AcronymMaximumLength = 5;
+
+    private static bool IsKnownTechnicalWord(string value, IReadOnlySet<string>? custom) =>
+        DefaultTechnicalIdentifiers.Contains(value) || custom?.Contains(value) == true;
+
+    /// <summary>
+    /// Reports whether capitals are the block's prose style rather than an
+    /// identifier signal. <c>PLEASE READ THIS WARNING</c> is emphasized natural
+    /// language; the same <c>API</c> token inside mixed-case prose is an acronym.
+    /// </summary>
+    private static bool UsesUppercaseProse(string text)
+    {
+        var total = 0;
+        var capitalized = 0;
+        var hasLongCapitalizedWord = false;
+        foreach (Match match in ProseWordPattern().Matches(text))
+        {
+            total += 1;
+            if (!match.Value.All(character => character is >= 'A' and <= 'Z')) continue;
+            capitalized += 1;
+            if (match.Value.Length > AcronymMaximumLength) hasLongCapitalizedWord = true;
+        }
+        // `HTTP API` is an acronym sequence, not proof of uppercase prose.
+        return total >= 2 && hasLongCapitalizedWord && capitalized * 2 > total;
+    }
+
     [GeneratedRegex(@"(?<![A-Za-z0-9_])[A-Za-z][A-Za-z0-9_.-]*(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])", RegexOptions.CultureInvariant)]
     private static partial Regex IdentifierPattern();
+
+    [GeneratedRegex(@"(?<![A-Za-z0-9_])[A-Za-z]{2,}(?![A-Za-z0-9_])", RegexOptions.CultureInvariant)]
+    private static partial Regex ProseWordPattern();
 }

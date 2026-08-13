@@ -31,6 +31,31 @@ internal static class Program
         Equal(BidiDirection.RightToLeft, BidiAnalyzer.Analyze(flagship).ResolvedDirection, "resolved direction");
         True(BidiAnalyzer.Analyze(flagship).Isolations.Any(value => value.Text == "React"), "React isolation missing");
 
+        const string compounds = "The well-known state-of-the-art open-source کتابخانه";
+        Equal(BidiDirection.LeftToRight, BidiAnalyzer.DetectDirection(compounds), "hyphenated prose direction");
+        Equal(0, BidiAnalyzer.FindTechnicalTokenRanges(compounds).Count, "hyphenated prose technical ranges");
+        const string emphasized = "PLEASE READ THIS IMPORTANT WARNING کتاب";
+        Equal(BidiDirection.LeftToRight, BidiAnalyzer.DetectDirection(emphasized), "uppercase prose direction");
+        Equal(0, BidiAnalyzer.FindTechnicalTokenRanges(emphasized).Count, "uppercase prose technical ranges");
+        Equal(
+            2,
+            BidiAnalyzer.FindTechnicalTokenRanges("Use the HTTP API for this").Count,
+            "mixed-case acronym ranges");
+        Equal(
+            2,
+            BidiAnalyzer.FindTechnicalTokenRanges("HTTP API").Count,
+            "all-capital acronym phrase ranges");
+        Equal(
+            1,
+            BidiAnalyzer.FindTechnicalTokenRanges(
+                "Widget کتاب",
+                new HashSet<string> { "widget" }).Count,
+            "custom identifiers are case-insensitive");
+        Equal(
+            1,
+            BidiAnalyzer.FindTechnicalTokenRanges("react-markdown").Count,
+            "hyphenated technical range");
+
         var textBlock = new TextBlock { Text = flagship, TextAlignment = TextAlignment.Left };
         var blockAnalysis = BidiWpf.Apply(textBlock, alignment: BidiAlignment.PhysicalLeft);
         Equal(BidiDirection.RightToLeft, blockAnalysis.ResolvedDirection, "WPF analysis direction");
