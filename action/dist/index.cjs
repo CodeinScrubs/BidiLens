@@ -6314,8 +6314,13 @@ function usesUppercaseProse(text) {
   const words = text.match(/\b[A-Za-z]{2,}\b/gu);
   if (words === null || words.length < 2) return false;
   let capitalized = 0;
-  for (const word of words) if (!/[a-z]/u.test(word)) capitalized += 1;
-  return capitalized * 2 > words.length;
+  let hasLongCapitalizedWord = false;
+  for (const word of words) {
+    if (/[a-z]/u.test(word)) continue;
+    capitalized += 1;
+    if (word.length > ACRONYM_MAXIMUM_LENGTH) hasLongCapitalizedWord = true;
+  }
+  return hasLongCapitalizedWord && capitalized * 2 > words.length;
 }
 function isTechnicalIdentifier(token, custom, uppercaseProse) {
   if (isKnownTechnicalWord(token, custom)) return true;

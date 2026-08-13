@@ -42,6 +42,16 @@ internal static class Program
             BidiAnalyzer.FindTechnicalTokenRanges("Use the HTTP API for this").Count,
             "mixed-case acronym ranges");
         Equal(
+            2,
+            BidiAnalyzer.FindTechnicalTokenRanges("HTTP API").Count,
+            "all-capital acronym phrase ranges");
+        Equal(
+            1,
+            BidiAnalyzer.FindTechnicalTokenRanges(
+                "Widget کتاب",
+                new HashSet<string> { "widget" }).Count,
+            "custom identifiers are case-insensitive");
+        Equal(
             1,
             BidiAnalyzer.FindTechnicalTokenRanges("react-markdown").Count,
             "hyphenated technical range");

@@ -212,6 +212,8 @@ fn emphasized_uppercase_prose_is_evidence_but_acronyms_are_technical() {
     // Inside mixed-case prose the same shape is an acronym again.
     let acronyms = find_technical_token_ranges("Use the HTTP API for this", &[]);
     assert_eq!(acronyms.len(), 2);
+    let acronym_phrase = find_technical_token_ranges("HTTP API", &[]);
+    assert_eq!(acronym_phrase.len(), 2);
 }
 
 #[test]

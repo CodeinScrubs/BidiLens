@@ -107,6 +107,9 @@ public static partial class BidiAnalyzer
         IReadOnlySet<string>? customIdentifiers = null)
     {
         var ranges = new List<TechnicalTokenRange>();
+        var normalizedCustomIdentifiers = customIdentifiers is null
+            ? null
+            : new HashSet<string>(customIdentifiers, StringComparer.OrdinalIgnoreCase);
         foreach (var (regex, kind) in TechnicalPatterns)
         {
             foreach (Match match in regex.Matches(text))
@@ -137,12 +140,12 @@ public static partial class BidiAnalyzer
         foreach (Match match in IdentifierPattern().Matches(text))
         {
             var token = match.Value;
-            var technical = IsKnownTechnicalWord(token, customIdentifiers)
+            var technical = IsKnownTechnicalWord(token, normalizedCustomIdentifiers)
                 // A hyphenated token is technical when a segment is itself a known
                 // technical word ("react-markdown"), not merely because it is
                 // hyphenated: "well-known" is ordinary English direction evidence.
                 || (token.Contains('-') && token.Split('-').Any(segment =>
-                    segment.Length > 0 && IsKnownTechnicalWord(segment, customIdentifiers)))
+                    segment.Length > 0 && IsKnownTechnicalWord(segment, normalizedCustomIdentifiers)))
                 // Only digits, underscores, and dots are structural identifier syntax.
                 || token.Any(character => char.IsDigit(character) || character is '_' or '.')
                 || Regex.IsMatch(token, "[a-z][A-Z]", RegexOptions.CultureInvariant)
@@ -558,12 +561,16 @@ public static partial class BidiAnalyzer
     {
         var total = 0;
         var capitalized = 0;
+        var hasLongCapitalizedWord = false;
         foreach (Match match in ProseWordPattern().Matches(text))
         {
             total += 1;
-            if (match.Value.All(character => character is >= 'A' and <= 'Z')) capitalized += 1;
+            if (!match.Value.All(character => character is >= 'A' and <= 'Z')) continue;
+            capitalized += 1;
+            if (match.Value.Length > AcronymMaximumLength) hasLongCapitalizedWord = true;
         }
-        return total >= 2 && capitalized * 2 > total;
+        // `HTTP API` is an acronym sequence, not proof of uppercase prose.
+        return total >= 2 && hasLongCapitalizedWord && capitalized * 2 > total;
     }
 
     [GeneratedRegex(@"(?<![A-Za-z0-9_])[A-Za-z][A-Za-z0-9_.-]*(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])", RegexOptions.CultureInvariant)]

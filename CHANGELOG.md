@@ -12,6 +12,8 @@ is published under the public `@bidilens` npm scope.
   identifiers such as `react-markdown`, `GPT-5`, and mixed-case acronyms.
 - Added shared cross-platform regressions for both evidence classes, bringing
   the canonical direction corpus to 932 cases.
+- Kept caller-supplied .NET technical identifiers case-insensitive regardless
+  of the comparer used by the caller's set.
 
 ### Release and verification
 

@@ -47,6 +47,8 @@ class BidiCoreTest {
         assertTrue(findTechnicalTokenRanges(shouted).isEmpty())
         // Inside mixed-case prose the same shape is an acronym again.
         assertEquals(2, findTechnicalTokenRanges("Use the HTTP API for this").size)
+        // Short all-capital phrases remain acronym-shaped by default.
+        assertEquals(2, findTechnicalTokenRanges("HTTP API").size)
     }
 
     @Test

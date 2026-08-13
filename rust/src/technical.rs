@@ -359,6 +359,7 @@ fn uses_uppercase_prose(text: &str) -> bool {
     let words = built_in_regex(r"(?-u:\b)[A-Za-z]{2,}(?-u:\b)");
     let mut total = 0usize;
     let mut capitalized = 0usize;
+    let mut has_long_capitalized_word = false;
     for found in words.find_iter(text) {
         total += 1;
         if found
@@ -367,9 +368,13 @@ fn uses_uppercase_prose(text: &str) -> bool {
             .all(|character| character.is_ascii_uppercase())
         {
             capitalized += 1;
+            if found.as_str().len() > ACRONYM_MAXIMUM_LENGTH {
+                has_long_capitalized_word = true;
+            }
         }
     }
-    total >= 2 && capitalized * 2 > total
+    // `HTTP API` is an acronym sequence, not proof of uppercase prose.
+    total >= 2 && has_long_capitalized_word && capitalized * 2 > total
 }
 
 fn is_technical_identifier(token: &str, custom: &HashSet<String>, uppercase_prose: bool) -> bool {

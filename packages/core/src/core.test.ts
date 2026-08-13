@@ -85,6 +85,10 @@ describe('direction detection', () => {
     // Inside mixed-case prose the same shape is an acronym again.
     expect(findTechnicalTokenRanges('Use the HTTP API for this').map((range) => range.text))
       .toEqual(['HTTP', 'API']);
+    // A short all-capital phrase remains acronym-shaped even when every word
+    // is uppercase; it is not enough evidence to infer an emphasized style.
+    expect(findTechnicalTokenRanges('HTTP API').map((range) => range.text))
+      .toEqual(['HTTP', 'API']);
     // A long all-capital word is emphasis, not an identifier, in either context.
     expect(findTechnicalTokenRanges('An IMPORTANT note')).toEqual([]);
   });

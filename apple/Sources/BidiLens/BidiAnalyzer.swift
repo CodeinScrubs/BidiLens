@@ -109,10 +109,10 @@ public enum BidiAnalyzer {
     /// identifier, and must keep deciding the natural-language base direction.
     private static let acronymMaximumLength = 5
 
-    private static func isKnownTechnicalWord(_ value: String, _ custom: Set<String>) -> Bool {
+    private static func isKnownTechnicalWord(_ value: String, _ normalizedCustom: Set<String>) -> Bool {
         let lower = value.lowercased()
         return defaultTechnicalIdentifiers.contains(lower)
-            || custom.contains { $0.lowercased() == lower }
+            || normalizedCustom.contains(lower)
     }
 
     /// Reports whether capitals are the block's prose style rather than an
@@ -126,11 +126,17 @@ public enum BidiAnalyzer {
         let string = text as NSString
         let matches = regex.matches(in: text, range: NSRange(location: 0, length: string.length))
         var capitalized = 0
-        for match in matches where string.substring(with: match.range)
-            .allSatisfy({ $0.isUppercase && $0.isASCII }) {
+        var hasLongCapitalizedWord = false
+        for match in matches {
+            let word = string.substring(with: match.range)
+            guard word.allSatisfy({ $0.isUppercase && $0.isASCII }) else { continue }
             capitalized += 1
+            if word.count > acronymMaximumLength { hasLongCapitalizedWord = true }
         }
-        return matches.count >= 2 && capitalized * 2 > matches.count
+        // `HTTP API` is an acronym sequence, not proof of uppercase prose.
+        return matches.count >= 2
+            && hasLongCapitalizedWord
+            && capitalized * 2 > matches.count
     }
 
     public static func findTechnicalTokenRanges(
@@ -139,6 +145,7 @@ public enum BidiAnalyzer {
     ) -> [TechnicalTokenRange] {
         let fullRange = NSRange(location: 0, length: (text as NSString).length)
         var ranges: [TechnicalTokenRange] = []
+        let normalizedCustomIdentifiers = Set(customIdentifiers.map { $0.lowercased() })
         for (pattern, kind, options) in technicalPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { continue }
             for match in regex.matches(in: text, range: fullRange) {
@@ -188,12 +195,12 @@ public enum BidiAnalyzer {
         ) {
             for match in regex.matches(in: text, range: fullRange) {
                 let token = (text as NSString).substring(with: match.range)
-                let technical = isKnownTechnicalWord(token, customIdentifiers)
+                let technical = isKnownTechnicalWord(token, normalizedCustomIdentifiers)
                     // A hyphenated token is technical when a segment is itself a
                     // known technical word ("react-markdown"), not merely because
                     // it is hyphenated: "well-known" is ordinary English evidence.
                     || (token.contains("-") && token.split(separator: "-").contains {
-                        !$0.isEmpty && isKnownTechnicalWord(String($0), customIdentifiers)
+                        !$0.isEmpty && isKnownTechnicalWord(String($0), normalizedCustomIdentifiers)
                     })
                     // Only digits, underscores, and dots are identifier syntax.
                     || token.contains(where: { $0.isNumber || $0 == "_" || $0 == "." })

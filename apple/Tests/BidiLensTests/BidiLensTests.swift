@@ -23,6 +23,10 @@ final class BidiLensTests: XCTestCase {
         let acronyms = BidiAnalyzer.findTechnicalTokenRanges("Use the HTTP API for this")
         XCTAssertEqual(acronyms.map(\.text), ["HTTP", "API"])
         XCTAssertEqual(
+            BidiAnalyzer.findTechnicalTokenRanges("HTTP API").map(\.text),
+            ["HTTP", "API"]
+        )
+        XCTAssertEqual(
             BidiAnalyzer.findTechnicalTokenRanges("react-markdown").map(\.text),
             ["react-markdown"]
         )

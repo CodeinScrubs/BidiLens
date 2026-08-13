@@ -193,11 +193,16 @@ private fun isKnownTechnicalWord(value: String, custom: Set<String>): Boolean {
 private fun usesUppercaseProse(text: String): Boolean {
     var total = 0
     var capitalized = 0
+    var hasLongCapitalizedWord = false
     for (match in Regex("\\b[A-Za-z]{2,}\\b").findAll(text)) {
         total += 1
-        if (match.value.all { it in 'A'..'Z' }) capitalized += 1
+        if (match.value.all { it in 'A'..'Z' }) {
+            capitalized += 1
+            if (match.value.length > ACRONYM_MAXIMUM_LENGTH) hasLongCapitalizedWord = true
+        }
     }
-    return total >= 2 && capitalized * 2 > total
+    // `HTTP API` is an acronym sequence, not proof of an uppercase prose style.
+    return total >= 2 && hasLongCapitalizedWord && capitalized * 2 > total
 }
 
 private fun isTechnicalIdentifier(

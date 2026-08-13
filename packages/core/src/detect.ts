@@ -291,9 +291,17 @@ function usesUppercaseProse(text: string): boolean {
   const words = text.match(/\b[A-Za-z]{2,}\b/gu);
   if (words === null || words.length < 2) return false;
   let capitalized = 0;
+  let hasLongCapitalizedWord = false;
   // Every candidate is alphabetic, so "contains no lowercase" means all-capital.
-  for (const word of words) if (!/[a-z]/u.test(word)) capitalized += 1;
-  return capitalized * 2 > words.length;
+  for (const word of words) {
+    if (/[a-z]/u.test(word)) continue;
+    capitalized += 1;
+    if (word.length > ACRONYM_MAXIMUM_LENGTH) hasLongCapitalizedWord = true;
+  }
+  // `HTTP API` is an acronym sequence, not proof of an uppercase prose style.
+  // Requiring one long word keeps that short technical phrase excluded while
+  // still recognizing natural-language emphasis such as `PLEASE READ THIS`.
+  return hasLongCapitalizedWord && capitalized * 2 > words.length;
 }
 
 /**

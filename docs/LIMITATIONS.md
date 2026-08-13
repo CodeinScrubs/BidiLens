@@ -25,9 +25,10 @@ use the configured fallback or inherited direction.
 Separating an acronym from an emphasized word is decided by shape and block
 context, not by a dictionary: a short all-capital token is treated as an
 identifier unless capitals are the block's prose style. A block written only in
-short capitalized words can still classify them either way, and a hyphenated
-product name whose segments are all outside the technical vocabulary counts as
-natural language. Both cases are addressable with `technicalIdentifiers` or an
+short all-capital words remains acronym-shaped by default; an uppercase prose
+style requires at least one longer capitalized word. A hyphenated product name
+whose segments are all outside the technical vocabulary counts as natural
+language. Both boundaries are addressable with `technicalIdentifiers` or an
 explicit direction.
 
 The scanner identifies suspicious structure, not malicious intent. It does
