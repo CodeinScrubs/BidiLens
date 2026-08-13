@@ -21,11 +21,14 @@ To reproduce the generated table from the vendored source:
 pnpm unicode:generate
 ```
 
-To deliberately refresh the pinned upstream file, first update the version,
-URLs, and both expected SHA-256 values in `scripts/generate-bidi-data.ts`, then run:
+To deliberately refresh the pinned upstream files, download both exact source
+URLs shown in `scripts/generate-bidi-data.ts` outside this repository, verify
+their expected SHA-256 values, replace only the two vendored files, then update
+the version and hashes in the generator. The generator deliberately has no
+network-to-filesystem mode. Review with:
 
 ```bash
-pnpm unicode:download
+pnpm unicode:generate
 git diff -- unicode packages/core/src/generated/bidi-ranges.ts
 pnpm run check
 ```

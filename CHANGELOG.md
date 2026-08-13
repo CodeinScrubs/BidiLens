@@ -12,8 +12,8 @@ is published under the public `@bidilens` npm scope.
   preserving `$...$`, `$$...$$`, `$$$$`, and `\(...\)` recognition.
 - Expressed UTF-16-to-code-point range construction with bounded typed-array
   fills so input-derived offsets cannot be interpreted as object properties.
-- Restricted downloaded Unicode data writes to the two repository-owned,
-  version-pinned destination paths after exact SHA-256 verification.
+- Removed the generator's network-to-filesystem refresh mode; Unicode table
+  generation now reads only two vendored, version- and SHA-256-pinned files.
 
 ### Direction correctness
 
