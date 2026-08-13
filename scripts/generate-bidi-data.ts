@@ -40,8 +40,6 @@ const UNICODE_SOURCES = [
   }
 ] as const satisfies readonly UnicodeSource[];
 
-const PINNED_UNICODE_PATHS = new Set(UNICODE_SOURCES.map((source) => source.path));
-
 const CLASS = {
   L: 0,
   R: 1,
@@ -270,36 +268,24 @@ ${renderRustRanges('NATURAL_LETTER_RANGES', ranges.naturalLetters)}
 `;
 }
 
-async function sourceBytes(source: UnicodeSource, download: boolean): Promise<Uint8Array> {
-  let bytes: Uint8Array;
-  if (download) {
-    const response = await fetch(source.url);
-    if (!response.ok) throw new Error(`${source.label} download failed: HTTP ${response.status}`);
-    bytes = new Uint8Array(await response.arrayBuffer());
-  } else {
-    bytes = await readFile(source.path);
-  }
+function verifiedBytes(source: UnicodeSource, bytes: Uint8Array): Uint8Array {
   const actualSha256 = createHash('sha256').update(bytes).digest('hex');
   if (actualSha256 !== source.sha256) {
     throw new Error(`${source.label} checksum mismatch: expected ${source.sha256}, received ${actualSha256}`);
   }
-  if (download) {
-    if (!PINNED_UNICODE_PATHS.has(source.path)) {
-      throw new Error(`Refusing to write outside the pinned Unicode source paths: ${source.path}`);
-    }
-    await mkdir(dirname(source.path), { recursive: true });
-    await writeFile(source.path, bytes);
-  }
   return bytes;
 }
 
+async function localSourceBytes(source: UnicodeSource): Promise<Uint8Array> {
+  return verifiedBytes(source, await readFile(source.path));
+}
+
 async function main(): Promise<void> {
-  const download = process.argv.includes('--download');
   const check = process.argv.includes('--check');
   const [bidiSource, generalCategorySource] = UNICODE_SOURCES;
   const [bidiBytes, generalCategoryBytes] = await Promise.all([
-    sourceBytes(bidiSource, download),
-    sourceBytes(generalCategorySource, download)
+    localSourceBytes(bidiSource),
+    localSourceBytes(generalCategorySource)
   ]);
   const ranges = collectGeneratedRanges(
     new TextDecoder().decode(bidiBytes),

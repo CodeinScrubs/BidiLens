@@ -44,9 +44,8 @@ pops/openers, formatting that crosses an isolate boundary, and U+200B.
 - recursive CLI scanning skips symbolic links.
 - raw-text math delimiter discovery is a single forward scan; repeated
   unmatched delimiters cannot trigger polynomial regular-expression work.
-- the optional Unicode download command accepts only two source/destination
-  pairs pinned in repository code and verifies each exact SHA-256 before a
-  write; untrusted text never reaches that build-time path.
+- Unicode generation is offline-only: it reads two vendored, SHA-256-pinned
+  source files and exposes no network-to-filesystem refresh path.
 
 ## False-positive policy
 

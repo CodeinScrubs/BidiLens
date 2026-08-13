@@ -44,7 +44,6 @@
     "build:visual-fixtures": "pnpm --filter @bidilens/core run build && pnpm --filter @bidilens/markdown run build && pnpm --filter @bidilens/react run build && pnpm --filter @bidilens/web-component run build",
     "test:visual": "pnpm run build:visual-fixtures && playwright test",
     "unicode:generate": "tsx scripts/generate-bidi-data.ts",
-    "unicode:download": "tsx scripts/generate-bidi-data.ts --download",
     "unicode:check": "tsx scripts/generate-bidi-data.ts --check",
     "release:check": "tsx scripts/release-check.ts",
     "android:check": "tsx scripts/run-android.ts",
