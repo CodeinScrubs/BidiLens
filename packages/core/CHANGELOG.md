@@ -6,7 +6,9 @@
 
 - 35b2ce6: Replace the raw-text math delimiter regular expression with a forward scanner
   so repeated unmatched `\(` input stays linear instead of triggering
-  polynomial backtracking.
+  polynomial backtracking. Construct UTF-16-to-code-point range mappings with
+  bounded typed-array fills so input-derived offsets cannot be interpreted as
+  object properties.
 - 61aa9f6: Stop treating ordinary English words as technical tokens, which biased mixed
   blocks toward RTL.
 
