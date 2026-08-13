@@ -6148,6 +6148,27 @@ function addMatches(text, ranges, expression, kind, group = 0) {
     addRange(ranges, text, start, start + value.length, kind);
   }
 }
+function addMathRanges(text, ranges) {
+  let i = 0;
+  let scanned = -1;
+  while (i < text.length) {
+    const p = text[i] === "\\" && text[i + 1] === "(";
+    const d = text[i] === "$" ? text[i + 1] === "$" ? "$$" : "$" : p && i >= scanned ? "\\)" : "";
+    if (!d) {
+      i++;
+      continue;
+    }
+    let e = i + (p ? 2 : d.length);
+    while (e < text.length && text[e] !== "\r" && text[e] !== "\n" && !text.startsWith(d, e)) e++;
+    if (text.startsWith(d, e) && (d !== "$" || e > i + 1)) {
+      addRange(ranges, text, i, e + d.length, "math");
+      i = e + d.length;
+    } else {
+      if (p) scanned = e;
+      i++;
+    }
+  }
+}
 function trimTechnicalPunctuation(value) {
   let end = value.length;
   while (end > 0 && /[.,;:!?،؛؟。।۔]/u.test(value[end - 1])) end -= 1;
@@ -6333,7 +6354,7 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   const ranges = [];
   addCodeRanges(text, ranges);
   addMatches(text, ranges, /<\/?[A-Za-z][^<>\r\n]*>/gu, "html");
-  addMatches(text, ranges, /(?:\$\$[^\r\n]*?\$\$|\$[^$\r\n]+\$|\\\([^\r\n]*?\\\))/gu, "math");
+  addMathRanges(text, ranges);
   const urls = /\b(?:https?|ftp):\/\/[^\s<>{}"']+/giu;
   let urlMatch;
   while ((urlMatch = urls.exec(text)) !== null) {
@@ -6828,12 +6849,11 @@ function attachSourceRanges(text, isolations) {
   let utf16Offset = 0;
   let codePointOffset = 0;
   for (const character of text) {
-    codePointAtUtf16[utf16Offset] = codePointOffset;
-    if (character.length === 2) codePointAtUtf16[utf16Offset + 1] = codePointOffset;
+    codePointAtUtf16.fill(codePointOffset, utf16Offset, utf16Offset + character.length);
     utf16Offset += character.length;
     codePointOffset += 1;
-    codePointAtUtf16[utf16Offset] = codePointOffset;
   }
+  codePointAtUtf16.fill(codePointOffset, utf16Offset);
   return isolations.map((isolation) => ({
     ...isolation,
     sourceRange: {
