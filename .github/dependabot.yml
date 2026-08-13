@@ -45,6 +45,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    ignore:
+      # Kotlin 2.4.10 is fully supported through Gradle 9.5. Keep the Android
+      # wrapper at that compatibility boundary until JetBrains expands it.
+      - dependency-name: "gradle-wrapper"
+        versions:
+          - "[9.6,)"
 
   - package-ecosystem: cargo
     directory: /rust
