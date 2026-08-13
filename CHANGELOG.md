@@ -31,6 +31,10 @@ No unreleased changes.
 
 ### Release and verification
 
+- Pinned the transitive build-time `nanoid` 3.x line to `3.3.18`, the first
+  patched release for CVE-2026-67213 / GHSA-2v37-7h3g-55p8. The affected path
+  is confined to Vite/PostCSS development tooling and is not a runtime
+  dependency of any published `@bidilens/*` package.
 - Pinned the supported CI runtimes to exact Node 22.12.0 and 24.15.0 releases
   so the documented minimum is exercised instead of silently floating to the
   newest release in each major line.
