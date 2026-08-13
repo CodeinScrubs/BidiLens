@@ -103,6 +103,25 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
 
+function firstDifference(left: unknown, right: unknown, path = '$'): string | null {
+  if (Object.is(left, right)) return null;
+  if (typeof left !== typeof right || left === null || right === null) return path;
+  if (typeof left !== 'object') return path;
+  if (Array.isArray(left) !== Array.isArray(right)) return path;
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const keys = new Set([...Object.keys(leftRecord), ...Object.keys(rightRecord)]);
+  for (const key of keys) {
+    const difference = firstDifference(
+      leftRecord[key],
+      rightRecord[key],
+      Array.isArray(left) ? `${path}[${key}]` : `${path}.${key}`
+    );
+    if (difference) return difference;
+  }
+  return null;
+}
+
 async function packPackage(packageName: string, destination: string): Promise<string> {
   const before = new Set(await readdir(destination));
   await command('pnpm', ['--filter', packageName, 'pack', '--pack-destination', destination]);
@@ -284,11 +303,13 @@ try {
     console.log(`Markdown-It ${target.version}: strict TypeScript consumer, ${fixtures.length} canonical fixtures, and ${structuralFixtures.length} host-structure fixtures passed.`);
   }
   const referenceVersion = supportedMarkdownIt[0].version;
-  const reference = JSON.stringify(reports.get(referenceVersion));
+  const reference = reports.get(referenceVersion);
   for (const target of supportedMarkdownIt.slice(1)) {
+    const candidate = reports.get(target.version);
+    const difference = firstDifference(reference, candidate);
     assert(
-      JSON.stringify(reports.get(target.version)) === reference,
-      `Markdown-It ${referenceVersion} and ${target.version} produced different reports.`
+      difference === null,
+      `Markdown-It ${referenceVersion} and ${target.version} produced different reports at ${difference ?? 'an unknown path'}.`
     );
   }
   console.log(`Markdown-It ${supportedMarkdownIt.map(({ version }) => version).join(' and ')} produced identical BidiLens reports for ${probeFixtures.length} fixtures.`);
