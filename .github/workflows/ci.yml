@@ -114,6 +114,15 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm run markdown-it:compat
+        env:
+          BIDILENS_MARKDOWN_IT_REPORT_DIR: markdown-it-compat-reports
+      - if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: markdown-it-compat-reports
+          path: markdown-it-compat-reports
+          if-no-files-found: error
+          retention-days: 7
 
   android:
     name: Android libraries and sample
