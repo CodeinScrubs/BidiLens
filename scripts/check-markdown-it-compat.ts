@@ -23,6 +23,7 @@ const supportedMarkdownIt = [
   { version: '14.3.0', types: '14.1.2' }
 ] as const;
 const expectedPeerRange = '^13.0.2 || ^14.0.0';
+const reportOutput = process.env.BIDILENS_MARKDOWN_IT_REPORT_DIR;
 const structuralFixtures: CorpusFixture[] = [
   {
     id: 'compat-pure-ltr-no-op',
@@ -263,13 +264,21 @@ try {
   const markdownTarball = await packPackage('@bidilens/markdown', packs);
   const reports = new Map<string, unknown>();
   for (const target of supportedMarkdownIt) {
-    reports.set(target.version, await runVersionProbe(
+    const report = await runVersionProbe(
       target,
       coreTarball,
       markdownTarball,
       probeFixtures,
       temporary
-    ));
+    );
+    reports.set(target.version, report);
+    if (reportOutput) {
+      await mkdir(resolve(reportOutput), { recursive: true });
+      await writeFile(
+        resolve(reportOutput, `markdown-it-${target.version}.json`),
+        JSON.stringify(report, null, 2)
+      );
+    }
     console.log(`Markdown-It ${target.version}: strict TypeScript consumer, ${fixtures.length} canonical fixtures, and ${structuralFixtures.length} host-structure fixtures passed.`);
   }
   const referenceVersion = supportedMarkdownIt[0].version;
