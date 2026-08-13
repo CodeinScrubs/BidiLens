@@ -33,6 +33,13 @@ updates:
       - dependency-name: "jsdom"
         update-types:
           - version-update:semver-major
+      # markdown-it 15 changes its TypeScript surface: the constructor no
+      # longer serves as the instance type and renderer callbacks lose the
+      # contextual types used by our adapter. Adopt that major only alongside
+      # a deliberate compatibility patch and consumer/type-layout validation.
+      - dependency-name: "markdown-it"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
