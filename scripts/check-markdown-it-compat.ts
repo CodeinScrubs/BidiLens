@@ -87,8 +87,10 @@ function command(program: string, args: string[], cwd = root): Promise<string> {
     });
     let stdout = '';
     let stderr = '';
-    child.stdout.on('data', (chunk: Buffer) => { stdout += chunk.toString(); });
-    child.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString(); });
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (chunk: string) => { stdout += chunk; });
+    child.stderr.on('data', (chunk: string) => { stderr += chunk; });
     child.on('error', reject);
     child.on('close', (code) => {
       if (code === 0) resolveCommand(stdout);
