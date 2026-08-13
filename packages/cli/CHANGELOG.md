@@ -1,5 +1,14 @@
 # @bidilens/cli
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [35b2ce6]
+- Updated dependencies [61aa9f6]
+  - @bidilens/core@0.3.1
+  - @bidilens/html@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes

@@ -5,6 +5,10 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.3.1 - 2026-08-13
+
 ### Security and performance
 
 - Replaced the raw-text math-delimiter regular expression with a single-pass

@@ -13,9 +13,9 @@
 [مشارکت](CONTRIBUTING.md) · [وضعیت پروژه](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> بخش وب و JavaScript به‌عنوان نسخهٔ آزمایشی عمومی `0.3.0` منتشر شده است. هر
-> ۱۲ بستهٔ `@bidilens/*` در npm عمومی هستند و یکپارچگی و provenance آن‌ها
-> بررسی شده است. نسخهٔ `0.1.1` هستهٔ Kotlin و ماژول‌های Android Views و
+> بستهٔ اصلاحی `0.3.1` برای بخش وب و JavaScript آمادهٔ انتشار محافظت‌شده است.
+> تا پیش از تأیید یکپارچگی رجیستری و provenance هر ۱۲ بستهٔ `@bidilens/*`،
+> نسخهٔ عمومی npm همچنان `0.3.0` است. نسخهٔ `0.1.1` هستهٔ Kotlin و ماژول‌های Android Views و
 > Jetpack Compose نیز امضاشده و در Maven Central عمومی است؛ برنامهٔ نمونه و
 > شواهد انتشار در
 > [`android-v0.1.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
@@ -74,7 +74,7 @@ The Persian word کتاب means “book”.
 - ابزارهای Playwright برای سنجش جهت، ایزوله‌سازی، انتخاب منطقی، کلیپ‌بورد و هندسه؛
 - ابزار خط فرمان و حالت محافظه‌کارانه برای ترمینال؛
 - GitHub Action مستقل برای ممیزی امنیتی و آزمون corpus در مخزن‌های دیگر؛
-- ۹۱۸ نمونهٔ اعتبارسنجی‌شده با JSON Schema و آزمون تصویری در سه موتور مرورگر؛
+- ۹۳۲ نمونهٔ اعتبارسنجی‌شده با JSON Schema و آزمون تصویری در سه موتور مرورگر؛
 - هستهٔ Kotlin، اتصال بدون تغییر متن برای `TextView` و `EditText`، اجزای
   نمایشی و ویرایشی Compose، برنامهٔ نمونه، lint، ساخت AAR/APK و آزمون واقعی
   رابط کاربری روی Android 15 و 16.
@@ -85,8 +85,9 @@ The Persian word کتاب means “book”.
 Compose و Views در [راهنمای Android](android/README.md) قرار دارد.
 
 تمام بسته‌های عمومی ESM-only هستند و برای استفادهٔ سمت سرور به Node.js 22.12 یا
-جدیدتر نیاز دارند. مجموعهٔ کامل نسخهٔ `0.3.0` در
-[سازمان `@bidilens` در npm](https://www.npmjs.com/org/bidilens) منتشر شده است.
+جدیدتر نیاز دارند. مجموعهٔ کامل `0.3.1` برای انتشار محافظت‌شده آماده است و
+نسخهٔ عمومی `0.3.0` همچنان در
+[سازمان `@bidilens` در npm](https://www.npmjs.com/org/bidilens) در دسترس است.
 
 پروژه با [مجوز MIT](LICENSE) متن‌باز است. شرایط داده‌های Unicode و بخش
 Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حفظ شده

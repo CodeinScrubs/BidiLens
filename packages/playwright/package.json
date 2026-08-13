@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/playwright",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Reusable Playwright assertions for mixed RTL/LTR rendering, isolation, selection, and clipboard invariants.",
   "license": "MIT",
   "author": {
