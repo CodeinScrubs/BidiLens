@@ -208,6 +208,50 @@ class BidiCoreTest {
     }
 
     @Test
+    fun formattingControlsDoNotBalanceAcrossParagraphBoundaries() {
+        listOf(
+            "LF" to "\n",
+            "CR" to "\r",
+            "CRLF" to "\r\n",
+            "NEL" to "\u0085",
+            "FILE SEPARATOR" to "\u001C",
+            "GROUP SEPARATOR" to "\u001D",
+            "RECORD SEPARATOR" to "\u001E",
+            "PARAGRAPH SEPARATOR" to "\u2029",
+        ).forEach { (name, separator) ->
+            val report = scanBidiSecurity(
+                "${BidiControls.RLO}before${separator}after${BidiControls.PDF}",
+            )
+            val codes = report.findings.map { it.code }
+            assertTrue("missing unclosed embedding for $name", codes.contains("BIDI_UNCLOSED_EMBEDDING"))
+            assertTrue("missing unmatched PDF for $name", codes.contains("BIDI_UNMATCHED_PDF"))
+        }
+    }
+
+    @Test
+    fun formattingControlsBalanceWithinOneParagraph() {
+        val report = scanBidiSecurity("before${BidiControls.RLO}inside${BidiControls.PDF}after")
+        assertFalse(report.findings.any { it.code == "BIDI_UNCLOSED_EMBEDDING" })
+        assertFalse(report.findings.any { it.code == "BIDI_UNMATCHED_PDF" })
+    }
+
+    @Test
+    fun isolatesDoNotBalanceAcrossParagraphBoundaries() {
+        val report = scanBidiSecurity(
+            "${BidiControls.RLI}before\u2029after${BidiControls.PDI}",
+        )
+        assertTrue(report.findings.any { it.code == "BIDI_UNCLOSED_ISOLATE" })
+        assertTrue(report.findings.any { it.code == "BIDI_UNMATCHED_PDI" })
+    }
+
+    @Test
+    fun isolatesBalanceWithinOneParagraph() {
+        val report = scanBidiSecurity("${BidiControls.RLI}inside${BidiControls.PDI}")
+        assertFalse(report.findings.any { it.code == "BIDI_UNCLOSED_ISOLATE" })
+        assertFalse(report.findings.any { it.code == "BIDI_UNMATCHED_PDI" })
+    }
+
+    @Test
     fun ordinaryPersianZwnjIsNotReportedAsBidiControl() {
         val report = scanBidiSecurity("می\u200Cشود")
         assertTrue(report.safe)

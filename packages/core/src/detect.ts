@@ -1,4 +1,5 @@
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
+import { boundedNumberOption } from './options.js';
 import type {
   DetectionOptions,
   Direction,
@@ -47,8 +48,20 @@ function normalizeOptions(options: DetectionOptions = {}): Required<DetectionOpt
     strategy,
     fallback: options.fallback ?? options.inheritedDirection ?? DEFAULT_OPTIONS.fallback,
     inheritedDirection: options.inheritedDirection ?? DEFAULT_OPTIONS.inheritedDirection,
-    minimumStrongCharacters: Math.max(1, options.minimumStrongCharacters ?? DEFAULT_OPTIONS.minimumStrongCharacters),
-    majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? DEFAULT_OPTIONS.majorityThreshold)),
+    minimumStrongCharacters: boundedNumberOption(
+      'minimumStrongCharacters',
+      options.minimumStrongCharacters,
+      DEFAULT_OPTIONS.minimumStrongCharacters,
+      1,
+      Number.POSITIVE_INFINITY
+    ),
+    majorityThreshold: boundedNumberOption(
+      'majorityThreshold',
+      options.majorityThreshold,
+      DEFAULT_OPTIONS.majorityThreshold,
+      0.5,
+      1
+    ),
     // Compatibility/strict first-strong modes must see the real first strong
     // character (including a leading technical identifier), like dir="auto".
     excludeTechnicalTokens: options.excludeTechnicalTokens ?? majorityStrategy,

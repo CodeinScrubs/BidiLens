@@ -43,6 +43,13 @@ describe('Markdown plugins', () => {
     expect(html).not.toContain('data-bidilens');
   });
 
+  it.each([
+    ['minimumStrongCharacters', { minimumStrongCharacters: Number.NaN }],
+    ['majorityThreshold', { majorityThreshold: Number.POSITIVE_INFINITY }]
+  ] as const)('rejects non-finite Markdown-It %s options before configuration', (_name, options) => {
+    expect(() => markdownItBidi(new MarkdownIt({ html: false }), options)).toThrow(/must be a finite number/iu);
+  });
+
   it('leaves an LTR-only MDAST tree structurally unchanged', () => {
     const tree = {
       type: 'root',

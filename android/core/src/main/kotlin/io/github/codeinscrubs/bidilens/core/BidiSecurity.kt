@@ -78,15 +78,88 @@ private fun BidiControlFinding.range() = BidiSourceRange(
     codePointEnd = codePointIndex + 1,
 )
 
-fun scanBidiSecurity(text: String): BidiSecurityReport {
-    val controls = findBidiControls(text)
+private data class FormattingFrame(val isolate: Boolean, val finding: BidiControlFinding)
+
+private fun balanceParagraph(
+    controls: List<BidiControlFinding>,
+    boundary: String,
+): List<BidiSecurityFinding> {
     val findings = mutableListOf<BidiSecurityFinding>()
-    data class Frame(val isolate: Boolean, val finding: BidiControlFinding)
-    val stack = mutableListOf<Frame>()
+    val stack = mutableListOf<FormattingFrame>()
 
     for (control in controls) {
-        val code = control.character.codePointAt(0)
+        when (val code = control.character.codePointAt(0)) {
+            0x202A, 0x202B, 0x202D, 0x202E -> stack += FormattingFrame(false, control)
+            0x2066, 0x2067, 0x2068 -> stack += FormattingFrame(true, control)
+            0x202C -> {
+                val embedding = stack.indexOfLast { !it.isolate }
+                val isolate = stack.indexOfLast { it.isolate }
+                if (embedding <= isolate) {
+                    findings += BidiSecurityFinding(
+                        code = "BIDI_UNMATCHED_PDF",
+                        message = "POP DIRECTIONAL FORMATTING has no matching active embedding or override.",
+                        range = control.range(),
+                        risk = BidiControlRisk.HIGH,
+                    )
+                } else {
+                    stack.removeAt(embedding)
+                }
+            }
+            0x2069 -> {
+                val isolate = stack.indexOfLast { it.isolate }
+                if (isolate < 0) {
+                    findings += BidiSecurityFinding(
+                        code = "BIDI_UNMATCHED_PDI",
+                        message = "POP DIRECTIONAL ISOLATE has no matching isolate opener.",
+                        range = control.range(),
+                        risk = BidiControlRisk.HIGH,
+                    )
+                } else {
+                    for (frame in stack.drop(isolate + 1).filterNot { it.isolate }) {
+                        findings += BidiSecurityFinding(
+                            code = "BIDI_FORMAT_CROSSES_ISOLATE_BOUNDARY",
+                            message = "${frame.finding.name} is not closed before the containing isolate ends.",
+                            range = frame.finding.range(),
+                            risk = BidiControlRisk.HIGH,
+                        )
+                    }
+                    while (stack.size > isolate) stack.removeAt(stack.lastIndex)
+                }
+            }
+            else -> Unit
+        }
+    }
+    for (frame in stack) {
         findings += BidiSecurityFinding(
+            code = if (frame.isolate) "BIDI_UNCLOSED_ISOLATE" else "BIDI_UNCLOSED_EMBEDDING",
+            message = "${frame.finding.name} is not terminated before $boundary.",
+            range = frame.finding.range(),
+            risk = BidiControlRisk.HIGH,
+        )
+    }
+    return findings
+}
+
+private fun balanceFindings(text: String, controls: List<BidiControlFinding>): List<BidiSecurityFinding> {
+    val findings = mutableListOf<BidiSecurityFinding>()
+    val separator = Regex("\\r\\n|\\n|\\r|\\u0085|[\\u001C-\\u001E]|\\u2029")
+    var controlIndex = 0
+    for (match in separator.findAll(text)) {
+        val paragraphControls = mutableListOf<BidiControlFinding>()
+        while (controlIndex < controls.size && controls[controlIndex].utf16Start < match.range.first) {
+            paragraphControls += controls[controlIndex]
+            controlIndex += 1
+        }
+        findings += balanceParagraph(paragraphControls, "the paragraph boundary")
+    }
+    findings += balanceParagraph(controls.drop(controlIndex), "the end of the text")
+    return findings
+}
+
+fun scanBidiSecurity(text: String): BidiSecurityReport {
+    val controls = findBidiControls(text)
+    val findings = controls.map { control ->
+        BidiSecurityFinding(
             code = when (control.category) {
                 BidiControlCategory.OVERRIDE -> "BIDI_OVERRIDE_CONTROL"
                 BidiControlCategory.EMBEDDING -> "BIDI_EMBEDDING_CONTROL"
@@ -99,54 +172,9 @@ fun scanBidiSecurity(text: String): BidiSecurityReport {
             range = control.range(),
             risk = control.risk,
         )
-        when (code) {
-            0x202A, 0x202B, 0x202D, 0x202E -> stack += Frame(false, control)
-            0x2066, 0x2067, 0x2068 -> stack += Frame(true, control)
-            0x202C -> {
-                val embedding = stack.indexOfLast { !it.isolate }
-                val isolate = stack.indexOfLast { it.isolate }
-                if (embedding <= isolate) {
-                    findings += BidiSecurityFinding(
-                        "BIDI_UNMATCHED_PDF",
-                        "POP DIRECTIONAL FORMATTING has no matching active embedding or override.",
-                        control.range(),
-                        BidiControlRisk.HIGH,
-                    )
-                } else {
-                    stack.removeAt(embedding)
-                }
-            }
-            0x2069 -> {
-                val isolate = stack.indexOfLast { it.isolate }
-                if (isolate < 0) {
-                    findings += BidiSecurityFinding(
-                        "BIDI_UNMATCHED_PDI",
-                        "POP DIRECTIONAL ISOLATE has no matching isolate opener.",
-                        control.range(),
-                        BidiControlRisk.HIGH,
-                    )
-                } else {
-                    for (frame in stack.drop(isolate + 1).filterNot { it.isolate }) {
-                        findings += BidiSecurityFinding(
-                            "BIDI_FORMAT_CROSSES_ISOLATE_BOUNDARY",
-                            "${frame.finding.name} is not closed before the containing isolate ends.",
-                            frame.finding.range(),
-                            BidiControlRisk.HIGH,
-                        )
-                    }
-                    while (stack.size > isolate) stack.removeAt(stack.lastIndex)
-                }
-            }
-        }
-    }
-    for (frame in stack) {
-        findings += BidiSecurityFinding(
-            if (frame.isolate) "BIDI_UNCLOSED_ISOLATE" else "BIDI_UNCLOSED_EMBEDDING",
-            "${frame.finding.name} is not terminated before the end of the text.",
-            frame.finding.range(),
-            BidiControlRisk.HIGH,
-        )
-    }
+    }.toMutableList()
+    findings += balanceFindings(text, controls)
+
     val sorted = findings.sortedWith(compareBy<BidiSecurityFinding> { it.range.utf16Start }.thenBy { it.code })
     return BidiSecurityReport(
         safe = sorted.none { it.risk == BidiControlRisk.HIGH },

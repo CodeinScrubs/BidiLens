@@ -80,5 +80,10 @@ The default stream direction remains provisional and revisable until
 `finish()`. Choose `sticky-majority` only when UI stability is more important
 than correcting a misleading prefix before completion.
 
+Numeric detection and stream thresholds must be finite. `NaN` and positive or
+negative infinity are rejected with `RangeError` instead of silently disabling
+direction decisions or stream locking; ordinary finite values retain the
+documented clamping behavior.
+
 Run the packaged example after building with
 `pnpm --filter @bidilens/core example`.

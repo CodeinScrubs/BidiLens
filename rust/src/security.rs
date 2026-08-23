@@ -126,35 +126,26 @@ fn control_code(category: BidiControlCategory) -> &'static str {
     }
 }
 
-/// Scans hidden bidi formatting and related invisible characters without mutation.
-#[must_use]
-pub fn scan_bidi_security(text: &str) -> SecurityReport {
-    let controls = find_bidi_controls(text);
-    let mut findings: Vec<SecurityFinding> = controls
-        .iter()
-        .map(|control| SecurityFinding {
-            code: control_code(control.category),
-            message: format!(
-                "{} ({}) is invisible and changes bidirectional interpretation.",
-                control.name, control.code_point
-            ),
-            source_range: control.source_range.clone(),
-            risk: control.risk,
-        })
-        .collect();
+#[derive(Clone, Copy)]
+enum FrameKind {
+    Embedding,
+    Isolate,
+}
 
-    #[derive(Clone, Copy)]
-    enum FrameKind {
-        Embedding,
-        Isolate,
-    }
+fn balance_paragraph(
+    controls: &[BidiControlFinding],
+    boundary: &str,
+    findings: &mut Vec<SecurityFinding>,
+) {
     let mut stack: Vec<(FrameKind, usize)> = Vec::new();
     for (index, control) in controls.iter().enumerate() {
         match control.character {
             '\u{202A}' | '\u{202B}' | '\u{202D}' | '\u{202E}' => {
                 stack.push((FrameKind::Embedding, index));
             }
-            '\u{2066}' | '\u{2067}' | '\u{2068}' => stack.push((FrameKind::Isolate, index)),
+            '\u{2066}' | '\u{2067}' | '\u{2068}' => {
+                stack.push((FrameKind::Isolate, index));
+            }
             '\u{202C}' => {
                 let isolate = stack
                     .iter()
@@ -165,7 +156,8 @@ pub fn scan_bidi_security(text: &str) -> SecurityReport {
                 if embedding.is_none() || embedding <= isolate {
                     findings.push(SecurityFinding {
                         code: "BIDI_UNMATCHED_PDF",
-                        message: "POP DIRECTIONAL FORMATTING has no matching active embedding or override.".to_owned(),
+                        message: "POP DIRECTIONAL FORMATTING has no matching active embedding or override."
+                            .to_owned(),
                         source_range: control.source_range.clone(),
                         risk: BidiControlRisk::High,
                     });
@@ -211,14 +203,76 @@ pub fn scan_bidi_security(text: &str) -> SecurityReport {
                 FrameKind::Embedding => "BIDI_UNCLOSED_EMBEDDING",
                 FrameKind::Isolate => "BIDI_UNCLOSED_ISOLATE",
             },
-            message: format!(
-                "{} is not terminated before the end of the text.",
-                control.name
-            ),
+            message: format!("{} is not terminated before {}.", control.name, boundary),
             source_range: control.source_range.clone(),
             risk: BidiControlRisk::High,
         });
     }
+}
+
+fn balance_findings(
+    text: &str,
+    controls: &[BidiControlFinding],
+    findings: &mut Vec<SecurityFinding>,
+) {
+    let mut control_index = 0;
+    let mut byte_index = 0;
+    while byte_index < text.len() {
+        let character = text[byte_index..]
+            .chars()
+            .next()
+            .expect("byte index must be on a character boundary");
+        let character_len = character.len_utf8();
+        let boundary_len = if character == '\r'
+            && text[byte_index + character_len..].starts_with('\n')
+        {
+            character_len + '\n'.len_utf8()
+        } else {
+            character_len
+        };
+        let is_paragraph_boundary = matches!(
+            character,
+            '\r' | '\n' | '\u{0085}' | '\u{001C}'..='\u{001E}' | '\u{2029}'
+        );
+        if is_paragraph_boundary {
+            let paragraph_control_start = control_index;
+            while control_index < controls.len()
+                && controls[control_index].source_range.bytes.start < byte_index
+            {
+                control_index += 1;
+            }
+            balance_paragraph(
+                &controls[paragraph_control_start..control_index],
+                "the paragraph boundary",
+                findings,
+            );
+            // The controls list contains only formatting characters, so no
+            // control can begin inside the separator itself. Continue after
+            // CRLF as one UAX paragraph boundary.
+        }
+        byte_index += boundary_len;
+    }
+    balance_paragraph(&controls[control_index..], "the end of the text", findings);
+}
+
+/// Scans hidden bidi formatting and related invisible characters without mutation.
+#[must_use]
+pub fn scan_bidi_security(text: &str) -> SecurityReport {
+    let controls = find_bidi_controls(text);
+    let mut findings: Vec<SecurityFinding> = controls
+        .iter()
+        .map(|control| SecurityFinding {
+            code: control_code(control.category),
+            message: format!(
+                "{} ({}) is invisible and changes bidirectional interpretation.",
+                control.name, control.code_point
+            ),
+            source_range: control.source_range.clone(),
+            risk: control.risk,
+        })
+        .collect();
+
+    balance_findings(text, &controls, &mut findings);
 
     let mut utf16_start = 0;
     let characters: Vec<_> = text

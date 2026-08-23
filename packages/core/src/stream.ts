@@ -1,5 +1,6 @@
 import { DEFAULT_TECHNICAL_IDENTIFIERS, countStrongCharacters, detectDirection } from './detect.js';
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
+import { boundedNumberOption } from './options.js';
 import type {
   BidiStreamOptions,
   BidiStreamSnapshot,
@@ -200,14 +201,38 @@ export class BidiStream {
     this.#usesMarkdownSeparator = options.paragraphBoundary === 'markdown';
     this.#usesDefaultSeparator = options.paragraphSeparator === undefined
       && !this.#usesMarkdownSeparator;
-    this.#minimumStrongCharacters = Math.max(1, options.minimumStrongCharacters ?? 1);
-    this.#threshold = Math.min(1, Math.max(0.5, options.majorityThreshold ?? 0.5));
+    this.#minimumStrongCharacters = boundedNumberOption(
+      'minimumStrongCharacters',
+      options.minimumStrongCharacters,
+      1,
+      1,
+      Number.POSITIVE_INFINITY
+    );
+    this.#threshold = boundedNumberOption(
+      'majorityThreshold',
+      options.majorityThreshold,
+      0.5,
+      0.5,
+      1
+    );
     this.#excludeTechnicalTokens = options.excludeTechnicalTokens;
     // A single short opposite-language word should remain provisional. Eight
     // strong characters and a margin of three let the default strategy adopt
     // a direction while keeping it revisable as more model output arrives.
-    this.#lockAfter = Math.max(1, options.lockAfterStrongCharacters ?? 8);
-    this.#lockMargin = Math.max(1, options.lockMargin ?? 3);
+    this.#lockAfter = boundedNumberOption(
+      'lockAfterStrongCharacters',
+      options.lockAfterStrongCharacters,
+      8,
+      1,
+      Number.POSITIVE_INFINITY
+    );
+    this.#lockMargin = boundedNumberOption(
+      'lockMargin',
+      options.lockMargin,
+      3,
+      1,
+      Number.POSITIVE_INFINITY
+    );
     this.#technicalIdentifiers = Object.freeze([...(options.technicalIdentifiers ?? [])]);
     this.#customTechnicalTrie = technicalIdentifierTrie(this.#technicalIdentifiers);
     this.#policyTokenCustomTrieNode = this.#customTechnicalTrie;

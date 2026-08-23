@@ -27,9 +27,11 @@ const html = await unified()
 
 For Markdown-It, install the optional peer and call the typed plugin once:
 
-BidiLens builds its adapter against Markdown-It 15 and verifies Markdown-It
-`13.0.2+`, `14.x`, and `15.x` with strict packed TypeScript consumers and the
-complete canonical corpus. Markdown-It 15 bundles its own declarations; the
+BidiLens builds its adapter against Markdown-It 15 and verifies representative
+Markdown-It releases `13.0.2`, `14.3.0`, and `15.0.0` with strict packed
+TypeScript consumers and the complete canonical corpus. The supported peer
+range is `13.x`, `14.x`, and `15.x`; the matrix does not claim every patch
+release. Markdown-It 15 bundles its own declarations; the
 older lines use their matching `@types/markdown-it` package. Its public
 `MarkdownItCompatible` boundary intentionally exposes only the stable parser
 surface BidiLens uses, so host parser types remain authoritative instead of

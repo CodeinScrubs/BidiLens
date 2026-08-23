@@ -7,14 +7,15 @@
 - 932 schema-validated direction fixtures with numbered logical words;
 - 0 fixtures currently certified by a native-language reviewer;
 - property-based stream/source/range checks;
-- 405 unit/property/action tests with 92.04% statements, 86.05% branches,
-  94.80% functions, and 94.86% lines overall (95.93% core lines), including
-  multilingual strict-security false-positive regressions;
+- 424 unit/property/action tests with 92.23% statements, 86.23% branches,
+  94.84% functions, and 95.05% lines overall (96.34% core lines), including
+  paragraph-boundary security, isolate balancing, and non-finite-option
+  regressions;
 - 30 Playwright browser/visual tests spanning Chromium, Firefox, and WebKit, including
   structured Markdown, real Chromium clipboard verification, and no-build
   standalone Web Component loading, plus the full offline bilingual playground
   controls, corpus, copy invariant, theme, and export flow;
-- a self-contained 198,506-byte Node 24 GitHub Action bundle with source tests
+- a self-contained 199,733-byte Node 24 GitHub Action bundle with source tests
   and built-artifact safe/strict-failure probes;
 - reproducible Unicode 17.0.0 source and generated tables;
 - clean tarball installation, strict consumer type-check, runtime imports, and

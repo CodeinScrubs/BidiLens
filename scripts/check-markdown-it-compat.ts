@@ -137,6 +137,89 @@ function firstDifference(left: unknown, right: unknown, path = '$'): string | nu
   return null;
 }
 
+/**
+ * Keep v15's host-parser compatibility comparison semantic without dropping
+ * the annotated AST entirely. Markdown-It 15's linkify v6 intentionally
+ * changes URL punctuation ownership and href encoding; mask only the content
+ * and href of linkify nodes while retaining token structure and all BidiLens
+ * direction/annotation attributes. Linkify versions may also assign a
+ * trailing punctuation mark to the link text or to the following text token;
+ * normalize only that punctuation/whitespace at the immediate link boundary.
+ */
+function semanticAst(
+  node: unknown,
+  insideLinkify = false,
+  normalizeLeadingBoundary = false,
+  normalizeTrailingBoundary = false
+): unknown {
+  if (Array.isArray(node)) {
+    let linkifyState = insideLinkify;
+    return node.map((child, index) => {
+      const previous = index > 0 ? node[index - 1] : undefined;
+      const next = index + 1 < node.length ? node[index + 1] : undefined;
+      const isLinkifyClose = (value: unknown): boolean => (
+        Boolean(value)
+        && typeof value === 'object'
+        && !Array.isArray(value)
+        && (value as Record<string, unknown>).type === 'link_close'
+        && (value as Record<string, unknown>).markup === 'linkify'
+      );
+      const isLinkifyOpen = (value: unknown): boolean => (
+        Boolean(value)
+        && typeof value === 'object'
+        && !Array.isArray(value)
+        && (value as Record<string, unknown>).type === 'link_open'
+        && (value as Record<string, unknown>).markup === 'linkify'
+      );
+      const result = semanticAst(
+        child,
+        linkifyState,
+        isLinkifyClose(previous),
+        isLinkifyOpen(next)
+      );
+      if (child && typeof child === 'object' && !Array.isArray(child)) {
+        const token = child as Record<string, unknown>;
+        if (token.type === 'link_open' && token.markup === 'linkify') {
+          linkifyState = true;
+        } else if (token.type === 'link_close' && token.markup === 'linkify') {
+          linkifyState = false;
+        }
+      }
+      return result;
+    });
+  }
+  if (!node || typeof node !== 'object') return node;
+  const source = node as Record<string, unknown>;
+  const linkify = insideLinkify || source.markup === 'linkify';
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(source)) {
+    if (key === 'attributes' && linkify && value && typeof value === 'object' && !Array.isArray(value)) {
+      const attributes = { ...(value as Record<string, unknown>) };
+      if (source.type === 'link_open') delete attributes.href;
+      result[key] = attributes;
+      continue;
+    }
+    if (key === 'content' && linkify && source.type === 'text') {
+      result[key] = '<linkified-content>';
+      continue;
+    }
+    if (
+      key === 'content'
+      && source.type === 'text'
+      && (normalizeLeadingBoundary || normalizeTrailingBoundary)
+      && typeof value === 'string'
+    ) {
+      let normalized = value;
+      if (normalizeLeadingBoundary) normalized = normalized.replace(/^[\s\p{P}\p{S}]+/u, '<linkify-boundary>');
+      if (normalizeTrailingBoundary) normalized = normalized.replace(/[\s\p{P}\p{S}]+$/u, '<linkify-boundary>');
+      result[key] = normalized;
+      continue;
+    }
+    result[key] = key === 'children' ? semanticAst(value, linkify) : value;
+  }
+  return result;
+}
+
 function semanticReport(report: unknown): unknown {
   if (!Array.isArray(report)) return report;
   return report.map((fixture) => {
@@ -144,6 +227,7 @@ function semanticReport(report: unknown): unknown {
     return {
       id: entry.id,
       blocks: entry.blocks,
+      ast: semanticAst(entry.ast),
       security: entry.security
     };
   });

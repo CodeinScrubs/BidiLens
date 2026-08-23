@@ -316,6 +316,13 @@ describe('direction detection', () => {
     expect(result.paragraphs.map((paragraph) => paragraph.direction)).toEqual(['ltr', 'rtl']);
     expect(result.mixed).toBe(true);
   });
+
+  it.each([
+    ['minimumStrongCharacters', { minimumStrongCharacters: Number.NaN }],
+    ['majorityThreshold', { majorityThreshold: Number.POSITIVE_INFINITY }]
+  ] as const)('rejects non-finite %s detection options', (_name, options) => {
+    expect(() => detectDirection('سلام', options)).toThrow(/must be a finite number/iu);
+  });
 });
 
 describe('isolation and segmentation', () => {
@@ -391,6 +398,15 @@ describe('isolation and segmentation', () => {
 });
 
 describe('streaming', () => {
+  it.each([
+    ['minimumStrongCharacters', { minimumStrongCharacters: Number.NaN }],
+    ['majorityThreshold', { majorityThreshold: Number.NEGATIVE_INFINITY }],
+    ['lockAfterStrongCharacters', { lockAfterStrongCharacters: Number.POSITIVE_INFINITY }],
+    ['lockMargin', { lockMargin: Number.NaN }]
+  ] as const)('rejects non-finite %s stream options', (_name, options) => {
+    expect(() => createBidiStream(options)).toThrow(/must be a finite number/iu);
+  });
+
   it('settles the flagship sentence from provisional LTR to revisable RTL', () => {
     const stream = createBidiStream();
     expect(stream.push('React ').direction).toBe('ltr');
@@ -1029,6 +1045,54 @@ describe('security', () => {
     expect(report.findings.map((finding) => finding.code)).toContain('BIDI_OVERRIDE_CONTROL');
     expect(report.findings.map((finding) => finding.code)).toContain('BIDI_UNCLOSED_EMBEDDING');
     expect(report.findings[0]?.sourceRange.utf16.start).toBe(4);
+  });
+
+  it.each([
+    ['LF', '\n'],
+    ['CR', '\r'],
+    ['CRLF', '\r\n'],
+    ['NEL', '\u0085'],
+    ['file separator', '\u001c'],
+    ['group separator', '\u001d'],
+    ['record separator', '\u001e'],
+    ['paragraph separator', '\u2029']
+  ] as const)('does not balance controls across a %s boundary', (_name, separator) => {
+    const report = scanBidiSecurity(
+      `${BIDI_CONTROLS.RLO}before${separator}after${BIDI_CONTROLS.PDF}`,
+      { mode: 'strict' }
+    );
+
+    expect(report.findings.map((finding) => finding.code)).toEqual(expect.arrayContaining([
+      'BIDI_UNCLOSED_EMBEDDING',
+      'BIDI_UNMATCHED_PDF'
+    ]));
+  });
+
+  it('still balances controls within one paragraph', () => {
+    const report = scanBidiSecurity(`${BIDI_CONTROLS.RLO}safe${BIDI_CONTROLS.PDF}`);
+    expect(report.findings.map((finding) => finding.code)).not.toEqual(expect.arrayContaining([
+      'BIDI_UNCLOSED_EMBEDDING',
+      'BIDI_UNMATCHED_PDF'
+    ]));
+  });
+
+  it('does not balance isolates across a paragraph boundary', () => {
+    const report = scanBidiSecurity(
+      `${BIDI_CONTROLS.RLI}before\u2029after${BIDI_CONTROLS.PDI}`,
+      { mode: 'strict' }
+    );
+    expect(report.findings.map((finding) => finding.code)).toEqual(expect.arrayContaining([
+      'BIDI_UNCLOSED_ISOLATE',
+      'BIDI_UNMATCHED_PDI'
+    ]));
+  });
+
+  it('still balances isolates within one paragraph', () => {
+    const report = scanBidiSecurity(`${BIDI_CONTROLS.RLI}safe${BIDI_CONTROLS.PDI}`);
+    expect(report.findings.map((finding) => finding.code)).not.toEqual(expect.arrayContaining([
+      'BIDI_UNCLOSED_ISOLATE',
+      'BIDI_UNMATCHED_PDI'
+    ]));
   });
 
   it('has no findings for ordinary Persian with ZWNJ and combining marks', () => {

@@ -262,6 +262,13 @@ export function rehypeBidi(options: MarkdownBidiOptions = {}) {
 
 const configuredMarkdownIt = new WeakMap<object, string>();
 
+function assertFiniteMarkdownOption(name: string, value: number | undefined): number | undefined {
+  if (value !== undefined && !Number.isFinite(value)) {
+    throw new RangeError(`${name} must be a finite number.`);
+  }
+  return value;
+}
+
 function markdownItConfigurationKey(options: MarkdownBidiOptions): string {
   const strategy = options.strategy ?? 'content-majority';
   const majorityStrategy = strategy === 'content-majority'
@@ -271,8 +278,8 @@ function markdownItConfigurationKey(options: MarkdownBidiOptions): string {
     strategy,
     fallback: options.fallback ?? options.inheritedDirection ?? 'ltr',
     inheritedDirection: options.inheritedDirection ?? 'ltr',
-    minimumStrongCharacters: Math.max(1, options.minimumStrongCharacters ?? 1),
-    majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? 0.5)),
+    minimumStrongCharacters: Math.max(1, assertFiniteMarkdownOption('minimumStrongCharacters', options.minimumStrongCharacters) ?? 1),
+    majorityThreshold: Math.min(1, Math.max(0.5, assertFiniteMarkdownOption('majorityThreshold', options.majorityThreshold) ?? 0.5)),
     excludeTechnicalTokens: options.excludeTechnicalTokens ?? majorityStrategy,
     technicalIdentifiers: options.technicalIdentifiers ?? [],
     blockClassName: options.blockClassName ?? 'bidilens-block',

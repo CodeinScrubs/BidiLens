@@ -31,6 +31,9 @@ can emit human, JSON, or SARIF results with UTF-16 line/column semantics.
 Detected categories include ALM/LRM/RLM, LRE/RLE/LRO/RLO/PDF,
 LRI/RLI/FSI/PDI, deprecated U+206A–U+206F formatting controls, unmatched
 pops/openers, formatting that crosses an isolate boundary, and U+200B.
+Formatting stacks are balanced independently for each Unicode paragraph
+boundary (CR, LF, CRLF, NEL, U+001C–U+001E, and U+2029); a closer in a later
+paragraph never makes an earlier opener appear balanced.
 
 ## Secure defaults
 
