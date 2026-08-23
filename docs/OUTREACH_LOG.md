@@ -2,7 +2,7 @@
 
 **Initial outreach evidence date:** 2026-07-30
 
-**Last response audit:** 2026-08-13
+**Last response audit:** 2026-08-23
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -121,6 +121,26 @@ human review.
 The August 13 audit adds one maintainer backlog disposition and stronger hosted
 CI/automation evidence. It does not add a merge, downstream pilot, production
 deployment, endorsement, or company adoption claim.
+
+### Response audit (2026-08-23)
+
+The project mailbox was checked again through 2026-08-23. No new human
+maintainer reply or adoption decision was found after the August 13 audit. The
+following status is current:
+
+| Project/channel | Current evidence | Action on the evidence date |
+|---|---|---|
+| Jupyter Community Building | Matt Fisher's latest message remains the August 3 handoff to Jupyter Zulip; the thread contains no newer technical response. | No new email was sent. The next valid route remains a focused public topic in `#jupyterlab` or `#ask-anything` with the screenshot-derived fixtures. |
+| Zulip | Emily Sutherlin's latest reply still points to issue [#39511](https://github.com/zulip/zulip/issues/39511) and its existing `#issues` topic. | No duplicate issue or reminder was posted. The previously stated fixtures-first plan remains the appropriate next step. |
+| Ollama | The latest response is an automated support confirmation that the problem/current-behavior/expected-behavior format is useful; it makes no timeline or adoption promise. | No further reply was sent; the automated loop was intentionally stopped. |
+| n8n | Mo Hamdy's August 13 guidance remains the only actionable maintainer-routing response: open a Community feature request first, lead with a native/dependency-free proposal, and keep raw HTML disabled. | The reply and [community proposal](outreach/N8N_COMMUNITY_PROPOSAL.md) remain drafts. Nothing was posted or sent during this audit. |
+| JetBrains, Sentry, Zed, Nous Research, Expo, Microsoft, and other role-address threads | The latest messages are routing instructions, automated acknowledgements, or unmonitored-address notices; none is a maintainer approval or merge decision. | No unsolicited follow-up was sent. Public tracker/PR routes remain the source of truth. |
+| Account/security notifications | Recent Google/Anthropic messages concern sign-in or account-data sharing, not BidiLens review. | No security links were followed and no account settings were changed. |
+
+This audit is an inbox snapshot, not proof of delivery, reading, or product
+adoption. Existing drafts were preserved. Any public forum post, tracker
+comment, or email reply still requires an action-specific confirmation at the
+time it would be sent.
 
 ## Deliberate deferrals
 
