@@ -92,6 +92,23 @@ describe('Markdown plugins', () => {
     expect(html).toContain('>React</bdi>');
   });
 
+  it('preserves caller alignment while adding semantic direction metadata', () => {
+    const md = new MarkdownIt({ html: false });
+    const originalParagraphOpen = md.renderer.rules.paragraph_open;
+    md.renderer.rules.paragraph_open = (tokens, index, options, env, self) => {
+      tokens[index]?.attrSet('style', 'text-align:left');
+      return originalParagraphOpen
+        ? originalParagraphOpen(tokens, index, options, env, self)
+        : self.renderToken(tokens, index, options);
+    };
+    markdownItBidi(md);
+
+    const html = md.render('React یک کتابخانه جاوااسکریپت بسیار محبوب است.');
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('style="text-align:left"');
+    expect(html).not.toContain('text-align:right');
+  });
+
   it('annotates Persian paragraphs', async () => {
     const html = await render('سلام دنیا');
     expect(html).toContain('dir="rtl"');
