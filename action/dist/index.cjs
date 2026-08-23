@@ -6403,6 +6403,9 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, "version");
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, "hash");
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, "number");
+  addMatches(text, ranges, /\b[A-Z]{1,4}\s+(?:[IVXLCDM]{1,8}|\d{1,3})\b/gu, "identifier");
+  addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, "identifier");
+  addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, "identifier");
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
   const uppercaseProse = usesUppercaseProse(text);
@@ -6904,12 +6907,12 @@ function mergeAdjacent(runs) {
 function trimNeutralBoundaries(text, start, end) {
   while (start < end) {
     const character = text.slice(start).match(/^./su)?.[0];
-    if (!character || classifyCharacter(character) !== "neutral") break;
+    if (!character || classifyCharacter(character) !== "neutral" || new RegExp("^\\p{M}$", "u").test(character)) break;
     start += character.length;
   }
   while (end > start) {
     const character = text.slice(0, end).match(/.$/su)?.[0];
-    if (!character || classifyCharacter(character) !== "neutral") break;
+    if (!character || classifyCharacter(character) !== "neutral" || new RegExp("^\\p{M}$", "u").test(character)) break;
     end -= character.length;
   }
   return { start, end };

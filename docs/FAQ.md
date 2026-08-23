@@ -76,6 +76,9 @@ CommonJS.
 Provide the exact logical source, expected base direction, numbered words,
 technical tokens, language/script, host renderer, and a minimal screenshot.
 Add a corpus fixture and policy regression test; do not patch the stored order.
+The repository's current mixed Persian/English medical examples and their
+acceptance invariants are collected in the
+[screenshot regression cases](SCREENSHOT_CASES.md).
 
 ## Where are Android, Apple, Windows, Rust, Flutter, React Native, VS Code, Electron, and PDF?
 

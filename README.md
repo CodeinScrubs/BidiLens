@@ -74,6 +74,10 @@ the immutable logical source, and isolates the technical identifier.
 |---|---|
 | ![The flagship sentence rendered with the incorrect automatic LTR base](tests/visual/__screenshots__/chromium/flagship-auto.png) | ![The same logical sentence rendered with the correct RTL base and isolated React token](tests/visual/__screenshots__/chromium/flagship-toolkit.png) |
 
+The medical Markdown, abbreviation, combining-mark, quote, list, and table
+cases transcribed from mixed AI output are documented in the
+[screenshot regression cases](docs/SCREENSHOT_CASES.md).
+
 ## Why this is more than an RTL stylesheet
 
 | Common approach | Limitation | BidiLens behavior |

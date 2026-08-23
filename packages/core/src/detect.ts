@@ -420,6 +420,15 @@ export function findTechnicalTokenRanges(
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, 'hash');
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, 'number');
 
+  // Compact labels in technical prose are often written as an acronym plus a
+  // Roman-numeral/number designator (`CN X`, `CN IX`, `API 2`). Treat the
+  // complete label as one LTR unit so an intervening RTL run cannot split it.
+  // The delimiter is intentionally narrow: ordinary English pronouns such as
+  // `I` remain natural-language evidence unless they introduce a formula.
+  addMatches(text, ranges, /\b[A-Z]{1,4}\s+(?:[IVXLCDM]{1,8}|\d{1,3})\b/gu, 'identifier');
+  addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, 'identifier');
+  addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, 'identifier');
+
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
   const uppercaseProse = usesUppercaseProse(text);

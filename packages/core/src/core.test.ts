@@ -69,6 +69,28 @@ describe('direction detection', () => {
     }
   });
 
+  it('keeps Persian combining marks inside opposite-direction isolates', () => {
+    const source = 'مثلاً right vagus lesion:';
+    const plans = planInlineIsolation(source, 'ltr');
+    expect(plans).toContainEqual(expect.objectContaining({
+      text: 'مثلاً',
+      direction: 'rtl',
+      kind: 'opposite-direction-run',
+      start: 0,
+      end: 'مثلاً'.length
+    }));
+  });
+
+  it('groups compact abbreviation labels without classifying ordinary prose pronouns', () => {
+    const source = 'CN X lesion و HR/BP باید حفظ شوند.';
+    const ranges = findTechnicalTokenRanges(source);
+    expect(ranges).toContainEqual(expect.objectContaining({ text: 'CN X', kind: 'identifier' }));
+    expect(ranges).toContainEqual(expect.objectContaining({ text: 'HR/BP' }));
+    expect(findTechnicalTokenRanges('I am a developer.')).not.toContainEqual(
+      expect.objectContaining({ text: 'I', kind: 'identifier' })
+    );
+  });
+
   it('still excludes hyphenated tokens built from a known technical segment', () => {
     expect(findTechnicalTokenRanges('react-markdown').map((range) => range.text))
       .toEqual(['react-markdown']);

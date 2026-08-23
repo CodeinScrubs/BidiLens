@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import process from 'node:process';
+import { CHATGPT_MIXED_DIRECTION_MARKDOWN } from './fixtures/chatgpt-mixed-direction.js';
 
 interface CorpusFixture {
   id: string;
@@ -57,6 +58,10 @@ const structuralFixtures: CorpusFixture[] = [
   {
     id: 'compat-soft-break',
     text: 'React یک کتابخانه محبوب است\nو TypeScript هم پشتیبانی می‌شود.'
+  },
+  {
+    id: 'compat-chatgpt-medical-mixed-blocks',
+    text: CHATGPT_MIXED_DIRECTION_MARKDOWN
   }
 ];
 

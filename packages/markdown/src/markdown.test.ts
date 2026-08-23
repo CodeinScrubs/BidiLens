@@ -14,6 +14,7 @@ import {
 } from './index.js';
 import { stablePrefixEnd } from './stream.js';
 import type { Root as MdastRoot } from 'mdast';
+import { CHATGPT_MIXED_DIRECTION_MARKDOWN } from '../../../scripts/fixtures/chatgpt-mixed-direction.js';
 
 async function render(markdown: string): Promise<string> {
   return String(await unified()
@@ -206,6 +207,21 @@ describe('Markdown plugins', () => {
     expect(english).toContain('<p dir="ltr"');
     expect(english).toContain('<bdi dir="rtl"');
     expect(english).toContain('>کتاب</bdi>');
+  });
+
+  it('keeps screenshot-derived medical Markdown logically ordered and mark-safe', () => {
+    const md = new MarkdownIt({ html: false });
+    const document = analyzeBidiMarkdown(md, CHATGPT_MIXED_DIRECTION_MARKDOWN);
+
+    expect(document.source).toBe(CHATGPT_MIXED_DIRECTION_MARKDOWN);
+    expect(document.html).toContain('>مثلاً</bdi>');
+    expect(document.html).toContain('>CN X</bdi>');
+    expect(document.html).toContain('>ICH:</p>');
+    expect(document.html).toContain('dir="rtl"');
+    // Direction/isolation metadata must not take ownership of caller layout.
+    expect(document.html).not.toContain('text-align');
+    expect(document.blocks.some((block) => block.text.includes('CN X') && block.direction === 'rtl')).toBe(true);
+    expect(document.blocks.some((block) => block.text.includes('Uvula runs away') && block.direction === 'ltr')).toBe(true);
   });
 
   it('propagates caller-specific identifiers through Markdown detection and isolation', () => {
