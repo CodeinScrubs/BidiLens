@@ -8,6 +8,14 @@ strict strong-character behavior, while pinned general categories identify
 natural-language letters without depending on the host JavaScript runtime's
 Unicode version.
 
+Unicode 17 remains the reproducible release baseline. Unicode 18.0.0 is still
+the Consortium's prepublication/beta line as of 2026-08-23, with a planned
+September 2026 final release; BidiLens deliberately does not ship beta UCD
+data. After the final data is published, upgrade through the pinned-file and
+checksum review process below rather than silently following host-runtime
+Unicode changes. See the [Unicode 18 beta notice](https://www.unicode.org/versions/beta-18.0.0.html)
+for the upstream status.
+
 The source file and generated table are checked into the repository so normal
 builds and runtime analysis are offline. To verify them:
 
