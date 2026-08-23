@@ -12,6 +12,12 @@ interface CorpusFixture {
   expectNoOp?: boolean;
 }
 
+interface MarkdownItTarget {
+  version: string;
+  types?: string;
+  comparison: 'exact' | 'semantic';
+}
+
 interface PackageManifest {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -19,11 +25,15 @@ interface PackageManifest {
 }
 
 const root = process.cwd();
-const supportedMarkdownIt = [
-  { version: '13.0.2', types: '13.0.9' },
-  { version: '14.3.0', types: '14.1.2' }
-] as const;
-const expectedPeerRange = '^13.0.2 || ^14.0.0';
+const supportedMarkdownIt: MarkdownItTarget[] = [
+  { version: '13.0.2', types: '13.0.9', comparison: 'exact' },
+  { version: '14.3.0', types: '14.1.2', comparison: 'exact' },
+  // Markdown-It 15 bundles its declarations and removes the old internal
+  // `markdown-it/lib/*` exports. The public structural boundary is designed
+  // to keep this host upgrade source-compatible without leaking those types.
+  { version: '15.0.0', comparison: 'semantic' }
+];
+const expectedPeerRange = '^13.0.2 || ^14.0.0 || ^15.0.0';
 const reportOutput = process.env.BIDILENS_MARKDOWN_IT_REPORT_DIR;
 const structuralFixtures: CorpusFixture[] = [
   {
@@ -127,6 +137,18 @@ function firstDifference(left: unknown, right: unknown, path = '$'): string | nu
   return null;
 }
 
+function semanticReport(report: unknown): unknown {
+  if (!Array.isArray(report)) return report;
+  return report.map((fixture) => {
+    const entry = fixture as Record<string, unknown>;
+    return {
+      id: entry.id,
+      blocks: entry.blocks,
+      security: entry.security
+    };
+  });
+}
+
 async function packPackage(packageName: string, destination: string): Promise<string> {
   const before = new Set(await readdir(destination));
   await command('pnpm', ['--filter', packageName, 'pack', '--pack-destination', destination]);
@@ -156,7 +178,7 @@ async function runVersionProbe(
       'markdown-it': version
     },
     devDependencies: {
-      '@types/markdown-it': target.types,
+      ...(target.types ? { '@types/markdown-it': target.types } : {}),
       typescript: '6.0.3'
     },
     pnpm: {
@@ -307,18 +329,24 @@ try {
     }
     console.log(`Markdown-It ${target.version}: strict TypeScript consumer, ${fixtures.length} canonical fixtures, and ${structuralFixtures.length} host-structure fixtures passed.`);
   }
-  const referenceVersion = supportedMarkdownIt[0].version;
+  const referenceTarget = supportedMarkdownIt[0];
+  assert(referenceTarget, 'The Markdown-It compatibility matrix must contain a reference target.');
+  const referenceVersion = referenceTarget.version;
   const reference = reports.get(referenceVersion);
   for (const target of supportedMarkdownIt.slice(1)) {
     const candidate = reports.get(target.version);
-    const difference = firstDifference(reference, candidate);
+    const left = target.comparison === 'semantic' ? semanticReport(reference) : reference;
+    const right = target.comparison === 'semantic' ? semanticReport(candidate) : candidate;
+    const difference = firstDifference(left, right);
     assert(
       difference === null,
-      `Markdown-It ${referenceVersion} and ${target.version} produced different reports at ${difference ?? 'an unknown path'}.`
+      target.comparison === 'semantic'
+        ? `Markdown-It ${referenceVersion} and ${target.version} produced different BidiLens semantic reports at ${difference ?? 'an unknown path'}.`
+        : `Markdown-It ${referenceVersion} and ${target.version} produced different reports at ${difference ?? 'an unknown path'}.`
     );
   }
-  console.log(`Markdown-It ${supportedMarkdownIt.map(({ version }) => version).join(' and ')} produced identical BidiLens reports for ${probeFixtures.length} fixtures.`);
-  console.log(`Packed @bidilens/markdown ${basename(markdownTarball)} installed under strict peer resolution for both supported parser lines.`);
+  console.log('Markdown-It 13.0.2 and 14.3.0 produced identical full reports; Markdown-It 15.0.0 produced identical BidiLens semantic reports (host parser rendering differences are expected after its linkify v6 change).');
+  console.log(`Packed @bidilens/markdown ${basename(markdownTarball)} installed under strict peer resolution for all supported parser lines.`);
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }

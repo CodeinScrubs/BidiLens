@@ -13,10 +13,10 @@ import type {
 /**
  * Version-neutral subset of the Markdown-It instance used by BidiLens.
  *
- * Keeping the public boundary structural prevents one `@types/markdown-it`
- * major from leaking into consumers that use another supported parser line.
- * The packed compatibility gate verifies the complete implementation against
- * the real v13 and v14 parser/type packages.
+ * Keeping the public boundary structural prevents one parser type major from
+ * leaking into consumers that use another supported parser line. The packed
+ * compatibility gate verifies the complete implementation against the real
+ * v13, v14, and v15 parser packages.
  */
 export interface MarkdownItCompatible {
   parse(source: string, environment: unknown): unknown[];

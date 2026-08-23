@@ -55,7 +55,7 @@
     "unist-util-visit": "^5.0.0"
   },
   "peerDependencies": {
-    "markdown-it": "^13.0.2 || ^14.0.0"
+    "markdown-it": "^13.0.2 || ^14.0.0 || ^15.0.0"
   },
   "peerDependenciesMeta": {
     "markdown-it": {

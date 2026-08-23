@@ -150,7 +150,7 @@ reordering and shaping; BidiLens supplies the application structure they need.
 | `@bidilens/core` | Analysis, evidence, isolation, streaming, and security |
 | `@bidilens/dom` | DOM annotation, restoration, CSS policy, and observation |
 | `@bidilens/html` | XSS-safe semantic HTML serialization |
-| `@bidilens/markdown` | unified/remark/rehype and Markdown-It 13/14 plugins plus rich Markdown-It streaming |
+| `@bidilens/markdown` | unified/remark/rehype and Markdown-It 13/14/15 plugins plus rich Markdown-It streaming |
 | `@bidilens/playwright` | Rendering, isolation, selection, clipboard, and geometry assertions |
 | `@bidilens/react` | SSR-safe components and streaming hooks |
 | `@bidilens/spec` | Versioned cross-language JSON Schemas and schema registry |
@@ -293,7 +293,7 @@ cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D 
 ```
 
 `verify:production` runs the complete quality, three-browser visual, package
-type, packed Markdown-It 13/14 compatibility, dependency-audit, SBOM, and
+type, packed Markdown-It 13/14/15 compatibility, dependency-audit, SBOM, and
 clean-release sequence. `release:check`
 builds and packs every public package, inspects tarball contents, installs all
 tarballs into a temporary consumer, compiles with `skipLibCheck: false`, and
