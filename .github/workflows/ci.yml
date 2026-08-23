@@ -98,7 +98,7 @@ jobs:
       - run: pnpm run release:check
 
   markdown-it-compat:
-    name: Markdown-It 13 and 14 compatibility
+    name: Markdown-It 13, 14, and 15 compatibility
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
