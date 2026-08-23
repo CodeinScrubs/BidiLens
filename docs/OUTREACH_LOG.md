@@ -39,19 +39,19 @@ endorsement.
 | OpenAI Codex CLI | [comment on issue #34871](https://github.com/openai/codex/issues/34871#issuecomment-5088082730) | Parent issue open | Separates bidi ordering from Arabic shaping and terminal capabilities. It offers the policy/corpus for a native Rust design rather than proposing a JavaScript dependency. |
 | OpenAI Codex community | [Show and tell #35557](https://github.com/openai/codex/discussions/35557) | Open | Public technical introduction, package/corpus summary, current integration evidence, limitations, and request for renderer/i18n review. |
 | Cline | [comment on feature discussion #12089](https://github.com/cline/cline/discussions/12089#discussioncomment-17793649) | Discussion open | Links the open renderer regression, supplies the mixed-content acceptance case, and offers a React/webview pilot or fixtures-only patch. |
-| Cline VS Code webview | [PR #12724](https://github.com/cline/cline/pull/12724) | Open, mergeable, and ready for review; all fresh hosted checks passed on the rebased head; maintainer review required | Applies `@bidilens/markdown` at the existing React Markdown render boundary and adds Persian-majority, English-majority, and pure-English identity tests. Quality, unit, platform-integration, VS Code on Ubuntu/Windows, E2E on Ubuntu/macOS/Windows, and both Socket security checks passed on 2026-08-13. |
+| Cline VS Code webview | [PR #12724](https://github.com/cline/cline/pull/12724) | Open but currently conflicting/dirty; hosted checks on the current head pass, and maintainer review is still required | Applies `@bidilens/markdown` at the existing React Markdown render boundary and adds Persian-majority, English-majority, and pure-English identity tests. Quality, unit, platform-integration, VS Code on Ubuntu/Windows, E2E on Ubuntu/macOS/Windows, and both Socket security checks passed; the branch needs an upstream conflict-resolution update before it can merge. |
 | Continue | [comment on issue #2767](https://github.com/continuedev/continue/issues/2767#issuecomment-5088124777) | Parent issue closed; reconsideration requested | Replaces the proposed global RTL rule with Auto/LTR/RTL policy and offers a focused GUI or fixtures-only patch. No new duplicate issue was created. |
 | assistant-ui | [Show and tell #5211](https://github.com/assistant-ui/assistant-ui/discussions/5211) | Open | Distinguishes the project's completed logical-layout work from per-message mixed-content direction and offers a documented `@bidilens/react` streaming recipe, adapter, hook, or fixtures-only path. |
 | AnythingLLM | [comment on canonical RTL issue #3430](https://github.com/Mintplex-Labs/anything-llm/issues/3430#issuecomment-5126056699) | Parent issue open | Supplies a per-block acceptance fixture and integration guidance. [BidiLens PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57) addresses the Markdown-It 13/14/15 peer/type gap with packed cross-version evidence, but AnythingLLM's Node 18 floor still conflicts with BidiLens 0.3's Node 22.12 minimum; a native fixtures-only patch remains the non-regressive route unless that runtime boundary changes. |
-| Vercel Streamdown | [PR #569](https://github.com/vercel/streamdown/pull/569) | Open, mergeable, and ready for review; review and security automation passed; maintainer review required | Adds a dependency-free native rehype pass because Streamdown supports Node 18. It assigns direction per semantic block, keeps code LTR, uses content majority with a first-strong tie-breaker, preserves pure-LTR behavior, and includes 985 passing package tests plus a production ESM/declaration build. The Vercel preview remains blocked on external-fork deployment authorization. |
+| Vercel Streamdown | [PR #569](https://github.com/vercel/streamdown/pull/569) | Merged on 2026-08-14 after maintainer approval; no downstream adoption claim is inferred | Adds a dependency-free native rehype pass because Streamdown supports Node 18. It assigns direction per semantic block, keeps code LTR, uses content majority with a first-strong tie-breaker, preserves pure-LTR behavior, and included 985 passing package tests plus a production ESM/declaration build. The implementation is now upstream in Streamdown; this is host-integration evidence, not a claim that Vercel adopted BidiLens as a dependency. |
 | Sentry | [feature request #120893](https://github.com/getsentry/sentry/issues/120893) | Open on the design-engineering backlog at low priority; a Sentry maintainer does not expect the BidiLens dependency to be adopted | Proposes content-aware behavior at Sentry's shared React Markdown renderer and Seer wrapper. After the maintainer noted Sentry's existing i18n tooling, the follow-up explicitly preferred a native/local implementation, offered fixtures only if requested, and committed not to bump the issue. This is backlog evidence, not dependency adoption. |
 | PostHog | [feature request #75474](https://github.com/PostHog/posthog/issues/75474) | Open | Proposes per-block handling in `LemonMarkdown` and PostHog AI's already memoized `MarkdownMessage` blocks. The public feature tracker was used instead of the automated email's sales-demo form, which requires company, role, and monthly-active-user data and is not an appropriate open-source engineering route. |
 
 The public endpoints above cover eleven project families and fourteen
-repository-specific routes. Hermes, Cline, and Streamdown contain focused host
-code; the remaining routes are issue or discussion submissions. None had
-received a maintainer approval, merge, downstream pilot, or
-production-adoption confirmation when this evidence was recorded.
+repository-specific routes. Hermes and Cline contain focused host code, and
+the Streamdown implementation in PR #569 merged on 2026-08-14; the remaining
+routes are issue or discussion submissions. No downstream pilot or
+production-adoption confirmation is claimed.
 
 ## Authenticated follow-up routes
 
@@ -99,9 +99,9 @@ unmonitored addresses, and delivery failures did not receive follow-up mail.
 | PostHog | An automated response identified an unmonitored inbox and linked support and sales-oriented routes that were unsuitable for an open-source engineering proposal. | No email reply was sent. The public feature request recorded above was opened independently. |
 | Cohere, Supabase, Microsoft, and delivery systems | The messages were acknowledgements, account-verification instructions, unmonitored-address notices, or delivery failures. | No reply was sent because none represented maintainer review or an actionable technical question. |
 
-These responses are routing evidence, not adoption evidence. No organization in
-this table has approved a dependency, merged an integration, or confirmed a
-production rollout.
+These responses are routing evidence, not adoption evidence. Streamdown's
+native implementation is the one recorded upstream merge; no organization
+has approved a BidiLens dependency or confirmed a production rollout.
 
 ### Response audit (2026-08-13)
 
@@ -113,14 +113,14 @@ human review.
 | Project/channel | New evidence | Action on the evidence date |
 |---|---|---|
 | Sentry | A design-engineering maintainer placed the behavior on the team's low-priority backlog, said Sentry already has i18n tooling, and did not expect to adopt the BidiLens dependency. | Replied once that the behavior is the request, not a dependency mandate; preferred a native/local implementation; offered a small fixture if requested; and committed not to bump the issue. |
-| Cline | PR #12724 had become conflicting with current upstream. After a narrow rebase, only the lockfile required regeneration; the component, package manifest, and regression tests applied cleanly. | Rebased with force-with-lease, preserved the host lockfile's formatting, and reran hosted CI. All quality, unit, platform, VS Code, three-OS E2E, and security checks passed. No maintainer approval is claimed. |
+| Cline | PR #12724 had become conflicting with current upstream. After a narrow rebase, only the lockfile required regeneration; the component, package manifest, and regression tests applied cleanly. The current GitHub state is again marked conflicting/dirty, although its hosted checks remain green. | The prior rebase and CI evidence are preserved. No further force-push is planned without a maintainer request or action-specific confirmation; no maintainer approval is claimed. |
 | Nous Research | Support reference `T-1645` remains an automated receipt with no human follow-up. Separately, `hermes-sweeper` revalidated PR #72508 against current `main`, found no verified problem, and recommended keeping it open with high salvageability. | Kept the public PR as the primary technical channel and sent one short routing follow-up on 2026-08-13. Automation is not human review; no additional follow-up is planned without a reply. |
 | n8n | Senior support engineer Mo Hamdy supplied an actionable public route and technical constraints on 2026-08-13. | Drafted a reply that follows his guidance and converted the Markdown-It 13 peer/type incompatibility into BidiLens PR #57 with a strict packed 13/14/15 gate. The reply and community post are not recorded as sent. |
 | Jupyter, Zulip, Zed, Ollama, JetBrains, PostHog, Cohere, Supabase, Microsoft, and delivery systems | No new actionable human email response was found beyond the earlier audit. | No additional email was sent: these threads were already handled, routed to public channels, automated-only, unmonitored, rejected, or delivery failures. |
 
 The August 13 audit adds one maintainer backlog disposition and stronger hosted
-CI/automation evidence. It does not add a merge, downstream pilot, production
-deployment, endorsement, or company adoption claim.
+CI/automation evidence. It does not, on its own, add a merge, downstream pilot,
+production deployment, endorsement, or company adoption claim.
 
 ### Response audit (2026-08-23)
 
@@ -136,6 +136,7 @@ following status is current:
 | n8n | Mo Hamdy's August 13 guidance remains the only actionable maintainer-routing response: open a Community feature request first, lead with a native/dependency-free proposal, and keep raw HTML disabled. | The reply and [community proposal](outreach/N8N_COMMUNITY_PROPOSAL.md) remain drafts. Nothing was posted or sent during this audit. |
 | JetBrains, Sentry, Zed, Nous Research, Expo, Microsoft, and other role-address threads | The latest messages are routing instructions, automated acknowledgements, or unmonitored-address notices; none is a maintainer approval or merge decision. | No unsolicited follow-up was sent. Public tracker/PR routes remain the source of truth. |
 | Account/security notifications | Recent Google/Anthropic messages concern sign-in or account-data sharing, not BidiLens review. | No security links were followed and no account settings were changed. |
+| Public PR status | Vercel Streamdown PR #569 is merged; Hermes PR #72508 remains open with no human review; Cline PR #12724 is open but currently conflicting/dirty despite green hosted checks. | Updated this log from the live GitHub state; no external PR was edited or force-pushed during the audit. |
 
 This audit is an inbox snapshot, not proof of delivery, reading, or product
 adoption. Existing drafts were preserved. Any public forum post, tracker
@@ -155,9 +156,10 @@ time it would be sent.
 
 1. Respond to maintainer questions with a minimal reproduction, benchmark,
    test, or smaller patch; do not answer with generic promotion.
-2. For PRs #72508, #12724, and #569, keep the branches available and rebase
-   only when requested or when a real conflict appears. Never force-push over
-   review history without explaining why.
+2. For PRs #72508 and #12724, keep the branches available and rebase only
+   when requested or when a real conflict appears. PR #569 is merged and needs
+   no branch maintenance. Never force-push over review history without
+   explaining why.
 3. Do not post a reminder on an unchanged issue or discussion for at least 30
    days. A reminder must include new evidence, such as a released fix, host
    fixture, benchmark, or maintainer-requested implementation.
@@ -180,7 +182,8 @@ time it would be sent.
   results.
 - **Adopted:** the host confirms continued use in a released product.
 
-Only the first state is evidenced for most routes above. The three code PRs are
-submitted and have not been approved or merged. See the [adoption
+Only the first state is evidenced for most routes above. Of the three focused
+code PRs, Streamdown is merged while Hermes and Cline remain submitted without
+maintainer approval. See the [adoption
 strategy](ADOPTION.md), [limitations](LIMITATIONS.md), and [outreach
 kit](OUTREACH.md) before describing this activity publicly.

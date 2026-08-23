@@ -28,9 +28,12 @@ the [build report](docs/V1_BUILD_REPORT.md).
 
 ## Not yet measured
 
-There are no claimed users, downloads, stars, external contributors, merged
-upstream patches, production deployments, accessibility lab results, security
-audit, grants, or sponsorships. Those outcomes require real external evidence.
+There are no claimed users, downloads, stars, external contributors, production
+deployments, accessibility lab results, independent security audit, grants, or
+sponsorships. One focused native implementation based on the BidiLens policy
+merged upstream in Streamdown; that is integration evidence, not proof of
+BidiLens dependency adoption or continued production use. All other outcomes
+require real external evidence.
 
 ## Intended impact
 

@@ -129,7 +129,7 @@ recorded explicitly.
 | English and Persian main README | Complete | `README.md` and `README.fa.md` |
 | Architecture, security, limitations, accessibility, migration, FAQ, contributing, governance, conduct, roadmap, changelog | Complete for the public web beta and Android Maven release | Checked by `scripts/check-docs.ts`; Android has a dedicated integration guide; guides for missing surfaces necessarily remain incomplete |
 | Reproducible performance matrix and budgets | Complete for current JS surfaces | `scripts/benchmark.ts`, `docs/PERFORMANCE.md`, scheduled workflow, package byte budgets in release checker |
-| 3 patch-quality upstream integrations | Partial/external | One host-tested patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508), with focused tests and local host gates. It is unmerged and does not satisfy the minimum of three integrations |
+| 3 patch-quality upstream integrations | Partial/external | One host-tested native implementation merged in [Vercel Streamdown#569](https://github.com/vercel/streamdown/pull/569); Hermes #72508 and Cline #12724 remain submitted/open. The minimum of three integrations, downstream pilots, and adoption evidence is not met |
 | 2 issue-quality evidence bundles | Complete as public submissions, not product fixes | Current-policy, non-duplicate evidence is public for Antigravity, Claude Code, Codex, Cline, Continue, and assistant-ui; routes and exact states are recorded in the [outreach log](OUTREACH_LOG.md) |
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
@@ -155,7 +155,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 932 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal, Android, SwiftUI/UIKit, and .NET/WPF exist; Flutter, React Native, and other documented native adapters remain open; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
-| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.0` web release, and signed `android-v0.1.1` Maven release. One of the required three host-tested integrations is submitted but unmerged, so the integration minimum remains incomplete |
+| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.0` web release, and signed `android-v0.1.1` Maven release. One host-tested native implementation merged upstream, but the required three integrations, downstream pilots, and adoption evidence remain incomplete |
 
 ## Definition-of-done audit
 
@@ -173,7 +173,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 10 | Complete as schema-valid technical corpus; native review remains a publication-quality gap |
 | 11 | Complete — no-backend bilingual playground and EN/FA repository docs exist |
 | 12 | Complete for current packages — workflows validate, SBOM/license/notices exist |
-| 13 | Partial — one host-tested integration patch is submitted; fewer than three exist and none is merged or piloted |
+| 13 | Partial — one host-tested native implementation is merged; fewer than three integrations exist and no downstream pilot is evidenced |
 | 14 | Complete for current documented claims; continue checking after every change |
 | 15 | Partial — the reviewed source, current `v0.3.0` web release, and `android-v0.1.1` Maven release are public, but historical intermediate milestone tags were not fabricated retroactively |
 

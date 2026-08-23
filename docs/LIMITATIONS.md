@@ -79,9 +79,10 @@ tested claim.
 - source and all 12 JavaScript packages are public, but no downstream
   production deployment or company adoption is claimed.
 
-Public issues, discussions, and an unmerged integration pull request are listed
-in the [outreach log](OUTREACH_LOG.md). They prove that review was requested,
-not that any host validated, merged, deployed, or endorsed BidiLens.
+Public issues, discussions, and integration pull requests are listed in the
+[outreach log](OUTREACH_LOG.md). One native implementation merged in Streamdown;
+the remaining open submissions prove that review was requested, not that any
+host adopted the BidiLens dependency, deployed it, or endorsed BidiLens.
 
 ## Compatibility
 
