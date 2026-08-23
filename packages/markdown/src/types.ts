@@ -25,6 +25,64 @@ export interface MarkdownItCompatible {
   readonly utils: unknown;
 }
 
+/**
+ * Small structural view of the Markdown-It runtime used by the adapter.
+ *
+ * Markdown-It 13/14 publish their declarations through `@types/markdown-it`
+ * and expose internal token declarations under `lib/`. Markdown-It 15 ships
+ * its own declarations, removes those private export paths, and exports the
+ * instance type as a named `MarkdownIt` type. Depending on either declaration
+ * layout would make this package fail to build for one of the supported host
+ * lines. These local structural types describe only the stable plugin surface
+ * and keep parser-specific types out of BidiLens' public declarations.
+ */
+export type MarkdownItTokenAttribute = [name: string, value: string | number];
+
+export interface MarkdownItToken {
+  type: string;
+  tag: string;
+  attrs: MarkdownItTokenAttribute[] | null;
+  map: [number, number] | null;
+  nesting: -1 | 0 | 1;
+  level: number;
+  children: MarkdownItToken[] | null;
+  content: string;
+  markup: string;
+  info: string;
+  block: boolean;
+  hidden: boolean;
+  attrSet(name: string, value: string | number): void;
+  attrJoin(name: string, value: string | number): void;
+}
+
+export interface MarkdownItRuntimeOptions {
+  readonly html?: boolean;
+  readonly [key: string]: unknown;
+}
+
+export interface MarkdownItRenderer {
+  readonly rules: Record<string, MarkdownItRenderRule | undefined>;
+  renderToken(tokens: MarkdownItToken[], index: number, options: unknown): string;
+  render(tokens: MarkdownItToken[], options: unknown, environment?: unknown): string;
+}
+
+export interface MarkdownItRenderRule {
+  (
+    tokens: MarkdownItToken[],
+    index: number,
+    options: unknown,
+    environment: unknown,
+    renderer: MarkdownItRenderer
+  ): string;
+}
+
+export interface MarkdownItRuntime {
+  parse(source: string, environment: unknown): MarkdownItToken[];
+  readonly options: MarkdownItRuntimeOptions;
+  readonly renderer: MarkdownItRenderer;
+  readonly utils?: { readonly escapeHtml?: (value: string) => string };
+}
+
 export interface MarkdownBidiOptions extends DetectionOptions {
   fallback?: Direction;
   blockClassName?: string;

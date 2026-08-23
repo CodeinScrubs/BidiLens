@@ -42,9 +42,10 @@ deliberately checkpointed by source growth and structural boundaries; inspect
 `pendingSourceRange` before treating a
 live `document` as current. `finish()` is the exact batch-equivalence boundary.
 Unified/remark/rehype transforms remain supported as batch plugins, not as a
-stateful unified streaming backend. Markdown-It 13.0.2+, 14.x, and 15.x are
-verified with packed strict TypeScript consumers; Markdown-It 15's host parser
-may intentionally produce different linkification HTML because its upstream
+stateful unified streaming backend. The adapter source is built against
+Markdown-It 15, and Markdown-It 13.0.2+, 14.x, and 15.x are verified with
+packed strict TypeScript consumers; Markdown-It 15's host parser may
+intentionally produce different linkification HTML because its upstream
 `linkify-it` major changed, while BidiLens semantic block/isolation/security
 reports remain equivalent. Other parser major versions are not a supported or
 tested claim.

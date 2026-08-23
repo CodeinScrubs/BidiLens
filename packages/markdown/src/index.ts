@@ -1,7 +1,5 @@
 import type { Element, ElementContent, Root as HastRoot, Text as HastText } from 'hast';
 import type { Content, Root as MdastRoot } from 'mdast';
-import type InternalMarkdownIt from 'markdown-it';
-import type InternalToken from 'markdown-it/lib/token.mjs';
 import {
   detectDirection,
   needsBidiIntervention,
@@ -20,6 +18,8 @@ import type {
   BidiMarkdownStreamSession,
   BidiMarkdownStreamOptions,
   MarkdownBidiOptions,
+  MarkdownItRuntime,
+  MarkdownItToken,
   MarkdownItCompatible
 } from './types.js';
 
@@ -39,8 +39,8 @@ export type {
   MarkdownSourceRange
 } from './types.js';
 
-function internalMarkdownIt(markdownIt: MarkdownItCompatible): InternalMarkdownIt {
-  return markdownIt as unknown as InternalMarkdownIt;
+function internalMarkdownIt(markdownIt: MarkdownItCompatible): MarkdownItRuntime {
+  return markdownIt as unknown as MarkdownItRuntime;
 }
 
 const MDAST_BLOCK_TYPES = new Set([
@@ -283,13 +283,13 @@ function markdownItConfigurationKey(options: MarkdownBidiOptions): string {
   });
 }
 
-function markdownItClass(token: InternalToken | undefined, className: string): void {
+function markdownItClass(token: MarkdownItToken | undefined, className: string): void {
   if (!token) return;
   if (token.attrJoin) token.attrJoin('class', className);
   else token.attrSet('class', className);
 }
 
-function markdownItBlockContent(tokens: InternalToken[], index: number, closeType: string): string {
+function markdownItBlockContent(tokens: MarkdownItToken[], index: number, closeType: string): string {
   const openType = tokens[index]?.type;
   let nested = 0;
   const values: string[] = [];
@@ -328,8 +328,8 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
   let activeDirection: 'ltr' | 'rtl' | null = null;
   const blockClassName = options.blockClassName ?? 'bidilens-block';
   const codeClassName = options.codeClassName ?? 'bidilens-code';
-  const interventionCache = new WeakMap<InternalToken[], boolean>();
-  const tokensNeedIntervention = (tokens: InternalToken[]): boolean => {
+  const interventionCache = new WeakMap<MarkdownItToken[], boolean>();
+  const tokensNeedIntervention = (tokens: MarkdownItToken[]): boolean => {
     const cached = interventionCache.get(tokens);
     if (cached !== undefined) return cached;
     const required = tokens.some((token) => (token.type === 'inline'
@@ -468,7 +468,7 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
     const renderValue = (part: string): string => {
       if (!originalText) return escape(part);
       const copy = [...tokens];
-      copy[index] = { ...tokens[index]!, content: part } as InternalToken;
+      copy[index] = { ...tokens[index]!, content: part };
       return originalText(copy, index, renderOptions, env, self);
     };
     let rendered = '';

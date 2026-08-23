@@ -1,5 +1,3 @@
-import type MarkdownIt from 'markdown-it';
-import type Token from 'markdown-it/lib/token.mjs';
 import {
   BidiStream,
   analyzeBlock,
@@ -21,7 +19,9 @@ import type {
   MarkdownAstNode,
   MarkdownDirtyRegion,
   MarkdownSecurityDelta,
-  MarkdownSourceRange
+  MarkdownSourceRange,
+  MarkdownItRuntime,
+  MarkdownItToken
 } from './types.js';
 
 const OPEN_BLOCKS = new Map<string, { close: string; kind: 'prose' | 'code' }>([
@@ -63,7 +63,7 @@ function lineOffsets(source: string): number[] {
   return offsets;
 }
 
-function sourceMapForToken(tokens: readonly Token[], tokenIndex: number): [number, number] | null {
+function sourceMapForToken(tokens: readonly MarkdownItToken[], tokenIndex: number): [number, number] | null {
   const token = tokens[tokenIndex];
   if (!token) return null;
   if (token.map) return [token.map[0], token.map[1]];
@@ -89,7 +89,7 @@ function rangeForSourceMap(
   return { start, end };
 }
 
-function nestedBlockText(tokens: readonly Token[], index: number, closeType: string): string {
+function nestedBlockText(tokens: readonly MarkdownItToken[], index: number, closeType: string): string {
   const openType = tokens[index]?.type;
   let nested = 0;
   const values: string[] = [];
@@ -107,7 +107,7 @@ function nestedBlockText(tokens: readonly Token[], index: number, closeType: str
   return values.join(' ');
 }
 
-function textForBlock(tokens: readonly Token[], index: number, closeType: string): string {
+function textForBlock(tokens: readonly MarkdownItToken[], index: number, closeType: string): string {
   const token = tokens[index];
   if (!token) return '';
   if (token.type === 'blockquote_open' || token.type === 'list_item_open') {
@@ -121,7 +121,7 @@ function blockAnalysisOptions(options: BidiMarkdownStreamOptions): BidiMarkdownS
 }
 
 function collectBlocks(
-  tokens: readonly Token[],
+  tokens: readonly MarkdownItToken[],
   source: string,
   options: BidiMarkdownStreamOptions
 ): BidiMarkdownBlock[] {
@@ -161,12 +161,12 @@ function collectBlocks(
   return blocks;
 }
 
-function attributesForToken(token: Token): Record<string, string> | undefined {
+function attributesForToken(token: MarkdownItToken): Record<string, string> | undefined {
   if (!token.attrs?.length) return undefined;
-  return Object.fromEntries(token.attrs.map(([name, value]) => [name, value]));
+  return Object.fromEntries(token.attrs.map(([name, value]) => [name, String(value)]));
 }
 
-function serializeToken(token: Token, annotation: BidiMarkdownBlock | undefined): MarkdownAstNode {
+function serializeToken(token: MarkdownItToken, annotation: BidiMarkdownBlock | undefined): MarkdownAstNode {
   const attributes = attributesForToken(token);
   return {
     type: token.type,
@@ -193,7 +193,7 @@ function serializeToken(token: Token, annotation: BidiMarkdownBlock | undefined)
 
 /** Runs the exact configured Markdown-It batch pipeline used for final reconciliation. */
 export function analyzeConfiguredBidiMarkdown(
-  markdownIt: MarkdownIt,
+  markdownIt: MarkdownItRuntime,
   source: string,
   options: BidiMarkdownStreamOptions = {}
 ): BidiMarkdownDocument {
@@ -908,7 +908,7 @@ function emptyDocument(options: BidiMarkdownStreamOptions): BidiMarkdownDocument
 }
 
 export class BidiMarkdownStream implements BidiMarkdownStreamSession {
-  readonly #markdownIt: MarkdownIt;
+  readonly #markdownIt: MarkdownItRuntime;
   readonly #options: BidiMarkdownStreamOptions;
   #directionStream: BidiStream;
   #pendingDirectionStream: BidiStream;
@@ -968,7 +968,7 @@ export class BidiMarkdownStream implements BidiMarkdownStreamSession {
   #fenceLinePhase: 'container' | 'marker' | 'trailing' | 'invalid' = 'container';
   #fenceMarkerCount = 0;
 
-  constructor(markdownIt: MarkdownIt, options: BidiMarkdownStreamOptions = {}) {
+  constructor(markdownIt: MarkdownItRuntime, options: BidiMarkdownStreamOptions = {}) {
     this.#markdownIt = markdownIt;
     this.#options = Object.freeze({
       ...options,

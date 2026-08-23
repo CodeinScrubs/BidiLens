@@ -39,7 +39,7 @@ Status vocabulary:
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
 | Framework-independent TypeScript core | Complete and tested | `@bidilens/core`; dependency-free runtime; generated Unicode data; analysis, evidence, isolation, security, streaming |
-| unified/remark/rehype and markdown-it AST processing | Complete and tested | `@bidilens/markdown`; typed adapters, structural blocks, tables/lists/quotes/code/math, raw-HTML-safe defaults; packed strict consumers verify identical full 941-fixture behavior on Markdown-It 13.0.2/14.3.0 and identical BidiLens semantic reports on Markdown-It 15.0.0 (whose upstream linkifier can render differently), without leaking host type lines |
+| unified/remark/rehype and markdown-it AST processing | Complete and tested | `@bidilens/markdown`; typed adapters, structural blocks, tables/lists/quotes/code/math, raw-HTML-safe defaults; source builds against Markdown-It 15 through a version-neutral runtime boundary, while packed strict consumers verify identical full 941-fixture behavior on Markdown-It 13.0.2/14.3.0 and identical BidiLens semantic reports on Markdown-It 15.0.0 (whose upstream linkifier can render differently), without leaking host type lines |
 | Plain HTML and DOM | Complete and tested | `@bidilens/html` and `@bidilens/dom`; escaped serialization, restore/observe lifecycle, cross-realm tests |
 | Web Component | Complete and tested | `@bidilens/web-component`; side-effect-free/SSR-safe main import, explicit `/auto` registration, self-contained browser bundle, three-browser load test |
 | React | Complete and tested | `@bidilens/react`; React 18/19 probes, SSR, components and streaming hook |

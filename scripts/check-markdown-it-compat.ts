@@ -293,8 +293,8 @@ assert(
   '@bidilens/markdown must not expose one Markdown-It type line as a runtime dependency.'
 );
 assert(
-  manifest.devDependencies?.['@types/markdown-it'] !== undefined,
-  '@bidilens/markdown must retain Markdown-It types for its internal build.'
+  manifest.devDependencies?.['markdown-it']?.startsWith('^15.') === true,
+  '@bidilens/markdown must build its source against the latest supported Markdown-It line.'
 );
 const fixtures = JSON.parse(
   await readFile(resolve(root, 'corpus/cases.json'), 'utf8')

@@ -35,8 +35,9 @@ updates:
           - version-update:semver-major
       # markdown-it 15 changes its TypeScript surface: the constructor no
       # longer serves as the instance type and renderer callbacks lose the
-      # contextual types used by our adapter. Adopt that major only alongside
-      # a deliberate compatibility patch and consumer/type-layout validation.
+      # contextual types used by older adapters. BidiLens now uses a
+      # version-neutral structural boundary; keep future major updates paired
+      # with the source-build and packed consumer compatibility gates.
       - dependency-name: "markdown-it"
         update-types:
           - version-update:semver-major
