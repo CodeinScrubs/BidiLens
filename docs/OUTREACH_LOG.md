@@ -151,7 +151,7 @@ after the August 13 responses. The only project-adjacent messages after
 August 22 were Google account-data notices for Claude and opencode.ai; no
 security links were followed and no account settings were changed.
 
-The BidiLens host-integration work is tracked in [PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57). The source hardening reviewed in this audit is commit `396fac7`; the live PR page and its checks are authoritative for the current head:
+The BidiLens host-integration work is tracked in [PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57). The source behavior reviewed in this audit is committed in `8386684`, including the Unicode paragraph-boundary alignment; later documentation-only commits do not alter that behavior. The live PR page and its checks are authoritative for the current head:
 
 - the PR is open and remains a draft for maintainer review;
 - the branch is mergeable and the protected status is clean;
