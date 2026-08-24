@@ -2,7 +2,7 @@
 
 **Initial outreach evidence date:** 2026-07-30
 
-**Last response audit:** 2026-08-23
+**Last response audit:** 2026-08-24
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -142,6 +142,36 @@ This audit is an inbox snapshot, not proof of delivery, reading, or product
 adoption. Existing drafts were preserved. Any public forum post, tracker
 comment, or email reply still requires an action-specific confirmation at the
 time it would be sent.
+
+### Response and release audit (2026-08-24)
+
+The signed-in project mailbox was checked through August 24, 2026. No new
+human maintainer reply, review decision, or adoption confirmation was found
+after the August 13 responses. The only project-adjacent messages after
+August 22 were Google account-data notices for Claude and opencode.ai; no
+security links were followed and no account settings were changed.
+
+The BidiLens host-integration PR is current at [PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57), commit `396fac7`:
+
+- the PR is open and remains a draft for maintainer review;
+- the branch is mergeable and the protected status is clean;
+- all required CI and CodeQL jobs pass, including Rust formatting, tests, the
+  Android and Apple gates, Windows, three-browser visual checks, packed Node
+  consumers, dependency audit, and Markdown-It 13/14/15 compatibility;
+- the stale protected status context was corrected from the old 13/14 label to
+  the current 13/14/15 compatibility check, without changing source-branch
+  review requirements.
+
+External status is unchanged: Hermes PR #72508 is open without a human review
+decision, Cline PR #12724 remains open and conflicting/dirty with review still
+required, and Streamdown PR #569 remains the one recorded upstream merge. No
+external PR was edited, force-pushed, merged, or commented on during this
+audit. The current Markdown-It 15 compatibility target is supported by the
+upstream 15.0.0 release; BidiLens continues to pin reproducible Unicode 17
+data until Unicode 18 leaves its prepublication/beta period.
+
+This audit is evidence of current checks and routing only. It does not prove
+delivery, maintainer review, production deployment, or adoption.
 
 ## Deliberate deferrals
 
