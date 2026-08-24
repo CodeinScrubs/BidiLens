@@ -47,6 +47,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    groups:
+      # CodeQL init and analyze must move together. Keeping them in separate
+      # PRs can create a transient configuration mismatch where one action
+      # runs a newer CodeQL version against the other action's older config.
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
 
   - package-ecosystem: gradle
     directory: /android
