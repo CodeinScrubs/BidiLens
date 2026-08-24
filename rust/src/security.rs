@@ -223,13 +223,12 @@ fn balance_findings(
             .next()
             .expect("byte index must be on a character boundary");
         let character_len = character.len_utf8();
-        let boundary_len = if character == '\r'
-            && text[byte_index + character_len..].starts_with('\n')
-        {
-            character_len + '\n'.len_utf8()
-        } else {
-            character_len
-        };
+        let boundary_len =
+            if character == '\r' && text[byte_index + character_len..].starts_with('\n') {
+                character_len + '\n'.len_utf8()
+            } else {
+                character_len
+            };
         let is_paragraph_boundary = matches!(
             character,
             '\r' | '\n' | '\u{0085}' | '\u{001C}'..='\u{001E}' | '\u{2029}'

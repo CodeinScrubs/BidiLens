@@ -338,14 +338,7 @@ fn security_reports_controls_balance_and_invisibles() {
 #[test]
 fn formatting_controls_do_not_balance_across_paragraph_boundaries() {
     for separator in [
-        "\n",
-        "\r",
-        "\r\n",
-        "\u{0085}",
-        "\u{001C}",
-        "\u{001D}",
-        "\u{001E}",
-        "\u{2029}",
+        "\n", "\r", "\r\n", "\u{0085}", "\u{001C}", "\u{001D}", "\u{001E}", "\u{2029}",
     ] {
         let source = format!("{}before{separator}after{}", '\u{202E}', '\u{202C}');
         let report = scan_bidi_security(&source);
@@ -381,10 +374,12 @@ fn isolates_do_not_balance_across_paragraph_boundaries() {
 #[test]
 fn isolates_balance_within_one_paragraph() {
     let report = scan_bidi_security("\u{2067}inside\u{2069}");
-    assert!(!report.findings.iter().any(|finding| matches!(
-        finding.code,
-        "BIDI_UNCLOSED_ISOLATE" | "BIDI_UNMATCHED_PDI"
-    )));
+    assert!(
+        !report
+            .findings
+            .iter()
+            .any(|finding| matches!(finding.code, "BIDI_UNCLOSED_ISOLATE" | "BIDI_UNMATCHED_PDI"))
+    );
 }
 
 #[test]
