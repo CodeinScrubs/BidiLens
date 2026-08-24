@@ -1,6 +1,10 @@
 import { DEFAULT_TECHNICAL_IDENTIFIERS, countStrongCharacters, detectDirection } from './detect.js';
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
 import { boundedNumberOption } from './options.js';
+import {
+  DEFAULT_PARAGRAPH_SEPARATOR_SOURCE,
+  isDefaultParagraphBoundaryCharacter
+} from './paragraph.js';
 import type {
   BidiStreamOptions,
   BidiStreamSnapshot,
@@ -9,8 +13,7 @@ import type {
   StreamStrategy
 } from './types.js';
 
-const DEFAULT_SEPARATOR_SOURCE = '\\r\\n|\\n|\\r|\\u2029';
-const DEFAULT_SEPARATOR = new RegExp(DEFAULT_SEPARATOR_SOURCE, 'g');
+const DEFAULT_SEPARATOR = new RegExp(DEFAULT_PARAGRAPH_SEPARATOR_SOURCE, 'g');
 const COMMAND_STARTERS = new Set(['npm', 'pnpm', 'yarn', 'npx', 'git', 'pip', 'python', 'node', 'cargo', 'go', 'docker', 'kubectl']);
 /** Mirrors the batch acronym bound in `detect.ts`. */
 const ACRONYM_MAXIMUM_LENGTH = 5;
@@ -473,7 +476,7 @@ export class BidiStream {
   #consumeDefaultSeparators(chunk: string, final: boolean): void {
     const combined = `${this.#pendingCarriageReturn ? '\r' : ''}${chunk}`;
     this.#pendingCarriageReturn = false;
-    const separator = new RegExp(DEFAULT_SEPARATOR_SOURCE, 'g');
+    const separator = new RegExp(DEFAULT_PARAGRAPH_SEPARATOR_SOURCE, 'g');
     let start = 0;
     let match: RegExpExecArray | null;
     while ((match = separator.exec(combined)) !== null) {
@@ -918,7 +921,7 @@ export class BidiStream {
   }
 
   #processPolicyCharacter(character: string): void {
-    if (/\r|\n|\u2029/u.test(character)) {
+    if (isDefaultParagraphBoundaryCharacter(character)) {
       this.#policyDormantBacktickDelimiter = 0;
       this.#policySingleDollarOpen = false;
     }
@@ -1039,7 +1042,7 @@ export class BidiStream {
     }
 
     if (this.#policyMode === 'command') {
-      if (/\r|\n|\u2029/u.test(character)) {
+      if (isDefaultParagraphBoundaryCharacter(character)) {
         this.#commitProvisionalPolicyStructure();
         return;
       }
@@ -1150,7 +1153,7 @@ export class BidiStream {
       return;
     }
 
-    if (/\r|\n|\u2029/u.test(character)) {
+    if (isDefaultParagraphBoundaryCharacter(character)) {
       this.#commitProvisionalPolicyStructure();
       return;
     }

@@ -1,5 +1,6 @@
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
 import { boundedNumberOption } from './options.js';
+import { DEFAULT_PARAGRAPH_SEPARATOR_SOURCE } from './paragraph.js';
 import type {
   DetectionOptions,
   Direction,
@@ -558,7 +559,7 @@ function firstBidiStrongCharacter(text: string): Direction {
 
 function splitParagraphs(text: string): Array<{ text: string; start: number; end: number }> {
   const paragraphs: Array<{ text: string; start: number; end: number }> = [];
-  const separator = /\r\n|\n|\r|\u2029/gu;
+  const separator = new RegExp(DEFAULT_PARAGRAPH_SEPARATOR_SOURCE, 'gu');
   let start = 0;
   let match: RegExpExecArray | null;
 

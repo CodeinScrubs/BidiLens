@@ -102,7 +102,8 @@ export interface BidiStreamOptions {
   fallback?: Direction;
   /**
    * Paragraph separator used when `finish()` reconciles the complete source.
-   * The default newline separator is recognized incrementally. An arbitrary
+   * The default Unicode paragraph separators (CR, LF, CRLF, NEL,
+   * U+001C..U+001E, and U+2029) are recognized incrementally. An arbitrary
    * custom RegExp is intentionally finalized only at end-of-stream because
    * lookarounds, anchors, and extendable matches can depend on future chunks.
    */

@@ -482,7 +482,9 @@ fn split_paragraphs(text: &str) -> Vec<Range<usize>> {
                     index + 1
                 }
             }
-            '\n' | '\u{2029}' => index + character.len_utf8(),
+            '\n' | '\u{0085}' | '\u{001C}'..='\u{001E}' | '\u{2029}' => {
+                index + character.len_utf8()
+            }
             _ => continue,
         };
         ranges.push(start..index);

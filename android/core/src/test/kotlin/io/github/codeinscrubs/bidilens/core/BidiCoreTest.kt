@@ -164,6 +164,26 @@ class BidiCoreTest {
     }
 
     @Test
+    fun allUnicodeParagraphSeparatorsSplitAnalysisWithoutChangingSource() {
+        listOf(
+            "NEL" to "\u0085",
+            "FILE SEPARATOR" to "\u001C",
+            "GROUP SEPARATOR" to "\u001D",
+            "RECORD SEPARATOR" to "\u001E",
+            "PARAGRAPH SEPARATOR" to "\u2029",
+        ).forEach { (name, separator) ->
+            val source = "Hello${separator}سلام"
+            val analysis = analyzeBidi(source)
+            assertEquals("wrong paragraph count for $name", 2, analysis.paragraphs.size)
+            assertEquals("Hello", analysis.paragraphs[0].text)
+            assertEquals("سلام", analysis.paragraphs[1].text)
+            assertEquals(BidiDirection.LTR, analysis.paragraphs[0].direction)
+            assertEquals(BidiDirection.RTL, analysis.paragraphs[1].direction)
+            assertEquals(source, analysis.text)
+        }
+    }
+
+    @Test
     fun isolationCarriesUtf16AndCodePointOffsets() {
         val source = "😀 React یک کتابخانه است."
         val react = analyzeBidi(source).isolations.first { it.text == "React" }

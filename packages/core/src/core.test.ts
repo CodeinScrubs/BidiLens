@@ -318,6 +318,23 @@ describe('direction detection', () => {
   });
 
   it.each([
+    ['NEL', '\u0085'],
+    ['file separator', '\u001c'],
+    ['group separator', '\u001d'],
+    ['record separator', '\u001e'],
+    ['paragraph separator', '\u2029']
+  ] as const)('uses the Unicode paragraph boundary for %s', (_name, separator) => {
+    const result = analyzeText(`Hello${separator}سلام`);
+    expect(result.paragraphs.map((paragraph) => paragraph.text)).toEqual(['Hello', 'سلام']);
+    expect(result.paragraphs.map((paragraph) => paragraph.direction)).toEqual(['ltr', 'rtl']);
+  });
+
+  it('does not promote the Unicode line separator to a paragraph boundary', () => {
+    const result = analyzeText(`Hello${String.fromCodePoint(0x2028)}سلام`);
+    expect(result.paragraphs).toHaveLength(1);
+  });
+
+  it.each([
     ['minimumStrongCharacters', { minimumStrongCharacters: Number.NaN }],
     ['majorityThreshold', { majorityThreshold: Number.POSITIVE_INFINITY }]
   ] as const)('rejects non-finite %s detection options', (_name, options) => {
@@ -480,6 +497,30 @@ describe('streaming', () => {
       completed: true
     });
     expect(next.currentParagraph).toMatchObject({ text: 'Hello', direction: 'ltr' });
+  });
+
+  it.each([
+    ['NEL', '\u0085'],
+    ['file separator', '\u001c'],
+    ['group separator', '\u001d'],
+    ['record separator', '\u001e'],
+    ['paragraph separator', '\u2029']
+  ] as const)('keeps default stream paragraphs chunk-invariant across %s', (_name, separator) => {
+    const source = `Hello${separator}سلام`;
+    const whole = createBidiStream();
+    whole.push(source);
+    const expected = whole.finish();
+
+    const chunked = createBidiStream();
+    for (const character of source) chunked.push(character);
+    const actual = chunked.finish();
+
+    expect(actual.text).toBe(source);
+    expect(actual.paragraphs.map((paragraph) => paragraph.text))
+      .toEqual(['Hello', 'سلام']);
+    expect(actual.paragraphs.map((paragraph) => paragraph.direction))
+      .toEqual(['ltr', 'rtl']);
+    expect(actual.paragraphs).toEqual(expected.paragraphs);
   });
 
   it.each([

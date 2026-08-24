@@ -1,5 +1,6 @@
 import {
   createBidiStream,
+  DEFAULT_PARAGRAPH_SEPARATOR_SOURCE,
   detectDirection,
   needsBidiIntervention,
   planInlineIsolation,
@@ -320,7 +321,7 @@ function streamParagraphParts(
           ? customSeparator.flags.replaceAll('y', '')
           : `${customSeparator.flags.replaceAll('y', '')}g`
       )
-    : /\r\n|\n|\r|\u2029/gu;
+    : new RegExp(DEFAULT_PARAGRAPH_SEPARATOR_SOURCE, 'gu');
   const parts: Array<{ text: string; separator: string }> = [];
   let start = 0;
   let match: RegExpExecArray | null;

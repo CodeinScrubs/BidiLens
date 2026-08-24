@@ -77,7 +77,10 @@ describe('property-based invariants', () => {
   it('produces batch-equivalent final output for arbitrary chunk boundaries', () => {
     const textArbitrary = fc.array(fc.oneof(
       fc.string({ maxLength: 24 }),
-      fc.constantFrom('\n', '\r', '\r\n', '\u2029', 'سلام', 'React', '😀', '`code`', 'https://example.com')
+      fc.constantFrom(
+        '\n', '\r', '\r\n', '\u0085', '\u001c', '\u001d', '\u001e', '\u2029',
+        'سلام', 'React', '😀', '`code`', 'https://example.com'
+      )
     ), { maxLength: 16 }).map((parts) => parts.join(''));
     fc.assert(fc.property(
       textArbitrary,
@@ -134,6 +137,10 @@ describe('property-based invariants', () => {
       ' ',
       '\n',
       '\r\n',
+      '\u0085',
+      '\u001c',
+      '\u001d',
+      '\u001e',
       '\u2029'
     ), { minLength: 1, maxLength: 24 }).map((parts) => parts.join(''));
 

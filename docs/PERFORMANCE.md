@@ -91,7 +91,8 @@ API signal while a rich document is between checkpoints.
 - release checks enforce aggregate emitted-JavaScript budgets, including
   code-split chunks.
 
-The default newline separator is recognized incrementally. An arbitrary custom
+The complete Unicode 17 paragraph-separator set (CR, LF, CRLF, NEL,
+U+001C–U+001E, and U+2029) is recognized incrementally. An arbitrary custom
 paragraph-separator regular expression is buffered and evaluated once by
 `finish()`. This preserves chunk-boundary invariance for future-sensitive
 lookarounds, anchors, and extendable matches without reparsing the accumulated

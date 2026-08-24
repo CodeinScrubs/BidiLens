@@ -326,6 +326,20 @@ fn source_offsets_cover_bytes_utf16_and_code_points() {
 }
 
 #[test]
+fn all_unicode_paragraph_separators_split_analysis_without_changing_source() {
+    for separator in ["\u{0085}", "\u{001C}", "\u{001D}", "\u{001E}", "\u{2029}"] {
+        let source = format!("Hello{separator}سلام");
+        let analysis = analyze(&source, &AnalysisOptions::default()).expect("valid defaults");
+        assert_eq!(analysis.paragraphs.len(), 2, "separator {separator:?}");
+        assert_eq!(analysis.paragraphs[0].text, "Hello");
+        assert_eq!(analysis.paragraphs[1].text, "سلام");
+        assert_eq!(analysis.paragraphs[0].direction, Direction::Ltr);
+        assert_eq!(analysis.paragraphs[1].direction, Direction::Rtl);
+        assert_eq!(analysis.text, source);
+    }
+}
+
+#[test]
 fn security_reports_controls_balance_and_invisibles() {
     let report = scan_bidi_security("safe\u{202E}hidden\u{200B}");
     let codes: BTreeSet<_> = report.findings.iter().map(|value| value.code).collect();

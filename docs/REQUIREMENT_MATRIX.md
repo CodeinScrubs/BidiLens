@@ -101,7 +101,7 @@ recorded explicitly.
 
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
-| Chunk-boundary invariance | Complete for finalized direction/text and Markdown-It rich output within the tested grammar | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits, Markdown fences/links and default paragraph separators; unfinished future-sensitive tokens may revise live snapshots, and final rich documents equal the batch oracle |
+| Chunk-boundary invariance | Complete for finalized direction/text and Markdown-It rich output within the tested grammar | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits, Markdown fences/links and every Unicode 17 default paragraph separator; unfinished future-sensitive tokens may revise live snapshots, and final rich documents equal the batch oracle |
 | Stable live rendering and flagship transition | Complete for the shipped streams | Source-position checkpoints; completed core paragraphs immutable; rich Markdown exposes conservative `stableThrough`, pending source, and dirty replacements rather than freezing future-sensitive syntax; default direction remains revisable and sticky locking is explicit |
 | Incremental performance without full-document reparse per token | Complete for the shipped streams | Core incremental state plus 1-char/1,000-chunk benchmarks; the rich Markdown parser runs at geometric and structural checkpoints plus finalization, with an 8,192 one-character plain-text regression asserting no more than 14 live parses |
 | Final stream equals batch for source and directions | Complete and tested | Core properties and framework adapter tests |

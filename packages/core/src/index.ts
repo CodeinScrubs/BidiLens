@@ -7,6 +7,7 @@ export * from './intervention.js';
 export * from './segments.js';
 export * from './stream.js';
 export * from './analysis.js';
+export { DEFAULT_PARAGRAPH_SEPARATOR_SOURCE } from './paragraph.js';
 
 // Specification-oriented aliases retained alongside the original concise API.
 export { analyzeText as analyzePlainText, detectDirection as detectBaseDirection } from './detect.js';

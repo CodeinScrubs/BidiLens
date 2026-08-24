@@ -121,10 +121,12 @@ private fun analyzeParagraph(
     )
 }
 
+private val defaultParagraphSeparator = Regex("\\r\\n|\\n|\\r|\\u0085|[\\u001C-\\u001E]|\\u2029")
+
 private fun splitParagraphs(text: String): List<Pair<String, Int>> {
     val result = mutableListOf<Pair<String, Int>>()
     var start = 0
-    for (match in Regex("\\r\\n|\\n|\\r|\\u2029").findAll(text)) {
+    for (match in defaultParagraphSeparator.findAll(text)) {
         result += text.substring(start, match.range.first) to start
         start = match.range.last + 1
     }

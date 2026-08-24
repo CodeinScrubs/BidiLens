@@ -6056,6 +6056,9 @@ function boundedNumberOption(name, value, defaultValue, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, resolved));
 }
 
+// packages/core/src/paragraph.ts
+var DEFAULT_PARAGRAPH_SEPARATOR_SOURCE = "\\r\\n|\\n|\\r|\\u0085|[\\u001C-\\u001E]|\\u2029";
+
 // packages/core/src/detect.ts
 var DEFAULT_OPTIONS = {
   strategy: "content-majority",
@@ -6502,7 +6505,7 @@ function firstBidiStrongCharacter(text) {
 }
 function splitParagraphs(text) {
   const paragraphs = [];
-  const separator = /\r\n|\n|\r|\u2029/gu;
+  const separator = new RegExp(DEFAULT_PARAGRAPH_SEPARATOR_SOURCE, "gu");
   let start = 0;
   let match;
   while ((match = separator.exec(text)) !== null) {
@@ -7479,7 +7482,7 @@ function highestFindingRisk(findings) {
 function sourcePosition(text, utf16Offset) {
   let lineNumber = 1;
   let lineStart = 0;
-  const newline = /\r\n|\n|\r/gu;
+  const newline = new RegExp(`${DEFAULT_PARAGRAPH_SEPARATOR_SOURCE}|\\u2028`, "gu");
   let match;
   while ((match = newline.exec(text)) !== null && match.index < utf16Offset) {
     lineNumber += 1;

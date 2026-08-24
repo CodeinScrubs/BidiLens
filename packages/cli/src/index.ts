@@ -7,6 +7,7 @@ import { Command, CommanderError } from 'commander';
 import { renderBidiHtml } from '@bidilens/html';
 import packageManifest from '../package.json' with { type: 'json' };
 import {
+  DEFAULT_PARAGRAPH_SEPARATOR_SOURCE,
   analyzeText,
   findBidiControls,
   sanitizeBidiControls,
@@ -185,7 +186,9 @@ function highestFindingRisk(findings: readonly BidiSecurityFinding[]): BidiContr
 function sourcePosition(text: string, utf16Offset: number): { line: number; column: number } {
   let lineNumber = 1;
   let lineStart = 0;
-  const newline = /\r\n|\n|\r/gu;
+  // Include Unicode paragraph separators plus U+2028 (line separator) so
+  // SARIF locations remain line-aware for every supported Unicode boundary.
+  const newline = new RegExp(`${DEFAULT_PARAGRAPH_SEPARATOR_SOURCE}|\\u2028`, 'gu');
   let match: RegExpExecArray | null;
   while ((match = newline.exec(text)) !== null && match.index < utf16Offset) {
     lineNumber += 1;
