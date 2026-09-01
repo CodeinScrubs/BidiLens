@@ -67,19 +67,19 @@
     "@playwright/test": "^1.62.1",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@types/react-dom": "^19.2.5",
+    "@vitest/coverage-v8": "^4.1.11",
     "ajv": "8.20.0",
     "esbuild": "0.28.2",
     "eslint": "^10.8.1",
     "fast-check": "^4.3.0",
-    "globals": "^17.9.0",
+    "globals": "^17.11.0",
     "jsdom": "^29.1.1",
     "markdown-it": "^15.0.1",
     "tsx": "^4.23.12",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.66.0",
-    "vitest": "^4.1.10"
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.11"
   },
   "pnpm": {
     "overrides": {
