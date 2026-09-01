@@ -47,10 +47,12 @@ public static class BidiWpf
         return analysis;
     }
 
+    /// <summary>Restores authored properties and ends the managed session.</summary>
     public static void Restore(TextBlock control) => Restore(
         control,
         value => control.SetCurrentValue(TextBlock.TextAlignmentProperty, value));
 
+    /// <summary>Restores authored properties and ends the managed session.</summary>
     public static void Restore(TextBox control) => Restore(
         control,
         value => control.SetCurrentValue(TextBox.TextAlignmentProperty, value));

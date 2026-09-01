@@ -144,15 +144,15 @@ public enum BidiUIKit {
         let source = textView.text ?? ""
         let selection = textView.selectedRange
         let analysis = BidiAnalyzer.analyze(source, options: options)
+        if !analysis.interventionRequired {
+            restore(textView)
+            return analysis
+        }
         let state = inputState(
             textView,
             key: &textViewStateKey,
             alignment: textView.textAlignment
         )
-        if !analysis.interventionRequired {
-            restore(textView)
-            return analysis
-        }
 
         textView.textAlignment = uiAlignment(
             alignment,
@@ -172,6 +172,8 @@ public enum BidiUIKit {
         return analysis
     }
 
+    /// Restores authored input properties and ends the managed session.
+    /// Call before an intentional same-value property ownership handoff.
     public static func restore(_ textView: UITextView) {
         guard let state = objc_getAssociatedObject(
             textView,
@@ -200,15 +202,15 @@ public enum BidiUIKit {
         let source = textField.text ?? ""
         let selection = textField.selectedTextRange
         let analysis = BidiAnalyzer.analyze(source, options: options)
+        if !analysis.interventionRequired {
+            restore(textField)
+            return analysis
+        }
         let state = inputState(
             textField,
             key: &textFieldStateKey,
             alignment: textField.textAlignment
         )
-        if !analysis.interventionRequired {
-            restore(textField)
-            return analysis
-        }
 
         textField.textAlignment = uiAlignment(
             alignment,
@@ -228,6 +230,8 @@ public enum BidiUIKit {
         return analysis
     }
 
+    /// Restores authored input properties and ends the managed session.
+    /// Call before an intentional same-value property ownership handoff.
     public static func restore(_ textField: UITextField) {
         guard let state = objc_getAssociatedObject(
             textField,

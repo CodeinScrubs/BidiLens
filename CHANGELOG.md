@@ -9,6 +9,12 @@ is published under the public `@bidilens` npm scope.
   Unicode combining mark inside its neighboring opposite-direction isolate,
   matching the TypeScript core and preventing visible grapheme loss in Persian,
   Arabic, Hebrew, and other marked scripts.
+- Android Views, editable UIKit, and WPF adapters now adopt observable host
+  direction/alignment changes made during a managed session instead of later
+  restoring stale values. WPF updates also retain existing dependency-property
+  bindings, Android exposes an explicit same-value ownership handoff, and
+  editable UIKit now leaves distinct paragraph state untouched on pure LTR
+  no-op paths.
 
 ## 0.3.2 - 2026-09-01
 

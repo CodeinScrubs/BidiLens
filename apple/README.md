@@ -51,7 +51,8 @@ Editable UIKit adapters adopt observable host changes to `textAlignment` and
 base writing direction between calls, then restore those authored values when
 intervention ends. If application code intentionally takes ownership with the
 same value BidiLens is already rendering, call `BidiUIKit.restore(...)` before
-the handoff.
+the handoff. When no intervention is required, editable UIKit paragraph state
+is left untouched.
 
 Add the repository as a Swift Package in Xcode and select the `BidiLens`
 library. The package intentionally does not force the layout direction of a
