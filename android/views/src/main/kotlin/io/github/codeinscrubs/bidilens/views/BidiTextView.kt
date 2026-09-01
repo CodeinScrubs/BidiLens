@@ -23,30 +23,67 @@ import io.github.codeinscrubs.bidilens.core.isolateText
 fun Context.supportsBidiLensRtl(): Boolean =
     applicationInfo.flags and ApplicationInfo.FLAG_SUPPORTS_RTL != 0
 
-private data class OriginalTextViewState(
+private data class TextViewProperties(
     val textDirection: Int,
     val textAlignment: Int,
     val gravity: Int,
 )
 
-private fun TextView.originalState(): OriginalTextViewState? =
-    getTag(R.id.bidilens_original_view_state) as? OriginalTextViewState
+private data class ManagedTextViewState(
+    var original: TextViewProperties,
+    var rendered: TextViewProperties? = null,
+)
 
-private fun TextView.rememberOriginalState() {
-    if (originalState() == null) {
-        setTag(
-            R.id.bidilens_original_view_state,
-            OriginalTextViewState(textDirection, textAlignment, gravity),
-        )
+private fun TextView.properties(): TextViewProperties =
+    TextViewProperties(textDirection, textAlignment, gravity)
+
+private fun TextView.managedState(): ManagedTextViewState? =
+    getTag(R.id.bidilens_original_view_state) as? ManagedTextViewState
+
+private fun TextView.reconcileHostChanges(state: ManagedTextViewState) {
+    val rendered = state.rendered ?: return
+    val current = properties()
+    state.original = TextViewProperties(
+        textDirection = if (current.textDirection != rendered.textDirection) {
+            current.textDirection
+        } else {
+            state.original.textDirection
+        },
+        textAlignment = if (current.textAlignment != rendered.textAlignment) {
+            current.textAlignment
+        } else {
+            state.original.textAlignment
+        },
+        gravity = if (current.gravity != rendered.gravity) current.gravity else state.original.gravity,
+    )
+}
+
+private fun TextView.rememberOriginalState(): ManagedTextViewState {
+    managedState()?.let {
+        reconcileHostChanges(it)
+        return it
+    }
+    return ManagedTextViewState(original = properties()).also {
+        setTag(R.id.bidilens_original_view_state, it)
     }
 }
 
 private fun TextView.restoreOriginalState() {
-    val state = originalState() ?: return
-    textDirection = state.textDirection
-    textAlignment = state.textAlignment
-    gravity = state.gravity
+    val state = managedState() ?: return
+    reconcileHostChanges(state)
+    textAlignment = state.original.textAlignment
+    gravity = state.original.gravity
+    textDirection = state.original.textDirection
     setTag(R.id.bidilens_original_view_state, null)
+}
+
+/**
+ * Restores properties still owned by BidiLens and ends the current managed
+ * session. Call this before an intentional same-value property handoff, which
+ * Android does not expose as an observable mutation.
+ */
+fun TextView.restoreBidiLens() {
+    restoreOriginalState()
 }
 
 private fun TextView.applyAnalysis(
@@ -57,7 +94,7 @@ private fun TextView.applyAnalysis(
         restoreOriginalState()
         return
     }
-    rememberOriginalState()
+    val state = rememberOriginalState()
     if (alignToContent) {
         textAlignment = View.TEXT_ALIGNMENT_GRAVITY
         val horizontal = if (analysis.resolvedDirection == BidiDirection.RTL) {
@@ -69,9 +106,8 @@ private fun TextView.applyAnalysis(
     } else {
         // Direction and alignment are independent. A caller may switch an
         // already-managed RTL value back to its authored physical alignment.
-        val original = originalState() ?: return
-        textAlignment = original.textAlignment
-        gravity = original.gravity
+        textAlignment = state.original.textAlignment
+        gravity = state.original.gravity
     }
     // Android alignment/gravity setters can recalculate text-direction state.
     // Apply the paragraph base last so physical alignment remains independent.
@@ -80,6 +116,7 @@ private fun TextView.applyAnalysis(
         BidiDirection.LTR -> View.TEXT_DIRECTION_LTR
         BidiDirection.NEUTRAL -> View.TEXT_DIRECTION_INHERIT
     }
+    state.rendered = properties()
 }
 
 /**

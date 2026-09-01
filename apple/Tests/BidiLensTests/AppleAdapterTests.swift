@@ -231,5 +231,87 @@ final class AppleAdapterTests: XCTestCase {
         XCTAssertEqual(textField.textAlignment, .left)
         XCTAssertEqual(textField.selectedTextRange, selection)
     }
+
+    @MainActor
+    func testPureLTRTextInputLeavesDistinctParagraphStateUntouched() throws {
+        let textView = UITextView()
+        let attributed = NSMutableAttributedString(string: "First\nSecond")
+        let firstParagraph = NSMutableParagraphStyle()
+        firstParagraph.alignment = .center
+        firstParagraph.baseWritingDirection = .leftToRight
+        let secondParagraph = NSMutableParagraphStyle()
+        secondParagraph.alignment = .justified
+        secondParagraph.baseWritingDirection = .rightToLeft
+        attributed.addAttribute(
+            .paragraphStyle,
+            value: firstParagraph,
+            range: NSRange(location: 0, length: 6)
+        )
+        attributed.addAttribute(
+            .paragraphStyle,
+            value: secondParagraph,
+            range: NSRange(location: 6, length: 6)
+        )
+        textView.attributedText = attributed
+        textView.textAlignment = .center
+        textView.selectedRange = NSRange(location: 7, length: 2)
+        let authored = NSAttributedString(
+            attributedString: try XCTUnwrap(textView.attributedText)
+        )
+
+        let analysis = BidiUIKit.apply(to: textView, alignment: .physicalRight)
+
+        XCTAssertFalse(analysis.interventionRequired)
+        XCTAssertEqual(textView.textAlignment, .center)
+        XCTAssertEqual(textView.selectedRange, NSRange(location: 7, length: 2))
+        let rendered = try XCTUnwrap(textView.attributedText)
+        XCTAssertTrue(rendered.isEqual(to: authored))
+    }
+
+    @MainActor
+    func testUIKitTextInputAdoptsHostPropertiesWhileManaged() throws {
+        let textView = UITextView()
+        textView.text = rtl
+        textView.textAlignment = .left
+        BidiUIKit.apply(to: textView, alignment: .contentStart)
+        XCTAssertEqual(textView.textAlignment, .right)
+        let managedDirection = textView.baseWritingDirection(
+            for: textView.beginningOfDocument,
+            in: .forward
+        )
+        XCTAssertEqual(managedDirection, .rightToLeft)
+
+        textView.textAlignment = .center
+        let end = try XCTUnwrap(
+            textView.position(
+                from: textView.beginningOfDocument,
+                offset: (rtl as NSString).length
+            )
+        )
+        let range = try XCTUnwrap(
+            textView.textRange(from: textView.beginningOfDocument, to: end)
+        )
+        textView.setBaseWritingDirection(.leftToRight, for: range)
+        let authoredDirection = textView.baseWritingDirection(
+            for: textView.beginningOfDocument,
+            in: .forward
+        )
+        XCTAssertEqual(authoredDirection, .leftToRight)
+        XCTAssertNotEqual(authoredDirection, managedDirection)
+        BidiUIKit.apply(to: textView, alignment: .preserve)
+        XCTAssertEqual(textView.textAlignment, .center)
+        XCTAssertEqual(
+            textView.baseWritingDirection(for: textView.beginningOfDocument, in: .forward),
+            managedDirection
+        )
+
+        textView.text = ltr
+        BidiUIKit.apply(to: textView)
+        XCTAssertEqual(textView.textAlignment, .center)
+        XCTAssertEqual(
+            textView.baseWritingDirection(for: textView.beginningOfDocument, in: .forward),
+            authoredDirection
+        )
+    }
 }
 #endif

@@ -90,6 +90,59 @@ class BidiTextViewTest {
     }
 
     @Test
+    fun hostPropertyChangesWhileManagedBecomeTheNewAuthoredState() {
+        val view = TextView(context).apply {
+            text = "سلام دنیا"
+            textDirection = View.TEXT_DIRECTION_LOCALE
+            textAlignment = View.TEXT_ALIGNMENT_GRAVITY
+            gravity = Gravity.LEFT or Gravity.CENTER_VERTICAL
+        }
+        view.applyBidiLens(alignToContent = true)
+        val managedDirection = view.textDirection
+
+        // Application code deliberately updates two independently owned
+        // properties while BidiLens still owns the rendered RTL state.
+        view.textDirection = View.TEXT_DIRECTION_FIRST_STRONG
+        val authoredDirection = view.textDirection
+        view.gravity = Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
+        view.applyBidiLens(alignToContent = false)
+
+        assertEquals(managedDirection, view.textDirection)
+        assertEquals(Gravity.CENTER_HORIZONTAL, view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK)
+
+        view.text = "English only"
+        view.applyBidiLens()
+
+        assertEquals(authoredDirection, view.textDirection)
+        assertEquals(Gravity.CENTER_HORIZONTAL, view.gravity and Gravity.HORIZONTAL_GRAVITY_MASK)
+        assertNull(view.getTag(R.id.bidilens_original_view_state))
+    }
+
+    @Test
+    fun explicitRestoreAllowsSameValueOwnershipHandoff() {
+        val view = TextView(context).apply {
+            text = "سلام دنیا"
+            textDirection = View.TEXT_DIRECTION_LOCALE
+            textAlignment = View.TEXT_ALIGNMENT_GRAVITY
+            gravity = Gravity.LEFT
+        }
+        view.applyBidiLens()
+        val renderedDirection = view.textDirection
+        val renderedGravity = view.gravity
+
+        view.restoreBidiLens()
+        view.textDirection = renderedDirection
+        view.gravity = renderedGravity
+        view.applyBidiLens()
+        view.text = "English only"
+        view.applyBidiLens()
+
+        assertEquals(renderedDirection, view.textDirection)
+        assertEquals(renderedGravity, view.gravity)
+        assertNull(view.getTag(R.id.bidilens_original_view_state))
+    }
+
+    @Test
     fun mixedPersianSourceKeepsLogicalString() {
         val source = "از جلد سه qb، page 97"
         val view = TextView(context).apply { text = source }
