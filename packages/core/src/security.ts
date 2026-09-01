@@ -8,6 +8,11 @@ import type {
   BidiSecuritySeverity
 } from './types.js';
 
+const UAX9_PARAGRAPH_SEPARATOR = new RegExp(
+  `\\r\\n|\\n|\\r|\\u0085|[${String.fromCodePoint(0x1c)}-${String.fromCodePoint(0x1e)}]|\\u2029`,
+  'gu'
+);
+
 const CONTROL_METADATA = new Map<number, Omit<BidiControlFinding, 'character' | 'codePoint' | 'index' | 'end' | 'codePointIndex'>>([
   [0x061c, { name: 'ARABIC LETTER MARK', risk: 'low', category: 'mark' }],
   [0x200e, { name: 'LEFT-TO-RIGHT MARK', risk: 'low', category: 'mark' }],
@@ -118,7 +123,10 @@ function lastFrameIndex(stack: readonly FormattingFrame[], kind: FormattingFrame
   return -1;
 }
 
-function balanceFindings(controls: readonly BidiControlFinding[]): BidiSecurityFinding[] {
+function balanceParagraph(
+  controls: readonly BidiControlFinding[],
+  boundary: 'paragraph' | 'text'
+): BidiSecurityFinding[] {
   const findings: BidiSecurityFinding[] = [];
   const stack: FormattingFrame[] = [];
 
@@ -181,7 +189,7 @@ function balanceFindings(controls: readonly BidiControlFinding[]): BidiSecurityF
     findings.push({
       code: frame.kind === 'isolate' ? 'BIDI_UNCLOSED_ISOLATE' : 'BIDI_UNCLOSED_EMBEDDING',
       severity: 'high',
-      message: `${frame.control.name} is not terminated before the end of the text.`,
+      message: `${frame.control.name} is not terminated before ${boundary === 'paragraph' ? 'the paragraph boundary' : 'the end of the text'}.`,
       sourceRange: rangeFor(frame.control),
       remediation: frame.kind === 'isolate'
         ? 'Add the matching PDI or remove the isolate opener.'
@@ -189,6 +197,30 @@ function balanceFindings(controls: readonly BidiControlFinding[]): BidiSecurityF
       control: frame.control
     });
   }
+  return findings;
+}
+
+/**
+ * Bidi formatting state is paragraph-scoped under UAX #9. A PDF/PDI after a
+ * line or paragraph separator must not close an opener from the preceding
+ * paragraph, so balance each paragraph independently.
+ */
+function balanceFindings(text: string, controls: readonly BidiControlFinding[]): BidiSecurityFinding[] {
+  const findings: BidiSecurityFinding[] = [];
+  // UAX #9 paragraph separators are CR, LF, NEL, U+001C..U+001E, and
+  // U+2029. Keep the security scope aligned with the pinned Unicode data.
+  let controlIndex = 0;
+
+  for (const match of text.matchAll(UAX9_PARAGRAPH_SEPARATOR)) {
+    const paragraphControls: BidiControlFinding[] = [];
+    while (controlIndex < controls.length && controls[controlIndex]!.index < match.index) {
+      paragraphControls.push(controls[controlIndex]!);
+      controlIndex += 1;
+    }
+    findings.push(...balanceParagraph(paragraphControls, 'paragraph'));
+  }
+
+  findings.push(...balanceParagraph(controls.slice(controlIndex), 'text'));
   return findings;
 }
 
@@ -262,7 +294,7 @@ export function scanBidiSecurity(
   const controls = findBidiControls(text);
   const findings = [
     ...controls.map(controlFinding),
-    ...balanceFindings(controls),
+    ...balanceFindings(text, controls),
     ...invisibleCharacterFindings(text)
   ].sort((a, b) => a.sourceRange.utf16.start - b.sourceRange.utf16.start || a.code.localeCompare(b.code));
   const hasHigh = findings.some((finding) => finding.severity === 'high');

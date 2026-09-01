@@ -84,6 +84,7 @@ Changesets entry for a public API or behavior change. Before a release run:
 pnpm run check
 pnpm run test:visual
 pnpm run packages:types
+pnpm run markdown-it:compat
 pnpm run deps:audit
 pnpm run release:check
 pnpm run sbom

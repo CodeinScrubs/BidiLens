@@ -99,12 +99,15 @@ its low half, a non-low successor, paragraph completion, or `finish()` arrives;
 this keeps live decisions invariant even when callers split a supplementary
 Unicode character between code units.
 
-The optimized default newline separator completes paragraphs incrementally.
-Custom JavaScript regular expressions are evaluated once at `finish()` because
-an arbitrary match may depend on future input through lookarounds, anchors, or
-an extendable match. Before finalization, the unresolved custom-separated
-source remains one open paragraph. This explicit tradeoff preserves arbitrary
-chunk-boundary invariance and linear append behavior.
+The optimized default separator completes paragraphs incrementally for the
+complete Unicode 17 `Bidi_Class=Paragraph_Separator` set: CR, LF, CRLF, NEL,
+U+001C–U+001E, and U+2029. U+2028 is a line separator (`WS`) and therefore stays
+inside the current bidi paragraph. Custom JavaScript regular expressions are
+evaluated once at `finish()` because an arbitrary match may depend on future
+input through lookarounds, anchors, or an extendable match. Before finalization,
+the unresolved custom-separated source remains one open paragraph. This
+explicit tradeoff preserves arbitrary chunk-boundary invariance and linear
+append behavior.
 
 Framework streaming APIs are adapters over the same state machine:
 

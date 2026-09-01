@@ -5,6 +5,7 @@ import MarkdownIt from 'markdown-it';
 import { createBidiStream } from '../../packages/core/src/index.js';
 import { renderBidiHtml } from '../../packages/html/src/index.js';
 import { markdownItBidi } from '../../packages/markdown/src/index.js';
+import { CHATGPT_MIXED_DIRECTION_MARKDOWN } from '../../scripts/fixtures/chatgpt-mixed-direction.js';
 import {
   expectBidiBlock,
   expectLogicalClipboard,
@@ -169,5 +170,28 @@ test.describe('flagship mixed-direction rendering', () => {
     }
     expect(await fixture.locator('h1').textContent()).toBe('React یک کتابخانه بسیار محبوب است.');
     await expect(fixture).toHaveScreenshot('structured-markdown.png');
+  });
+
+  test('keeps screenshot-derived Persian medical prose and technical labels stable', async ({ page }) => {
+    const markdown = new MarkdownIt({ html: false });
+    markdownItBidi(markdown);
+    const html = markdown.render(CHATGPT_MIXED_DIRECTION_MARKDOWN);
+    expect(html).not.toContain('text-align');
+    await page.setContent(`
+      <style>
+        body { margin: 20px; font: 16px/1.55 Arial, sans-serif; }
+        bdi, code, pre { unicode-bidi: isolate; }
+      </style>
+      <main id="fixture">${html}</main>
+    `);
+
+    const fixture = page.locator('#fixture');
+    const isolateTexts = await fixture.locator('bdi').allTextContents();
+    expect(isolateTexts).toContain('مثلاً');
+    expect(isolateTexts).toContain('CN X');
+    await expect(fixture.locator('p').filter({ hasText: 'ICH:' })).toHaveAttribute('dir', 'ltr');
+    await expect(fixture.locator('p[data-bidilens-block]').filter({ hasText: 'Uvula runs away' })).toHaveAttribute('dir', 'ltr');
+    await expect(fixture.locator('bdi').filter({ hasText: 'مثلاً' })).toHaveAttribute('dir', 'rtl');
+    expect(await fixture.evaluate((element) => element.textContent)).toContain('right vagus lesion:');
   });
 });

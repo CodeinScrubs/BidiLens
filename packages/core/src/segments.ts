@@ -77,12 +77,16 @@ function mergeAdjacent(runs: DirectionalRun[]): DirectionalRun[] {
 function trimNeutralBoundaries(text: string, start: number, end: number): { start: number; end: number } {
   while (start < end) {
     const character = text.slice(start).match(/^./su)?.[0];
-    if (!character || classifyCharacter(character) !== 'neutral') break;
+    // Combining marks are bidi-neutral, but they are part of the preceding
+    // grapheme. Trimming one from an isolate changes the visible word (for
+    // example Persian `مثلاً` became `مثلا` plus a detached tanwin), so marks
+    // must anchor an isolation boundary just like a strong character.
+    if (!character || classifyCharacter(character) !== 'neutral' || /^\p{M}$/u.test(character)) break;
     start += character.length;
   }
   while (end > start) {
     const character = text.slice(0, end).match(/.$/su)?.[0];
-    if (!character || classifyCharacter(character) !== 'neutral') break;
+    if (!character || classifyCharacter(character) !== 'neutral' || /^\p{M}$/u.test(character)) break;
     end -= character.length;
   }
   return { start, end };

@@ -1,4 +1,6 @@
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
+import { boundedNumberOption } from './options.js';
+import { DEFAULT_PARAGRAPH_SEPARATOR_SOURCE } from './paragraph.js';
 import type {
   DetectionOptions,
   Direction,
@@ -47,8 +49,20 @@ function normalizeOptions(options: DetectionOptions = {}): Required<DetectionOpt
     strategy,
     fallback: options.fallback ?? options.inheritedDirection ?? DEFAULT_OPTIONS.fallback,
     inheritedDirection: options.inheritedDirection ?? DEFAULT_OPTIONS.inheritedDirection,
-    minimumStrongCharacters: Math.max(1, options.minimumStrongCharacters ?? DEFAULT_OPTIONS.minimumStrongCharacters),
-    majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? DEFAULT_OPTIONS.majorityThreshold)),
+    minimumStrongCharacters: boundedNumberOption(
+      'minimumStrongCharacters',
+      options.minimumStrongCharacters,
+      DEFAULT_OPTIONS.minimumStrongCharacters,
+      1,
+      Number.POSITIVE_INFINITY
+    ),
+    majorityThreshold: boundedNumberOption(
+      'majorityThreshold',
+      options.majorityThreshold,
+      DEFAULT_OPTIONS.majorityThreshold,
+      0.5,
+      1
+    ),
     // Compatibility/strict first-strong modes must see the real first strong
     // character (including a leading technical identifier), like dir="auto".
     excludeTechnicalTokens: options.excludeTechnicalTokens ?? majorityStrategy,
@@ -420,6 +434,15 @@ export function findTechnicalTokenRanges(
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, 'hash');
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, 'number');
 
+  // Compact labels in technical prose are often written as an acronym plus a
+  // Roman-numeral/number designator (`CN X`, `CN IX`, `API 2`). Treat the
+  // complete label as one LTR unit so an intervening RTL run cannot split it.
+  // The delimiter is intentionally narrow: ordinary English pronouns such as
+  // `I` remain natural-language evidence unless they introduce a formula.
+  addMatches(text, ranges, /\b[A-Z]{1,4}\s+(?:[IVXLCDM]{1,8}|\d{1,3})\b/gu, 'identifier');
+  addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, 'identifier');
+  addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, 'identifier');
+
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
   const uppercaseProse = usesUppercaseProse(text);
@@ -536,7 +559,7 @@ function firstBidiStrongCharacter(text: string): Direction {
 
 function splitParagraphs(text: string): Array<{ text: string; start: number; end: number }> {
   const paragraphs: Array<{ text: string; start: number; end: number }> = [];
-  const separator = /\r\n|\n|\r|\u2029/gu;
+  const separator = new RegExp(DEFAULT_PARAGRAPH_SEPARATOR_SOURCE, 'gu');
   let start = 0;
   let match: RegExpExecArray | null;
 

@@ -97,6 +97,33 @@ jobs:
       - run: pnpm run packages:types
       - run: pnpm run release:check
 
+  markdown-it-compat:
+    name: Markdown-It 13, 14, and 15 compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        with:
+          version: 10.27.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.12.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run markdown-it:compat
+        env:
+          BIDILENS_MARKDOWN_IT_REPORT_DIR: markdown-it-compat-reports
+      - if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: markdown-it-compat-reports
+          path: markdown-it-compat-reports
+          if-no-files-found: error
+          retention-days: 7
+
   android:
     name: Android libraries and sample
     runs-on: ubuntu-latest

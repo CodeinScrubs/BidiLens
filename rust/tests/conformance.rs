@@ -326,6 +326,20 @@ fn source_offsets_cover_bytes_utf16_and_code_points() {
 }
 
 #[test]
+fn all_unicode_paragraph_separators_split_analysis_without_changing_source() {
+    for separator in ["\u{0085}", "\u{001C}", "\u{001D}", "\u{001E}", "\u{2029}"] {
+        let source = format!("Hello{separator}سلام");
+        let analysis = analyze(&source, &AnalysisOptions::default()).expect("valid defaults");
+        assert_eq!(analysis.paragraphs.len(), 2, "separator {separator:?}");
+        assert_eq!(analysis.paragraphs[0].text, "Hello");
+        assert_eq!(analysis.paragraphs[1].text, "سلام");
+        assert_eq!(analysis.paragraphs[0].direction, Direction::Ltr);
+        assert_eq!(analysis.paragraphs[1].direction, Direction::Rtl);
+        assert_eq!(analysis.text, source);
+    }
+}
+
+#[test]
 fn security_reports_controls_balance_and_invisibles() {
     let report = scan_bidi_security("safe\u{202E}hidden\u{200B}");
     let codes: BTreeSet<_> = report.findings.iter().map(|value| value.code).collect();
@@ -333,6 +347,53 @@ fn security_reports_controls_balance_and_invisibles() {
     assert!(codes.contains("BIDI_UNCLOSED_EMBEDDING"));
     assert!(codes.contains("HIDDEN_ZERO_WIDTH_SPACE"));
     assert!(!report.safe);
+}
+
+#[test]
+fn formatting_controls_do_not_balance_across_paragraph_boundaries() {
+    for separator in [
+        "\n", "\r", "\r\n", "\u{0085}", "\u{001C}", "\u{001D}", "\u{001E}", "\u{2029}",
+    ] {
+        let source = format!("{}before{separator}after{}", '\u{202E}', '\u{202C}');
+        let report = scan_bidi_security(&source);
+        let codes: BTreeSet<_> = report.findings.iter().map(|value| value.code).collect();
+        assert!(
+            codes.contains("BIDI_UNCLOSED_EMBEDDING"),
+            "missing unclosed embedding for {separator:?}"
+        );
+        assert!(
+            codes.contains("BIDI_UNMATCHED_PDF"),
+            "missing unmatched PDF for {separator:?}"
+        );
+    }
+}
+
+#[test]
+fn formatting_controls_balance_within_one_paragraph() {
+    let report = scan_bidi_security("before\u{202E}inside\u{202C}after");
+    assert!(!report.findings.iter().any(|finding| matches!(
+        finding.code,
+        "BIDI_UNCLOSED_EMBEDDING" | "BIDI_UNMATCHED_PDF"
+    )));
+}
+
+#[test]
+fn isolates_do_not_balance_across_paragraph_boundaries() {
+    let report = scan_bidi_security("\u{2067}before\u{2029}after\u{2069}");
+    let codes: BTreeSet<_> = report.findings.iter().map(|value| value.code).collect();
+    assert!(codes.contains("BIDI_UNCLOSED_ISOLATE"));
+    assert!(codes.contains("BIDI_UNMATCHED_PDI"));
+}
+
+#[test]
+fn isolates_balance_within_one_paragraph() {
+    let report = scan_bidi_security("\u{2067}inside\u{2069}");
+    assert!(
+        !report
+            .findings
+            .iter()
+            .any(|finding| matches!(finding.code, "BIDI_UNCLOSED_ISOLATE" | "BIDI_UNMATCHED_PDI"))
+    );
 }
 
 #[test]

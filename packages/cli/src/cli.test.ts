@@ -130,6 +130,17 @@ describe('BidiLens CLI', () => {
     expect(override?.locations[0]?.physicalLocation.region.startColumn).toBe(5);
   });
 
+  it('counts Unicode paragraph separators in SARIF line locations', async () => {
+    const suspicious = `first${String.fromCodePoint(0x0085)}safe${BIDI_CONTROLS.RLO}evil`;
+    await writeFile(join(cwd, 'unicode-boundary.ts'), suspicious, 'utf8');
+    const result = await invoke(['security-scan', 'unicode-boundary.ts', '--sarif']);
+    const sarif = JSON.parse(result.stdout) as {
+      runs: Array<{ results: Array<{ ruleId: string; locations: Array<{ physicalLocation: { region: { startLine: number } } }> }> }>;
+    };
+    const override = sarif.runs[0]?.results.find((item) => item.ruleId === 'BIDI_OVERRIDE_CONTROL');
+    expect(override?.locations[0]?.physicalLocation.region.startLine).toBe(2);
+  });
+
   it('supports clean scans, aliases, modes, and JSON reports', async () => {
     await writeFile(join(cwd, 'clean.md'), 'می\u200Cخواهم کتاب بخوانم.', 'utf8');
     const clean = await invoke(['lint', 'clean.md']);

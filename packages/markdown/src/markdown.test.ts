@@ -14,6 +14,7 @@ import {
 } from './index.js';
 import { stablePrefixEnd } from './stream.js';
 import type { Root as MdastRoot } from 'mdast';
+import { CHATGPT_MIXED_DIRECTION_MARKDOWN } from '../../../scripts/fixtures/chatgpt-mixed-direction.js';
 
 async function render(markdown: string): Promise<string> {
   return String(await unified()
@@ -40,6 +41,13 @@ describe('Markdown plugins', () => {
     expect(html).toBe(baseline);
     expect(html).not.toContain('dir=');
     expect(html).not.toContain('data-bidilens');
+  });
+
+  it.each([
+    ['minimumStrongCharacters', { minimumStrongCharacters: Number.NaN }],
+    ['majorityThreshold', { majorityThreshold: Number.POSITIVE_INFINITY }]
+  ] as const)('rejects non-finite Markdown-It %s options before configuration', (_name, options) => {
+    expect(() => markdownItBidi(new MarkdownIt({ html: false }), options)).toThrow(/must be a finite number/iu);
   });
 
   it('leaves an LTR-only MDAST tree structurally unchanged', () => {
@@ -89,6 +97,23 @@ describe('Markdown plugins', () => {
     expect(html).toContain('dir="rtl"');
     expect(html).toContain('<bdi dir="ltr"');
     expect(html).toContain('>React</bdi>');
+  });
+
+  it('preserves caller alignment while adding semantic direction metadata', () => {
+    const md = new MarkdownIt({ html: false });
+    const originalParagraphOpen = md.renderer.rules.paragraph_open;
+    md.renderer.rules.paragraph_open = (tokens, index, options, env, self) => {
+      tokens[index]?.attrSet('style', 'text-align:left');
+      return originalParagraphOpen
+        ? originalParagraphOpen(tokens, index, options, env, self)
+        : self.renderToken(tokens, index, options);
+    };
+    markdownItBidi(md);
+
+    const html = md.render('React یک کتابخانه جاوااسکریپت بسیار محبوب است.');
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('style="text-align:left"');
+    expect(html).not.toContain('text-align:right');
   });
 
   it('annotates Persian paragraphs', async () => {
@@ -206,6 +231,21 @@ describe('Markdown plugins', () => {
     expect(english).toContain('<p dir="ltr"');
     expect(english).toContain('<bdi dir="rtl"');
     expect(english).toContain('>کتاب</bdi>');
+  });
+
+  it('keeps screenshot-derived medical Markdown logically ordered and mark-safe', () => {
+    const md = new MarkdownIt({ html: false });
+    const document = analyzeBidiMarkdown(md, CHATGPT_MIXED_DIRECTION_MARKDOWN);
+
+    expect(document.source).toBe(CHATGPT_MIXED_DIRECTION_MARKDOWN);
+    expect(document.html).toContain('>مثلاً</bdi>');
+    expect(document.html).toContain('>CN X</bdi>');
+    expect(document.html).toContain('>ICH:</p>');
+    expect(document.html).toContain('dir="rtl"');
+    // Direction/isolation metadata must not take ownership of caller layout.
+    expect(document.html).not.toContain('text-align');
+    expect(document.blocks.some((block) => block.text.includes('CN X') && block.direction === 'rtl')).toBe(true);
+    expect(document.blocks.some((block) => block.text.includes('Uvula runs away') && block.direction === 'ltr')).toBe(true);
   });
 
   it('propagates caller-specific identifiers through Markdown detection and isolation', () => {

@@ -260,4 +260,14 @@ describe('React adapter', () => {
     expect(container.textContent).toBe(source);
     expect(container.querySelectorAll('article > span')).toHaveLength(4);
   });
+
+  it('renders Unicode paragraph separators as independent streaming blocks', () => {
+    const source = `Hello${String.fromCodePoint(0x0085)}سلام`;
+    const container = document.createElement('div');
+    container.innerHTML = renderToStaticMarkup(<StreamingBidiMessage text={source} completed />);
+    expect(container.textContent).toBe(source);
+    expect(container.querySelectorAll('article > span')).toHaveLength(2);
+    expect(container.querySelector('article > span')?.getAttribute('dir')).toBe('ltr');
+    expect(container.querySelectorAll('article > span')[1]?.getAttribute('dir')).toBe('rtl');
+  });
 });

@@ -7,6 +7,10 @@ const FLAGSHIP = 'React یک کتابخانه جاوااسکریپت بسیار 
 const SHARED = 'The Persian word کتاب means “book”.';
 
 test('falls back when the browser clipboard API never settles', async ({ page }) => {
+  // This case intentionally waits for two clipboard timeout paths. Leave room
+  // for a cold Vite startup on slower hosted Windows/browser combinations.
+  test.setTimeout(60_000);
+
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -33,11 +37,21 @@ test('falls back when the browser clipboard API never settles', async ({ page })
 });
 
 test('exercises the offline bilingual playground, controls, corpus, copy, and exports', async ({ page }) => {
+  const demoManifest = JSON.parse(
+    await readFile(new URL('../../apps/demo/package.json', import.meta.url), 'utf8')
+  ) as { version: string };
+  const corpusFixtures = JSON.parse(
+    await readFile(new URL('../../corpus/cases.json', import.meta.url), 'utf8')
+  ) as unknown[];
   const initialHash = new URLSearchParams({ text: SHARED }).toString();
   await page.goto(`${DEMO_ORIGIN}/#${initialHash}`);
 
   const input = page.getByLabel('Input Markdown');
   const direction = page.locator('.metric').filter({ hasText: 'Direction' }).locator('strong');
+  await expect(page.locator('.eyebrow')).toHaveText(`BidiLens v${demoManifest.version}`);
+  await expect(page.locator('.corpus-panel .panel-title small')).toHaveText(
+    `Search all ${corpusFixtures.length.toLocaleString('en-US')} bundled cases and load one into the playground.`
+  );
   await expect(input).toHaveValue(SHARED);
   await expect(direction).toHaveText('ltr');
 
@@ -121,5 +135,12 @@ test('exercises the offline bilingual playground, controls, corpus, copy, and ex
   await page.getByRole('button', { name: 'فارسی' }).click();
   await expect(page.locator('main')).toHaveAttribute('lang', 'fa');
   await expect(page.locator('main')).toHaveAttribute('dir', 'rtl');
+  const persianVersion = demoManifest.version
+    .replaceAll('.', '٫')
+    .replace(/\d/gu, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]!);
+  await expect(page.locator('.eyebrow')).toHaveText(`BidiLens نسخهٔ ${persianVersion}`);
+  await expect(page.locator('.corpus-panel .panel-title small')).toHaveText(
+    `در هر ${corpusFixtures.length.toLocaleString('fa-IR')} نمونه جست‌وجو کنید و یکی را در محیط بارگذاری کنید.`
+  );
   await expect(page.getByRole('button', { name: 'English' })).toBeVisible();
 });

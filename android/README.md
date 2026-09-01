@@ -176,7 +176,7 @@ pnpm run android:check
 Current executable evidence includes:
 
 - all 932 canonical direction fixtures and declared isolation plans in Kotlin;
-- 23 core, 9 Views/Robolectric, and 8 Compose JVM tests;
+- 29 core, 11 Views/Robolectric, and 9 Compose JVM tests;
 - 3 Views and 3 Compose UI tests on an Android 16/API 36.1 emulator;
 - release AAR assembly, sample APK assembly, and Android lint;
 - an isolated consumer build against the generated Maven-local coordinates;

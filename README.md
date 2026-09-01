@@ -74,6 +74,10 @@ the immutable logical source, and isolates the technical identifier.
 |---|---|
 | ![The flagship sentence rendered with the incorrect automatic LTR base](tests/visual/__screenshots__/chromium/flagship-auto.png) | ![The same logical sentence rendered with the correct RTL base and isolated React token](tests/visual/__screenshots__/chromium/flagship-toolkit.png) |
 
+The medical Markdown, abbreviation, combining-mark, quote, list, and table
+cases transcribed from mixed AI output are documented in the
+[screenshot regression cases](docs/SCREENSHOT_CASES.md).
+
 ## Why this is more than an RTL stylesheet
 
 | Common approach | Limitation | BidiLens behavior |
@@ -146,7 +150,7 @@ reordering and shaping; BidiLens supplies the application structure they need.
 | `@bidilens/core` | Analysis, evidence, isolation, streaming, and security |
 | `@bidilens/dom` | DOM annotation, restoration, CSS policy, and observation |
 | `@bidilens/html` | XSS-safe semantic HTML serialization |
-| `@bidilens/markdown` | unified/remark/rehype and Markdown-It plugins plus rich Markdown-It streaming |
+| `@bidilens/markdown` | unified/remark/rehype and Markdown-It 13/14/15 plugins plus rich Markdown-It streaming |
 | `@bidilens/playwright` | Rendering, isolation, selection, clipboard, and geometry assertions |
 | `@bidilens/react` | SSR-safe components and streaming hooks |
 | `@bidilens/spec` | Versioned cross-language JSON Schemas and schema registry |
@@ -289,7 +293,8 @@ cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D 
 ```
 
 `verify:production` runs the complete quality, three-browser visual, package
-type, dependency-audit, SBOM, and clean-release sequence. `release:check`
+type, packed Markdown-It 13/14/15 compatibility, dependency-audit, SBOM, and
+clean-release sequence. `release:check`
 builds and packs every public package, inspects tarball contents, installs all
 tarballs into a temporary consumer, compiles with `skipLibCheck: false`, and
 executes adapter/runtime assertions—including the pure-LTR non-interference

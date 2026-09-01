@@ -42,7 +42,15 @@ deliberately checkpointed by source growth and structural boundaries; inspect
 `pendingSourceRange` before treating a
 live `document` as current. `finish()` is the exact batch-equivalence boundary.
 Unified/remark/rehype transforms remain supported as batch plugins, not as a
-stateful unified streaming backend.
+stateful unified streaming backend. The adapter source is built against
+Markdown-It 15, and the compatibility matrix exercises representative
+Markdown-It releases 13.0.2, 14.3.1, and 15.0.1 with packed strict TypeScript
+consumers. The peer range covers 13.x, 14.x, and 15.x, but the matrix does not
+claim every patch release. Markdown-It 15's host parser may
+intentionally produce different linkification HTML because its upstream
+`linkify-it` major changed, while BidiLens semantic block/isolation/security
+reports remain equivalent. Other parser major versions are not a supported or
+tested claim.
 
 ## Validation boundaries
 
@@ -73,9 +81,10 @@ stateful unified streaming backend.
 - source and all 12 JavaScript packages are public, but no downstream
   production deployment or company adoption is claimed.
 
-Public issues, discussions, and an unmerged integration pull request are listed
-in the [outreach log](OUTREACH_LOG.md). They prove that review was requested,
-not that any host validated, merged, deployed, or endorsed BidiLens.
+Public issues, discussions, and integration pull requests are listed in the
+[outreach log](OUTREACH_LOG.md). One native implementation merged in Streamdown;
+the remaining open submissions prove that review was requested, not that any
+host adopted the BidiLens dependency, deployed it, or endorsed BidiLens.
 
 ## Compatibility
 

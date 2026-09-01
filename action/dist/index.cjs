@@ -6047,6 +6047,18 @@ function classifyCharacter(character) {
   return isInRanges(codePoint, NATURAL_LETTER_RANGES) ? classifyBidiStrongCharacter(character) : "neutral";
 }
 
+// packages/core/src/options.ts
+function boundedNumberOption(name, value, defaultValue, minimum, maximum) {
+  const resolved = value ?? defaultValue;
+  if (!Number.isFinite(resolved)) {
+    throw new RangeError(`${name} must be a finite number.`);
+  }
+  return Math.min(maximum, Math.max(minimum, resolved));
+}
+
+// packages/core/src/paragraph.ts
+var DEFAULT_PARAGRAPH_SEPARATOR_SOURCE = "\\r\\n|\\n|\\r|\\u0085|[\\u001C-\\u001E]|\\u2029";
+
 // packages/core/src/detect.ts
 var DEFAULT_OPTIONS = {
   strategy: "content-majority",
@@ -6127,8 +6139,20 @@ function normalizeOptions(options = {}) {
     strategy,
     fallback: options.fallback ?? options.inheritedDirection ?? DEFAULT_OPTIONS.fallback,
     inheritedDirection: options.inheritedDirection ?? DEFAULT_OPTIONS.inheritedDirection,
-    minimumStrongCharacters: Math.max(1, options.minimumStrongCharacters ?? DEFAULT_OPTIONS.minimumStrongCharacters),
-    majorityThreshold: Math.min(1, Math.max(0.5, options.majorityThreshold ?? DEFAULT_OPTIONS.majorityThreshold)),
+    minimumStrongCharacters: boundedNumberOption(
+      "minimumStrongCharacters",
+      options.minimumStrongCharacters,
+      DEFAULT_OPTIONS.minimumStrongCharacters,
+      1,
+      Number.POSITIVE_INFINITY
+    ),
+    majorityThreshold: boundedNumberOption(
+      "majorityThreshold",
+      options.majorityThreshold,
+      DEFAULT_OPTIONS.majorityThreshold,
+      0.5,
+      1
+    ),
     // Compatibility/strict first-strong modes must see the real first strong
     // character (including a leading technical identifier), like dir="auto".
     excludeTechnicalTokens: options.excludeTechnicalTokens ?? majorityStrategy,
@@ -6403,6 +6427,9 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, "version");
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, "hash");
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, "number");
+  addMatches(text, ranges, /\b[A-Z]{1,4}\s+(?:[IVXLCDM]{1,8}|\d{1,3})\b/gu, "identifier");
+  addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, "identifier");
+  addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, "identifier");
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
   const uppercaseProse = usesUppercaseProse(text);
@@ -6478,7 +6505,7 @@ function firstBidiStrongCharacter(text) {
 }
 function splitParagraphs(text) {
   const paragraphs = [];
-  const separator = /\r\n|\n|\r|\u2029/gu;
+  const separator = new RegExp(DEFAULT_PARAGRAPH_SEPARATOR_SOURCE, "gu");
   let start = 0;
   let match;
   while ((match = separator.exec(text)) !== null) {
@@ -6550,6 +6577,10 @@ function analyzeText(text, options = {}) {
 }
 
 // packages/core/src/security.ts
+var UAX9_PARAGRAPH_SEPARATOR = new RegExp(
+  `\\r\\n|\\n|\\r|\\u0085|[${String.fromCodePoint(28)}-${String.fromCodePoint(30)}]|\\u2029`,
+  "gu"
+);
 var CONTROL_METADATA = /* @__PURE__ */ new Map([
   [1564, { name: "ARABIC LETTER MARK", risk: "low", category: "mark" }],
   [8206, { name: "LEFT-TO-RIGHT MARK", risk: "low", category: "mark" }],
@@ -6638,7 +6669,7 @@ function lastFrameIndex(stack, kind) {
   }
   return -1;
 }
-function balanceFindings(controls) {
+function balanceParagraph(controls, boundary) {
   const findings = [];
   const stack = [];
   for (const control of controls) {
@@ -6699,12 +6730,26 @@ function balanceFindings(controls) {
     findings.push({
       code: frame.kind === "isolate" ? "BIDI_UNCLOSED_ISOLATE" : "BIDI_UNCLOSED_EMBEDDING",
       severity: "high",
-      message: `${frame.control.name} is not terminated before the end of the text.`,
+      message: `${frame.control.name} is not terminated before ${boundary === "paragraph" ? "the paragraph boundary" : "the end of the text"}.`,
       sourceRange: rangeFor(frame.control),
       remediation: frame.kind === "isolate" ? "Add the matching PDI or remove the isolate opener." : "Add the matching PDF or remove the embedding/override opener.",
       control: frame.control
     });
   }
+  return findings;
+}
+function balanceFindings(text, controls) {
+  const findings = [];
+  let controlIndex = 0;
+  for (const match of text.matchAll(UAX9_PARAGRAPH_SEPARATOR)) {
+    const paragraphControls = [];
+    while (controlIndex < controls.length && controls[controlIndex].index < match.index) {
+      paragraphControls.push(controls[controlIndex]);
+      controlIndex += 1;
+    }
+    findings.push(...balanceParagraph(paragraphControls, "paragraph"));
+  }
+  findings.push(...balanceParagraph(controls.slice(controlIndex), "text"));
   return findings;
 }
 function isAsciiIdentifierCharacter(value) {
@@ -6767,7 +6812,7 @@ function scanBidiSecurity(text, options = {}) {
   const controls = findBidiControls(text);
   const findings = [
     ...controls.map(controlFinding),
-    ...balanceFindings(controls),
+    ...balanceFindings(text, controls),
     ...invisibleCharacterFindings(text)
   ].sort((a, b) => a.sourceRange.utf16.start - b.sourceRange.utf16.start || a.code.localeCompare(b.code));
   const hasHigh = findings.some((finding) => finding.severity === "high");
@@ -6904,12 +6949,12 @@ function mergeAdjacent(runs) {
 function trimNeutralBoundaries(text, start, end) {
   while (start < end) {
     const character = text.slice(start).match(/^./su)?.[0];
-    if (!character || classifyCharacter(character) !== "neutral") break;
+    if (!character || classifyCharacter(character) !== "neutral" || new RegExp("^\\p{M}$", "u").test(character)) break;
     start += character.length;
   }
   while (end > start) {
     const character = text.slice(0, end).match(/.$/su)?.[0];
-    if (!character || classifyCharacter(character) !== "neutral") break;
+    if (!character || classifyCharacter(character) !== "neutral" || new RegExp("^\\p{M}$", "u").test(character)) break;
     end -= character.length;
   }
   return { start, end };
@@ -7437,7 +7482,7 @@ function highestFindingRisk(findings) {
 function sourcePosition(text, utf16Offset) {
   let lineNumber = 1;
   let lineStart = 0;
-  const newline = /\r\n|\n|\r/gu;
+  const newline = new RegExp(`${DEFAULT_PARAGRAPH_SEPARATOR_SOURCE}|\\u2028`, "gu");
   let match;
   while ((match = newline.exec(text)) !== null && match.index < utf16Offset) {
     lineNumber += 1;

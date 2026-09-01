@@ -66,9 +66,10 @@ version.
 - verified `shayanay80` owner access to the `bidilens` npm organization and
   `@bidilens` scope;
 - identified bootstrap maintainer and CODEOWNERS;
-- strict `main` protection requires all 23 verification contexts: the 18 CI
-  jobs (including the Android library/sample build, API 35 UI-test gate, Apple
-  and Windows compiler gates, and three-platform Rust gate) plus five CodeQL
+- strict `main` protection requires all 24 verification contexts: the 19 CI
+  jobs (including the Markdown-It 13/14/15 packed compatibility gate, Android
+  library/sample build, API 35 UI-test gate, Apple and Windows compiler gates,
+  and three-platform Rust gate) plus five CodeQL
   language analyses for JavaScript/TypeScript, Kotlin, C#, Swift, and Rust. The
   branch must be up to date and use linear history, while force-pushes and
   branch deletion are blocked; repository administrators are also subject to
@@ -137,8 +138,9 @@ git status --short
 ```
 
 `verify:production` expands to the quality, three-browser visual, package type,
-dependency-audit, SBOM, and clean-release gate set that CI and release
-preparation enforce as separate steps.
+packed Markdown-It 13/14/15 compatibility, dependency-audit, SBOM, and
+clean-release gate set that CI and release preparation enforce as separate
+steps.
 
 `release:check` rejects a dirty tree, packs each public package, checks files
 and dependency protocols, installs all local tarballs into a temporary strict

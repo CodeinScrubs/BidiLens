@@ -1,6 +1,6 @@
 # Build-specification traceability matrix
 
-**Evidence date:** 2026-07-27
+**Current-tree evidence date:** 2026-09-01
 
 This file maps the binding “Ultimate Build Instruction — Cross-Platform
 Bidirectional Text Toolkit for AI Interfaces, version 2.0” to the source and
@@ -39,7 +39,7 @@ Status vocabulary:
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
 | Framework-independent TypeScript core | Complete and tested | `@bidilens/core`; dependency-free runtime; generated Unicode data; analysis, evidence, isolation, security, streaming |
-| unified/remark/rehype and markdown-it AST processing | Complete and tested | `@bidilens/markdown`; typed adapters, structural blocks, tables/lists/quotes/code/math, raw-HTML-safe defaults |
+| unified/remark/rehype and markdown-it AST processing | Complete and tested | `@bidilens/markdown`; typed adapters, structural blocks, tables/lists/quotes/code/math, raw-HTML-safe defaults; source builds against Markdown-It 15 through a version-neutral runtime boundary, while packed strict consumers verify identical full 932-fixture behavior on Markdown-It 13.0.2/14.3.1 and identical BidiLens semantic reports on Markdown-It 15.0.1 (whose upstream linkifier can render differently), without leaking host type lines |
 | Plain HTML and DOM | Complete and tested | `@bidilens/html` and `@bidilens/dom`; escaped serialization, restore/observe lifecycle, cross-realm tests |
 | Web Component | Complete and tested | `@bidilens/web-component`; side-effect-free/SSR-safe main import, explicit `/auto` registration, self-contained browser bundle, three-browser load test |
 | React | Complete and tested | `@bidilens/react`; React 18/19 probes, SSR, components and streaming hook |
@@ -71,7 +71,7 @@ batch plugin path; it is not misrepresented as a stateful streaming backend.
 
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
-| Android/Jetpack Compose | Implemented, signed, and published; external validation pending | Maven Central `0.1.1` pure Kotlin core, Views, and Compose libraries; sample app; current source verifies the generated 932-case corpus (the published `0.1.1` release predates the fourteen boundary-regression fixtures); JVM/Robolectric suites; lint/AAR/APK tasks; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
+| Android/Jetpack Compose | Implemented, signed, and published; external validation pending | Maven Central `0.1.1` pure Kotlin core, Views, and Compose libraries; sample app; current source verifies the generated 932-case corpus and the newer paragraph-boundary security regressions (the published `0.1.1` release predates this hardening); JVM/Robolectric suites; lint/AAR/APK tasks; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
 | Flutter/Dart | Missing | No package/demo, generated corpus representation, widget/golden tests, or SDK build report |
 | React Native | Missing | No component, generated corpus representation, native tests, or platform build report |
 | Swift Package/SwiftUI/UIKit | Source and hosted simulator/compiler validation complete; physical-device/release validation pending | Swift Package, generated Unicode 17 ranges, copied 932-case corpus, core tests/example, UIKit `UILabel`/`UITextView`/`UITextField` adapters, UIKit-backed SwiftUI `BidiText`, independent physical alignment, and protected macOS/iOS Simulator gates in [CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml). Physical iOS/VoiceOver evidence, sample app, editable SwiftUI integration, and registry publication remain open |
@@ -101,7 +101,7 @@ recorded explicitly.
 
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
-| Chunk-boundary invariance | Complete for finalized direction/text and Markdown-It rich output within the tested grammar | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits, Markdown fences/links and default paragraph separators; unfinished future-sensitive tokens may revise live snapshots, and final rich documents equal the batch oracle |
+| Chunk-boundary invariance | Complete for finalized direction/text and Markdown-It rich output within the tested grammar | Seeded fast-check properties cover whole, one-code-point, random, token-like, UTF-16 surrogate splits, Markdown fences/links and every Unicode 17 default paragraph separator; unfinished future-sensitive tokens may revise live snapshots, and final rich documents equal the batch oracle |
 | Stable live rendering and flagship transition | Complete for the shipped streams | Source-position checkpoints; completed core paragraphs immutable; rich Markdown exposes conservative `stableThrough`, pending source, and dirty replacements rather than freezing future-sensitive syntax; default direction remains revisable and sticky locking is explicit |
 | Incremental performance without full-document reparse per token | Complete for the shipped streams | Core incremental state plus 1-char/1,000-chunk benchmarks; the rich Markdown parser runs at geometric and structural checkpoints plus finalization, with an 8,192 one-character plain-text regression asserting no more than 14 live parses |
 | Final stream equals batch for source and directions | Complete and tested | Core properties and framework adapter tests |
@@ -116,7 +116,7 @@ recorded explicitly.
 | Thousands of generated/property variants | Complete at test runtime | Seeded fast-check runs arbitrary Unicode and random chunking; generated variants are reproducible test cases rather than committed corpus rows |
 | Fixture-review guide | Complete | `corpus/README.md` explains review fields and native-speaker workflow |
 | Unit/property/serialization/range tests | Complete for shipped packages | `pnpm run check`; package-local suites and fast-check properties |
-| Visual Chromium + Firefox + WebKit | Complete and tested | 24 Playwright cases across three engines on the committed Windows/Arial baseline |
+| Visual Chromium + Firefox + WebKit | Complete and tested | 30 Playwright cases across three engines on the committed Windows/Arial baseline, including screenshot-derived mixed Persian/English medical prose |
 | Four-way, flagship, structured Markdown, stream, dark, zoom | Complete and tested | Playwright flagship suite and screenshots |
 | Selection and copy/paste invariant | Complete for web evidence; partial for Android | Three-engine logical selection and Chromium clipboard test; Android editable callbacks and Compose semantics remain control-free in device tests. Firefox/WebKit clipboard, physical Android OEM/IME copy, and other native surfaces remain environment-specific gaps |
 | Accessibility | Partial/external | Automated semantic, selection, dark-mode and zoom evidence plus `docs/ACCESSIBILITY.md`; real screen-reader/browser/OS laboratory matrix is not complete |
@@ -129,7 +129,7 @@ recorded explicitly.
 | English and Persian main README | Complete | `README.md` and `README.fa.md` |
 | Architecture, security, limitations, accessibility, migration, FAQ, contributing, governance, conduct, roadmap, changelog | Complete for the public web beta and Android Maven release | Checked by `scripts/check-docs.ts`; Android has a dedicated integration guide; guides for missing surfaces necessarily remain incomplete |
 | Reproducible performance matrix and budgets | Complete for current JS surfaces | `scripts/benchmark.ts`, `docs/PERFORMANCE.md`, scheduled workflow, package byte budgets in release checker |
-| 3 patch-quality upstream integrations | Partial/external | One host-tested patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508), with focused tests and local host gates. It is unmerged and does not satisfy the minimum of three integrations |
+| 3 patch-quality upstream integrations | Partial/external | One host-tested native implementation merged in [Vercel Streamdown#569](https://github.com/vercel/streamdown/pull/569); Hermes #72508 and Cline #12724 remain submitted/open. The minimum of three integrations, downstream pilots, and adoption evidence is not met |
 | 2 issue-quality evidence bundles | Complete as public submissions, not product fixes | Current-policy, non-duplicate evidence is public for Antigravity, Claude Code, Codex, Cline, Continue, and assistant-ui; routes and exact states are recorded in the [outreach log](OUTREACH_LOG.md) |
 | IMPACT, ADOPTION, APPLICATION_NOTES with measured facts only | Complete | Root and `docs/` evidence documents; targets are labeled as targets |
 | CI: quality, package, visual, size, SBOM, audit | Complete for current JS/web surfaces | Pinned GitHub Actions; Node 22/24, Windows/macOS, three-browser Windows visual job, audit and CycloneDX checks |
@@ -152,10 +152,10 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M3 streaming | Implemented; historical gate incomplete | Direction and rich Markdown-It stream gates pass now; no historical `m3` tag exists and is not fabricated retroactively |
 | M4 frameworks/Electron | Partial | Web Component/React/Vue/Svelte pass anti-hollow and SSR gates; Electron is missing; no `m4` tag |
 | M5 CLI/Playwright Action/VS Code | Partial | CLI, reusable Playwright helpers, and bundled conformance Action pass; VS Code extension is missing; no `m5` tag |
-| M6 ≥300/visual/copy | Implemented; historical gate incomplete | 932 corpus cases and 24 three-engine visual tests pass; no `m6` tag |
+| M6 ≥300/visual/copy | Implemented; historical gate incomplete | 932 corpus cases and 30 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal, Android, SwiftUI/UIKit, and .NET/WPF exist; Flutter, React Native, and other documented native adapters remain open; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
-| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.0` web release, and signed `android-v0.1.1` Maven release. One of the required three host-tested integrations is submitted but unmerged, so the integration minimum remains incomplete |
+| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.0` web release, and signed `android-v0.1.1` Maven release. One host-tested native implementation merged upstream, but the required three integrations, downstream pilots, and adoption evidence remain incomplete |
 
 ## Definition-of-done audit
 
@@ -173,7 +173,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 10 | Complete as schema-valid technical corpus; native review remains a publication-quality gap |
 | 11 | Complete — no-backend bilingual playground and EN/FA repository docs exist |
 | 12 | Complete for current packages — workflows validate, SBOM/license/notices exist |
-| 13 | Partial — one host-tested integration patch is submitted; fewer than three exist and none is merged or piloted |
+| 13 | Partial — one host-tested native implementation is merged; fewer than three integrations exist and no downstream pilot is evidenced |
 | 14 | Complete for current documented claims; continue checking after every change |
 | 15 | Partial — the reviewed source, current `v0.3.0` web release, and `android-v0.1.1` Maven release are public, but historical intermediate milestone tags were not fabricated retroactively |
 

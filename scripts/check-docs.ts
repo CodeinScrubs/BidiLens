@@ -32,6 +32,12 @@ const releaseDocuments = [
   'CITATION.cff',
   'docs/V1_BUILD_REPORT.md'
 ];
+const currentCorpusDocuments = [
+  'README.md',
+  'IMPACT.md',
+  'docs/REQUIREMENT_MATRIX.md',
+  'docs/V1_BUILD_REPORT.md'
+];
 const staleReleasePhrases = [
   'maintained release-candidate scope',
   'once the canonical repository exists',
@@ -60,6 +66,19 @@ const markdownLink = /(?<!!)\[[^\]]*\]\(([^)]+)\)/gu;
 const rootManifest = JSON.parse(
   await readFile(resolve(root, 'package.json'), 'utf8')
 ) as { version?: unknown };
+const corpus = JSON.parse(
+  await readFile(resolve(root, 'corpus/cases.json'), 'utf8')
+) as unknown;
+if (!Array.isArray(corpus)) {
+  failures.push('corpus/cases.json must contain an array.');
+} else {
+  for (const document of currentCorpusDocuments) {
+    const source = await readFile(resolve(root, document), 'utf8');
+    if (!source.includes(String(corpus.length))) {
+      failures.push(`${document} does not mention the current corpus size ${corpus.length}.`);
+    }
+  }
+}
 if (typeof rootManifest.version !== 'string') {
   failures.push('package.json must declare a string version.');
 } else {

@@ -44,14 +44,19 @@ formatting controls, an inherited RTL context, or `{ intervention: 'always' }`
 returns `true`. Inline planning likewise returns no unnecessary ranges for
 ordinary LTR-only text.
 
-The default newline paragraph separator is recognized incrementally. A custom
-`paragraphSeparator` regular expression is evaluated once by `finish()` so
-future-sensitive lookarounds, anchors, and extendable matches remain invariant
-across arbitrary source chunking. Until then, custom-separated input is exposed
-as one unresolved open paragraph. Set `paragraphBoundary: 'markdown'` to
-recognize blank lines incrementally while retaining a single soft line break
-inside the current paragraph. If both options are supplied, the explicit
-Markdown boundary policy takes precedence in core and framework rendering.
+The default Unicode paragraph separators are recognized incrementally: CR, LF,
+CRLF, NEL, U+001C–U+001E, and U+2029. They match the complete Unicode 17
+`Bidi_Class=Paragraph_Separator` set; U+2028 remains a line separator inside the
+same bidi paragraph. `DEFAULT_PARAGRAPH_SEPARATOR_SOURCE` exposes the exact
+regular-expression source for adapters that must preserve separators while
+rendering. A custom `paragraphSeparator` regular expression is evaluated once
+by `finish()` so future-sensitive lookarounds, anchors, and extendable matches
+remain invariant across arbitrary source chunking. Until then,
+custom-separated input is exposed as one unresolved open paragraph. Set
+`paragraphBoundary: 'markdown'` to recognize blank lines incrementally while
+retaining a single soft line break inside the current paragraph. If both
+options are supplied, the explicit Markdown boundary policy takes precedence
+in core and framework rendering.
 
 The default `content-majority` policy excludes technical tokens before
 counting natural-language evidence. Raw-text analysis recognizes closed
@@ -79,6 +84,11 @@ the first strong character after configured technical-token exclusion;
 The default stream direction remains provisional and revisable until
 `finish()`. Choose `sticky-majority` only when UI stability is more important
 than correcting a misleading prefix before completion.
+
+Numeric detection and stream thresholds must be finite. `NaN` and positive or
+negative infinity are rejected with `RangeError` instead of silently disabling
+direction decisions or stream locking; ordinary finite values retain the
+documented clamping behavior.
 
 Run the packaged example after building with
 `pnpm --filter @bidilens/core example`.
