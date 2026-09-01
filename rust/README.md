@@ -16,6 +16,8 @@ before a permanent registry release.
   the default content-majority decision;
 - reports byte, UTF-16, and Unicode scalar-value ranges;
 - plans display-only LRI/RLI/PDI isolation without rewriting stored source;
+- keeps Unicode combining marks attached to neighboring graphemes at isolate
+  boundaries;
 - audits hidden bidi controls, unbalanced formatting, and selected invisible
   characters;
 - returns an exact no-op for ordinary LTR content in an LTR context.

@@ -11,6 +11,15 @@ final class BidiLensTests: XCTestCase {
         XCTAssertTrue(BidiAnalyzer.analyze(flagship).isolations.contains { $0.text == "React" })
     }
 
+    func testOppositeDirectionIsolationKeepsTrailingCombiningMarks() {
+        let isolations = BidiAnalyzer.analyze("The word مثلاً appears here.").isolations
+        XCTAssertTrue(isolations.contains {
+            $0.text == "مثلاً"
+                && $0.direction == .rightToLeft
+                && $0.kind == .oppositeDirectionRun
+        })
+    }
+
     func testNaturalLanguageEvidenceIsNotMistakenForIdentifiers() {
         let compounds = "The well-known state-of-the-art open-source کتابخانه"
         XCTAssertEqual(BidiAnalyzer.detectDirection(compounds), .leftToRight)

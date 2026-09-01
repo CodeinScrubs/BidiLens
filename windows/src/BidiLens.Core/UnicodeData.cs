@@ -40,6 +40,9 @@ internal static class UnicodeClassifier
             ? ClassifyStrong(value)
             : BidiDirection.Neutral;
 
+    internal static bool IsCombiningMark(int value) =>
+        Contains(GeneratedBidiRanges.CombiningMarks, value);
+
     internal static IEnumerable<(Rune Rune, int Utf16Index, int CodePointIndex)> Enumerate(string text)
     {
         var utf16 = 0;

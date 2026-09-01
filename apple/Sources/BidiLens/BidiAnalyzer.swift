@@ -508,12 +508,14 @@ public enum BidiAnalyzer {
         var end = range.upperBound
         while start < end,
               let item = items.first(where: { $0.utf16 == start }),
-              UnicodeClassifier.classifyNatural(item.scalar.value) == .neutral {
+              UnicodeClassifier.classifyNatural(item.scalar.value) == .neutral,
+              !UnicodeClassifier.isCombiningMark(item.scalar.value) {
             start += item.scalar.value > 0xffff ? 2 : 1
         }
         while end > start,
               let item = items.last(where: { $0.utf16 < end }),
-              UnicodeClassifier.classifyNatural(item.scalar.value) == .neutral {
+              UnicodeClassifier.classifyNatural(item.scalar.value) == .neutral,
+              !UnicodeClassifier.isCombiningMark(item.scalar.value) {
             end = item.utf16
         }
         return start..<end

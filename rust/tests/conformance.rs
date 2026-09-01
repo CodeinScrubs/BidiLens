@@ -188,6 +188,18 @@ fn english_majority_keeps_persian_run_isolated() {
 }
 
 #[test]
+fn opposite_direction_isolation_keeps_trailing_combining_marks() {
+    let source = "The word مثلاً appears here.";
+    let isolations = plan_inline_isolation(source, Direction::Ltr, &AnalysisOptions::default())
+        .expect("resolved block direction");
+    assert!(isolations.iter().any(|isolation| {
+        isolation.text == "مثلاً"
+            && isolation.direction == Direction::Rtl
+            && isolation.kind == IsolationKind::OppositeDirectionRun
+    }));
+}
+
+#[test]
 fn hyphenated_english_compounds_stay_natural_language_evidence() {
     // A hyphen is ordinary English compounding. Excluding these tokens removes
     // only LTR evidence, which would silently bias mixed blocks toward RTL.

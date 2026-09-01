@@ -115,7 +115,7 @@ reordering and shaping; BidiLens supplies the application structure they need.
 
 ## What is implemented
 
-- generated, pinned Unicode 17.0.0 bidi-class and natural-letter lookup data;
+- generated, pinned Unicode 17.0.0 bidi-class, natural-letter, and combining-mark lookup data;
 - content-majority, first-strong, strict first-strong, explicit, inherited,
   and neutral-fallback direction policies;
 - technical-token recognition for code, URLs, email, paths, packages, model

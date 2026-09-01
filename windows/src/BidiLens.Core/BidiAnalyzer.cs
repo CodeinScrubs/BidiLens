@@ -402,7 +402,9 @@ public static partial class BidiAnalyzer
         while (start < end)
         {
             var rune = Rune.GetRuneAt(text, start);
-            if (UnicodeClassifier.ClassifyNatural(rune.Value) != BidiDirection.Neutral) break;
+            if (UnicodeClassifier.ClassifyNatural(rune.Value) != BidiDirection.Neutral
+                || UnicodeClassifier.IsCombiningMark(rune.Value))
+                break;
             start += rune.Utf16SequenceLength;
         }
         while (end > start)
@@ -413,7 +415,9 @@ public static partial class BidiAnalyzer
                 && char.IsHighSurrogate(text[runeStart - 1]))
                 runeStart--;
             var rune = Rune.GetRuneAt(text, runeStart);
-            if (UnicodeClassifier.ClassifyNatural(rune.Value) != BidiDirection.Neutral) break;
+            if (UnicodeClassifier.ClassifyNatural(rune.Value) != BidiDirection.Neutral
+                || UnicodeClassifier.IsCombiningMark(rune.Value))
+                break;
             end = runeStart;
         }
         return (start, end);

@@ -65,17 +65,28 @@ function assignRange(classes: Uint8Array, range: string, bidiClass: string): voi
   classes.fill(normalizeClass(bidiClass), start, end + 1);
 }
 
-function parseDerivedGeneralCategory(source: string): Uint8Array {
+interface GeneralCategoryData {
+  letters: Uint8Array;
+  combiningMarks: Uint8Array;
+}
+
+function parseDerivedGeneralCategory(source: string): GeneralCategoryData {
   const letters = new Uint8Array(0x110000);
+  const combiningMarks = new Uint8Array(0x110000);
   for (const line of source.split(/\r?\n/u)) {
     const data = line.split('#', 1)[0]?.trim();
     if (!data) continue;
-    const match = data.match(/^([0-9A-F.]+)\s*;\s*(L[ultmo])$/u);
+    const match = data.match(/^([0-9A-F.]+)\s*;\s*([A-Za-z]+)$/u);
     if (!match?.[1]) continue;
     const [start, end] = parseRange(match[1]);
-    letters.fill(1, start, end + 1);
+    const category = match[2];
+    if (category?.startsWith('L')) {
+      letters.fill(1, start, end + 1);
+    } else if (category === 'Mn' || category === 'Mc' || category === 'Me') {
+      combiningMarks.fill(1, start, end + 1);
+    }
   }
-  return letters;
+  return { letters, combiningMarks };
 }
 
 function parseDerivedBidiClass(source: string): Uint8Array {
@@ -113,24 +124,53 @@ function collectRanges(classes: Uint8Array, predicate: (value: number) => boolea
   return ranges;
 }
 
+function encodeRangeDeltas(ranges: ReadonlyArray<readonly [number, number]>): string {
+  const values: string[] = [];
+  let previousEnd = -1;
+  for (const [start, end] of ranges) {
+    const gap = start - previousEnd - 1;
+    if (gap < 0 || end < start) throw new Error(`Invalid generated Unicode range: ${start}..${end}`);
+    values.push(gap.toString(36), (end - start).toString(36));
+    previousEnd = end;
+  }
+  return values.join(',');
+}
+
+function assertRangeDeltaRoundTrip(name: string, ranges: ReadonlyArray<readonly [number, number]>): void {
+  const encoded = encodeRangeDeltas(ranges);
+  const deltas = encoded ? encoded.split(',') : [];
+  if (deltas.length !== ranges.length * 2) throw new Error(`${name} range encoding has an invalid pair count.`);
+  let previousEnd = -1;
+  for (let index = 0; index < ranges.length; index += 1) {
+    const start = previousEnd + 1 + Number.parseInt(deltas[index * 2]!, 36);
+    const end = start + Number.parseInt(deltas[index * 2 + 1]!, 36);
+    const expected = ranges[index]!;
+    if (start !== expected[0] || end !== expected[1]) {
+      throw new Error(`${name} range encoding changed ${expected[0]}..${expected[1]} to ${start}..${end}.`);
+    }
+    previousEnd = end;
+  }
+}
+
 function renderRanges(name: string, ranges: ReadonlyArray<readonly [number, number]>): string {
-  const values = ranges.map(([start, end]) => `  0x${start.toString(16)}, 0x${end.toString(16)}`).join(',\n');
-  return `export const ${name}: ReadonlyArray<number> = [\n${values}\n];`;
+  return `export const ${name} = decodeRangeDeltas('${encodeRangeDeltas(ranges)}');`;
 }
 
 interface GeneratedRanges {
   rtl: Array<readonly [number, number]>;
   nonStrong: Array<readonly [number, number]>;
   naturalLetters: Array<readonly [number, number]>;
+  combiningMarks: Array<readonly [number, number]>;
 }
 
 function collectGeneratedRanges(bidiSource: string, generalCategorySource: string): GeneratedRanges {
   const classes = parseDerivedBidiClass(bidiSource);
-  const letters = parseDerivedGeneralCategory(generalCategorySource);
+  const generalCategory = parseDerivedGeneralCategory(generalCategorySource);
   return {
     rtl: collectRanges(classes, (value) => value === CLASS.R || value === CLASS.AL),
     nonStrong: collectRanges(classes, (value) => value === CLASS.OTHER),
-    naturalLetters: collectRanges(letters, (value) => value === 1)
+    naturalLetters: collectRanges(generalCategory.letters, (value) => value === 1),
+    combiningMarks: collectRanges(generalCategory.combiningMarks, (value) => value === 1)
   };
 }
 
@@ -141,6 +181,8 @@ function generateTypeScript(ranges: GeneratedRanges): string {
 // Source: ${GENERAL_CATEGORY_URL}
 // SHA-256: ${GENERAL_CATEGORY_SHA256}
 
+import { decodeRangeDeltas } from '../unicode-ranges.js';
+
 export const UNICODE_BIDI_VERSION = '${UNICODE_VERSION}';
 export const UNICODE_BIDI_SHA256 = '${BIDI_SHA256}';
 export const UNICODE_GENERAL_CATEGORY_SHA256 = '${GENERAL_CATEGORY_SHA256}';
@@ -150,6 +192,8 @@ ${renderRanges('RTL_BIDI_RANGES', ranges.rtl)}
 ${renderRanges('NON_STRONG_BIDI_RANGES', ranges.nonStrong)}
 
 ${renderRanges('NATURAL_LETTER_RANGES', ranges.naturalLetters)}
+
+${renderRanges('COMBINING_MARK_RANGES', ranges.combiningMarks)}
 `;
 }
 
@@ -178,6 +222,8 @@ ${renderKotlinRanges('RTL_BIDI_RANGES', ranges.rtl)}
 ${renderKotlinRanges('NON_STRONG_BIDI_RANGES', ranges.nonStrong)}
 
 ${renderKotlinRanges('NATURAL_LETTER_RANGES', ranges.naturalLetters)}
+
+${renderKotlinRanges('COMBINING_MARK_RANGES', ranges.combiningMarks)}
 `;
 }
 
@@ -205,6 +251,8 @@ ${renderSwiftRanges('rtl', ranges.rtl)}
 ${renderSwiftRanges('nonStrong', ranges.nonStrong)}
 
 ${renderSwiftRanges('naturalLetters', ranges.naturalLetters)}
+
+${renderSwiftRanges('combiningMarks', ranges.combiningMarks)}
 }
 `;
 }
@@ -236,6 +284,8 @@ ${renderCSharpRanges('Rtl', ranges.rtl)}
 ${renderCSharpRanges('NonStrong', ranges.nonStrong)}
 
 ${renderCSharpRanges('NaturalLetters', ranges.naturalLetters)}
+
+${renderCSharpRanges('CombiningMarks', ranges.combiningMarks)}
 }
 `;
 }
@@ -265,6 +315,8 @@ ${renderRustRanges('RTL_BIDI_RANGES', ranges.rtl)}
 ${renderRustRanges('NON_STRONG_BIDI_RANGES', ranges.nonStrong)}
 
 ${renderRustRanges('NATURAL_LETTER_RANGES', ranges.naturalLetters)}
+
+${renderRustRanges('COMBINING_MARK_RANGES', ranges.combiningMarks)}
 `;
 }
 
@@ -291,6 +343,10 @@ async function main(): Promise<void> {
     new TextDecoder().decode(bidiBytes),
     new TextDecoder().decode(generalCategoryBytes)
   );
+  assertRangeDeltaRoundTrip('RTL bidi', ranges.rtl);
+  assertRangeDeltaRoundTrip('non-strong bidi', ranges.nonStrong);
+  assertRangeDeltaRoundTrip('natural-letter', ranges.naturalLetters);
+  assertRangeDeltaRoundTrip('combining-mark', ranges.combiningMarks);
   const generated = generateTypeScript(ranges);
   const androidGenerated = generateKotlin(ranges);
   const appleGenerated = generateSwift(ranges);

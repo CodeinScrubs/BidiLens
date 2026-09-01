@@ -2,8 +2,8 @@
 
 Framework-independent Unicode direction analysis, inline-isolation planning,
 streaming state, and bidi security auditing. Runtime analysis is offline and
-uses generated Unicode 17.0.0 bidi-class and natural-letter data rather than
-the host runtime's potentially older Unicode property tables.
+uses generated Unicode 17.0.0 bidi-class, natural-letter, and combining-mark
+data rather than the host runtime's potentially older Unicode property tables.
 
 ```bash
 npm install @bidilens/core

@@ -1,5 +1,6 @@
 package io.github.codeinscrubs.bidilens.core
 
+import io.github.codeinscrubs.bidilens.core.generated.COMBINING_MARK_RANGES
 import io.github.codeinscrubs.bidilens.core.generated.NATURAL_LETTER_RANGES
 import io.github.codeinscrubs.bidilens.core.generated.NON_STRONG_BIDI_RANGES
 import io.github.codeinscrubs.bidilens.core.generated.RTL_BIDI_RANGES
@@ -44,6 +45,10 @@ fun classifyNaturalCodePoint(codePoint: Int): BidiDirection {
     if (!NATURAL_LETTER_RANGES.containsCodePoint(codePoint)) return BidiDirection.NEUTRAL
     return classifyBidiStrongCodePoint(codePoint)
 }
+
+/** Unicode combining marks stay attached to their surrounding grapheme. */
+internal fun isCombiningMarkCodePoint(codePoint: Int): Boolean =
+    COMBINING_MARK_RANGES.containsCodePoint(codePoint)
 
 internal inline fun String.forEachCodePoint(
     action: (codePoint: Int, utf16Index: Int, codePointIndex: Int) -> Unit,

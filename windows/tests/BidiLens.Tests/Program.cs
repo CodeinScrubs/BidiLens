@@ -31,6 +31,14 @@ internal static class Program
         Equal(BidiDirection.RightToLeft, BidiAnalyzer.Analyze(flagship).ResolvedDirection, "resolved direction");
         True(BidiAnalyzer.Analyze(flagship).Isolations.Any(value => value.Text == "React"), "React isolation missing");
 
+        var combiningMarkIsolations = BidiAnalyzer.Analyze("The word مثلاً appears here.").Isolations;
+        True(
+            combiningMarkIsolations.Any(value =>
+                value.Text == "مثلاً"
+                && value.Direction == BidiDirection.RightToLeft
+                && value.Kind == BidiIsolationKind.OppositeDirectionRun),
+            "combining mark detached from opposite-direction isolate");
+
         const string compounds = "The well-known state-of-the-art open-source کتابخانه";
         Equal(BidiDirection.LeftToRight, BidiAnalyzer.DetectDirection(compounds), "hyphenated prose direction");
         Equal(0, BidiAnalyzer.FindTechnicalTokenRanges(compounds).Count, "hyphenated prose technical ranges");

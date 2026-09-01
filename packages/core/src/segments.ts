@@ -1,9 +1,11 @@
 import { classifyCharacter } from './classify.js';
 import { isolateText } from './controls.js';
 import { findTechnicalTokenRanges } from './detect.js';
+import { COMBINING_MARK_RANGES } from './generated/bidi-ranges.js';
 import { needsBidiIntervention } from './intervention.js';
 import type { BidiInterventionMode } from './intervention.js';
 import type { Direction, DirectionalRun, InlineIsolation } from './types.js';
+import { containsCodePoint } from './unicode-ranges.js';
 
 type PlannedIsolation = Omit<InlineIsolation, 'sourceRange'>;
 
@@ -81,12 +83,22 @@ function trimNeutralBoundaries(text: string, start: number, end: number): { star
     // grapheme. Trimming one from an isolate changes the visible word (for
     // example Persian `مثلاً` became `مثلا` plus a detached tanwin), so marks
     // must anchor an isolation boundary just like a strong character.
-    if (!character || classifyCharacter(character) !== 'neutral' || /^\p{M}$/u.test(character)) break;
+    const codePoint = character?.codePointAt(0);
+    if (
+      !character ||
+      classifyCharacter(character) !== 'neutral' ||
+      (codePoint !== undefined && containsCodePoint(COMBINING_MARK_RANGES, codePoint))
+    ) break;
     start += character.length;
   }
   while (end > start) {
     const character = text.slice(0, end).match(/.$/su)?.[0];
-    if (!character || classifyCharacter(character) !== 'neutral' || /^\p{M}$/u.test(character)) break;
+    const codePoint = character?.codePointAt(0);
+    if (
+      !character ||
+      classifyCharacter(character) !== 'neutral' ||
+      (codePoint !== undefined && containsCodePoint(COMBINING_MARK_RANGES, codePoint))
+    ) break;
     end -= character.length;
   }
   return { start, end };
