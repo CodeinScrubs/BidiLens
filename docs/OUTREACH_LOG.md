@@ -221,6 +221,22 @@ This is release and repository-maintenance evidence only. Hermes and Cline
 remain unmerged external submissions, Streamdown remains the one recorded
 upstream merge, and no additional company adoption is claimed.
 
+### 0.3.2 release completion update (2026-09-01)
+
+The release-preparation PR [#72](https://github.com/CodeinScrubs/BidiLens/pull/72)
+passed every required CI and CodeQL context and merged into protected `main` at
+`97f4827a9683c343a92f4ff31f4fa1fc0a718e99`. Protected publication run
+[`33508856274`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33508856274)
+published all twelve `@bidilens/*@0.3.2` packages through OIDC trusted
+publishing. Independent checks confirmed `latest@0.3.2`, matching registry
+integrity, SLSA provenance, and retained tarball SHA-256 values. The annotated
+[`v0.3.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.2)
+release is immutable and retains all twelve tarballs, the release manifest, and
+a CycloneDX 1.7 SBOM; GitHub asset digests match the retained files.
+
+This update records release evidence only. External outreach threads were not
+changed, and no adoption, endorsement, or universal-rendering claim is made.
+
 ## Deliberate deferrals
 
 | Project/channel | Decision | Reason |
