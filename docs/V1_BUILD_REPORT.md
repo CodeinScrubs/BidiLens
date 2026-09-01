@@ -1,8 +1,8 @@
 # BidiLens current verification and release report
 
-> This report separates the current `0.3.1` candidate evidence from immutable
-> publication history. Web/package `0.3.1` is prepared for protected
-> publication; `0.3.0` remains the latest verified public release. Historical
+> This report separates the current `0.3.2` candidate evidence from immutable
+> publication history. Web/package `0.3.1` is the latest verified public
+> release; `0.3.2` remains unpublished until protected verification. Historical
 > release evidence is retained by the protected publication workflows and
 > GitHub releases linked below.
 
@@ -10,13 +10,13 @@
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
-**Publication status:** all 12 `0.3.0` packages are public with verified
+**Publication status:** all 12 `0.3.1` packages are public with verified
 registry integrity, `latest` tags, and SLSA provenance; the exact source commit
-has an annotated `v0.3.0` tag and an immutable GitHub release containing the
+has an annotated `v0.3.1` tag and an immutable GitHub release containing the
 retained tarballs, release manifest, and validated SBOM. The native Android
 `0.1.1` core, Views, and Compose modules are signed and public on Maven Central
 with an annotated tag, immutable release, and public-consumer evidence. The
-`0.3.1` source and package manifests are not public until the protected release
+`0.3.2` source and package manifests are not public until the protected release
 workflow completes.
 
 **Recommendation:** suitable for bounded, maintainer-controlled web pilots;
@@ -87,9 +87,11 @@ opposite-direction runs.
 | Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
 | Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.8, Vue 3.5.40, and Svelte 5 |
 | `pnpm run release:check` | strict clean-worktree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 12 tarballs execute. The pre-commit development tree also passed with `--allow-dirty` |
-| GitHub CI for published commit | [15/15 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30352957959): Node 22/24 quality and packed consumers, Windows/macOS quality, three browser engines, actionlint, dependency audit, and SBOM |
-| Protected npm publication | [workflow run `30352982906`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30352982906) passed the full release gate, published all 12 `0.3.0` packages through OIDC, verified registry integrity, and retained the exact tarballs and manifest |
-| Immutable GitHub release | [`v0.3.0`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.0) resolves to the published source commit; GitHub's immutable-release verification covers the 12 package tarballs, release manifest, and validated SBOM |
+| `pnpm run npm:release:dry-run -- --version 0.3.2` | all 12 aligned tarballs packed successfully and every `0.3.2` registry coordinate was unused; no registry mutation occurred |
+| GitHub CI for published commit | [release-source CI passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/31723150097) before protected `0.3.1` publication |
+| Current merged-feature gates | [PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57) passed all 24 required contexts: Node 22/24, packed consumers, Windows/macOS, three browser engines, Android API 35, Apple, Windows/.NET, Rust on three OSes, audit/SBOM, workflow lint, Markdown-It 13/14/15, and five-language CodeQL |
+| Protected npm publication | [workflow run `33473857928`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33473857928) passed the full release gate, published all 12 `0.3.1` packages through OIDC trusted publishing, verified registry integrity, and retained the exact tarballs and manifest |
+| Immutable GitHub release | [`v0.3.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.1) resolves to published commit `7bd93c83e43b91923e7f8cf6685264b433c662b8`; GitHub reports the release immutable and records SHA-256 digests for all 12 package tarballs, the release manifest, and validated SBOM |
 | External npm consumer | all 12 public packages installed from the registry; runtime imports, mixed Persian/English direction, streaming, CLI, and the pure-LTR no-op passed; current production dependency audit reported zero findings |
 | Android release CI | [13/13 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30337482079), including Android libraries/sample, isolated Maven consumer, and API 35 device tests |
 | Protected Android publication | [workflow run `30339097846`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30339097846) signed and published all three Android `0.1.1` modules to Maven Central |
@@ -98,7 +100,7 @@ opposite-direction runs.
 
 ## Post-release outreach evidence
 
-The outreach recorded before and after `0.3.0` remains independent of publication. The
+The outreach recorded before and after `0.3.1` remains independent of publication. The
 [outreach log](OUTREACH_LOG.md) links every live route, records one focused
 host-code PR, explains why other routes are issue/discussion proposals, and
 lists deliberate anti-spam deferrals. This activity does not change the
@@ -208,10 +210,10 @@ native/desktop ideas found in sibling documentation are retained in the
 
 ## Release decision
 
-The `0.3.0` code artifacts are published as a **maintainer-controlled public
+The `0.3.1` code artifacts are published as a **maintainer-controlled public
 web beta**. npm publication, package provenance, registry-integrity
 verification, per-package trusted publishing, protected human approval, the
-annotated `v0.3.0` tag, and the immutable release are complete. Broad rollout
+annotated `v0.3.1` tag, and the immutable release are complete. Broad rollout
 still requires:
 
 1. final name/trademark review appropriate to the adopter;
@@ -226,6 +228,6 @@ and TalkBack validation, physical iOS/VoiceOver and Windows accessibility/IME
 labs, native registry publication beyond Android, PDF support, upstream
 integrations, native-speaker certification, an external security audit, and a
 real downstream pilot remain absent. Historical milestone tags between `m1`
-and the current `v0.3.0` release tag were not retroactively fabricated;
+and the current `v0.3.1` release tag were not retroactively fabricated;
 publishing the reviewed source does not reconstruct the original stepwise tag
 history.

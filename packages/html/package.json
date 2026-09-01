@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/html",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Safe semantic HTML serialization for mixed RTL/LTR text and AI responses.",
   "license": "MIT",
   "author": {

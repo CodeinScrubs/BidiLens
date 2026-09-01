@@ -198,6 +198,29 @@ head remain pending until that head is pushed; the live PR page is the
 authoritative status source. These checks are engineering evidence, not proof
 of downstream adoption or universal rendering correctness.
 
+### Release completion update (2026-09-01)
+
+After the mailbox/public-route snapshot above, the protected release sequence
+completed without changing any external outreach thread:
+
+- publication workflow
+  [`33473857928`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33473857928)
+  published all 12 `@bidilens/*@0.3.1` packages through OIDC trusted
+  publishing and verified their registry integrity;
+- every package independently resolved as `latest@0.3.1` with SLSA provenance,
+  and retained tarball SHA-256 values matched the publication manifest;
+- annotated tag and immutable release
+  [`v0.3.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.1)
+  were created at exact published commit
+  `7bd93c83e43b91923e7f8cf6685264b433c662b8`, with all 12 tarballs, the
+  manifest, and CycloneDX 1.7 SBOM attached;
+- BidiLens [PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57) passed all
+  24 required contexts and merged as `5eb8595babcca4d53af7c6f9d859285a63f9e08f`.
+
+This is release and repository-maintenance evidence only. Hermes and Cline
+remain unmerged external submissions, Streamdown remains the one recorded
+upstream merge, and no additional company adoption is claimed.
+
 ## Deliberate deferrals
 
 | Project/channel | Decision | Reason |

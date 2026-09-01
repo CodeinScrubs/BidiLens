@@ -7,6 +7,46 @@ is published under the public `@bidilens` npm scope.
 
 No unreleased changes.
 
+## 0.3.2 - 2026-09-01
+
+### Direction and security correctness
+
+- Treated every Unicode 17 `Bidi_Class=Paragraph_Separator` character as a
+  default batch and streaming boundary, with matching React, Android, and Rust
+  behavior.
+- Kept Unicode combining marks attached at isolation boundaries and recognized
+  compact technical labels such as `CN X`, `CN IX`, and `HR/BP` without
+  changing ordinary natural-language evidence.
+- Scoped bidi-control balancing to Unicode paragraph boundaries so a PDF or PDI
+  cannot close an embedding or isolate opened in an earlier paragraph.
+- Rejected non-finite detection and stream options instead of allowing `NaN`
+  to silently disable direction decisions or stream locking.
+
+### Markdown-It compatibility
+
+- Expanded the optional Markdown-It peer range to tested 13.0.2, 14.3.1, and
+  15.0.1 host lines without exposing a parser's private or version-specific
+  types through BidiLens declarations.
+- Added clean packed consumers that compile with strict TypeScript and execute
+  all 932 canonical cases plus nine Markdown host fixtures on every supported
+  parser line. Markdown-It 13 and 14 require identical full reports; 15 must
+  retain identical BidiLens block, isolation, and security semantics while its
+  upstream linkifier's documented HTML difference is allowed.
+- Added screenshot-derived Persian/English medical Markdown regressions for
+  abbreviations, combining marks, quotations, lists, tables, and caller-owned
+  physical alignment.
+
+### Release and verification
+
+- Derived the playground version and corpus total from build inputs instead of
+  hand-maintained display strings, with English and Persian browser assertions.
+- Made documentation validation reject current evidence pages that omit the
+  canonical corpus total.
+- Updated CodeQL initialization and analysis atomically to one pinned action
+  revision across JavaScript/TypeScript, Kotlin, C#, Swift, and Rust.
+- Gave the intentional two-path clipboard timeout regression a hosted-browser
+  startup budget without weakening its timeout or source-order assertions.
+
 ## 0.3.1 - 2026-08-13
 
 ### Security and performance
