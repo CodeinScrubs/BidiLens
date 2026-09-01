@@ -19,12 +19,14 @@
 [Project status](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> The JavaScript/web `0.3.1` release is public across all 12 `@bidilens/*`
+> The JavaScript/web `0.3.2` release is public across all 12 `@bidilens/*`
 > packages with verified registry integrity and SLSA provenance; its exact
 > tarballs, manifest, and SBOM are retained in the immutable
-> [`v0.3.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.1).
-> Version `0.3.2` is the current source candidate and remains unpublished until
-> the protected release workflow verifies it. Native Android core, Views, and
+> [`v0.3.2` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.2).
+> It was published from protected `main` commit
+> `97f4827a9683c343a92f4ff31f4fa1fc0a718e99` after the complete release gate.
+> The prior `0.3.1` release remains available as an immutable historical
+> release. Native Android core, Views, and
 > Compose `0.1.1` artifacts
 > are signed and public on Maven Central, with a verified sample and evidence
 > bundle in the
@@ -172,9 +174,9 @@ reordering and shaping; BidiLens supplies the application structure they need.
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
-Browser packages target current standards-based browsers. The complete `0.3.1`
+Browser packages target current standards-based browsers. The complete `0.3.2`
 package set is [published under the `@bidilens` npm scope](https://www.npmjs.com/org/bidilens);
-the aligned `0.3.2` source candidate is not a public registry release yet.
+the prior `0.3.1` set remains available as a reproducible historical release.
 
 ## Consumer install
 
@@ -196,7 +198,7 @@ For a no-build browser page, the published Web Component also exposes a
 standalone entry that bundles the core and needs no import map:
 
 ```html
-<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.1"></script>
+<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.2"></script>
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 

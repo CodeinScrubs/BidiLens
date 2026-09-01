@@ -136,7 +136,7 @@ recorded explicitly.
 | CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; signed Android publication has an isolated-consumer gate; Apple Swift/macOS/iOS Simulator, Windows .NET/WPF, and native Rust three-OS jobs have hosted compiler/test evidence. VS Code and unimplemented native-platform adapters remain open |
 | Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in web release preparation, protected manual npm publication with exact confirmation and provenance, and protected manual Maven Central publication with signing and version-reuse rejection |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
-| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata, `@bidilens` ownership, and `io.github.codeinscrubs` namespace verified; all 12 npm `0.3.1` packages are public with SLSA provenance and matching integrity; all three Android `0.1.1` modules are signed and public with matching Central artifacts, signatures, and checksums; release credentials are protected outside the repository |
+| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata, `@bidilens` ownership, and `io.github.codeinscrubs` namespace verified; all 12 npm `0.3.2` packages are public with SLSA provenance and matching integrity; all three Android `0.1.1` modules are signed and public with matching Central artifacts, signatures, and checksums; release credentials are protected outside the repository |
 | Name/trademark decision | Partial/external | ADR records provisional `BidiLens`; final registry/legal review is still required |
 
 ## Milestone gate status
@@ -155,7 +155,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 932 corpus cases and 30 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal, Android, SwiftUI/UIKit, and .NET/WPF exist; Flutter, React Native, and other documented native adapters remain open; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
-| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.1` web release, and signed `android-v0.1.1` Maven release. One host-tested native implementation merged upstream, but the required three integrations, downstream pilots, and adoption evidence remain incomplete |
+| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.2` web release, and signed `android-v0.1.1` Maven release. One host-tested native implementation merged upstream, but the required three integrations, downstream pilots, and adoption evidence remain incomplete |
 
 ## Definition-of-done audit
 
@@ -175,7 +175,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 12 | Complete for current packages — workflows validate, SBOM/license/notices exist |
 | 13 | Partial — one host-tested native implementation is merged; fewer than three integrations exist and no downstream pilot is evidenced |
 | 14 | Complete for current documented claims; continue checking after every change |
-| 15 | Partial — the reviewed source, current `v0.3.1` web release, and `android-v0.1.1` Maven release are public, but historical intermediate milestone tags were not fabricated retroactively |
+| 15 | Partial — the reviewed source, current `v0.3.2` web release, and `android-v0.1.1` Maven release are public, but historical intermediate milestone tags were not fabricated retroactively |
 
 ## Prior-attempt idea coverage
 

@@ -186,7 +186,7 @@ lockfile install:
   pin in the security self-scan job prevents that job from reaching its scan;
 - the declared GitHub repository does not exist and npm returns `E404` for
   both `@bidiguard/core` and `@bidiguard/react-native`. Canonical BidiLens is
-  public and its 12 packages resolve at version `0.3.1`.
+  public and its 12 packages resolve at version `0.3.2`.
 
 Passing tests also miss release- and behavior-critical defects reproduced
 against the built sibling artifacts:
@@ -329,7 +329,7 @@ interest.
 A score of 100 would be false today. Even the canonical web artifact cannot
 prove historical “first” status, absence of every defect, or acceptance by a
 large AI company from local source alone. Its lead is reproducible within this
-folder: it is the only candidate here with all local release gates, safe packed
+folder: it is the only local project here with all local release gates, safe packed
 consumers, current reproducible Unicode data, meaningful security properties,
 three-engine visual/behavior tests, and explicit evidence boundaries.
 
