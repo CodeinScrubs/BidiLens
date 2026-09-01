@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using BidiLens;
 using BidiLens.Wpf;
 
@@ -79,6 +80,48 @@ internal static class Program
         Equal(2, textBox.SelectionLength, "TextBox selection length");
         Equal(TextAlignment.Left, textBox.TextAlignment, "TextBox physical-left alignment");
 
+        var hostManaged = new TextBlock
+        {
+            Text = flagship,
+            FlowDirection = FlowDirection.LeftToRight,
+            TextAlignment = TextAlignment.Left,
+        };
+        BidiWpf.Apply(hostManaged);
+        hostManaged.FlowDirection = FlowDirection.LeftToRight;
+        hostManaged.TextAlignment = TextAlignment.Center;
+        BidiWpf.Apply(hostManaged, alignment: BidiAlignment.Preserve);
+        Equal(FlowDirection.RightToLeft, hostManaged.FlowDirection, "managed WPF direction reapplied");
+        Equal(TextAlignment.Center, hostManaged.TextAlignment, "host WPF alignment adopted");
+        hostManaged.Text = "Plain English";
+        BidiWpf.Apply(hostManaged);
+        Equal(FlowDirection.LeftToRight, hostManaged.FlowDirection, "host WPF direction restored");
+        Equal(TextAlignment.Center, hostManaged.TextAlignment, "host WPF alignment restored");
+
+        var boundSource = new BoundProperties();
+        var boundBlock = new TextBlock { Text = flagship };
+        BindingOperations.SetBinding(
+            boundBlock,
+            TextBlock.TextAlignmentProperty,
+            new Binding(nameof(BoundProperties.Alignment)) { Source = boundSource });
+        BindingOperations.SetBinding(
+            boundBlock,
+            FrameworkElement.FlowDirectionProperty,
+            new Binding(nameof(BoundProperties.Direction)) { Source = boundSource });
+        BidiWpf.Apply(boundBlock);
+        True(
+            BindingOperations.IsDataBound(boundBlock, TextBlock.TextAlignmentProperty),
+            "WPF alignment binding preserved while managed");
+        True(
+            BindingOperations.IsDataBound(boundBlock, FrameworkElement.FlowDirectionProperty),
+            "WPF direction binding preserved while managed");
+        BidiWpf.Restore(boundBlock);
+        True(
+            BindingOperations.IsDataBound(boundBlock, TextBlock.TextAlignmentProperty),
+            "WPF alignment binding preserved after restore");
+        True(
+            BindingOperations.IsDataBound(boundBlock, FrameworkElement.FlowDirectionProperty),
+            "WPF direction binding preserved after restore");
+
         var plain = new TextBlock
         {
             Text = "Plain English",
@@ -143,4 +186,10 @@ internal static class Program
         CorpusIsolation[]? ExpectedIsolations);
 
     private sealed record CorpusIsolation(string Text, string Direction, string Kind);
+
+    private sealed class BoundProperties
+    {
+        public TextAlignment Alignment { get; init; } = TextAlignment.Left;
+        public FlowDirection Direction { get; init; } = FlowDirection.LeftToRight;
+    }
 }

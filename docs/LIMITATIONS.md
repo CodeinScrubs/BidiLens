@@ -113,10 +113,14 @@ restores its previous intervention before every update. WPF adapters preserve
 `Text` and selection and restore the original
 `FlowDirection`/`TextAlignment` when an intervention is no longer required.
 
-DOM ownership is determined from observable attribute/property changes. A
-same-value inline-style assignment made while BidiLens already owns that exact
-value cannot be distinguished from no assignment; call `restoreBidi()` before
-intentionally transferring ownership of such a property to application code.
+Imperative adapter ownership is determined from observable property changes.
+A same-value assignment made while BidiLens already renders that exact value
+cannot be distinguished from no assignment. Before intentionally transferring
+ownership, call `restoreBidi(root)` on the DOM, `view.restoreBidiLens()` on
+Android Views, `BidiUIKit.restore(...)` on editable UIKit controls, or
+`BidiWpf.Restore(control)` on WPF. WPF uses binding-preserving dependency
+property updates; the application binding remains attached while BidiLens is
+active and after restoration.
 
 Public packages are ESM-only. CommonJS consumers must use dynamic `import()`
 or an ESM bridge. Node.js 22.12 is the declared minimum. React 18–19, Vue 3.5+, and

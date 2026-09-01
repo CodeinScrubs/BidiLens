@@ -231,5 +231,44 @@ final class AppleAdapterTests: XCTestCase {
         XCTAssertEqual(textField.textAlignment, .left)
         XCTAssertEqual(textField.selectedTextRange, selection)
     }
+
+    @MainActor
+    func testUIKitTextInputAdoptsHostPropertiesWhileManaged() throws {
+        let textView = UITextView()
+        textView.text = rtl
+        textView.textAlignment = .left
+        BidiUIKit.apply(to: textView, alignment: .contentStart)
+        XCTAssertEqual(textView.textAlignment, .right)
+        XCTAssertEqual(
+            textView.baseWritingDirection(for: textView.beginningOfDocument, in: .forward),
+            .rightToLeft
+        )
+
+        textView.textAlignment = .center
+        let end = try XCTUnwrap(
+            textView.position(
+                from: textView.beginningOfDocument,
+                offset: (rtl as NSString).length
+            )
+        )
+        let range = try XCTUnwrap(
+            textView.textRange(from: textView.beginningOfDocument, to: end)
+        )
+        textView.setBaseWritingDirection(.leftToRight, for: range)
+        BidiUIKit.apply(to: textView, alignment: .preserve)
+        XCTAssertEqual(textView.textAlignment, .center)
+        XCTAssertEqual(
+            textView.baseWritingDirection(for: textView.beginningOfDocument, in: .forward),
+            .rightToLeft
+        )
+
+        textView.text = ltr
+        BidiUIKit.apply(to: textView)
+        XCTAssertEqual(textView.textAlignment, .center)
+        XCTAssertEqual(
+            textView.baseWritingDirection(for: textView.beginningOfDocument, in: .forward),
+            .leftToRight
+        )
+    }
 }
 #endif

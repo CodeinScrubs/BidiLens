@@ -29,8 +29,10 @@ public enum BidiUIKit {
     }
 
     private final class InputState: NSObject {
-        let alignment: NSTextAlignment
-        let direction: NSWritingDirection
+        var alignment: NSTextAlignment
+        var direction: NSWritingDirection
+        var renderedAlignment: NSTextAlignment?
+        var renderedDirection: NSWritingDirection?
 
         init(alignment: NSTextAlignment, direction: NSWritingDirection) {
             self.alignment = alignment
@@ -166,6 +168,7 @@ public enum BidiUIKit {
             )
         }
         textView.selectedRange = selection
+        markInputRendered(textView, state: state, alignment: textView.textAlignment)
         return analysis
     }
 
@@ -175,6 +178,7 @@ public enum BidiUIKit {
             &textViewStateKey
         ) as? InputState else { return }
         let selection = textView.selectedRange
+        reconcileInputState(textView, state: state, alignment: textView.textAlignment)
         textView.textAlignment = state.alignment
         setWritingDirection(state.direction, on: textView, source: textView.text ?? "")
         textView.selectedRange = selection
@@ -220,6 +224,7 @@ public enum BidiUIKit {
             )
         }
         textField.selectedTextRange = selection
+        markInputRendered(textField, state: state, alignment: textField.textAlignment)
         return analysis
     }
 
@@ -229,6 +234,7 @@ public enum BidiUIKit {
             &textFieldStateKey
         ) as? InputState else { return }
         let selection = textField.selectedTextRange
+        reconcileInputState(textField, state: state, alignment: textField.textAlignment)
         textField.textAlignment = state.alignment
         setWritingDirection(state.direction, on: textField, source: textField.text ?? "")
         textField.selectedTextRange = selection
@@ -246,6 +252,7 @@ public enum BidiUIKit {
         alignment: NSTextAlignment
     ) -> InputState {
         if let state = objc_getAssociatedObject(input, key) as? InputState {
+            reconcileInputState(input, state: state, alignment: alignment)
             return state
         }
         let start = input.beginningOfDocument
@@ -255,6 +262,37 @@ public enum BidiUIKit {
         )
         objc_setAssociatedObject(input, key, state, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         return state
+    }
+
+    private static func reconcileInputState(
+        _ input: UITextInput,
+        state: InputState,
+        alignment: NSTextAlignment
+    ) {
+        if let renderedAlignment = state.renderedAlignment,
+           alignment != renderedAlignment {
+            state.alignment = alignment
+        }
+        let currentDirection = input.baseWritingDirection(
+            for: input.beginningOfDocument,
+            in: .forward
+        )
+        if let renderedDirection = state.renderedDirection,
+           currentDirection != renderedDirection {
+            state.direction = currentDirection
+        }
+    }
+
+    private static func markInputRendered(
+        _ input: UITextInput,
+        state: InputState,
+        alignment: NSTextAlignment
+    ) {
+        state.renderedAlignment = alignment
+        state.renderedDirection = input.baseWritingDirection(
+            for: input.beginningOfDocument,
+            in: .forward
+        )
     }
 
     private static func setWritingDirection(

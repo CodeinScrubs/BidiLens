@@ -47,6 +47,12 @@ This keeps an RTL Persian paragraph physically aligned to the left while its
 base writing direction remains RTL. Source text and editable selection are
 preserved.
 
+Editable UIKit adapters adopt observable host changes to `textAlignment` and
+base writing direction between calls, then restore those authored values when
+intervention ends. If application code intentionally takes ownership with the
+same value BidiLens is already rendering, call `BidiUIKit.restore(...)` before
+the handoff.
+
 Add the repository as a Swift Package in Xcode and select the `BidiLens`
 library. The package intentionally does not force the layout direction of a
 screen or mirror unrelated controls.

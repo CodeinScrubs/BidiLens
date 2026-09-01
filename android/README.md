@@ -128,6 +128,10 @@ titleTextView.applyBidiLens(alignToContent = false)
 
 Switching `alignToContent` from `true` to `false` restores the original
 alignment/gravity immediately while retaining the detected text direction.
+Observable application changes to direction, alignment, or gravity made while
+a view is managed become its new authored state. Before deliberately taking
+ownership with the same value BidiLens is currently rendering, call
+`titleTextView.restoreBidiLens()` and then apply the application value.
 
 For an editable field:
 
