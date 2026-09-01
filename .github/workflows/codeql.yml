@@ -80,7 +80,11 @@ jobs:
   swift:
     name: CodeQL (swift)
     runs-on: macos-latest
-    timeout-minutes: 40
+    # Xcode simulator builds are instrumented by CodeQL and can exceed 40
+    # minutes on a cold macOS runner. Keep the security gate intact while
+    # allowing database finalization to complete instead of producing a
+    # misleading timeout failure.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
