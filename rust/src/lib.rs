@@ -252,6 +252,10 @@ pub fn classify_natural(character: char) -> Direction {
     }
 }
 
+fn is_combining_mark(character: char) -> bool {
+    in_ranges(u32::from(character), generated::COMBINING_MARK_RANGES)
+}
+
 fn source_range(text: &str, bytes: Range<usize>) -> SourceRange {
     let before = &text[..bytes.start];
     let selected = &text[bytes.clone()];
@@ -567,7 +571,7 @@ fn directional_runs(text: &str) -> Vec<DirectionalRun> {
 fn trim_neutral_boundaries(text: &str, mut range: Range<usize>) -> Range<usize> {
     while range.start < range.end {
         let character = text[range.clone()].chars().next().expect("non-empty range");
-        if classify_natural(character) != Direction::Neutral {
+        if classify_natural(character) != Direction::Neutral || is_combining_mark(character) {
             break;
         }
         range.start += character.len_utf8();
@@ -577,7 +581,7 @@ fn trim_neutral_boundaries(text: &str, mut range: Range<usize>) -> Range<usize> 
             .chars()
             .next_back()
             .expect("non-empty range");
-        if classify_natural(character) != Direction::Neutral {
+        if classify_natural(character) != Direction::Neutral || is_combining_mark(character) {
             break;
         }
         range.end -= character.len_utf8();

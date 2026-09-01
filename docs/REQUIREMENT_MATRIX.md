@@ -90,7 +90,7 @@ recorded explicitly.
 | Requirement | Status | Evidence or exact gap |
 |---|---|---|
 | Pinned, reproducible UCD bidi data with checksums and upgrade command | Complete and tested | Unicode 17.0.0 files/checksums under `unicode/`; `scripts/generate-bidi-data.ts`; `pnpm run unicode:check` reproduces generated ranges exactly |
-| Code-point-safe iteration, surrogate and combining handling, ZWJ/ZWNJ | Complete and tested in core | `for...of` code-point paths, dual UTF-16/code-point offsets, property tests, pending-surrogate stream state, dedicated corpus categories |
+| Code-point-safe iteration, surrogate and combining handling, ZWJ/ZWNJ | Complete and tested across cores | `for...of`/native code-point paths, dual UTF-16/code-point offsets, generated Unicode 17 `Mn`/`Mc`/`Me` boundary tables, property tests, pending-surrogate stream state, and dedicated corpus/native regressions |
 | Language-neutral schemas | Complete and tested | `@bidilens/spec` ships versioned Draft 7 schemas and a registry for `BlockAnalysis`, security reports, and stream snapshots; real core output and invalid counterexamples are validated in tests. Isolation and evidence ranges expose both UTF-16 and code-point offsets |
 | Per-structural-block direction | Complete and tested for shipped Markdown/web surfaces | Paragraphs, headings, list items, quotes, table cells, code and math paths have package and visual coverage |
 | Raw HTML/XSS-safe default | Complete and tested for shipped HTML/Markdown surfaces | Plain HTML serializer escapes source; Markdown examples disable raw HTML; explicit XSS regression tests |

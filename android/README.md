@@ -20,6 +20,8 @@ Android Gradle Plugin 9.3.1, compile SDK 36, and Kotlin 2.4.10.
 ## Safety contract
 
 - Logical source strings are never reversed.
+- Unicode combining marks remain attached to their neighboring grapheme during
+  inline isolation.
 - Editable values never receive bidi controls.
 - Compose isolation is a visual transformation with monotonic cursor offsets.
 - Non-editable accessibility semantics expose the original source, not the

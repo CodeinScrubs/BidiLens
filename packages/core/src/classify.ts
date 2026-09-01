@@ -7,29 +7,16 @@ import {
   UNICODE_GENERAL_CATEGORY_SHA256,
   UNICODE_BIDI_VERSION
 } from './generated/bidi-ranges.js';
-
-function isInRanges(codePoint: number, ranges: ReadonlyArray<number>): boolean {
-  let low = 0;
-  let high = ranges.length / 2 - 1;
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    const start = ranges[middle * 2]!;
-    const end = ranges[middle * 2 + 1]!;
-    if (codePoint < start) high = middle - 1;
-    else if (codePoint > end) low = middle + 1;
-    else return true;
-  }
-  return false;
-}
+import { containsCodePoint } from './unicode-ranges.js';
 
 export function isRtlCodePoint(codePoint: number): boolean {
-  return isInRanges(codePoint, RTL_BIDI_RANGES);
+  return containsCodePoint(RTL_BIDI_RANGES, codePoint);
 }
 
 /** Returns the Unicode Bidi_Class strong direction, including LRM/RLM/ALM. */
 export function classifyBidiStrongCharacter(character: string): Direction {
   const codePoint = character.codePointAt(0);
-  if (codePoint === undefined || isInRanges(codePoint, NON_STRONG_BIDI_RANGES)) return 'neutral';
+  if (codePoint === undefined || containsCodePoint(NON_STRONG_BIDI_RANGES, codePoint)) return 'neutral';
   return isRtlCodePoint(codePoint) ? 'rtl' : 'ltr';
 }
 
@@ -37,7 +24,7 @@ export function classifyBidiStrongCharacter(character: string): Direction {
 export function classifyCharacter(character: string): Direction {
   const codePoint = character.codePointAt(0);
   if (codePoint === undefined) return 'neutral';
-  return isInRanges(codePoint, NATURAL_LETTER_RANGES) ? classifyBidiStrongCharacter(character) : 'neutral';
+  return containsCodePoint(NATURAL_LETTER_RANGES, codePoint) ? classifyBidiStrongCharacter(character) : 'neutral';
 }
 
 export const UNICODE_DATA_VERSION = UNICODE_BIDI_VERSION;

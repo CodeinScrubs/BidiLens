@@ -53,11 +53,12 @@ cross-language contract cannot silently drift from the implementation.
 - `collectDirectionEvidence` records UTF-16 and code-point evidence ranges;
 - `analyzeBlock` combines evidence, isolation, and security findings.
 
-Unicode strong classes and natural-letter membership come from generated
-binary-search range tables pinned to `DerivedBidiClass.txt` and
-`DerivedGeneralCategory.txt` 17.0.0. Both source files, SHA-256 values, the
-generator, and generated output are committed so normal builds remain offline
-and do not inherit the host JavaScript runtime's Unicode version.
+Unicode strong classes, natural-letter membership, and combining-mark
+boundaries come from generated binary-search range tables pinned to
+`DerivedBidiClass.txt` and `DerivedGeneralCategory.txt` 17.0.0. Both source
+files, SHA-256 values, the generator, and generated output are committed so
+normal builds remain offline and do not inherit the host runtime's Unicode
+version.
 
 ## Direction policy
 
@@ -173,6 +174,8 @@ String
 tables and 932-case fixtures are generated from the same canonical inputs as
 the TypeScript core. Kotlin APIs report both UTF-16 and code-point offsets so
 editable/selection integrations do not reinterpret Java string indices.
+The generated general-category mark ranges keep `Mn`, `Mc`, and `Me` code
+points attached to their grapheme when an opposite-direction run is isolated.
 
 `:views` modifies only `textDirection`, `textAlignment`, and horizontal
 gravity when intervention is required. It saves the original widget state,
@@ -206,6 +209,9 @@ editable selection. `UITextView` and `UITextField` use the native
 `UITextInput.setBaseWritingDirection` API; `UILabel` uses a copied paragraph
 style whose base direction and alignment are separate fields. The adapter does
 not force the layout direction of a screen or mirror sibling controls.
+The generated mark ranges keep Unicode `Mn`, `Mc`, and `Me` scalars inside an
+isolate, so UIKit receives the same grapheme-cluster boundaries as the web and
+Android cores.
 `BidiText` is a read-only `UIViewRepresentable` that owns its label, restores
 prior BidiLens state before each SwiftUI update, reapplies caller styling, and
 then assigns and analyzes the immutable source. Editable SwiftUI bridging is
@@ -227,7 +233,8 @@ The WPF layer supports `TextBlock` and `TextBox`, saves original state in a
 weak table, preserves source and selection, and restores authored properties
 when content returns to the pure-LTR no-op path. Physical-left and
 content-relative-start alignment are explicit policies rather than consequences
-of direction detection.
+of direction detection. Its generated mark ranges keep `Mn`, `Mc`, and `Me`
+code points attached to opposite-direction graphemes during isolation.
 
 ## Native Rust
 
@@ -242,10 +249,11 @@ JavaScript runtime or UI-framework dependency:
 ```
 
 Generated copies of the canonical Unicode 17 tables drive binary-search
-classification. Public ranges report Rust byte offsets, UTF-16 code units, and
-Unicode scalar-value offsets so hosts can map results without guessing index
-semantics. The crate validates the same 932 direction fixtures and all declared
-isolation/security fixtures as the other native cores.
+classification, including the `Mn`, `Mc`, and `Me` mark categories used to
+anchor isolation boundaries. Public ranges report Rust byte offsets, UTF-16
+code units, and Unicode scalar-value offsets so hosts can map results without
+guessing index semantics. The crate validates the same 932 direction fixtures
+and all declared isolation/security fixtures as the other native cores.
 
 Direction and alignment remain separate. The Rust core returns semantic text
 direction only; a GUI host may deliberately place an RTL paragraph at physical

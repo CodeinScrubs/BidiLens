@@ -86,12 +86,16 @@ private fun trimNeutralBoundaries(text: String, originalStart: Int, originalEnd:
     var end = originalEnd
     while (start < end) {
         val codePoint = Character.codePointAt(text, start)
-        if (classifyNaturalCodePoint(codePoint) != BidiDirection.NEUTRAL) break
+        if (classifyNaturalCodePoint(codePoint) != BidiDirection.NEUTRAL ||
+            isCombiningMarkCodePoint(codePoint)
+        ) break
         start += Character.charCount(codePoint)
     }
     while (end > start) {
         val codePoint = Character.codePointBefore(text, end)
-        if (classifyNaturalCodePoint(codePoint) != BidiDirection.NEUTRAL) break
+        if (classifyNaturalCodePoint(codePoint) != BidiDirection.NEUTRAL ||
+            isCombiningMarkCodePoint(codePoint)
+        ) break
         end -= Character.charCount(codePoint)
     }
     return start until end

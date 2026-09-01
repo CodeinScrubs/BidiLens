@@ -5,7 +5,10 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
-No unreleased changes.
+- Native Kotlin, Swift, .NET, and Rust isolation planners now keep every
+  Unicode combining mark inside its neighboring opposite-direction isolate,
+  matching the TypeScript core and preventing visible grapheme loss in Persian,
+  Arabic, Hebrew, and other marked scripts.
 
 ## 0.3.2 - 2026-09-01
 

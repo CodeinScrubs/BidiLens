@@ -29,8 +29,8 @@ struct MessageBody: View {
 private `UILabel`, and does not change SwiftUI's surrounding
 `layoutDirection`. The optional configuration closure runs before BidiLens
 assigns the source, so it can style the label but cannot replace the logical
-value. Pure LTR text in an LTR context receives no BidiLens paragraph
-attributes.
+value. Unicode combining marks remain inside their neighboring isolate, and
+pure LTR text in an LTR context receives no BidiLens paragraph attributes.
 
 For editable UIKit controls:
 

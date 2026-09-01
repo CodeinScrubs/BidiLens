@@ -30,6 +30,18 @@ class BidiCoreTest {
     }
 
     @Test
+    fun oppositeDirectionIsolationKeepsTrailingCombiningMarks() {
+        val source = "The word مثلاً appears here."
+        val isolations = planInlineIsolation(source, BidiDirection.LTR)
+
+        assertTrue(isolations.any {
+            it.text == "مثلاً" &&
+                it.direction == BidiDirection.RTL &&
+                it.kind == BidiIsolationKind.OPPOSITE_DIRECTION_RUN
+        })
+    }
+
+    @Test
     fun hyphenatedEnglishCompoundsStayNaturalLanguageEvidence() {
         // A hyphen is ordinary English compounding. Excluding these tokens
         // removes only LTR evidence, biasing mixed blocks toward RTL.

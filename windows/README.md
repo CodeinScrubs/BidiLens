@@ -13,6 +13,8 @@ var analysis = BidiWpf.Apply(
 `FlowDirection` remains `RightToLeft` for Persian-majority text while
 `TextAlignment` can remain physically left. The WPF adapter does not change
 `TextBlock.Text` or `TextBox.Text`, and preserves `TextBox` selection.
+Unicode combining marks remain attached to their neighboring grapheme when
+mixed-direction runs are isolated.
 
 Run:
 

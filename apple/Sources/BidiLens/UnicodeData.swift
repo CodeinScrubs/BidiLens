@@ -33,6 +33,10 @@ enum UnicodeClassifier {
         contains(GeneratedBidiRanges.naturalLetters, scalar) ? classifyStrong(scalar) : .neutral
     }
 
+    static func isCombiningMark(_ scalar: UInt32) -> Bool {
+        contains(GeneratedBidiRanges.combiningMarks, scalar)
+    }
+
     static func enumerate(_ text: String) -> [(scalar: UnicodeScalar, utf16: Int, codePoint: Int)] {
         var utf16 = 0
         var result: [(UnicodeScalar, Int, Int)] = []

@@ -5,8 +5,8 @@ runtime table in `packages/core/src/generated/bidi-ranges.ts` is generated
 from the Unicode Consortium's `DerivedBidiClass.txt` and
 `DerivedGeneralCategory.txt`; it is not maintained by hand. Bidi classes drive
 strict strong-character behavior, while pinned general categories identify
-natural-language letters without depending on the host JavaScript runtime's
-Unicode version.
+natural-language letters and `Mn`/`Mc`/`Me` combining marks without depending
+on a host runtime's Unicode version.
 
 Unicode 17 remains the reproducible release baseline. Unicode 18.0.0 is still
 the Consortium's prepublication/beta line as of 2026-08-23, with a planned
@@ -37,7 +37,12 @@ network-to-filesystem mode. Review with:
 
 ```bash
 pnpm unicode:generate
-git diff -- unicode packages/core/src/generated/bidi-ranges.ts
+git diff -- unicode \
+  packages/core/src/generated/bidi-ranges.ts \
+  android/core/src/main/kotlin/io/github/codeinscrubs/bidilens/core/generated/BidiRanges.kt \
+  apple/Sources/BidiLens/Generated/BidiRanges.swift \
+  windows/src/BidiLens.Core/Generated/BidiRanges.cs \
+  rust/src/generated/bidi_ranges.rs
 pnpm run check
 ```
 

@@ -65,17 +65,28 @@ function assignRange(classes: Uint8Array, range: string, bidiClass: string): voi
   classes.fill(normalizeClass(bidiClass), start, end + 1);
 }
 
-function parseDerivedGeneralCategory(source: string): Uint8Array {
+interface GeneralCategoryData {
+  letters: Uint8Array;
+  combiningMarks: Uint8Array;
+}
+
+function parseDerivedGeneralCategory(source: string): GeneralCategoryData {
   const letters = new Uint8Array(0x110000);
+  const combiningMarks = new Uint8Array(0x110000);
   for (const line of source.split(/\r?\n/u)) {
     const data = line.split('#', 1)[0]?.trim();
     if (!data) continue;
-    const match = data.match(/^([0-9A-F.]+)\s*;\s*(L[ultmo])$/u);
+    const match = data.match(/^([0-9A-F.]+)\s*;\s*([A-Za-z]+)$/u);
     if (!match?.[1]) continue;
     const [start, end] = parseRange(match[1]);
-    letters.fill(1, start, end + 1);
+    const category = match[2];
+    if (category?.startsWith('L')) {
+      letters.fill(1, start, end + 1);
+    } else if (category === 'Mn' || category === 'Mc' || category === 'Me') {
+      combiningMarks.fill(1, start, end + 1);
+    }
   }
-  return letters;
+  return { letters, combiningMarks };
 }
 
 function parseDerivedBidiClass(source: string): Uint8Array {
@@ -122,15 +133,17 @@ interface GeneratedRanges {
   rtl: Array<readonly [number, number]>;
   nonStrong: Array<readonly [number, number]>;
   naturalLetters: Array<readonly [number, number]>;
+  combiningMarks: Array<readonly [number, number]>;
 }
 
 function collectGeneratedRanges(bidiSource: string, generalCategorySource: string): GeneratedRanges {
   const classes = parseDerivedBidiClass(bidiSource);
-  const letters = parseDerivedGeneralCategory(generalCategorySource);
+  const generalCategory = parseDerivedGeneralCategory(generalCategorySource);
   return {
     rtl: collectRanges(classes, (value) => value === CLASS.R || value === CLASS.AL),
     nonStrong: collectRanges(classes, (value) => value === CLASS.OTHER),
-    naturalLetters: collectRanges(letters, (value) => value === 1)
+    naturalLetters: collectRanges(generalCategory.letters, (value) => value === 1),
+    combiningMarks: collectRanges(generalCategory.combiningMarks, (value) => value === 1)
   };
 }
 
@@ -150,6 +163,8 @@ ${renderRanges('RTL_BIDI_RANGES', ranges.rtl)}
 ${renderRanges('NON_STRONG_BIDI_RANGES', ranges.nonStrong)}
 
 ${renderRanges('NATURAL_LETTER_RANGES', ranges.naturalLetters)}
+
+${renderRanges('COMBINING_MARK_RANGES', ranges.combiningMarks)}
 `;
 }
 
@@ -178,6 +193,8 @@ ${renderKotlinRanges('RTL_BIDI_RANGES', ranges.rtl)}
 ${renderKotlinRanges('NON_STRONG_BIDI_RANGES', ranges.nonStrong)}
 
 ${renderKotlinRanges('NATURAL_LETTER_RANGES', ranges.naturalLetters)}
+
+${renderKotlinRanges('COMBINING_MARK_RANGES', ranges.combiningMarks)}
 `;
 }
 
@@ -205,6 +222,8 @@ ${renderSwiftRanges('rtl', ranges.rtl)}
 ${renderSwiftRanges('nonStrong', ranges.nonStrong)}
 
 ${renderSwiftRanges('naturalLetters', ranges.naturalLetters)}
+
+${renderSwiftRanges('combiningMarks', ranges.combiningMarks)}
 }
 `;
 }
@@ -236,6 +255,8 @@ ${renderCSharpRanges('Rtl', ranges.rtl)}
 ${renderCSharpRanges('NonStrong', ranges.nonStrong)}
 
 ${renderCSharpRanges('NaturalLetters', ranges.naturalLetters)}
+
+${renderCSharpRanges('CombiningMarks', ranges.combiningMarks)}
 }
 `;
 }
@@ -265,6 +286,8 @@ ${renderRustRanges('RTL_BIDI_RANGES', ranges.rtl)}
 ${renderRustRanges('NON_STRONG_BIDI_RANGES', ranges.nonStrong)}
 
 ${renderRustRanges('NATURAL_LETTER_RANGES', ranges.naturalLetters)}
+
+${renderRustRanges('COMBINING_MARK_RANGES', ranges.combiningMarks)}
 `;
 }
 
