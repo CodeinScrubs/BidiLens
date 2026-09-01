@@ -124,9 +124,36 @@ function collectRanges(classes: Uint8Array, predicate: (value: number) => boolea
   return ranges;
 }
 
+function encodeRangeDeltas(ranges: ReadonlyArray<readonly [number, number]>): string {
+  const values: string[] = [];
+  let previousEnd = -1;
+  for (const [start, end] of ranges) {
+    const gap = start - previousEnd - 1;
+    if (gap < 0 || end < start) throw new Error(`Invalid generated Unicode range: ${start}..${end}`);
+    values.push(gap.toString(36), (end - start).toString(36));
+    previousEnd = end;
+  }
+  return values.join(',');
+}
+
+function assertRangeDeltaRoundTrip(name: string, ranges: ReadonlyArray<readonly [number, number]>): void {
+  const encoded = encodeRangeDeltas(ranges);
+  const deltas = encoded ? encoded.split(',') : [];
+  if (deltas.length !== ranges.length * 2) throw new Error(`${name} range encoding has an invalid pair count.`);
+  let previousEnd = -1;
+  for (let index = 0; index < ranges.length; index += 1) {
+    const start = previousEnd + 1 + Number.parseInt(deltas[index * 2]!, 36);
+    const end = start + Number.parseInt(deltas[index * 2 + 1]!, 36);
+    const expected = ranges[index]!;
+    if (start !== expected[0] || end !== expected[1]) {
+      throw new Error(`${name} range encoding changed ${expected[0]}..${expected[1]} to ${start}..${end}.`);
+    }
+    previousEnd = end;
+  }
+}
+
 function renderRanges(name: string, ranges: ReadonlyArray<readonly [number, number]>): string {
-  const values = ranges.map(([start, end]) => `  0x${start.toString(16)}, 0x${end.toString(16)}`).join(',\n');
-  return `export const ${name}: ReadonlyArray<number> = [\n${values}\n];`;
+  return `export const ${name} = decodeRangeDeltas('${encodeRangeDeltas(ranges)}');`;
 }
 
 interface GeneratedRanges {
@@ -153,6 +180,8 @@ function generateTypeScript(ranges: GeneratedRanges): string {
 // SHA-256: ${BIDI_SHA256}
 // Source: ${GENERAL_CATEGORY_URL}
 // SHA-256: ${GENERAL_CATEGORY_SHA256}
+
+import { decodeRangeDeltas } from '../unicode-ranges.js';
 
 export const UNICODE_BIDI_VERSION = '${UNICODE_VERSION}';
 export const UNICODE_BIDI_SHA256 = '${BIDI_SHA256}';
@@ -314,6 +343,10 @@ async function main(): Promise<void> {
     new TextDecoder().decode(bidiBytes),
     new TextDecoder().decode(generalCategoryBytes)
   );
+  assertRangeDeltaRoundTrip('RTL bidi', ranges.rtl);
+  assertRangeDeltaRoundTrip('non-strong bidi', ranges.nonStrong);
+  assertRangeDeltaRoundTrip('natural-letter', ranges.naturalLetters);
+  assertRangeDeltaRoundTrip('combining-mark', ranges.combiningMarks);
   const generated = generateTypeScript(ranges);
   const androidGenerated = generateKotlin(ranges);
   const appleGenerated = generateSwift(ranges);
