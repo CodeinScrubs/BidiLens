@@ -1,5 +1,19 @@
 # @bidilens/core
 
+## 0.3.2
+
+### Patch Changes
+
+- 5eb8595: Treat every Unicode 17 `Bidi_Class=Paragraph_Separator` character as a default
+  batch and streaming boundary, with matching React, Android, and Rust behavior.
+- 5eb8595: Reject non-finite detection and stream options instead of allowing NaN to
+  silently disable direction decisions or stream locking.
+- 5eb8595: Keep Unicode combining marks attached at isolation boundaries and recognize
+  compact technical labels such as `CN X`, `CN IX`, and `HR/BP` without changing
+  ordinary natural-language evidence.
+- 5eb8595: Scope bidi-control balancing to Unicode paragraph boundaries so a PDF or PDI
+  cannot close an embedding or isolate opened in an earlier paragraph.
+
 ## 0.3.1
 
 ### Patch Changes

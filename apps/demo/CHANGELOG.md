@@ -1,5 +1,12 @@
 # @bidilens/demo
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated `@bidilens/core`, `@bidilens/react`, and `@bidilens/markdown` to
+  `0.3.2`.
+
 ## 0.3.1
 
 ### Patch Changes

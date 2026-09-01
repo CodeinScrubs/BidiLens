@@ -1,5 +1,13 @@
 # @bidilens/react
 
+## 0.3.2
+
+### Patch Changes
+
+- 5eb8595: Treat every Unicode 17 `Bidi_Class=Paragraph_Separator` character as a default
+  batch and streaming boundary, with matching React, Android, and Rust behavior.
+- Updated `@bidilens/core` to `0.3.2`.
+
 ## 0.3.1
 
 ### Patch Changes

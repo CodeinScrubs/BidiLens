@@ -1,6 +1,6 @@
 # Maintainer outreach kit
 
-BidiLens web `0.3.0` and signed Android `0.1.1` are published for source review
+BidiLens web `0.3.1` and signed Android `0.1.1` are published for source review
 and bounded pilots. Android has emulator and public-consumer evidence;
 physical-device/OEM/IME/TalkBack and production validation remain pending.
 Neither availability is evidence of adoption. Contact maintainers with one
@@ -46,7 +46,7 @@ Thank you,
 
 - Problem and quick start: [README](../README.md)
 - Published packages: [`@bidilens` on npm](https://www.npmjs.com/org/bidilens)
-- Versioned web release: [`v0.3.0` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.0)
+- Versioned web release: [`v0.3.1` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.1)
 - Versioned Android release: [`android-v0.1.1` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
 - Native Android integration: [Android guide](../android/README.md)
 - Apple integration: [SwiftUI/UIKit guide](../apple/README.md)
@@ -69,7 +69,7 @@ pnpm run test:visual
 pnpm run release:check
 ```
 
-For an initial web review, install `@bidilens/core@0.3.0`; for Android, use one
+For an initial web review, install `@bidilens/core@0.3.1`; for Android, use one
 exact `io.github.codeinscrubs.bidilens:*:0.1.1` coordinate. Ask for confirmation
 of the host bug, feedback on the API boundary, or permission to prepare a small
 draft pull request. Do not claim universal rendering, zero defects,

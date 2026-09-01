@@ -186,7 +186,7 @@ lockfile install:
   pin in the security self-scan job prevents that job from reaching its scan;
 - the declared GitHub repository does not exist and npm returns `E404` for
   both `@bidiguard/core` and `@bidiguard/react-native`. Canonical BidiLens is
-  public and its 12 packages resolve at version `0.3.0`.
+  public and its 12 packages resolve at version `0.3.1`.
 
 Passing tests also miss release- and behavior-critical defects reproduced
 against the built sibling artifacts:

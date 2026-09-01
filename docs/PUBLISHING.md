@@ -2,7 +2,7 @@
 
 The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
-checklist records the completed web/npm `0.3.0` and Android/Maven `0.1.1`
+checklist records the completed web/npm `0.3.1` and Android/Maven `0.1.1`
 releases and the controls required for future releases.
 
 ## Android distribution boundary
@@ -79,14 +79,14 @@ version.
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication
   workflows;
-- all 12 `@bidilens/*@0.3.0` packages published publicly with SLSA provenance;
+- all 12 `@bidilens/*@0.3.1` packages published publicly with SLSA provenance;
 - retained release tarballs whose SHA-512 values match the public registry;
 - per-package GitHub OIDC trusted publishers bound to `publish.yml` and the
   protected `npm-release` environment;
 - token-based publishing disabled through npm's recommended
   `Require two-factor authentication and disallow tokens` package setting;
-- annotated `v0.3.0` tag and immutable GitHub release for the exact published
-  source commit, with all package tarballs, release manifest, and SBOM attached.
+- annotated `v0.3.1` tag and immutable GitHub release for the exact published
+  source commit, with all package tarballs, release manifest, and SBOM attached;
 - signed Android `0.1.1` artifacts published under the verified
   `io.github.codeinscrubs.bidilens` namespace, with protected release evidence,
   public-only consumer verification, annotated `android-v0.1.1` tag, and
@@ -98,6 +98,18 @@ version.
 - complete independent security and accessibility review appropriate to the
   deployment risk;
 - decide whether the ESM-only boundary is acceptable for target adopters.
+
+On 2026-09-01, protected publication run
+[`33473857928`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33473857928)
+published all 12 version `0.3.1` packages from exact commit
+`7bd93c83e43b91923e7f8cf6685264b433c662b8` through GitHub OIDC trusted
+publishing. Every package then resolved as `latest@0.3.1` with matching
+registry SHA-512 integrity and SLSA provenance. The retained tarball SHA-256
+values matched the publication manifest, and the annotated
+[`v0.3.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.1) tag
+resolves to the same commit. Its immutable release contains the 12 exact
+tarballs, release manifest, and validated CycloneDX 1.7 SBOM; GitHub records a
+SHA-256 digest for every attached asset.
 
 On 2026-07-28, the exact published source commit passed
 [all 15 CI jobs](https://github.com/CodeinScrubs/BidiLens/actions/runs/30352957959),

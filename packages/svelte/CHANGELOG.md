@@ -1,5 +1,11 @@
 # @bidilens/svelte
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated `@bidilens/core` to `0.3.2`.
+
 ## 0.3.1
 
 ### Patch Changes
