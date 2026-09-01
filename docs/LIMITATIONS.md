@@ -122,6 +122,12 @@ Android Views, `BidiUIKit.restore(...)` on editable UIKit controls, or
 property updates; the application binding remains attached while BidiLens is
 active and after restoration.
 
+UIKit exposes editable base direction through a text position, so that value
+can change when the text changes even without a property handoff. BidiLens
+therefore adopts an observable UIKit direction change only while the source is
+unchanged. Call `BidiUIKit.restore(...)` before replacing both text and its
+authored direction.
+
 Public packages are ESM-only. CommonJS consumers must use dynamic `import()`
 or an ESM bridge. Node.js 22.12 is the declared minimum. React 18–19, Vue 3.5+, and
 Svelte 4–5 are the tested/declarative peer families; older or future majors are

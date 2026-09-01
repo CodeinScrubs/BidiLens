@@ -296,6 +296,7 @@ final class AppleAdapterTests: XCTestCase {
             for: textView.beginningOfDocument,
             in: .forward
         )
+        XCTAssertEqual(authoredDirection, .leftToRight)
         XCTAssertNotEqual(authoredDirection, managedDirection)
         BidiUIKit.apply(to: textView, alignment: .preserve)
         XCTAssertEqual(textView.textAlignment, .center)
