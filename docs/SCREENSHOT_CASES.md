@@ -63,7 +63,7 @@ pnpm exec vitest run packages/markdown/src/markdown.test.ts
 ```
 
 The cross-version gate renders it through all supported Markdown-It host lines
-(13.0.2, 14.3.0, and 15.0.0) and compares the resulting BidiLens reports:
+(13.0.2, 14.3.1, and 15.0.1) and compares the resulting BidiLens reports:
 
 ```bash
 pnpm run markdown-it:compat

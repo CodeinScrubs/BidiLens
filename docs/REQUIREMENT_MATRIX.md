@@ -1,6 +1,6 @@
 # Build-specification traceability matrix
 
-**Evidence date:** 2026-07-27
+**Current-tree evidence date:** 2026-09-01
 
 This file maps the binding “Ultimate Build Instruction — Cross-Platform
 Bidirectional Text Toolkit for AI Interfaces, version 2.0” to the source and
@@ -39,7 +39,7 @@ Status vocabulary:
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
 | Framework-independent TypeScript core | Complete and tested | `@bidilens/core`; dependency-free runtime; generated Unicode data; analysis, evidence, isolation, security, streaming |
-| unified/remark/rehype and markdown-it AST processing | Complete and tested | `@bidilens/markdown`; typed adapters, structural blocks, tables/lists/quotes/code/math, raw-HTML-safe defaults; source builds against Markdown-It 15 through a version-neutral runtime boundary, while packed strict consumers verify identical full 932-fixture behavior on Markdown-It 13.0.2/14.3.0 and identical BidiLens semantic reports on Markdown-It 15.0.0 (whose upstream linkifier can render differently), without leaking host type lines |
+| unified/remark/rehype and markdown-it AST processing | Complete and tested | `@bidilens/markdown`; typed adapters, structural blocks, tables/lists/quotes/code/math, raw-HTML-safe defaults; source builds against Markdown-It 15 through a version-neutral runtime boundary, while packed strict consumers verify identical full 932-fixture behavior on Markdown-It 13.0.2/14.3.1 and identical BidiLens semantic reports on Markdown-It 15.0.1 (whose upstream linkifier can render differently), without leaking host type lines |
 | Plain HTML and DOM | Complete and tested | `@bidilens/html` and `@bidilens/dom`; escaped serialization, restore/observe lifecycle, cross-realm tests |
 | Web Component | Complete and tested | `@bidilens/web-component`; side-effect-free/SSR-safe main import, explicit `/auto` registration, self-contained browser bundle, three-browser load test |
 | React | Complete and tested | `@bidilens/react`; React 18/19 probes, SSR, components and streaming hook |
@@ -116,7 +116,7 @@ recorded explicitly.
 | Thousands of generated/property variants | Complete at test runtime | Seeded fast-check runs arbitrary Unicode and random chunking; generated variants are reproducible test cases rather than committed corpus rows |
 | Fixture-review guide | Complete | `corpus/README.md` explains review fields and native-speaker workflow |
 | Unit/property/serialization/range tests | Complete for shipped packages | `pnpm run check`; package-local suites and fast-check properties |
-| Visual Chromium + Firefox + WebKit | Complete and tested | 24 Playwright cases across three engines on the committed Windows/Arial baseline |
+| Visual Chromium + Firefox + WebKit | Complete and tested | 30 Playwright cases across three engines on the committed Windows/Arial baseline, including screenshot-derived mixed Persian/English medical prose |
 | Four-way, flagship, structured Markdown, stream, dark, zoom | Complete and tested | Playwright flagship suite and screenshots |
 | Selection and copy/paste invariant | Complete for web evidence; partial for Android | Three-engine logical selection and Chromium clipboard test; Android editable callbacks and Compose semantics remain control-free in device tests. Firefox/WebKit clipboard, physical Android OEM/IME copy, and other native surfaces remain environment-specific gaps |
 | Accessibility | Partial/external | Automated semantic, selection, dark-mode and zoom evidence plus `docs/ACCESSIBILITY.md`; real screen-reader/browser/OS laboratory matrix is not complete |

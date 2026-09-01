@@ -27,11 +27,11 @@ interface PackageManifest {
 const root = process.cwd();
 const supportedMarkdownIt: MarkdownItTarget[] = [
   { version: '13.0.2', types: '13.0.9', comparison: 'exact' },
-  { version: '14.3.0', types: '14.1.2', comparison: 'exact' },
+  { version: '14.3.1', types: '14.2.0', comparison: 'exact' },
   // Markdown-It 15 bundles its declarations and removes the old internal
   // `markdown-it/lib/*` exports. The public structural boundary is designed
   // to keep this host upgrade source-compatible without leaking those types.
-  { version: '15.0.0', comparison: 'semantic' }
+  { version: '15.0.1', comparison: 'semantic' }
 ];
 const expectedPeerRange = '^13.0.2 || ^14.0.0 || ^15.0.0';
 const reportOutput = process.env.BIDILENS_MARKDOWN_IT_REPORT_DIR;
@@ -429,7 +429,7 @@ try {
         : `Markdown-It ${referenceVersion} and ${target.version} produced different reports at ${difference ?? 'an unknown path'}.`
     );
   }
-  console.log('Markdown-It 13.0.2 and 14.3.0 produced identical full reports; Markdown-It 15.0.0 produced identical BidiLens semantic reports (host parser rendering differences are expected after its linkify v6 change).');
+  console.log('Markdown-It 13.0.2 and 14.3.1 produced identical full reports; Markdown-It 15.0.1 produced identical BidiLens semantic reports (host parser rendering differences are expected after its linkify v6 change).');
   console.log(`Packed @bidilens/markdown ${basename(markdownTarball)} installed under strict peer resolution for all supported parser lines.`);
 } finally {
   await rm(temporary, { recursive: true, force: true });

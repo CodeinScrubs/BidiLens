@@ -63,7 +63,7 @@
     }
   },
   "devDependencies": {
-    "markdown-it": "^15.0.0",
+    "markdown-it": "^15.0.1",
     "rehype-stringify": "^10.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",

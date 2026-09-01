@@ -12,6 +12,7 @@ import {
 } from '@bidilens/core';
 import { markdownItBidi, rehypeBidi, remarkBidi } from '@bidilens/markdown';
 import { BidiCode, BidiIsolate, BidiMessage, StreamingBidiMessage } from '@bidilens/react';
+import demoManifest from '../package.json' with { type: 'json' };
 import corpusUrl from '../../../corpus/cases.json?url';
 
 type UiLanguage = 'en' | 'fa';
@@ -84,7 +85,7 @@ const PRESETS = [
 
 const COPY = {
   en: {
-    product: 'BidiLens v0.1.1',
+    product: `BidiLens v${demoManifest.version}`,
     headline: 'Mixed-direction text that stays readable while AI streams.',
     intro: 'Standards-based direction detection, Markdown annotation, inline isolation, and hidden-control auditing.',
     direction: 'Direction', confidence: 'Confidence', counts: 'RTL / LTR', controls: 'Hidden controls',
@@ -102,7 +103,10 @@ const COPY = {
     share: 'Copy share link', exportJson: 'Export JSON', exportHtml: 'Export semantic HTML', verifyCopy: 'Verify logical copy',
     comparison: 'Live four-way comparison', comparisonHelp: 'The current immutable input under four base-direction approaches.',
     browser: 'Browser default', naive: 'Naive global RTL', auto: 'dir=auto', toolkit: 'BidiLens content-majority',
-    corpus: 'Offline corpus browser', corpusHelp: 'Search all 928 bundled cases and load one into the playground.',
+    corpus: 'Offline corpus browser',
+    corpusHelp: (count: number) => count > 0
+      ? `Search all ${count.toLocaleString('en-US')} bundled cases and load one into the playground.`
+      : 'Loading the bundled corpus…',
     corpusSearch: 'Search fixture ID, description, tag, or text', load: 'Load', reviewed: 'native reviewed',
     primitives: 'Isolation primitives', primitivesHelp: 'Identifiers remain readable inside RTL prose.',
     language: 'فارسی', theme: 'Dark theme',
@@ -113,7 +117,7 @@ const COPY = {
     copyFailed: 'Logical copy verification failed.'
   },
   fa: {
-    product: 'BidiLens نسخهٔ ۰٫۱٫۰',
+    product: `BidiLens نسخهٔ ${demoManifest.version.replaceAll('.', '٫').replace(/\d/gu, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]!)}`,
     headline: 'متن دوجهته‌ای که هنگام پخش پاسخ هوش مصنوعی خوانا می‌ماند.',
     intro: 'تشخیص جهت بر پایهٔ استاندارد، نشانه‌گذاری Markdown، ایزوله‌سازی درون‌خطی و ممیزی نویسه‌های پنهان.',
     direction: 'جهت', confidence: 'اطمینان', counts: 'RTL / LTR', controls: 'نویسهٔ پنهان',
@@ -131,7 +135,10 @@ const COPY = {
     share: 'کپی پیوند اشتراک', exportJson: 'خروجی JSON', exportHtml: 'خروجی HTML معنایی', verifyCopy: 'بررسی کپی منطقی',
     comparison: 'مقایسهٔ زندهٔ چهارتایی', comparisonHelp: 'ورودی تغییرناپذیر فعلی با چهار روش تعیین جهت پایه.',
     browser: 'پیش‌فرض مرورگر', naive: 'RTL سراسری ساده‌لوحانه', auto: 'dir=auto', toolkit: 'BidiLens با محتوای غالب',
-    corpus: 'مرورگر آفلاین پیکره', corpusHelp: 'در هر ۹۱۸ نمونه جست‌وجو کنید و یکی را در محیط بارگذاری کنید.',
+    corpus: 'مرورگر آفلاین پیکره',
+    corpusHelp: (count: number) => count > 0
+      ? `در هر ${count.toLocaleString('fa-IR')} نمونه جست‌وجو کنید و یکی را در محیط بارگذاری کنید.`
+      : 'در حال بارگذاری پیکرهٔ همراه…',
     corpusSearch: 'جست‌وجوی شناسه، توضیح، برچسب یا متن', load: 'بارگذاری', reviewed: 'بازبینی بومی',
     primitives: 'اجزای ایزوله‌سازی', primitivesHelp: 'شناسه‌ها در متن RTL خوانا می‌مانند.',
     language: 'English', theme: 'پوستهٔ تیره',
@@ -387,7 +394,7 @@ export function App() {
       </section>
 
       <section className="panel corpus-panel">
-        <div className="panel-title"><div><span>{t.corpus}</span><small>{t.corpusHelp}</small></div><input className="corpus-search" aria-label={t.corpusSearch} placeholder={t.corpusSearch} value={corpusQuery} onChange={(event) => setCorpusQuery(event.target.value)} /></div>
+        <div className="panel-title"><div><span>{t.corpus}</span><small>{t.corpusHelp(corpus.length)}</small></div><input className="corpus-search" aria-label={t.corpusSearch} placeholder={t.corpusSearch} value={corpusQuery} onChange={(event) => setCorpusQuery(event.target.value)} /></div>
         <div className="corpus-results">{filteredCorpus.map((fixture) => <article key={fixture.id} className="corpus-case"><div><strong>{fixture.id}</strong><span className={`direction-badge ${fixture.expected}`}>{fixture.expected}</span></div><BidiMessage as="p" text={fixture.text} forceDirection={fixture.expected} fallback="neutral" /><small>{fixture.description} · {fixture.tags.join(', ')}{fixture.nativeSpeakerReviewed ? ` · ${t.reviewed}` : ''}</small><button className="secondary" onClick={() => setMarkdown(fixture.text)}>{t.load}</button></article>)}</div>
       </section>
 

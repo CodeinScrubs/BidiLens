@@ -38,7 +38,7 @@ strings, or change chat layout/navigation direction.
 The first implementation can be dependency-free and local to n8n. BidiLens is
 offered as a fixture/policy reference, not as a dependency requirement. If the
 maintainers later prefer a package, BidiLens verifies strict packed consumers
-against Markdown-It 13.0.2, 14.3.0, and 15.0.0.
+against Markdown-It 13.0.2, 14.3.1, and 15.0.1.
 
 ## Minimum acceptance fixtures
 

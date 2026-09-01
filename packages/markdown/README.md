@@ -28,7 +28,7 @@ const html = await unified()
 For Markdown-It, install the optional peer and call the typed plugin once:
 
 BidiLens builds its adapter against Markdown-It 15 and verifies representative
-Markdown-It releases `13.0.2`, `14.3.0`, and `15.0.0` with strict packed
+Markdown-It releases `13.0.2`, `14.3.1`, and `15.0.1` with strict packed
 TypeScript consumers and the complete canonical corpus. The supported peer
 range is `13.x`, `14.x`, and `15.x`; the matrix does not claim every patch
 release. Markdown-It 15 bundles its own declarations; the
@@ -44,7 +44,7 @@ npm install @bidilens/markdown markdown-it
 TypeScript hosts using Markdown-It 13 or 14 that import `MarkdownIt` directly
 should also install the matching declarations as a direct development
 dependency (for example, `@types/markdown-it@13.0.9` or
-`@types/markdown-it@14.1.2`). Markdown-It 15 already ships its declarations, so
+`@types/markdown-it@14.2.0`). Markdown-It 15 already ships its declarations, so
 do not add `@types/markdown-it` for that line.
 
 ```ts

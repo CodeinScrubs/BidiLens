@@ -225,7 +225,7 @@ async function verifyConsumer(tarballs: Map<string, string>, consumer: string): 
     '@playwright/test': '1.62.0',
     '@vue/server-renderer': '3.5.40',
     jsdom: '29.1.1',
-    'markdown-it': '15.0.0',
+    'markdown-it': '15.0.1',
     react: '19.2.8',
     'react-dom': '19.2.8',
     vue: '3.5.40',

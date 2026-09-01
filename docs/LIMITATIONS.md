@@ -44,7 +44,7 @@ live `document` as current. `finish()` is the exact batch-equivalence boundary.
 Unified/remark/rehype transforms remain supported as batch plugins, not as a
 stateful unified streaming backend. The adapter source is built against
 Markdown-It 15, and the compatibility matrix exercises representative
-Markdown-It releases 13.0.2, 14.3.0, and 15.0.0 with packed strict TypeScript
+Markdown-It releases 13.0.2, 14.3.1, and 15.0.1 with packed strict TypeScript
 consumers. The peer range covers 13.x, 14.x, and 15.x, but the matrix does not
 claim every patch release. Markdown-It 15's host parser may
 intentionally produce different linkification HTML because its upstream

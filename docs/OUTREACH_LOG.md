@@ -2,7 +2,7 @@
 
 **Initial outreach evidence date:** 2026-07-30
 
-**Last response audit:** 2026-08-24
+**Last response audit:** 2026-09-01
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -143,7 +143,7 @@ adoption. Existing drafts were preserved. Any public forum post, tracker
 comment, or email reply still requires an action-specific confirmation at the
 time it would be sent.
 
-### Response and release audit (2026-08-24)
+### Response and release audit (2026-08-24, historical snapshot)
 
 The signed-in project mailbox was checked through August 24, 2026. No new
 human maintainer reply, review decision, or adoption confirmation was found
@@ -151,7 +151,7 @@ after the August 13 responses. The only project-adjacent messages after
 August 22 were Google account-data notices for Claude and opencode.ai; no
 security links were followed and no account settings were changed.
 
-The BidiLens host-integration work is tracked in [PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57). The source behavior reviewed in this audit is committed in `8386684`, including the Unicode paragraph-boundary alignment; later documentation-only commits do not alter that behavior. The live PR page and its checks are authoritative for the current head:
+The BidiLens host-integration work is tracked in [PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57). The source behavior reviewed in this audit is committed in `8386684`, including the Unicode paragraph-boundary alignment; later documentation-only commits did not alter that behavior. At the time of this snapshot:
 
 - the PR is open and remains a draft for maintainer review;
 - the branch is mergeable and the protected status is clean;
@@ -167,11 +167,36 @@ decision, Cline PR #12724 remains open and conflicting/dirty with review still
 required, and Streamdown PR #569 remains the one recorded upstream merge. No
 external PR was edited, force-pushed, merged, or commented on during this
 audit. The current Markdown-It 15 compatibility target is supported by the
-upstream 15.0.0 release; BidiLens continues to pin reproducible Unicode 17
+upstream 15.0.1 release; BidiLens continues to pin reproducible Unicode 17
 data until Unicode 18 leaves its prepublication/beta period.
 
 This audit is evidence of current checks and routing only. It does not prove
 delivery, maintainer review, production deployment, or adoption.
+
+### Response and release audit (2026-09-01)
+
+The signed-in project mailbox was searched for BidiLens, bidirectional-text,
+RTL, and contacted-organization replies after August 24. No new maintainer
+reply, review decision, routing instruction, rejection, or adoption claim was
+found. Account, newsletter, and product messages mentioning AI vendors were
+not treated as project responses; no security link was followed, no message
+was sent, and existing drafts were preserved.
+
+The public routes were refreshed independently of email. Hermes PR #72508 is
+still open without a human review or exposed status checks. Cline PR #12724 is
+still open, review-required, and conflicting despite its previously successful
+hosted checks. Streamdown PR #569 remains merged. The Antigravity, Claude Code,
+and two Codex issues remain open without a new maintainer response to the
+BidiLens proposals. No external issue, PR, discussion, or comment was changed
+during this audit.
+
+The local `0.3.1` candidate passed the complete static gate, all 30
+Chromium/Firefox/WebKit tests, all 12 packed type-layout checks, the
+Markdown-It 13.0.2/14.3.1/15.0.1 compatibility matrix, dependency audit,
+CycloneDX validation, and workflow lint. GitHub-hosted results for any newer PR
+head remain pending until that head is pushed; the live PR page is the
+authoritative status source. These checks are engineering evidence, not proof
+of downstream adoption or universal rendering correctness.
 
 ## Deliberate deferrals
 
