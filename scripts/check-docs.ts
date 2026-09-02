@@ -66,6 +66,41 @@ const markdownLink = /(?<!!)\[[^\]]*\]\(([^)]+)\)/gu;
 const rootManifest = JSON.parse(
   await readFile(resolve(root, 'package.json'), 'utf8')
 ) as { version?: unknown };
+const [androidBuild, androidWrapper, androidReadme] = await Promise.all([
+  readFile(resolve(root, 'android/build.gradle.kts'), 'utf8'),
+  readFile(resolve(root, 'android/gradle/wrapper/gradle-wrapper.properties'), 'utf8'),
+  readFile(resolve(root, 'android/README.md'), 'utf8')
+]);
+const androidApplicationPlugin = androidBuild.match(
+  /id\("com\.android\.application"\) version "([^"]+)"/u
+)?.[1];
+const androidLibraryPlugin = androidBuild.match(
+  /id\("com\.android\.library"\) version "([^"]+)"/u
+)?.[1];
+const kotlinComposePlugin = androidBuild.match(
+  /id\("org\.jetbrains\.kotlin\.plugin\.compose"\) version "([^"]+)"/u
+)?.[1];
+const gradleWrapper = androidWrapper.match(/gradle-([0-9]+(?:\.[0-9]+)+)-bin\.zip/u)?.[1];
+
+if (!androidApplicationPlugin || !androidLibraryPlugin) {
+  failures.push('android/build.gradle.kts must declare both Android Gradle Plugin versions.');
+} else if (androidApplicationPlugin !== androidLibraryPlugin) {
+  failures.push(
+    `Android Gradle Plugin versions are misaligned: application ${androidApplicationPlugin}, library ${androidLibraryPlugin}.`
+  );
+} else if (!androidReadme.includes(`Android Gradle Plugin ${androidApplicationPlugin}`)) {
+  failures.push(`android/README.md does not mention Android Gradle Plugin ${androidApplicationPlugin}.`);
+}
+if (!gradleWrapper) {
+  failures.push('Unable to derive the Gradle wrapper version.');
+} else if (!androidReadme.includes(`Gradle ${gradleWrapper}`)) {
+  failures.push(`android/README.md does not mention Gradle ${gradleWrapper}.`);
+}
+if (!kotlinComposePlugin) {
+  failures.push('Unable to derive the Kotlin Compose plugin version.');
+} else if (!androidReadme.includes(`Kotlin ${kotlinComposePlugin}`)) {
+  failures.push(`android/README.md does not mention Kotlin ${kotlinComposePlugin}.`);
+}
 const corpus = JSON.parse(
   await readFile(resolve(root, 'corpus/cases.json'), 'utf8')
 ) as unknown;

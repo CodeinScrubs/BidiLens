@@ -14,8 +14,8 @@ The Android implementation has three small libraries:
 | `:compose` | 23 | `BidiText`, `BidiBasicTextField`, styles, semantics, and offset-safe visual isolation |
 
 The `:sample` application reproduces the photographed form-field, mixed-label,
-and leading-English cases. The project builds with JDK 21, Gradle 9.5.0,
-Android Gradle Plugin 9.3.1, compile SDK 36, and Kotlin 2.4.10.
+and leading-English cases. The project builds with JDK 21, Gradle 9.5.1,
+Android Gradle Plugin 9.3.2, compile SDK 36, and Kotlin 2.4.10.
 
 ## Safety contract
 
