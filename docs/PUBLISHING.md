@@ -2,31 +2,51 @@
 
 The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
-checklist records the completed web/npm `0.3.2` (with `0.3.1` retained as a
-historical release) and Android/Maven `0.1.1`
-releases, the reviewed `0.3.3`/Android `0.1.2` source candidates, and the
-controls required for future releases.
+checklist records the completed web/npm `0.3.3` and Android/Maven `0.1.2`
+releases, preserves earlier publication evidence, and defines the controls
+required for future releases.
 
-## Pending release candidates
+## Current verified releases — 2026-09-02
 
-The current tree declares web/package `0.3.3` and Android `0.1.2`. These are
-reviewed source candidates, not registry-public release claims. Web `0.3.3`
-adds cross-platform combining-mark isolation parity; Android `0.1.2` also
-includes observable host-property ownership fixes for native adapters.
+Web/package `0.3.3` and Android `0.1.2` are public from protected `main` commit
+`51dcd971efa5873a393b90cb6311c73f4315b8e8`. The release preparation in
+[PR #79](https://github.com/CodeinScrubs/BidiLens/pull/79) passed all 19
+[CI jobs](https://github.com/CodeinScrubs/BidiLens/actions/runs/33589740575)
+and five [CodeQL analyses](https://github.com/CodeinScrubs/BidiLens/actions/runs/33589740613).
+The reviewed head and merged commit have the identical Git tree
+`1d2d406d5eacf6521f851131e75af4e75793e736`.
 
-Neither candidate becomes public merely by merging this version preparation.
-The exact merged `main` commit must pass every protected check, the appropriate
-protected publication workflow, registry integrity/provenance or signature
-verification, and a clean registry-only consumer. Only after those gates may
-the README install examples, latest-public statements, tags, and immutable
-GitHub releases move to `0.3.3` or `android-v0.1.2`.
+- Protected npm run
+  [`33591632030`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33591632030)
+  published all 12 `0.3.3` packages through OIDC. Independent checks matched
+  every retained tarball's SHA-256 and registry SHA-512, `latest` tag, SLSA
+  provenance, and registry signature. A separate registry-only consumer
+  passed strict TypeScript, adapter/runtime/source-preservation, pure-LTR
+  no-op, streaming, and installed-CLI checks. `npm audit signatures` verified
+  114 signatures and 53 attestations across that consumer's dependency tree.
+- Protected Android run
+  [`33610612564`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33610612564)
+  published Central deployment `cb7febfc-1313-4b3c-8171-d8a473cb92da`. All 15
+  primary files match retained workflow bytes; 15 OpenPGP signatures and 30
+  public checksums verify. A clean public-only consumer with an empty Maven
+  Local resolved all three `0.1.2` modules and built successfully.
+- Annotated tags and immutable releases
+  [`v0.3.3`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3) and
+  [`android-v0.1.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
+  identify that exact source commit and retain the release artifacts and
+  verification evidence. GitHub asset SHA-256 digests match the local files.
+
+Merging a version preparation alone never proves publication. Future releases
+must repeat protected checks, publication, registry integrity/provenance or
+signature verification, and a clean registry-only consumer before install
+examples and latest-public statements move forward.
 
 ## Android distribution boundary
 
-The three Android `0.1.1` libraries under `android/` are signed and public on
+The three Android `0.1.2` libraries under `android/` are signed and public on
 Maven Central. They can also be verified locally with
 `./android/gradlew -p android publishToMavenLocal`. The
-[`android-v0.1.1` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
+[`android-v0.1.2` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
 retains the exact release assets and public verification evidence. The verified
 [`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
 remains the immutable pre-Central fallback tied to commit `85b80c0`.
@@ -44,7 +64,9 @@ a clean consumer against an isolated Maven repository; retains SHA-256
 evidence; and only then uploads. The libraries must not be described as
 publicly available from Maven Central until Central accepts the deployment and
 a clean consumer resolves it from the public repository. Android `0.1.1`
-completed both gates on 2026-07-28.
+first completed both gates on 2026-07-28; `0.1.2` repeated them on 2026-09-02.
+The documentation jars are minimal compatibility artifacts, not a complete
+generated API reference. The sample APK is a debug/demo build.
 
 ### Android release workflow
 
@@ -55,7 +77,7 @@ Central, and has read-only repository permissions. Registry credentials and
 the private signing key are exposed only to the specific steps that require
 them.
 
-Android `0.1.1` completed this workflow:
+The first Central release, Android `0.1.1`, completed this workflow:
 
 1. all 13 protected CI checks passed in
    [`30337482079`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30337482079);
@@ -72,9 +94,14 @@ Android `0.1.1` completed this workflow:
    published commit `c59a5b674482081980fc886f6d38036f88af5dc8`, retaining the
    Maven inputs, sample APK, public evidence, signing key, and checksums.
 
+Android `0.1.2` repeated that workflow on the exact source commit, protected run,
+and Central deployment recorded in the current-release section above. Its
+immutable archive preserves all 33 staged repository files, including metadata,
+and the independently downloaded public artifacts and verification report.
+
 Maven Central versions are immutable. A failed or partially visible release is
-never repaired by replacing `0.1.1`; the next corrected source must use a new
-version.
+never repaired by replacing an existing version; corrected source must use a
+new version.
 
 ## Completed repository prerequisites
 
@@ -95,17 +122,17 @@ version.
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication
   workflows;
-- all 12 `@bidilens/*@0.3.2` packages published publicly with SLSA provenance;
+- all 12 `@bidilens/*@0.3.3` packages published publicly with SLSA provenance;
 - retained release tarballs whose SHA-512 values match the public registry;
 - per-package GitHub OIDC trusted publishers bound to `publish.yml` and the
   protected `npm-release` environment;
 - token-based publishing disabled through npm's recommended
   `Require two-factor authentication and disallow tokens` package setting;
-- annotated `v0.3.2` tag and immutable GitHub release for the exact published
+- annotated `v0.3.3` tag and immutable GitHub release for the exact published
   source commit, with all package tarballs, release manifest, and SBOM attached;
-- signed Android `0.1.1` artifacts published under the verified
+- signed Android `0.1.2` artifacts published under the verified
   `io.github.codeinscrubs.bidilens` namespace, with protected release evidence,
-  public-only consumer verification, annotated `android-v0.1.1` tag, and
+  public-only consumer verification, annotated `android-v0.1.2` tag, and
   immutable GitHub release.
 
 ## Remaining external adoption prerequisites
@@ -119,7 +146,7 @@ On 2026-09-01, protected publication run
 [`33508856274`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33508856274)
 published all 12 version `0.3.2` packages from exact commit
 `97f4827a9683c343a92f4ff31f4fa1fc0a718e99` through GitHub OIDC trusted
-publishing. Every package resolved as `latest@0.3.2` with matching registry
+publishing. Every package then resolved as `latest@0.3.2` with matching registry
 SHA-512 integrity and SLSA provenance. The retained tarball SHA-256 values
 matched the publication manifest, and the annotated
 [`v0.3.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.2) tag

@@ -82,9 +82,9 @@ acceptance invariants are collected in the
 
 ## Where are Android, Apple, Windows, Rust, Flutter, React Native, VS Code, Electron, and PDF?
 
-Android core, Views, and Compose `0.1.1` are signed and public on Maven Central;
+Android core, Views, and Compose `0.1.2` are signed and public on Maven Central;
 the sample and verification evidence are in the
-[`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
+[`android-v0.1.2` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2).
 Physical OEM/IME/TalkBack and external product validation remain open; see the
 [Android guide](../android/README.md). A source Swift Package with a SwiftUI
 `BidiText` renderer and UIKit adapters, plus a .NET 8/WPF implementation, now live in the

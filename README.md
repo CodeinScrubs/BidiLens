@@ -19,22 +19,18 @@
 [Project status](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> The JavaScript/web `0.3.2` release is public across all 12 `@bidilens/*`
+> The JavaScript/web `0.3.3` release is public across all 12 `@bidilens/*`
 > packages with verified registry integrity and SLSA provenance; its exact
 > tarballs, manifest, and SBOM are retained in the immutable
-> [`v0.3.2` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.2).
+> [`v0.3.3` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3).
 > It was published from protected `main` commit
-> `97f4827a9683c343a92f4ff31f4fa1fc0a718e99` after the complete release gate.
-> The prior `0.3.1` release remains available as an immutable historical
-> release. Native Android core, Views, and
-> Compose `0.1.1` artifacts
-> are signed and public on Maven Central, with a verified sample and evidence
-> bundle in the
-> [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
-> The reviewed source candidates are web/package `0.3.3` and Android `0.1.2`.
-> They are not public registry releases until their protected publication
-> workflows and clean registry-only consumer checks succeed; install examples
-> therefore continue to use the verified public versions above.
+> `51dcd971efa5873a393b90cb6311c73f4315b8e8` after the complete release gate.
+> Native Android core, Views, and Compose `0.1.2` artifacts from the same
+> commit are signed and public on Maven Central. Their AARs, sample APK,
+> public signature/checksum evidence, and clean public-consumer verification
+> are recorded in the immutable
+> [`android-v0.1.2` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2).
+> Previous releases remain available as immutable historical archives.
 > Native Swift/UIKit/SwiftUI, .NET/WPF, and Rust core implementations are
 > present in source with dedicated CI gates, but are not yet registry-published
 > or validated in a downstream production/accessibility lab. Other
@@ -178,9 +174,9 @@ reordering and shaping; BidiLens supplies the application structure they need.
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
-Browser packages target current standards-based browsers. The complete `0.3.2`
+Browser packages target current standards-based browsers. The complete `0.3.3`
 package set is [published under the `@bidilens` npm scope](https://www.npmjs.com/org/bidilens);
-the prior `0.3.1` set remains available as a reproducible historical release.
+the prior `0.3.2` and `0.3.1` sets remain available as historical releases.
 
 ## Consumer install
 
@@ -202,7 +198,7 @@ For a no-build browser page, the published Web Component also exposes a
 standalone entry that bundles the core and needs no import map:
 
 ```html
-<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.2"></script>
+<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.3"></script>
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 
@@ -328,7 +324,7 @@ for security-sensitive findings.
 
 The implemented web/JavaScript packages are public-beta quality, not a
 guarantee about every proprietary renderer. Native Android is implemented,
-emulator-tested, and published as signed Maven Central `0.1.1` artifacts, but
+emulator-tested, and published as signed Maven Central `0.1.2` artifacts, but
 physical OEM/IME/TalkBack validation and an external production pilot remain
 open. Flutter, React Native, editable SwiftUI, Electron, VS Code, PDF, screen-reader
 laboratory validation, crates.io publication, and downstream product patches

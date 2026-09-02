@@ -34,7 +34,9 @@ Android Gradle Plugin 9.3.2, compile SDK 36, and Kotlin 2.4.10.
 
 ## Use with Jetpack Compose
 
-Version `0.1.1` is signed and public on Maven Central. Normal Gradle setup is:
+Version `0.1.2` is signed and public on Maven Central. In the application's
+`settings.gradle.kts`, add any missing repositories without replacing existing
+repository configuration:
 
 ```kotlin
 dependencyResolutionManagement {
@@ -43,30 +45,36 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+```
 
+In the app module's `build.gradle.kts`, add the dependency:
+
+```kotlin
 dependencies {
-    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.1")
+    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.2")
 }
 ```
 
 The other coordinates are
-`io.github.codeinscrubs.bidilens:bidilens-core:0.1.1` and
-`io.github.codeinscrubs.bidilens:bidilens-android-views:0.1.1`. Choose the
+`io.github.codeinscrubs.bidilens:bidilens-core:0.1.2` and
+`io.github.codeinscrubs.bidilens:bidilens-android-views:0.1.2`. Choose the
 surface used by the application; adapter dependencies bring in the core
 transitively.
 
 For source-checkout development, publish the current modules to Maven Local:
 
-Source checkout version `0.1.2` is a reviewed release candidate containing the
-latest combining-mark parity and host-property ownership fixes. It is not a
-public Maven Central version until the protected publication workflow and a
-clean public-only consumer both succeed.
+Source checkout version `0.1.2` matches the published release containing the
+combining-mark parity and host-property ownership fixes. Maven Local is only
+needed when testing your own source changes; normal consumers should use
+Maven Central without a local publication step.
 
 ```bash
 ./android/gradlew -p android publishToMavenLocal
 ```
 
-Then add:
+For local development only, add `mavenLocal()` to the repositories inside
+`dependencyResolutionManagement` in the consumer's `settings.gradle.kts`,
+before Maven Central. Use the same coordinate in its app module:
 
 ```kotlin
 dependencies {
@@ -187,7 +195,7 @@ pnpm run android:check
 Current executable evidence includes:
 
 - all 932 canonical direction fixtures and declared isolation plans in Kotlin;
-- 29 core, 11 Views/Robolectric, and 9 Compose JVM tests;
+- 31 core, 13 Views/Robolectric, and 9 Compose JVM tests;
 - 3 Views and 3 Compose UI tests on an Android 16/API 36.1 emulator;
 - release AAR assembly, sample APK assembly, and Android lint;
 - an isolated consumer build against the generated Maven-local coordinates;
@@ -195,19 +203,26 @@ Current executable evidence includes:
 
 ## Distribution status
 
-Version `0.1.1` is publicly available from Maven Central as three signed
+Version `0.1.2` is publicly available from Maven Central as three signed
 modules. After publication, all 15 primary artifacts were downloaded and
 matched byte-for-byte against the protected workflow outputs; all detached
 signatures and published checksums verified; and a clean Gradle consumer with
 an empty Maven Local resolved all three coordinates and built successfully.
 The immutable
-[`android-v0.1.1` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
+[`android-v0.1.2` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
 retains the individual AARs, sample APK, Maven repository, public Central
-evidence, public signing key, and SHA-256 checksums. The older
+evidence, public signing key, and SHA-256 checksums. The `0.1.1` release remains
+the immutable first-Central archive. The older
 [`android-v0.1.0` GitHub release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.0)
 remains available only as the immutable pre-Central archive. Source checkout
 and `publishToMavenLocal` remain supported. The npm packages are a separate
 JavaScript/web distribution.
+
+The sample APK is a debug/demo build, not a production application. The Maven
+documentation jars are minimal publication-compatibility artifacts, not a
+complete generated API reference; use this guide and the version-tagged source.
+Physical OEM-device, IME, TalkBack, and downstream production validation remain
+separate rollout requirements.
 
 See the repository [limitations](../docs/LIMITATIONS.md), [architecture](../docs/ARCHITECTURE.md),
 and [security policy](../SECURITY.md) before production rollout.

@@ -13,21 +13,17 @@
 [مشارکت](CONTRIBUTING.md) · [وضعیت پروژه](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> نسخهٔ `0.3.2` بخش وب و JavaScript برای هر ۱۲ بستهٔ `@bidilens/*` در npm
+> نسخهٔ `0.3.3` بخش وب و JavaScript برای هر ۱۲ بستهٔ `@bidilens/*` در npm
 > عمومی است و یکپارچگی رجیستری و SLSA provenance آن‌ها تأیید شده است؛ tarballها،
 > manifest و SBOM دقیق آن در
-> [انتشار تغییرناپذیر `v0.3.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.2)
+> [انتشار تغییرناپذیر `v0.3.3`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3)
 > نگه‌داری می‌شود. این نسخه پس از عبور از گیت کامل انتشار، از commit محافظت‌شدهٔ
-> `97f4827a9683c343a92f4ff31f4fa1fc0a718e99` منتشر شده است. نسخهٔ تاریخی `0.3.1`
-> نیز به‌صورت انتشار تغییرناپذیر در دسترس است. نسخهٔ `0.1.1` هستهٔ Kotlin و ماژول‌های Android Views و
-> Jetpack Compose نیز امضاشده و در Maven Central عمومی است؛ برنامهٔ نمونه و
-> شواهد انتشار در
-> [`android-v0.1.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1)
-> قرار دارند.
-> نامزدهای بررسی‌شدهٔ موجود در کد منبع، نسخهٔ `0.3.3` وب/بسته‌ها و نسخهٔ
-> `0.1.2` Android هستند. تا وقتی workflow محافظت‌شدهٔ انتشار و آزمون مصرف‌کنندهٔ
-> تمیز فقط از رجیستری با موفقیت تمام نشده‌اند، این دو نسخه عمومی محسوب نمی‌شوند؛
-> بنابراین مثال‌های نصب همچنان نسخه‌های عمومی و تأییدشدهٔ بالا را نشان می‌دهند.
+> `51dcd971efa5873a393b90cb6311c73f4315b8e8` منتشر شده است. نسخهٔ `0.1.2`
+> هستهٔ Kotlin و ماژول‌های Android Views و Jetpack Compose نیز از همین commit،
+> امضاشده و در Maven Central عمومی است؛ فایل‌های AAR، برنامهٔ نمونه، شواهد
+> امضا و checksum و نتیجهٔ آزمون مصرف‌کنندهٔ تمیز از رجیستری عمومی در
+> [انتشار تغییرناپذیر `android-v0.1.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
+> ثبت شده‌اند. نسخه‌های پیشین نیز به‌صورت آرشیو تغییرناپذیر در دسترس هستند.
 
 BidiLens یک ابزار متن‌باز و آفلاین برای نمایش درست متن‌های ترکیبی راست‌به‌چپ
 و چپ‌به‌راست در رابط‌های هوش مصنوعی، Markdown، برنامه‌های وب و Android است.
@@ -89,13 +85,13 @@ The Persian word کتاب means “book”.
 - بستهٔ Swift با نمای خواندنی `BidiText` برای SwiftUI و اتصال‌های UIKit،
   جداسازی جهت پاراگراف از ترازبندی فیزیکی و آزمون‌های شبیه‌ساز iOS.
 
-راهنمای نصب از source، تنظیم `android:supportsRtl="true"` و نمونه‌کدهای
+راهنمای نصب از Maven Central یا source، تنظیم `android:supportsRtl="true"` و نمونه‌کدهای
 Compose و Views در [راهنمای Android](android/README.md) قرار دارد.
 
 تمام بسته‌های عمومی ESM-only هستند و برای استفادهٔ سمت سرور به Node.js 22.12 یا
-جدیدتر نیاز دارند. مجموعهٔ کامل `0.3.2` در
+جدیدتر نیاز دارند. مجموعهٔ کامل `0.3.3` در
 [سازمان `@bidilens` در npm](https://www.npmjs.com/org/bidilens) منتشر شده است؛
-مجموعهٔ `0.3.1` نیز به‌عنوان نسخهٔ تاریخی تغییرناپذیر باقی مانده است.
+مجموعه‌های `0.3.2` و `0.3.1` نیز به‌عنوان نسخه‌های تاریخی تغییرناپذیر باقی مانده‌اند.
 
 پروژه با [مجوز MIT](LICENSE) متن‌باز است. شرایط داده‌های Unicode و بخش
 Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حفظ شده
@@ -109,7 +105,7 @@ Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حف
 استفاده است:
 
 ```html
-<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.2"></script>
+<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.3"></script>
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 
@@ -148,7 +144,7 @@ pnpm run android:check
 ## محدودیت‌های صریح
 
 نسخهٔ فعلی بسته‌های وب و TypeScript و پیاده‌سازی بومی Android را دارد.
-نسخهٔ `0.1.1` Android به‌صورت امضاشده در Maven Central منتشر شده و روی
+نسخهٔ `0.1.2` Android به‌صورت امضاشده در Maven Central منتشر شده و روی
 شبیه‌ساز آزموده شده است؛ آزمون دستگاه‌های فیزیکی OEM، صفحه‌کلیدهای مختلف،
 TalkBack و پایلوت محصول واقعی هنوز باقی مانده‌اند.
 Flutter، React Native، SwiftUI ویرایشی، Electron، افزونهٔ VS Code، PDF و آزمون

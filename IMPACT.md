@@ -2,26 +2,28 @@
 
 ## Measured in this repository
 
+Evidence snapshot: 2026-09-02, web `0.3.3` and Android `0.1.2` release source.
+
 - 12 public JavaScript packages with implementations, declarations, README,
   license, runnable example, and package-local assertion coverage;
 - 932 schema-validated direction fixtures with numbered logical words;
 - 0 fixtures currently certified by a native-language reviewer;
 - property-based stream/source/range checks;
-- 437 unit/property/action tests with 92.22% statements, 86.26% branches,
-  94.85% functions, and 95.02% lines overall (96.28% core lines), including
+- 439 unit/property/action tests with 92.25% statements, 86.28% branches,
+  94.86% functions, and 95.05% lines overall (96.32% core lines), including
   paragraph-boundary security, isolate balancing, and non-finite-option
   regressions;
 - 30 Playwright browser/visual tests spanning Chromium, Firefox, and WebKit, including
   structured Markdown, real Chromium clipboard verification, and no-build
   standalone Web Component loading, plus the full offline bilingual playground
   controls, corpus, copy invariant, theme, and export flow;
-- a self-contained 199,943-byte Node 24 GitHub Action bundle with source tests
+- a self-contained 185,234-byte Node 24 GitHub Action bundle with source tests
   and built-artifact safe/strict-failure probes;
 - reproducible Unicode 17.0.0 source and generated tables;
 - clean tarball installation, strict consumer type-check, runtime imports, and
   execution of the exact examples extracted from all 12 tarballs;
 - no known dependency vulnerabilities at the recorded audit;
-- a validated CycloneDX 1.7 SBOM with 577 components and 591 dependency
+- a validated CycloneDX 1.7 SBOM with 523 components and 537 dependency
   relationships;
 - all 12 tarballs installed and exercised in a strict isolated consumer.
 
