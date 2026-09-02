@@ -34,7 +34,9 @@ Android Gradle Plugin 9.3.2, compile SDK 36, and Kotlin 2.4.10.
 
 ## Use with Jetpack Compose
 
-Version `0.1.2` is signed and public on Maven Central. Normal Gradle setup is:
+Version `0.1.2` is signed and public on Maven Central. In the application's
+`settings.gradle.kts`, add any missing repositories without replacing existing
+repository configuration:
 
 ```kotlin
 dependencyResolutionManagement {
@@ -43,7 +45,11 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+```
 
+In the app module's `build.gradle.kts`, add the dependency:
+
+```kotlin
 dependencies {
     implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.2")
 }
@@ -66,8 +72,9 @@ Maven Central without a local publication step.
 ./android/gradlew -p android publishToMavenLocal
 ```
 
-For local development only, add `mavenLocal()` to the consumer's repositories
-before Maven Central, then use the same coordinate:
+For local development only, add `mavenLocal()` to the repositories inside
+`dependencyResolutionManagement` in the consumer's `settings.gradle.kts`,
+before Maven Central. Use the same coordinate in its app module:
 
 ```kotlin
 dependencies {

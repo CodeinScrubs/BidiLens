@@ -2,9 +2,9 @@
 
 **Initial outreach evidence date:** 2026-07-30
 
-**Last response audit:** 2026-09-01
+**Last response audit:** 2026-09-02 (focused project-mail search)
 
-**Last code-PR and publication audit:** 2026-09-02 (no mailbox refresh)
+**Last code-PR and publication audit:** 2026-09-02
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -267,10 +267,15 @@ A separate live code-PR check found:
   `7e824007a37d26f356f9fbb37d65db8e4cd12680` on 2026-08-14. This was a native
   implementation, not adoption of a BidiLens package dependency.
 
-No mailbox, other issue/discussion route, or new maintainer response was audited
-in this publication pass. No external outreach thread was edited or bumped,
-and no email or reminder was sent. Publication does not imply product adoption,
-company endorsement, or universal rendering correctness.
+The publication check did not refresh other issue/discussion routes. A later
+focused mailbox search on the same day used
+`in:anywhere after:2026/08/31 {BidiLens bidirectional "mixed-direction" RTL LTR "T-1645"} -from:me`.
+Its 36 matching messages were npm publication notices for the `0.3.1`, `0.3.2`,
+and `0.3.3` package sets; no new maintainer reply requiring an answer was found
+within that search. Existing drafts and account settings were left unchanged.
+No external outreach thread was edited or bumped, and no email or reminder was
+sent. Publication does not imply product adoption, company endorsement, or
+universal rendering correctness.
 
 ## Deliberate deferrals
 
