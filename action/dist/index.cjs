@@ -4623,7 +4623,7 @@ function renderBidiHtml(source, options = {}) {
 // packages/cli/package.json
 var package_default = {
   name: "@bidilens/cli",
-  version: "0.3.2",
+  version: "0.3.3",
   description: "CLI for inspecting direction and auditing hidden Unicode bidi controls.",
   license: "MIT",
   author: {

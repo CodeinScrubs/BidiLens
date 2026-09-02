@@ -4,7 +4,22 @@ The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
 checklist records the completed web/npm `0.3.2` (with `0.3.1` retained as a
 historical release) and Android/Maven `0.1.1`
-releases and the controls required for future releases.
+releases, the reviewed `0.3.3`/Android `0.1.2` source candidates, and the
+controls required for future releases.
+
+## Pending release candidates
+
+The current tree declares web/package `0.3.3` and Android `0.1.2`. These are
+reviewed source candidates, not registry-public release claims. Web `0.3.3`
+adds cross-platform combining-mark isolation parity; Android `0.1.2` also
+includes observable host-property ownership fixes for native adapters.
+
+Neither candidate becomes public merely by merging this version preparation.
+The exact merged `main` commit must pass every protected check, the appropriate
+protected publication workflow, registry integrity/provenance or signature
+verification, and a clean registry-only consumer. Only after those gates may
+the README install examples, latest-public statements, tags, and immutable
+GitHub releases move to `0.3.3` or `android-v0.1.2`.
 
 ## Android distribution boundary
 

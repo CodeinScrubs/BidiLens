@@ -1,5 +1,10 @@
 # @bidilens/playwright
 
+## 0.3.3
+
+Fixed-version release aligned with the public package set; no package-specific
+API changes.
+
 ## 0.3.2
 
 Fixed-version release aligned with the public package set; no package-specific

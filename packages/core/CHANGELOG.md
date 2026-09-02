@@ -1,5 +1,11 @@
 # @bidilens/core
 
+## 0.3.3
+
+### Patch Changes
+
+- f74139f: Keep Unicode combining marks attached to opposite-direction isolates across the TypeScript, Android, Apple, Windows, and Rust cores using generated Unicode 17 general-category ranges.
+
 ## 0.3.2
 
 ### Patch Changes

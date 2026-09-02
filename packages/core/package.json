@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/core",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Unicode direction analysis, isolation, streaming state, and bidi security primitives.",
   "license": "MIT",
   "author": {

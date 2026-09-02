@@ -5,16 +5,34 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.3.3 - 2026-09-02
+
+### Cross-platform direction correctness
+
 - Native Kotlin, Swift, .NET, and Rust isolation planners now keep every
   Unicode combining mark inside its neighboring opposite-direction isolate,
   matching the TypeScript core and preventing visible grapheme loss in Persian,
   Arabic, Hebrew, and other marked scripts.
+
+### Native adapter state ownership
+
 - Android Views, editable UIKit, and WPF adapters now adopt observable host
   direction/alignment changes made during a managed session instead of later
   restoring stale values. WPF updates also retain existing dependency-property
   bindings, Android exposes an explicit same-value ownership handoff, and
   editable UIKit now leaves distinct paragraph state untouched on pure LTR
   no-op paths.
+
+### Release integrity
+
+- Added a derived consistency gate that rejects drift between the Android
+  source version, sample, isolated Maven consumer, protected publishing
+  workflow, and source-checkout documentation.
+- Prepared the fixed 12-package `0.3.3` set and Android `0.1.2` source candidate
+  without presenting either as registry-public before protected publication and
+  clean registry-only consumer verification succeed.
 
 ## 0.3.2 - 2026-09-01
 

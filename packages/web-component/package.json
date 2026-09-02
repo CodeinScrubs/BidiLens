@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/web-component",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Framework-independent custom element for bidirectional AI messages.",
   "license": "MIT",
   "author": {

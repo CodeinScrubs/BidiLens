@@ -32,7 +32,8 @@ implementation or adoption claim.
 - native Android Kotlin core, Views and Compose adapters, photographed-case
   sample, generated 932-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
   API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.1`
-  publication, and independently verified public-consumer resolution.
+  publication, reviewed source candidate `0.1.2`, and independently verified
+  public-consumer resolution.
 
 ## Implemented in source; native release evidence pending
 

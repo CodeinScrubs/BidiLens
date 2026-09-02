@@ -31,6 +31,10 @@
 > are signed and public on Maven Central, with a verified sample and evidence
 > bundle in the
 > [`android-v0.1.1` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1).
+> The reviewed source candidates are web/package `0.3.3` and Android `0.1.2`.
+> They are not public registry releases until their protected publication
+> workflows and clean registry-only consumer checks succeed; install examples
+> therefore continue to use the verified public versions above.
 > Native Swift/UIKit/SwiftUI, .NET/WPF, and Rust core implementations are
 > present in source with dedicated CI gates, but are not yet registry-published
 > or validated in a downstream production/accessibility lab. Other

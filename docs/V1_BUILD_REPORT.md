@@ -1,12 +1,13 @@
 # BidiLens current verification and release report
 
-> This report separates the current `0.3.2` release evidence from immutable
-> publication history. Web/package `0.3.2` is the latest verified public
-> release; the prior `0.3.1` release is retained as historical evidence.
-> Publication evidence is retained by the protected workflow and GitHub release
-> linked below.
+> This report separates reviewed source candidates from immutable publication
+> history. Web/package `0.3.3` and Android `0.1.2` are the current source
+> candidates; they are not public registry releases until protected publication
+> and clean registry-only consumer verification succeed. Web/package `0.3.2`
+> and Android `0.1.1` remain the latest verified public releases. Publication
+> evidence is retained by the protected workflows and GitHub releases below.
 
-**Current-tree evidence date:** 2026-09-01
+**Current-tree evidence date:** 2026-09-02
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
@@ -17,7 +18,8 @@ immutable GitHub release containing the retained tarballs, release manifest,
 and CycloneDX 1.7 SBOM. The prior `0.3.1` release remains immutable and
 reproducible. The native Android `0.1.1` core, Views, and Compose modules are
 signed and public on Maven Central with an annotated tag, immutable release, and
-public-consumer evidence.
+public-consumer evidence. Source versions `0.3.3` and Android `0.1.2` remain
+unpublished candidates and are not included in those public-release claims.
 
 **Recommendation:** suitable for bounded, maintainer-controlled web pilots;
 not a universal cross-platform production release
@@ -41,7 +43,7 @@ opposite-direction runs.
 
 | Surface | Status | Evidence / boundary |
 |---|---|---|
-| `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 96.28% lines |
+| `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 96.32% lines |
 | `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, styles, observer lifecycle, detached/cross-realm DOM |
 | `@bidilens/html` | Complete and tested | escaped semantic blocks and `<bdi>` isolation, tag validation, source preservation |
 | `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed Markdown-It batch adapters; blocks/lists/tables/quotes/code/math/XSS; rich Markdown-It stream with AST/HTML/isolation/security final parity, dirty/pending ranges, and 97.29% lines |
@@ -57,7 +59,7 @@ opposite-direction runs.
 | React/Vite playground | Complete and tested | Static/offline; EN/FA UI, policy/security controls, adjustable stream, live four-way comparison, AST/evidence/isolation/security, searchable 932-case asset, copy verification, JSON/semantic HTML export, hash state and explicit theme; three-browser flow |
 | Corpus | Partial (with exact missing functionality) | 932 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
 | VS Code, Electron, PDF | Unsupported (with technical reason) | No implementations exist; hollow packages were rejected and these require host-specific security/print tests |
-| Native Android | Implemented and published | Signed Maven Central `0.1.1` core, Views, and Compose artifacts; sample APK; current source verifies 932 cases while the published release predates later boundary/evidence fixtures; JVM/Robolectric tests; lint/AAR build; and API 35/36 emulator UI evidence |
+| Native Android | Implemented; `0.1.1` published and `0.1.2` in source review | Signed Maven Central `0.1.1` core, Views, and Compose artifacts; source candidate `0.1.2` adds combining-mark parity and host-property ownership fixes; sample APK; 932-case verification; JVM/Robolectric tests; lint/AAR build; isolated Maven-local consumer; and API 35/36 emulator UI evidence |
 | Apple Swift/UIKit/SwiftUI | Implemented in source; registry and physical-device validation pending | Swift Package, generated Unicode 17 tables, 932-case corpus tests, UIKit adapters, UIKit-backed SwiftUI `BidiText`, independent physical alignment, and hosted macOS/iOS Simulator gates |
 | Windows .NET/WPF | Implemented in source; NuGet and physical-device validation pending | Dependency-free .NET 8 core, WPF adapters, 932-case executable corpus gate, state/selection restoration, physical-left RTL test, sample, build and package gates |
 | Rust | Implemented in source; crates.io and downstream validation pending | Native core, generated Unicode 17 tables, byte/UTF-16/code-point offsets, 932-case conformance, Linux/macOS/Windows CI, and a runnable example |
@@ -69,8 +71,8 @@ opposite-direction runs.
 | Command / gate | Observed result |
 |---|---|
 | `pnpm run check` | Unicode, strict TypeScript, ESLint, anti-hollow package depth, coverage, corpus, docs, 12 package builds plus demo, Action bundle and generated-artifact probes pass |
-| Vitest within `check` | 16 files, 437 tests pass |
-| Coverage (seeded run) | 92.22% statements, 86.26% branches, 94.85% functions, 95.02% lines; core 96.28%, Markdown 97.30%, Playwright helpers 100% lines |
+| Vitest within `check` | 17 files, 439 tests pass |
+| Coverage (seeded run) | 92.25% statements, 86.28% branches, 94.86% functions, 95.05% lines; core 96.32%, Markdown 97.30%, Playwright helpers 100% lines |
 | `pnpm run corpus:check` | 932/932; 0 native-speaker-reviewed |
 | `pnpm run android:check` | Kotlin core/Views/Compose unit suites, Android lint, all debug assemblies, and the sample APK pass with JDK 21 and SDK 36 |
 | Android device gates | 3/3 Views and 3/3 Compose UI tests pass locally on Android 16/API 36.1; CI defines a pinned API 35 emulator gate |
@@ -81,9 +83,9 @@ opposite-direction runs.
 | `pnpm run deps:audit` | no known vulnerabilities at audit time |
 | `pnpm licenses list --prod` | runtime dependency inventory reports MIT, ISC, BSD-2-Clause, and Python-2.0 licenses; Unicode data and the imported Apache-2.0 corpus are covered separately by the committed third-party notices |
 | `pnpm outdated -r` | only `@types/node` 26 and TypeScript 7 are newer majors; types stay aligned to supported Node 24 and TypeScript 6.0.3 is the newest line accepted by the installed `typescript-eslint` peer range |
-| `pnpm run sbom` + `pnpm run sbom:check` | CycloneDX 1.7; 577 components, 591 dependency relationships. cdxgen also reports inherited process environment warnings in the local execution environment; validation does not treat those environment warnings as component findings |
+| `pnpm run sbom` + `pnpm run sbom:check` | CycloneDX 1.7; 523 components, 537 dependency relationships. cdxgen also reports inherited process environment warnings in the local execution environment; validation does not treat those environment warnings as component findings |
 | actionlint 1.7.12 | CI, release-preparation, benchmark, and opt-in Pages workflows pass |
-| `pnpm run action:check` | 199,943-byte bundle; Node 24 metadata/notices and unresolved-import checks pass; built artifact returns 0 for safe source and 2 for a strict high-risk control without mutation |
+| `pnpm run action:check` | 185,234-byte bundle; Node 24 metadata/notices and unresolved-import checks pass; built artifact returns 0 for safe source and 2 for a strict high-risk control without mutation |
 | Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
 | Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.8, Vue 3.5.40, and Svelte 5 |
 | `pnpm run release:check` | strict clean-worktree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 12 tarballs execute. The pre-commit development tree also passed with `--allow-dirty` |
@@ -201,8 +203,8 @@ local numbers, not a service-level objective.
 ## Sibling-project comparison
 
 The canonical checkout is the strongest reproducible JavaScript/web
-implementation among the local sibling folders: 12 public packages, 16 test
-files with 437 tests, 932 fixtures, current generated Unicode data, real
+implementation among the local sibling folders: 12 public packages, 17 test
+files with 439 tests, 932 fixtures, current generated Unicode data, real
 three-engine visual evidence, and clean package-consumer gates. Broader
 native/desktop ideas found in sibling documentation are retained in the
 [traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.

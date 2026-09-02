@@ -57,6 +57,11 @@ transitively.
 
 For source-checkout development, publish the current modules to Maven Local:
 
+Source checkout version `0.1.2` is a reviewed release candidate containing the
+latest combining-mark parity and host-property ownership fixes. It is not a
+public Maven Central version until the protected publication workflow and a
+clean public-only consumer both succeed.
+
 ```bash
 ./android/gradlew -p android publishToMavenLocal
 ```
@@ -65,7 +70,7 @@ Then add:
 
 ```kotlin
 dependencies {
-    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.1")
+    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.2")
 }
 ```
 
