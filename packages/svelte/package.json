@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/svelte",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Svelte store adapter for bidirectional streaming messages.",
   "license": "MIT",
   "author": {

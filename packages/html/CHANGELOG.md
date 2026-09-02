@@ -1,5 +1,12 @@
 # @bidilens/html
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [f74139f]
+  - @bidilens/core@0.3.3
+
 ## 0.3.2
 
 ### Patch Changes

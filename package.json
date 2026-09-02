@@ -1,6 +1,6 @@
 {
   "name": "bidilens",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "description": "Standards-first bidirectional text tooling for AI chat, Markdown, streaming UIs, and developer tools.",
   "license": "MIT",

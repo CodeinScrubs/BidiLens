@@ -23,7 +23,7 @@ android {
 }
 
 dependencies {
-    implementation("io.github.codeinscrubs.bidilens:bidilens-core:0.1.1")
-    implementation("io.github.codeinscrubs.bidilens:bidilens-android-views:0.1.1")
-    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.1")
+    implementation("io.github.codeinscrubs.bidilens:bidilens-core:0.1.2")
+    implementation("io.github.codeinscrubs.bidilens:bidilens-android-views:0.1.2")
+    implementation("io.github.codeinscrubs.bidilens:bidilens-android-compose:0.1.2")
 }

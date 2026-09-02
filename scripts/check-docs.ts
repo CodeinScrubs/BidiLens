@@ -66,10 +66,20 @@ const markdownLink = /(?<!!)\[[^\]]*\]\(([^)]+)\)/gu;
 const rootManifest = JSON.parse(
   await readFile(resolve(root, 'package.json'), 'utf8')
 ) as { version?: unknown };
-const [androidBuild, androidWrapper, androidReadme] = await Promise.all([
+const [
+  androidBuild,
+  androidWrapper,
+  androidReadme,
+  androidSampleBuild,
+  androidConsumerBuild,
+  androidPublishWorkflow
+] = await Promise.all([
   readFile(resolve(root, 'android/build.gradle.kts'), 'utf8'),
   readFile(resolve(root, 'android/gradle/wrapper/gradle-wrapper.properties'), 'utf8'),
-  readFile(resolve(root, 'android/README.md'), 'utf8')
+  readFile(resolve(root, 'android/README.md'), 'utf8'),
+  readFile(resolve(root, 'android/sample/build.gradle.kts'), 'utf8'),
+  readFile(resolve(root, 'android/consumer-smoke/build.gradle.kts'), 'utf8'),
+  readFile(resolve(root, '.github/workflows/publish-android.yml'), 'utf8')
 ]);
 const androidApplicationPlugin = androidBuild.match(
   /id\("com\.android\.application"\) version "([^"]+)"/u
@@ -81,6 +91,16 @@ const kotlinComposePlugin = androidBuild.match(
   /id\("org\.jetbrains\.kotlin\.plugin\.compose"\) version "([^"]+)"/u
 )?.[1];
 const gradleWrapper = androidWrapper.match(/gradle-([0-9]+(?:\.[0-9]+)+)-bin\.zip/u)?.[1];
+const androidLibraryVersion = androidBuild.match(
+  /allprojects\s*\{[\s\S]*?\bversion = "([^"]+)"/u
+)?.[1];
+const androidSampleVersion = androidSampleBuild.match(/versionName = "([^"]+)"/u)?.[1];
+const androidConsumerVersions = [...androidConsumerBuild.matchAll(
+  /implementation\("io\.github\.codeinscrubs\.bidilens:[^:"]+:([^"]+)"\)/gu
+)].flatMap((match) => match[1] ? [match[1]] : []);
+const androidPublishVersion = androidPublishWorkflow.match(
+  /ANDROID_RELEASE_VERSION:\s*'([^']+)'/u
+)?.[1];
 
 if (!androidApplicationPlugin || !androidLibraryPlugin) {
   failures.push('android/build.gradle.kts must declare both Android Gradle Plugin versions.');
@@ -100,6 +120,31 @@ if (!kotlinComposePlugin) {
   failures.push('Unable to derive the Kotlin Compose plugin version.');
 } else if (!androidReadme.includes(`Kotlin ${kotlinComposePlugin}`)) {
   failures.push(`android/README.md does not mention Kotlin ${kotlinComposePlugin}.`);
+}
+if (!androidLibraryVersion) {
+  failures.push('Unable to derive the Android source release version.');
+} else {
+  if (androidSampleVersion !== androidLibraryVersion) {
+    failures.push(
+      `Android sample version ${String(androidSampleVersion)} does not match source ${androidLibraryVersion}.`
+    );
+  }
+  if (
+    androidConsumerVersions.length !== 3
+    || androidConsumerVersions.some((version) => version !== androidLibraryVersion)
+  ) {
+    failures.push(
+      `Android consumer versions ${androidConsumerVersions.join(', ') || '(missing)'} do not match source ${androidLibraryVersion}.`
+    );
+  }
+  if (androidPublishVersion !== androidLibraryVersion) {
+    failures.push(
+      `Android publish version ${String(androidPublishVersion)} does not match source ${androidLibraryVersion}.`
+    );
+  }
+  if (!androidReadme.includes(`Source checkout version \`${androidLibraryVersion}\``)) {
+    failures.push(`android/README.md does not identify source checkout version ${androidLibraryVersion}.`);
+  }
 }
 const corpus = JSON.parse(
   await readFile(resolve(root, 'corpus/cases.json'), 'utf8')

@@ -1,6 +1,6 @@
 {
   "name": "@bidilens/markdown",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Batch and streaming Markdown AST/HTML tooling for mixed RTL/LTR content.",
   "license": "MIT",
   "author": {
