@@ -31,9 +31,9 @@ implementation or adoption claim.
   an annotated source tag, and a protected human-approved release workflow.
 - native Android Kotlin core, Views and Compose adapters, photographed-case
   sample, generated 932-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
-  API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.1`
-  publication, reviewed source candidate `0.1.2`, and independently verified
-  public-consumer resolution.
+  API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.2`
+  publication with combining-mark parity and host-state ownership fixes, and
+  independently verified public-consumer resolution.
 
 ## Implemented in source; native release evidence pending
 
@@ -59,7 +59,7 @@ validation claims. The Rust core also has no editor-specific adapter yet.
   [accessibility checklist](ACCESSIBILITY.md);
 - external security review appropriate to the deployment risk;
 - a downstream pilot in a real AI interface with performance and rollback data;
-- maintainer review and disposition of the submitted host integration and
+- maintainer review and disposition of the two open host integration PRs and
   evidence bundles in the [public outreach log](OUTREACH_LOG.md);
 - an additional maintainer-controlled private conduct channel if community
   activity expands beyond GitHub.
@@ -72,9 +72,10 @@ validation claims. The Rust core also has no editor-specific adapter yet.
 - CSP-safe VS Code extension demonstration;
 - secure Electron example with clipboard and print/PDF verification;
 - browser HTML-to-PDF conformance;
-- two additional host-tested patch-quality upstream integrations; the first
-  submitted patch and current evidence bundles are recorded in the [outreach
-  log](OUTREACH_LOG.md).
+- two additional accepted host-tested patch-quality upstream integrations; the
+  first native implementation is merged in Streamdown, while Hermes and Cline
+  remain open. The current code PRs and evidence bundles are recorded in the
+  [outreach log](OUTREACH_LOG.md).
 
 The complete specification-to-evidence audit lives in
 [REQUIREMENT_MATRIX.md](REQUIREMENT_MATRIX.md).

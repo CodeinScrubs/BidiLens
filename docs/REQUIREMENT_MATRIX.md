@@ -1,6 +1,6 @@
 # Build-specification traceability matrix
 
-**Current-tree evidence date:** 2026-09-01
+**Current-tree evidence date:** 2026-09-02
 
 This file maps the binding “Ultimate Build Instruction — Cross-Platform
 Bidirectional Text Toolkit for AI Interfaces, version 2.0” to the source and
@@ -28,7 +28,7 @@ Status vocabulary:
 | LTR-only non-interference | Complete and tested for shipped web surfaces | In the default `auto` mode, ordinary LTR content in an LTR context emits no BidiLens direction attributes, wrappers, inline styles, or controls. Exact-output/tree/DOM tests cover core, HTML, DOM, Markdown, React, Vue, Svelte, Web Component, terminal, CLI, and Playwright helpers; inherited RTL and hidden-control counterexamples prevent an unsafe fast-path bypass |
 | Every public package has implementation, ≥25 package-local assertions, README/install, and example | Complete and executable | `pnpm run packages:depth` enforces this for all 12 packages; packed examples are also exercised by `pnpm run release:check` |
 | Full source lives in Git; annotated milestone tag after every gate | Partial | Reviewed source is committed to the canonical public Git repository, but only historical tags `m0` and `m1` exist. Missing history is not retroactively fabricated |
-| No fabricated badges, counts, adoption, or publication | Complete for the current tree | Publication is tied to registry/release evidence; the [outreach log](OUTREACH_LOG.md) labels submissions as contact only and makes no merge, audit, pilot, adoption, endorsement, or unverified badge claim |
+| No fabricated badges, counts, adoption, or publication | Complete for the current tree | Publication is tied to registry/release evidence; the [outreach log](OUTREACH_LOG.md) distinguishes submitted proposals from the verified Streamdown native-patch merge. Neither is presented as an audit, pilot, BidiLens dependency adoption, or company endorsement |
 | ≥300 corpus fixtures | Complete as a technical corpus; external review incomplete | 932 schema-valid entries; 735 authored template-matrix cases, 196 attributed sibling-project seeds, one user fixture; zero are marked native-speaker-reviewed |
 | Automated wrong-versus-correct visual proof | Complete and tested | `tests/visual/flagship.spec.ts` and committed Windows/Arial baselines; Chromium, Firefox, and WebKit gate |
 
@@ -71,7 +71,7 @@ batch plugin path; it is not misrepresented as a stateful streaming backend.
 
 | Surface | Status | Evidence or exact gap |
 |---|---|---|
-| Android/Jetpack Compose | Implemented; `0.1.1` published and `0.1.2` in source review; external validation pending | Maven Central `0.1.1` pure Kotlin core, Views, and Compose libraries; source candidate `0.1.2` adds combining-mark parity and host-property ownership fixes; sample app; generated 932-case corpus; JVM/Robolectric suites; lint/AAR/APK tasks; isolated Maven-local consumer; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
+| Android/Jetpack Compose | Implemented; `0.1.2` published; external validation pending | Signed Maven Central pure Kotlin core, Views, and Compose libraries with combining-mark parity and host-property ownership fixes; sample app; generated 932-case corpus; JVM/Robolectric suites; lint/AAR/APK tasks; isolated Maven-local and public-only consumers; 3 Views plus 3 Compose UI tests on local API 36.1; and an API 35 emulator CI gate. Physical-device/OEM/IME/TalkBack evidence and a downstream pilot remain open |
 | Flutter/Dart | Missing | No package/demo, generated corpus representation, widget/golden tests, or SDK build report |
 | React Native | Missing | No component, generated corpus representation, native tests, or platform build report |
 | Swift Package/SwiftUI/UIKit | Source and hosted simulator/compiler validation complete; physical-device/release validation pending | Swift Package, generated Unicode 17 ranges, copied 932-case corpus, core tests/example, UIKit `UILabel`/`UITextView`/`UITextField` adapters, UIKit-backed SwiftUI `BidiText`, independent physical alignment, and protected macOS/iOS Simulator gates in [CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml). Physical iOS/VoiceOver evidence, sample app, editable SwiftUI integration, and registry publication remain open |
@@ -136,7 +136,7 @@ recorded explicitly.
 | CI: VS Code and native builds | Partial | Android unit/lint/AAR/APK and API 35 device jobs are pinned and executable; signed Android publication has an isolated-consumer gate; Apple Swift/macOS/iOS Simulator, Windows .NET/WPF, and native Rust three-OS jobs have hosted compiler/test evidence. VS Code and unimplemented native-platform adapters remain open |
 | Changesets and human-controlled release workflow | Complete | Changesets configuration, opt-in web release preparation, protected manual npm publication with exact confirmation and provenance, and protected manual Maven Central publication with signing and version-reuse rejection |
 | Clean packed consumer | Complete and tested | `pnpm run release:check` passes from the reviewed clean commit: all 12 packages build, pack, inspect, install into a strict consumer, import at runtime, and execute their exact packed examples |
-| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata, `@bidilens` ownership, and `io.github.codeinscrubs` namespace verified; all 12 npm `0.3.2` packages are public with SLSA provenance and matching integrity; all three Android `0.1.1` modules are signed and public with matching Central artifacts, signatures, and checksums; release credentials are protected outside the repository |
+| Registry ownership, provenance, public repo metadata, credentials | Complete for the published package set | Canonical GitHub metadata, `@bidilens` ownership, and `io.github.codeinscrubs` namespace verified; all 12 npm `0.3.3` packages are public with SLSA provenance and matching integrity; all three Android `0.1.2` modules are signed and public with matching Central artifacts, signatures, and checksums; release credentials are protected outside the repository |
 | Name/trademark decision | Partial/external | ADR records provisional `BidiLens`; final registry/legal review is still required |
 
 ## Milestone gate status
@@ -155,7 +155,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | M6 ≥300/visual/copy | Implemented; historical gate incomplete | 932 corpus cases and 30 three-engine visual tests pass; no `m6` tag |
 | M7 native + terminal | Partial | Terminal, Android, SwiftUI/UIKit, and .NET/WPF exist; Flutter, React Native, and other documented native adapters remain open; no `m7` tag |
 | M8 playground/full EN/FA docs | Implemented; historical gate incomplete | Offline bilingual playground and EN/FA repository docs pass build/browser/link checks; no annotated `m8` tag |
-| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.2` web release, and signed `android-v0.1.1` Maven release. One host-tested native implementation merged upstream, but the required three integrations, downstream pilots, and adoption evidence remain incomplete |
+| M9 release/integrations | Partial | Package release side is complete: clean committed checkout, public npm artifacts, provenance, trusted publishing, SBOM, retained manifest, immutable `v0.3.3` web release, and signed `android-v0.1.2` Maven release. One host-tested native implementation merged upstream, but the required three integrations, downstream pilots, and adoption evidence remain incomplete |
 
 ## Definition-of-done audit
 
@@ -175,7 +175,7 @@ tag. Therefore working code alone cannot make an historical milestone green.
 | 12 | Complete for current packages — workflows validate, SBOM/license/notices exist |
 | 13 | Partial — one host-tested native implementation is merged; fewer than three integrations exist and no downstream pilot is evidenced |
 | 14 | Complete for current documented claims; continue checking after every change |
-| 15 | Partial — the reviewed source, current `v0.3.2` web release, and `android-v0.1.1` Maven release are public, but historical intermediate milestone tags were not fabricated retroactively |
+| 15 | Partial — the reviewed source, current `v0.3.3` web release, and `android-v0.1.2` Maven release are public, but historical intermediate milestone tags were not fabricated retroactively |
 
 ## Prior-attempt idea coverage
 

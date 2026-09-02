@@ -4,6 +4,8 @@
 
 **Last response audit:** 2026-09-01
 
+**Last code-PR and publication audit:** 2026-09-02 (no mailbox refresh)
+
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
 sends are verifiable only in the sender's mailbox. Neither kind of submission
@@ -39,7 +41,7 @@ endorsement.
 | OpenAI Codex CLI | [comment on issue #34871](https://github.com/openai/codex/issues/34871#issuecomment-5088082730) | Parent issue open | Separates bidi ordering from Arabic shaping and terminal capabilities. It offers the policy/corpus for a native Rust design rather than proposing a JavaScript dependency. |
 | OpenAI Codex community | [Show and tell #35557](https://github.com/openai/codex/discussions/35557) | Open | Public technical introduction, package/corpus summary, current integration evidence, limitations, and request for renderer/i18n review. |
 | Cline | [comment on feature discussion #12089](https://github.com/cline/cline/discussions/12089#discussioncomment-17793649) | Discussion open | Links the open renderer regression, supplies the mixed-content acceptance case, and offers a React/webview pilot or fixtures-only patch. |
-| Cline VS Code webview | [PR #12724](https://github.com/cline/cline/pull/12724) | Open but currently conflicting/dirty; hosted checks on the current head pass, and maintainer review is still required | Applies `@bidilens/markdown` at the existing React Markdown render boundary and adds Persian-majority, English-majority, and pure-English identity tests. Quality, unit, platform-integration, VS Code on Ubuntu/Windows, E2E on Ubuntu/macOS/Windows, and both Socket security checks passed; the branch needs an upstream conflict-resolution update before it can merge. |
+| Cline VS Code webview | [PR #12724](https://github.com/cline/cline/pull/12724) | Open and mergeable on 2026-09-02; protected merge is blocked and maintainer review is required | Applies `@bidilens/markdown` at the existing React Markdown render boundary and adds Persian-majority, English-majority, and pure-English identity tests. Current head `62d84984e5cd281797ee6943f4b819e4ca069ed2` exposes two successful Socket checks and one skipped badge-stripping check; the earlier full host-test result is not a current-head CI claim. Maintainer review and host CI approval remain external gates. |
 | Continue | [comment on issue #2767](https://github.com/continuedev/continue/issues/2767#issuecomment-5088124777) | Parent issue closed; reconsideration requested | Replaces the proposed global RTL rule with Auto/LTR/RTL policy and offers a focused GUI or fixtures-only patch. No new duplicate issue was created. |
 | assistant-ui | [Show and tell #5211](https://github.com/assistant-ui/assistant-ui/discussions/5211) | Open | Distinguishes the project's completed logical-layout work from per-message mixed-content direction and offers a documented `@bidilens/react` streaming recipe, adapter, hook, or fixtures-only path. |
 | AnythingLLM | [comment on canonical RTL issue #3430](https://github.com/Mintplex-Labs/anything-llm/issues/3430#issuecomment-5126056699) | Parent issue open | Supplies a per-block acceptance fixture and integration guidance. [BidiLens PR #57](https://github.com/CodeinScrubs/BidiLens/pull/57) addresses the Markdown-It 13/14/15 peer/type gap with packed cross-version evidence, but AnythingLLM's Node 18 floor still conflicts with BidiLens 0.3's Node 22.12 minimum; a native fixtures-only patch remains the non-regressive route unless that runtime boundary changes. |
@@ -236,6 +238,39 @@ a CycloneDX 1.7 SBOM; GitHub asset digests match the retained files.
 
 This update records release evidence only. External outreach threads were not
 changed, and no adoption, endorsement, or universal-rendering claim is made.
+
+### 0.3.3 and Android 0.1.2 completion update (2026-09-02)
+
+The release preparation in [PR #79](https://github.com/CodeinScrubs/BidiLens/pull/79)
+passed all 24 required CI/CodeQL contexts and merged as
+`51dcd971efa5873a393b90cb6311c73f4315b8e8`. Protected npm run
+[`33591632030`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33591632030)
+published all 12 `0.3.3` packages; protected Android run
+[`33610612564`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33610612564)
+published all three signed `0.1.2` modules to Central. Independent public
+consumers, retained/public artifact equality, npm provenance/signatures, and
+Android signatures/checksums verified. Immutable releases
+[`v0.3.3`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3) and
+[`android-v0.1.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
+retain the exact artifacts and evidence.
+
+A separate live code-PR check found:
+
+- Hermes #72508 is open and mergeable at
+  `09c51fdd59d8d64a4fa901ac437200bcfc15bd54`; GitHub reports protected merge
+  blocked, and no human approval is recorded.
+- Cline #12724 is open, mergeable, and review-required at
+  `62d84984e5cd281797ee6943f4b819e4ca069ed2`. Two Socket checks passed; the
+  full host CI matrix is not evidenced on this head. Older conflicting/head
+  status in the dated snapshots above remains historical, not current.
+- Streamdown #569 remains merged at
+  `7e824007a37d26f356f9fbb37d65db8e4cd12680` on 2026-08-14. This was a native
+  implementation, not adoption of a BidiLens package dependency.
+
+No mailbox, other issue/discussion route, or new maintainer response was audited
+in this publication pass. No external outreach thread was edited or bumped,
+and no email or reminder was sent. Publication does not imply product adoption,
+company endorsement, or universal rendering correctness.
 
 ## Deliberate deferrals
 

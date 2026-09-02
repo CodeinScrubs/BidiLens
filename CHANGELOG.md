@@ -30,9 +30,11 @@ No unreleased changes.
 - Added a derived consistency gate that rejects drift between the Android
   source version, sample, isolated Maven consumer, protected publishing
   workflow, and source-checkout documentation.
-- Prepared the fixed 12-package `0.3.3` set and Android `0.1.2` source candidate
-  without presenting either as registry-public before protected publication and
-  clean registry-only consumer verification succeed.
+- Published all 12 `0.3.3` npm packages and the three signed Android `0.1.2`
+  Maven Central modules from the same protected source commit after the full
+  release gate. Registry integrity, npm provenance, Android signatures,
+  registry-only consumers, and immutable release assets are verified; earlier
+  releases remain available as historical archives.
 
 ## 0.3.2 - 2026-09-01
 

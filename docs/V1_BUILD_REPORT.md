@@ -1,28 +1,25 @@
 # BidiLens current verification and release report
 
-> This report separates reviewed source candidates from immutable publication
-> history. Web/package `0.3.3` and Android `0.1.2` are the current source
-> candidates; they are not public registry releases until protected publication
-> and clean registry-only consumer verification succeed. Web/package `0.3.2`
-> and Android `0.1.1` remain the latest verified public releases. Publication
-> evidence is retained by the protected workflows and GitHub releases below.
+> This report separates verified publication from broader production claims.
+> Web/package `0.3.3` and Android `0.1.2` are public, with protected publication,
+> registry-only consumer checks, and immutable release evidence. That does not
+> certify every language, device, accessibility path, or downstream application.
 
 **Current-tree evidence date:** 2026-09-02
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
-**Publication status:** all 12 `0.3.2` packages are public with verified
+**Publication status:** all 12 `0.3.3` packages are public with verified
 registry integrity, `latest` tags, and SLSA provenance; exact source commit
-`97f4827a9683c343a92f4ff31f4fa1fc0a718e99` has an annotated `v0.3.2` tag and an
+`51dcd971efa5873a393b90cb6311c73f4315b8e8` has an annotated `v0.3.3` tag and an
 immutable GitHub release containing the retained tarballs, release manifest,
-and CycloneDX 1.7 SBOM. The prior `0.3.1` release remains immutable and
-reproducible. The native Android `0.1.1` core, Views, and Compose modules are
-signed and public on Maven Central with an annotated tag, immutable release, and
-public-consumer evidence. Source versions `0.3.3` and Android `0.1.2` remain
-unpublished candidates and are not included in those public-release claims.
+and CycloneDX 1.7 SBOM. Earlier releases remain immutable historical archives.
+The native Android `0.1.2` core, Views, and Compose modules from the same
+source commit are signed and public on Maven Central with an annotated tag,
+immutable release, and public-consumer evidence.
 
-**Recommendation:** suitable for bounded, maintainer-controlled web pilots;
-not a universal cross-platform production release
+**Recommendation:** suitable for bounded, maintainer-controlled web and Android
+pilots; not a universal cross-platform production release
 
 ## Mission and architecture
 
@@ -46,7 +43,7 @@ opposite-direction runs.
 | `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 96.32% lines |
 | `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, styles, observer lifecycle, detached/cross-realm DOM |
 | `@bidilens/html` | Complete and tested | escaped semantic blocks and `<bdi>` isolation, tag validation, source preservation |
-| `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed Markdown-It batch adapters; blocks/lists/tables/quotes/code/math/XSS; rich Markdown-It stream with AST/HTML/isolation/security final parity, dirty/pending ranges, and 97.29% lines |
+| `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed Markdown-It batch adapters; blocks/lists/tables/quotes/code/math/XSS; rich Markdown-It stream with AST/HTML/isolation/security final parity, dirty/pending ranges, and 97.30% lines |
 | `@bidilens/playwright` | Complete and tested | reusable direction/source/isolation/selection/clipboard/geometry assertions; 100% lines and real three-browser use |
 | `@bidilens/react` | Complete and tested | SSR-safe components, per-paragraph mixed-stream rendering, isolation, direction and stream hooks |
 | `@bidilens/spec` | Complete and tested | five versioned language-neutral schema documents, strict registry API, dual-offset compatibility, real-output and negative validation tests |
@@ -59,12 +56,12 @@ opposite-direction runs.
 | React/Vite playground | Complete and tested | Static/offline; EN/FA UI, policy/security controls, adjustable stream, live four-way comparison, AST/evidence/isolation/security, searchable 932-case asset, copy verification, JSON/semantic HTML export, hash state and explicit theme; three-browser flow |
 | Corpus | Partial (with exact missing functionality) | 932 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
 | VS Code, Electron, PDF | Unsupported (with technical reason) | No implementations exist; hollow packages were rejected and these require host-specific security/print tests |
-| Native Android | Implemented; `0.1.1` published and `0.1.2` in source review | Signed Maven Central `0.1.1` core, Views, and Compose artifacts; source candidate `0.1.2` adds combining-mark parity and host-property ownership fixes; sample APK; 932-case verification; JVM/Robolectric tests; lint/AAR build; isolated Maven-local consumer; and API 35/36 emulator UI evidence |
+| Native Android | Implemented; `0.1.2` published | Signed Maven Central core, Views, and Compose artifacts with combining-mark parity and host-property ownership fixes; sample APK; 932-case verification; 31 core, 13 Views, and 9 Compose JVM tests; lint/AAR build; isolated Maven-local and public-only consumers; and API 35/36 emulator UI evidence |
 | Apple Swift/UIKit/SwiftUI | Implemented in source; registry and physical-device validation pending | Swift Package, generated Unicode 17 tables, 932-case corpus tests, UIKit adapters, UIKit-backed SwiftUI `BidiText`, independent physical alignment, and hosted macOS/iOS Simulator gates |
 | Windows .NET/WPF | Implemented in source; NuGet and physical-device validation pending | Dependency-free .NET 8 core, WPF adapters, 932-case executable corpus gate, state/selection restoration, physical-left RTL test, sample, build and package gates |
 | Rust | Implemented in source; crates.io and downstream validation pending | Native core, generated Unicode 17 tables, byte/UTF-16/code-point offsets, 932-case conformance, Linux/macOS/Windows CI, and a runnable example |
 | Flutter and React Native | Unsupported (with technical reason) | No implementations, generated corpus representations, package builds, widget tests, or host integration evidence exist in this repository |
-| Upstream AI-product integrations | External review in progress; no adoption | One host-tested Hermes TUI patch is submitted as [NousResearch/hermes-agent#72508](https://github.com/NousResearch/hermes-agent/pull/72508); tailored evidence requests are public for six additional project families. No review, merge, pilot, deployment, or endorsement is claimed; see the [outreach log](OUTREACH_LOG.md). |
+| Upstream AI-product integrations | One native implementation merged; two code PRs open | [Streamdown #569](https://github.com/vercel/streamdown/pull/569) is merged as a dependency-free native patch. [Hermes #72508](https://github.com/NousResearch/hermes-agent/pull/72508) and [Cline #12724](https://github.com/cline/cline/pull/12724) remain open. A merge is not evidence of BidiLens dependency adoption, a production pilot, or company endorsement; see the [outreach log](OUTREACH_LOG.md). |
 
 ## Reproduced validation
 
@@ -89,24 +86,24 @@ opposite-direction runs.
 | Supported Node probes | built core and CLI pass Node 22.22.1 and 24.18.0; an additional Node 20.19.5 compatibility probe passed, but that EOL line is not a production support claim |
 | Packed framework peer probes | shipped examples pass React/React DOM 18.3.1, Vue/server-renderer 3.5.0, and Svelte 4.2.20; the primary consumer covers React 19.2.8, Vue 3.5.40, and Svelte 5 |
 | `pnpm run release:check` | strict clean-worktree build/pack/inspect/install/type/runtime/CLI consumer passes; exact examples extracted from all 12 tarballs execute. The pre-commit development tree also passed with `--allow-dirty` |
-| `pnpm run npm:release:dry-run -- --version 0.3.2` | all 12 aligned tarballs packed successfully before publication; no registry mutation occurred |
-| GitHub CI for release PR | [PR #72 CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/33505389242) passed all 24 required contexts, including Node 22/24, packed consumers, Windows/macOS, three browser engines, Android API 35, Apple, Windows/.NET, Rust on three OSes, audit/SBOM, workflow lint, Markdown-It 13/14/15, and five-language CodeQL |
-| Protected npm publication | [workflow run `33508856274`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33508856274) passed the full release gate, published all 12 `0.3.2` packages through OIDC trusted publishing, verified registry integrity/provenance, and retained the exact tarballs and manifest |
-| Immutable GitHub release | [`v0.3.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.2) resolves to published commit `97f4827a9683c343a92f4ff31f4fa1fc0a718e99`; GitHub reports the release immutable and records SHA-256 digests for all 12 package tarballs, the release manifest, and CycloneDX 1.7 SBOM |
-| External npm consumer | all 12 public packages installed from the registry; runtime imports, mixed Persian/English direction, streaming, CLI, and the pure-LTR no-op passed; current production dependency audit reported zero findings |
-| Android release CI | [13/13 jobs passed](https://github.com/CodeinScrubs/BidiLens/actions/runs/30337482079), including Android libraries/sample, isolated Maven consumer, and API 35 device tests |
-| Protected Android publication | [workflow run `30339097846`](https://github.com/CodeinScrubs/BidiLens/actions/runs/30339097846) signed and published all three Android `0.1.1` modules to Maven Central |
+| `pnpm run npm:release:dry-run -- --version 0.3.3` | all 12 aligned tarballs packed successfully before publication; no registry mutation occurred |
+| GitHub CI for release PR | [PR #79 CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/33589740575) passed all 19 jobs, including Node 22/24, packed consumers, Windows/macOS, three browser engines, Android API 35, Apple, Windows/.NET, Rust on three OSes, audit/SBOM, workflow lint, and Markdown-It 13/14/15. All five [CodeQL analyses](https://github.com/CodeinScrubs/BidiLens/actions/runs/33589740613) also passed: 24 required contexts in total |
+| Protected npm publication | [workflow run `33591632030`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33591632030) passed the full release gate, published all 12 `0.3.3` packages through OIDC trusted publishing, verified registry integrity/provenance, and retained the exact tarballs and manifest |
+| Immutable GitHub release | [`v0.3.3`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3) resolves to published commit `51dcd971efa5873a393b90cb6311c73f4315b8e8`; GitHub reports the release immutable and records SHA-256 digests for all 12 package tarballs, the release manifest, and CycloneDX 1.7 SBOM |
+| External npm consumer | all 12 public `0.3.3` packages installed from the registry; strict TypeScript, adapter/runtime imports, mixed Persian/English direction, source preservation, streaming, CLI, and pure-LTR no-op passed. `npm audit signatures` verified 114 signatures and 53 attestations across the installed dependency tree |
+| Android release CI | [PR #79 CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/33589740575) passed the Android libraries/sample, isolated Maven consumer, and API 35 device jobs |
+| Protected Android publication | [workflow run `33610612564`](https://github.com/CodeinScrubs/BidiLens/actions/runs/33610612564) signed and published all three Android `0.1.2` modules to Maven Central |
 | Public Maven consumer | all 15 primary files matched retained workflow bytes; 15 detached signatures and 30 Central checksums verified; an empty-Maven-Local consumer resolved all three public coordinates and built |
-| Immutable Android release | [`android-v0.1.1`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.1) resolves to the exact published commit and retains the AARs, sample APK, Maven repository, Central evidence, public key, and SHA-256 checksums |
+| Immutable Android release | [`android-v0.1.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2) resolves to the exact published commit and retains the AARs, sample APK, Maven repository, Central evidence, public key, and SHA-256 checksums |
 
 ## Post-release outreach evidence
 
-The outreach recorded before and after `0.3.1` remains independent of publication. The
-[outreach log](OUTREACH_LOG.md) links every live route, records one focused
-host-code PR, explains why other routes are issue/discussion proposals, and
-lists deliberate anti-spam deferrals. This activity does not change the
-published package bytes and does not count as an audit, merge, pilot,
-production deployment, adoption, or company endorsement.
+Outreach remains independent of publication. The [outreach log](OUTREACH_LOG.md)
+links every live route, records the merged Streamdown native patch and two
+open host-code PRs, explains the issue/discussion routes, and lists deliberate
+anti-spam deferrals. Only the Streamdown change has a verified upstream merge;
+neither submissions nor that merge establish a downstream pilot, production
+deployment, BidiLens dependency adoption, or company endorsement.
 
 Visual coverage includes the four-way flagship comparison, geometry, English
 mirror, per-paragraph direction, logical selection in three engines, actual
@@ -120,7 +117,7 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 | Package | Bytes | Enforced budget |
 |---|---:|---:|
 | CLI | 16,330 | 32,768 |
-| Core | 126,825 | 126,976 |
+| Core | 112,136 | 126,976 |
 | DOM | 18,321 | 20,480 |
 | HTML | 4,361 | 12,288 |
 | Markdown | 79,833 | 81,920 |
@@ -130,19 +127,20 @@ Aggregate emitted JavaScript, including chunks and before minification/gzip:
 | Svelte | 1,855 | 8,192 |
 | Terminal | 4,273 | 8,192 |
 | Vue | 4,553 | 12,288 |
-| Web Component | 37,391 | 81,920 |
+| Web Component | 29,960 | 81,920 |
 
-The core artifact is 26,941 bytes with gzip and 20,257 bytes with Brotli on
-this build. Its unminified increase funds exact batch/final token-policy parity,
-invisible-character auditing, atomic control-family sanitization, and
-closed-fence recognition across the tested token grammar and stream chunk
-boundaries; applications that do not import the stream API can still tree-shake
-that implementation. Live snapshots remain intentionally revisable while an
-unfinished token can still change classification; `finish()` is the exact
+On 2026-09-02, Node 25.2.1's default zlib settings measured the core entry at
+23,421 bytes with gzip and 19,601 bytes with Brotli. Compact generated Unicode
+range encoding reduces the emitted core and standalone Web Component while
+retaining the checksum-derived classification tables and test coverage. These
+are build-artifact measurements, not cross-runtime compression guarantees.
+Applications that do not import the stream API can still tree-shake that
+implementation. Live snapshots remain intentionally revisable while an
+unfinished token can change classification; `finish()` is the exact
 finalization boundary.
 
-The Markdown artifact is 15,053 bytes with gzip and 13,111 bytes with Brotli on
-this build. Its increase contains the serializable token AST, block-analysis
+The Markdown artifact is 15,135 bytes with gzip and 13,111 bytes with Brotli on
+the same build. It contains the serializable token AST, block-analysis
 report, security deltas, dirty/pending range protocol, geometric and
 context-changing structural checkpoints, bounded grammar-aware provisional
 state, and exact final reconciliation. Markdown-It remains a caller-owned
@@ -211,11 +209,12 @@ native/desktop ideas found in sibling documentation are retained in the
 
 ## Release decision
 
-The `0.3.2` code artifacts are published as a **maintainer-controlled public
-web beta**. npm publication, package provenance, registry-integrity
-verification, per-package trusted publishing, protected human approval, the
-annotated `v0.3.2` tag, and the immutable release are complete. Broad rollout
-still requires:
+The `0.3.3` web packages and Android `0.1.2` modules are published for
+**maintainer-controlled, bounded pilots**. npm and Maven publication, package
+provenance/signatures, registry-integrity verification, per-package trusted
+publishing, protected human approval, the annotated `v0.3.3` and
+`android-v0.1.2` tags, and immutable releases are complete. Broad rollout still
+requires:
 
 1. final name/trademark review appropriate to the adopter;
 2. native-language and accessibility review appropriate to claims;
@@ -226,9 +225,9 @@ Broad production or “all platforms” readiness is **not** claimed. Native
 Android Kotlin, Views, and Compose modules now have JVM, lint, sample-app, and
 emulator evidence plus signed Maven Central distribution, but physical OEM/IME
 and TalkBack validation, physical iOS/VoiceOver and Windows accessibility/IME
-labs, native registry publication beyond Android, PDF support, upstream
-integrations, native-speaker certification, an external security audit, and a
-real downstream pilot remain absent. Historical milestone tags between `m1`
-and the current `v0.3.2` release tag were not retroactively fabricated;
+labs, native registry publication beyond Android, PDF support, additional
+upstream integrations, native-speaker certification, an external security audit,
+and a real downstream pilot remain incomplete. Historical milestone tags
+between `m1` and the current `v0.3.3` release tag were not retroactively fabricated;
 publishing the reviewed source does not reconstruct the original stepwise tag
 history.
