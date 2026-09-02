@@ -60,6 +60,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    groups:
+      # The application and library plugins share one Android Gradle Plugin
+      # toolchain and must be validated and upgraded together.
+      android-gradle-plugin:
+        patterns:
+          - "com.android.application"
+          - "com.android.library"
     ignore:
       # Kotlin 2.4.10 is fully supported through Gradle 9.5. Keep the Android
       # wrapper at that compatibility boundary until JetBrains expands it.
