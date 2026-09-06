@@ -207,10 +207,12 @@ Use [Playwright helpers](../packages/playwright/README.md) and the
   and semantic `<bdi>` may be sufficient for a known-direction surface. Adoption
   is optional; do not weaken your host's compatibility or security requirements.
 
-## Offline CLI guidance (next release)
+## Offline CLI guidance (0.4.0+)
 
-The new `guide` command is **not in npm `0.3.3`**. Until the next CLI release,
-use this page with the published packages, or run it from a built source checkout:
+Version `0.4.0` adds the `guide` command; it is **not in `0.3.3`**. Check the
+[release status](../README.md) before requesting a version from npm. With CLI
+`0.4.0` installed, run `bidilens guide`, `bidilens guide react`, or
+`bidilens guide dom --json`. From a source checkout:
 
 ```bash
 pnpm run build

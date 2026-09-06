@@ -6,6 +6,18 @@ checklist records the completed web/npm `0.3.3` and Android/Maven `0.1.2`
 releases, preserves earlier publication evidence, and defines the controls
 required for future releases.
 
+## Pending npm 0.4.0 release
+
+The source checkout prepares the fixed npm package group at `0.4.0` for the
+offline integration guide and protected DOM exclusion fix. Android has no new
+changes requiring publication and remains `0.1.2`. Root/package/demo versions,
+Changesets changelogs, the citation, and the bundled Action must remain aligned.
+
+Do not treat this preparation as registry availability. Publish only after the
+reviewed release commit passes the complete protected matrix, then verify
+registry integrity/provenance and a clean registry-only consumer. Retain the
+exact publishing-run tarballs and SBOM in the immutable `v0.4.0` release.
+
 ## Current verified releases — 2026-09-02
 
 Web/package `0.3.3` and Android `0.1.2` are public from protected `main` commit

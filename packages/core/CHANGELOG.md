@@ -1,5 +1,10 @@
 # @bidilens/core
 
+## 0.4.0
+
+Release-group alignment with the integration-guide release; no core inference
+or public API behavior change in this version.
+
 ## 0.3.3
 
 ### Patch Changes

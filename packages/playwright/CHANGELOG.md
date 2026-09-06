@@ -1,5 +1,7 @@
 # @bidilens/playwright
 
+## 0.4.0
+
 ## 0.3.3
 
 Fixed-version release aligned with the public package set; no package-specific

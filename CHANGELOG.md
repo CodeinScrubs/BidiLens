@@ -7,6 +7,33 @@ is published under the public `@bidilens` npm scope.
 
 No unreleased changes.
 
+## 0.4.0 - release prepared; publication pending
+
+### Easier, bounded integration
+
+- Added a Start here guide with one-adapter selection, React/DOM/HTML/Markdown-It
+  recipes, compatibility boundaries, host validation, and rollback instructions.
+- Added offline `bidilens guide [target]` with 12 routes and versioned JSON.
+  It does not inspect projects, modify files, install dependencies, or use
+  network services or telemetry. The exact emitted recipes are compiled and
+  exercised against packed packages; docs snippets are checked for drift.
+- DOM starter mounting rejects editable containers; repeat cleanup is safe
+  across remounts. Default LTR non-intervention remains intact.
+
+### DOM ownership and release checks
+
+- Fixed `skipSelector` traversal into protected inline descendants and
+  standalone code. Containing blocks deliberately skip annotation to avoid
+  changing an editor-owned region's direction or inline nodes.
+- Added regression tests for protected text-node/selection identity in
+  Chromium, Firefox, and WebKit, plus clean-consumer recipe safety checks.
+- Made the Action's bundled-import check distinguish executable imports from
+  example strings using an AST, with positive and negative regression cases.
+- Refreshed the development-only fast-uri override to resolve known audit
+  findings. No runtime dependency was added.
+- All 12 npm packages align at `0.4.0`; unchanged packages move with the fixed
+  release group. Android remains at the verified public `0.1.2` release.
+
 ## 0.3.3 - 2026-09-02
 
 ### Cross-platform direction correctness
