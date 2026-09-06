@@ -13,10 +13,15 @@
 [![Node 22.12+](https://img.shields.io/badge/Node-22.12%2B-22d3ee.svg)](package.json)
 
 [Persian README / راهنمای فارسی](README.fa.md) ·
-[Quick start](#consumer-install) ·
+[Start here: choose one integration](docs/GETTING_STARTED.md) ·
 [Security](SECURITY.md) ·
 [Contributing](CONTRIBUTING.md) ·
 [Project status](docs/V1_BUILD_REPORT.md)
+
+**Adding BidiLens to an existing app?** Follow the
+[integration guide](docs/GETTING_STARTED.md) for one-package setup, copyable
+recipes, compatibility checks, and rollback. You do not need every package
+or a project-wide RTL migration.
 
 > [!IMPORTANT]
 > The JavaScript/web `0.3.3` release is public across all 12 `@bidilens/*`

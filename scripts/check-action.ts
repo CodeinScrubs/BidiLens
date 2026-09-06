@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import process from 'node:process';
+import { unresolvedBidiLensImports } from './lib/bundled-imports.js';
 
 const root = process.cwd();
 const actionDirectory = resolve(root, 'action');
@@ -35,8 +36,7 @@ assert(/main:\s*dist\/index\.cjs/u.test(metadata), 'action.yml main entry does n
 const bundleText = await readFile(bundle, 'utf8');
 const bundleBytes = (await stat(bundle)).size;
 assert(bundleBytes <= 256 * 1024, `Action bundle is ${bundleBytes} bytes; budget is 262144 bytes.`);
-assert(!/require\(["']@bidilens\//u.test(bundleText), 'Action bundle contains an unresolved @bidilens require.');
-assert(!/from\s+["']@bidilens\//u.test(bundleText), 'Action bundle contains an unresolved @bidilens import.');
+assert(unresolvedBidiLensImports(bundleText).length === 0, 'Action bundle contains an unresolved @bidilens module reference.');
 assert((await readFile(resolve(actionDirectory, 'THIRD_PARTY_NOTICES.md'), 'utf8')).includes('Commander'),
   'Action third-party notices must cover the bundled CLI dependency.');
 

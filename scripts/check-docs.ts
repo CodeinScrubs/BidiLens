@@ -17,6 +17,7 @@ const requiredDocuments = [
   'docs/ACCESSIBILITY.md',
   'docs/ARCHITECTURE.md',
   'docs/FAQ.md',
+  'docs/GETTING_STARTED.md',
   'docs/LIMITATIONS.md',
   'docs/MIGRATION.md',
   'docs/PERFORMANCE.md',

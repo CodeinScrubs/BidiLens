@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { Command, CommanderError } from 'commander';
 import { renderBidiHtml } from '@bidilens/html';
 import packageManifest from '../package.json' with { type: 'json' };
+import { formatIntegrationGuide, integrationGuide } from './guide.js';
 import {
   DEFAULT_PARAGRAPH_SEPARATOR_SOURCE,
   analyzeText,
@@ -264,6 +265,16 @@ function createCliProgram(state: RuntimeState): Command {
     .version(CLI_VERSION)
     .exitOverride()
     .configureOutput({ writeOut: state.stdout, writeErr: state.stderr });
+
+  program.command('guide')
+    .description('Print offline integration guidance without modifying your project')
+    .argument('[target]', 'adapter or platform; omit to list targets')
+    .option('--json', 'emit structured guidance with schemaVersion 1')
+    .action((target: string | undefined, options: { json?: boolean }) => {
+      line(state.stdout, options.json
+        ? JSON.stringify(integrationGuide(target), null, 2)
+        : formatIntegrationGuide(target));
+    });
 
   program.command('inspect')
     .description('Analyze a string or file')

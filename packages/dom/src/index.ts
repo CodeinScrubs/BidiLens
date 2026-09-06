@@ -44,6 +44,7 @@ export interface ApplyBidiOptions extends DetectionOptions {
   fallback?: Direction;
   includeRoot?: boolean;
   markAttribute?: string;
+  /** Exclude matching regions and whole blocks/code containing a match. */
   skipSelector?: string;
   onAnnotated?: (element: HTMLElement, direction: Direction) => void;
   /** Wrap technical and opposite-direction text runs in semantic bdi nodes. */
@@ -378,6 +379,8 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
   const codeSelector = options.codeSelector ?? DEFAULT_CODE_SELECTOR;
   const markAttribute = options.markAttribute ?? 'data-bidilens-block';
   const candidates = [...root.querySelectorAll(blockSelector)];
+  const isSkipped = (element: HTMLElement): boolean => Boolean(options.skipSelector
+    && (element.closest(options.skipSelector) || element.querySelector(options.skipSelector)));
 
   if (options.includeRoot && root.nodeType === 1) {
     const element = root as Element;
@@ -389,7 +392,9 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
 
   for (const candidate of candidates) {
     if (!isHTMLElement(candidate)) continue;
-    if (options.skipSelector && candidate.closest(options.skipSelector)) continue;
+    // Do not change an ancestor's direction or walk through its inline text
+    // when it contains a region whose DOM belongs to the host/editor.
+    if (isSkipped(candidate)) continue;
     if (candidate.matches(codeSelector)) continue;
 
     result.scanned += 1;
@@ -455,6 +460,7 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
 
   root.querySelectorAll(codeSelector).forEach((node) => {
     if (!isHTMLElement(node)) return;
+    if (isSkipped(node)) return;
     const owner = node.closest(blockSelector);
     if (owner && candidateSet.has(owner)) return;
     const hostDirection = options.inheritedDirection ?? inheritedDirection(node);

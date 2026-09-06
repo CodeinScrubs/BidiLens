@@ -216,6 +216,124 @@ function fileDependency(tarball: string): string {
   return `file:${tarball.replaceAll('\\', '/')}`;
 }
 
+async function verifyIntegrationGuides(consumer: string): Promise<void> {
+  // Consume the actual installed CLI output, not separately maintained copies
+  // of the examples. Compile against packed declarations and run the recipes.
+  for (const target of ['react', 'dom', 'html', 'markdown-it']) {
+    const output = await command('pnpm', ['exec', 'bidilens', 'guide', target, '--json'], consumer);
+    const report = JSON.parse(output) as {
+      schemaVersion?: number;
+      guide?: { example?: { filename?: string; code?: string } };
+    };
+    const example = report.guide?.example;
+    assert(report.schemaVersion === 1 && example && typeof example.code === 'string', `Missing packed guide for ${target}.`);
+    assert(example.filename?.endsWith(target === 'react' ? '.tsx' : '.ts'), `Unexpected guide extension for ${target}.`);
+    await writeFile(resolve(consumer, `guide-${target}.${target === 'react' ? 'tsx' : 'ts'}`), example.code, 'utf8');
+  }
+  await writeFile(resolve(consumer, 'tsconfig.guides.json'), JSON.stringify({
+    extends: './tsconfig.json',
+    compilerOptions: { noEmit: false, outDir: './compiled-guides' },
+    include: ['guide-*.ts', 'guide-*.tsx']
+  }));
+  await command('pnpm', ['exec', 'tsc', '-p', 'tsconfig.guides.json'], consumer);
+  await writeFile(resolve(consumer, 'verify-guides.mjs'), `
+import { strict as assert } from 'node:assert';
+import { JSDOM } from 'jsdom';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import MarkdownIt from 'markdown-it';
+import { Message } from './compiled-guides/guide-react.js';
+import { mountBidi } from './compiled-guides/guide-dom.js';
+import { renderMessage } from './compiled-guides/guide-html.js';
+import { createMessageParser } from './compiled-guides/guide-markdown-it.js';
+
+const rtl = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
+const mixedLtr = 'The Persian word کتاب means book.';
+const ltr = 'Plain English remains unchanged.';
+const attack = '<img src=x onerror=alert(1)> سلام';
+const parser = createMessageParser();
+const defaultParser = new MarkdownIt({ html: false });
+const renderers = [
+  (text, inheritedDirection) => renderToStaticMarkup(createElement(Message, { text, inheritedDirection })),
+  (text, inheritedDirection) => renderMessage(text, inheritedDirection),
+  (text, inheritedDirection) => createMessageParser(inheritedDirection).render(text)
+];
+for (const render of renderers) {
+  for (const [text, expected] of [[rtl, 'rtl'], [mixedLtr, 'ltr']]) {
+    const dom = new JSDOM(render(text, 'ltr'));
+    const block = dom.window.document.body.firstElementChild;
+    assert.equal(block.dir, expected);
+    assert.equal(block.textContent, text);
+    assert.ok(block.querySelector('bdi'));
+    dom.window.close();
+  }
+  assert.doesNotMatch(render(ltr, 'ltr'), /data-bidilens|dir=|<bdi/);
+  const inherited = new JSDOM(render(ltr, 'rtl'));
+  assert.equal(inherited.window.document.body.firstElementChild.dir, 'ltr');
+  inherited.window.close();
+  const escaped = new JSDOM(render(attack, 'ltr'));
+  assert.equal(escaped.window.document.querySelector('img'), null);
+  assert.equal(escaped.window.document.body.firstElementChild.textContent, attack);
+  escaped.window.close();
+}
+const left = new JSDOM(renderers[0](rtl, 'ltr'));
+assert.equal(left.window.document.body.firstElementChild.style.textAlign, 'left');
+assert.equal(left.window.document.body.firstElementChild.dir, 'rtl');
+left.window.close();
+assert.equal(parser.render(ltr), defaultParser.render(ltr));
+assert.equal(renderMessage(ltr), '<p>' + ltr + '</p>');
+
+for (const text of [rtl, ltr]) {
+  const dom = new JSDOM('<main><p style="text-align:left"></p><aside><p></p></aside></main>');
+  const document = dom.window.document;
+  const root = document.querySelector('main');
+  root.firstElementChild.textContent = text;
+  document.querySelector('aside p').textContent = ltr;
+  const before = root.outerHTML;
+  const siblingBefore = document.querySelector('aside').outerHTML;
+  const cleanup = mountBidi(root);
+  const paragraph = root.firstElementChild;
+  assert.equal(paragraph.textContent, text);
+  assert.equal(paragraph.style.textAlign, 'left');
+  assert.equal(paragraph.dir, text === rtl ? 'rtl' : '');
+  assert.equal(document.querySelector('aside').outerHTML, siblingBefore);
+  // Bound the asynchronous observation check without assuming a CI scheduler
+  // can always deliver the observer/debounce in one fixed delay.
+  paragraph.textContent = mixedLtr;
+  const deadline = Date.now() + 3000;
+  while (paragraph.dir !== 'ltr' && Date.now() < deadline) {
+    await new Promise((resolve) => dom.window.setTimeout(resolve, 10));
+  }
+  assert.equal(paragraph.dir, 'ltr');
+  assert.equal(paragraph.textContent, mixedLtr);
+  cleanup();
+  paragraph.textContent = text;
+  assert.equal(root.outerHTML, before);
+  const nextCleanup = mountBidi(root);
+  const remounted = root.outerHTML;
+  cleanup();
+  assert.equal(root.outerHTML, remounted);
+  nextCleanup();
+  assert.equal(root.outerHTML, before);
+  dom.window.close();
+}
+for (const editor of [
+  '<main contenteditable="true"><p>سلام React</p></main>',
+  '<main><p>سلام <span contenteditable="true">سلام React</span></p></main>',
+  '<main><div role="textbox"><p>سلام React</p></div></main>',
+  '<div contenteditable="true"><main><p>سلام React</p></main></div>'
+]) {
+  const dom = new JSDOM(editor);
+  const before = dom.window.document.body.innerHTML;
+  assert.throws(() => mountBidi(dom.window.document.querySelector('main')), /editor-free/);
+  assert.equal(dom.window.document.body.innerHTML, before);
+  dom.window.close();
+}
+console.log('Packed integration guides: 4 compiled; mixed direction, LTR, inherited RTL, escaping, alignment, editing exclusion, updates, and rollback passed.');
+`);
+  console.log((await command('node', ['verify-guides.mjs'], consumer)).trim());
+}
+
 async function verifyConsumer(tarballs: Map<string, string>, consumer: string): Promise<void> {
   const dependencies = Object.fromEntries([...tarballs].map(([name, tarball]) => [name, fileDependency(tarball)]));
   const localPackageOverrides = Object.fromEntries(
@@ -403,6 +521,7 @@ console.log('Clean consumer runtime imports and assertions passed.');
   const cliRuntime = await command('pnpm', ['exec', 'bidilens', 'inspect', '--text', 'React یک کتابخانه محبوب است.', '--json'], consumer);
   const cliReport = JSON.parse(cliRuntime) as { analysis?: { direction?: string } };
   assert(cliReport.analysis?.direction === 'rtl', 'Packed bidilens executable did not run or infer the expected direction.');
+  await verifyIntegrationGuides(consumer);
 
   const exampleDirectory = resolve(consumer, 'packed-examples');
   await mkdir(exampleDirectory, { recursive: true });
