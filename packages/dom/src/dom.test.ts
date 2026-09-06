@@ -121,6 +121,28 @@ describe('DOM adapter', () => {
     expect(neutral.hasAttribute('dir')).toBe(false);
   });
 
+  it('does not enter skipped inline descendants through their containing block', () => {
+    document.body.innerHTML = '<main><p id="mixed">React یک کتابخانه محبوب است. <span contenteditable="true">React یک کتابخانه است. <code>let x = 1;</code></span></p><p id="safe">React یک کتابخانه محبوب است.</p></main>';
+    const protectedBlock = document.querySelector('#mixed')!;
+    const before = protectedBlock.outerHTML;
+    const textNode = protectedBlock.querySelector('span')!.firstChild;
+    const result = applyBidi(document.body, { skipSelector: '[contenteditable]' });
+    expect(protectedBlock.outerHTML).toBe(before);
+    expect(protectedBlock.querySelector('span')!.firstChild).toBe(textNode);
+    expect(document.querySelector('#safe')!.getAttribute('dir')).toBe('rtl');
+    expect(result.scanned).toBe(1);
+  });
+
+  it('honors skipSelector for standalone code and its nested protected descendants', () => {
+    document.body.innerHTML = '<main dir="rtl"><div data-skip><code>let x = 1;</code></div><code id="nested">const <span data-skip>name</span> = 1;</code><code id="safe">let y = 2;</code></main>';
+    const skipped = document.querySelector('[data-skip]')!;
+    const nested = document.querySelector('#nested')!;
+    const before = [skipped.outerHTML, nested.outerHTML];
+    applyBidi(document.body, { skipSelector: '[data-skip]' });
+    expect([skipped.outerHTML, nested.outerHTML]).toEqual(before);
+    expect(document.querySelector('#safe')!.getAttribute('dir')).toBe('ltr');
+  });
+
   it('restores authored inline style when reapplying an RTL block as neutral', () => {
     document.body.innerHTML = '<main id="root"><p id="message" dir="auto" style="color:red">سلام</p></main>';
     const root = document.querySelector<HTMLElement>('#root')!;

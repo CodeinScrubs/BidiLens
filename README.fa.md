@@ -9,7 +9,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
 [![Unicode 17.0](https://img.shields.io/badge/Unicode-17.0-8b5cf6.svg)](unicode/README.md)
 
-[English README](README.md) · [امنیت](SECURITY.md) ·
+[English README](README.md) · [شروع سریع و انتخاب ابزار مناسب (انگلیسی)](docs/GETTING_STARTED.md) · [امنیت](SECURITY.md) ·
 [مشارکت](CONTRIBUTING.md) · [وضعیت پروژه](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
