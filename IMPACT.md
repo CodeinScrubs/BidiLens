@@ -30,14 +30,25 @@ Evidence snapshot: 2026-09-02, web `0.3.3` and Android `0.1.2` release source.
 Exact package sizes, commands, benchmark environment, and limitations are in
 the [build report](docs/V1_BUILD_REPORT.md).
 
+## Public contribution evidence
+
+Verified on 2026-09-06:
+
+- [Streamdown #569](https://github.com/vercel/streamdown/pull/569) merged on
+  2026-08-14 with a native Markdown direction implementation.
+- [CoderAI #3](https://github.com/mohamadreza1368/coderAI/pull/3) merged on
+  2026-09-04 with a native Unicode decimal-digit direction-detector fix.
+- GitHub reports 10 stars and 1 fork for BidiLens. These are a dated repository
+  snapshot, not a count of installed applications or an attributed campaign result.
+
+Neither contribution added a BidiLens package dependency. The
+[outreach log](docs/OUTREACH_LOG.md) records pending proposals separately.
+
 ## Not yet measured
 
-There are no claimed users, downloads, stars, external contributors, production
-deployments, accessibility lab results, independent security audit, grants, or
-sponsorships. One focused native implementation based on the BidiLens policy
-merged upstream in Streamdown; that is integration evidence, not proof of
-BidiLens dependency adoption or continued production use. All other outcomes
-require real external evidence.
+There are no confirmed downstream production deployments, accessibility lab
+results, independent security audits, grants, or sponsorships. Package download
+and repository traffic counts do not establish unique users or continued use.
 
 ## Intended impact
 

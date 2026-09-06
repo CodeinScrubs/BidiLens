@@ -3,10 +3,13 @@
 No downstream production adoption is claimed. The safest first use is a small,
 measured pilot in an open-source web chat renderer.
 
-The [public outreach log](OUTREACH_LOG.md) records the first submitted code
-integration and repository-specific review requests. Those submissions are
-evidence of contact only; none is a merge, pilot, external audit, adoption, or
-endorsement.
+The [public outreach log](OUTREACH_LOG.md) distinguishes submitted proposals,
+merged contributions, and evidence still needed. Native fixes have merged in
+[Streamdown #569](https://github.com/vercel/streamdown/pull/569) and
+[CoderAI #3](https://github.com/mohamadreza1368/coderAI/pull/3). These are
+upstream contribution results; neither added a BidiLens package dependency.
+Production deployment, accessibility certification, and continued package use
+still require confirmation from the host.
 
 ## Integration sequence
 
