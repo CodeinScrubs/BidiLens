@@ -322,7 +322,10 @@ No unrelated personal conversation was intentionally opened.
   editorial submission, not an accepted feature or endorsement.
 - Replaced and sent the pending n8n support draft with an accurate acknowledgment
   and a link to the [scoped proposal](outreach/N8N_COMMUNITY_PROPOSAL.md).
-  Community sign-in remains pending; no forum topic or n8n PR is claimed.
+  Later in the same day's continuation, community sign-in became available.
+  The feature proposal was submitted using the forum template; the forum
+  confirmed **Post Needs Approval** and one pending post. There is no public
+  topic URL, moderator approval, or n8n PR yet. No duplicate submission was made.
 - Gmail showed **Message sent** for both replies. That confirms sender-side
   submission only, not delivery or reading. No new mass-email wave was sent.
 
@@ -340,8 +343,10 @@ nine cases and Firefox/WebKit passed. Twenty repeated local demo tests passed
 unchanged. The hosted rerun of the same commit passed all ten Chromium cases,
 and the CI workflow completed successfully. The cause is not established, and
 these results must not be described as proving a fix for that intermittent
-failure. CodeQL's Swift check was still pending at this snapshot; all protected
-checks remain required before merging.
+failure. All required checks subsequently passed, and PR #81 merged as
+`265dab95af021bbe72f3a4e8dda31ba93528b71c`. GitHub marked all four alerts
+(#13 through #16) fixed and returned zero open Dependabot alerts in the
+follow-up check. No required gate was bypassed.
 
 ## Deliberate deferrals
 

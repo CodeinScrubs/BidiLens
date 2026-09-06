@@ -1,8 +1,13 @@
 # n8n Community proposal draft
 
-**Status:** prepared for human review; not posted.
+**Status (2026-09-06):** submitted to the n8n Community Feature Requests
+category using its required template. The forum confirmed **Post Needs
+Approval** and one pending post. No public topic URL or moderator approval is
+available yet. The submitted version includes an English translation of the
+Persian fixture, AI-assistance/maintainer disclosure, and an explicit statement
+that this is a design proposal, not a reproduced bug in the latest n8n release.
 
-## Suggested title
+## Submitted title
 
 Per-block mixed RTL/LTR direction in `@n8n/chat` Markdown messages
 
