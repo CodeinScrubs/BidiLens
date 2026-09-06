@@ -337,9 +337,11 @@ There is no public runtime behavior change or new package release in this work.
 
 The first hosted Chromium job had a blank demo-page failure, while its other
 nine cases and Firefox/WebKit passed. Twenty repeated local demo tests passed
-unchanged. The hosted job is being rerun; the cause is not established, and
+unchanged. The hosted rerun of the same commit passed all ten Chromium cases,
+and the CI workflow completed successfully. The cause is not established, and
 these results must not be described as proving a fix for that intermittent
-failure. Protected checks remain required before merging.
+failure. CodeQL's Swift check was still pending at this snapshot; all protected
+checks remain required before merging.
 
 ## Deliberate deferrals
 
