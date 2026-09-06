@@ -5,7 +5,27 @@
 > registry-only consumer checks, and immutable release evidence. That does not
 > certify every language, device, accessibility path, or downstream application.
 
-**Current-tree evidence date:** 2026-09-02
+**Current-tree evidence date:** 2026-09-06
+
+## 0.4.0 preparation — 2026-09-06
+
+The current source prepares npm `0.4.0`; registry publication is pending.
+Android stays at `0.1.2`. The earlier publication evidence below remains a
+historical record and is not a claim that `0.4.0` has been published.
+
+The integration change passed 479 tests in 19 files, with 92.32% statements,
+86.43% branches, 95.02% functions, and 95.07% lines. All 12 packed packages,
+declaration layouts, executable package examples, and the four actual CLI
+recipes passed consumer checks. The new editor exclusion regression passed
+in Chromium, Firefox, and WebKit. Hosted Firefox/WebKit passed; a local
+Firefox navigation timeout also reproduced against a minimal non-BidiLens
+HTTP server. The full protected matrix must pass on the release commit.
+
+The Start here guide, CLI adapter selection, editor-free starter guard,
+idempotent cleanup, DOM `skipSelector` fix, and AST bundle import audit were
+independently reviewed. No inference policy or native source changed.
+
+## Earlier release evidence
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 

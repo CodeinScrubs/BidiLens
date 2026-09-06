@@ -33,7 +33,7 @@ are configurable. Run the Node/JSDOM example after
 building with `pnpm --filter @bidilens/dom example`; consumers running that
 Node example also install its host harness with `npm install --save-dev jsdom`.
 
-In the next release (after `0.3.3`), `skipSelector` also excludes an entire
+Starting in `0.4.0`, `skipSelector` also excludes an entire
 block/code element containing a matching descendant, and covers standalone
 code. This conservative boundary prevents inline traversal and ancestor
 direction changes from interfering with a protected region. The surrounding

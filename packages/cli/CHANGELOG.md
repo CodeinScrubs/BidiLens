@@ -1,5 +1,23 @@
 # @bidilens/cli
 
+## 0.4.0
+
+### Minor Changes
+
+- 0659a6d: Add `bidilens guide [target]` with offline adapter selection, copyable React,
+  DOM, HTML, and Markdown-It examples, native platform routing, validation and
+  rollback advice, and versioned JSON output. The command never inspects or
+  modifies the consumer's project and adds no runtime dependency.
+
+  Honor DOM `skipSelector` for protected inline descendants and standalone code.
+  Whole blocks containing excluded regions are left untouched so inline
+  isolation and ancestor direction changes cannot enter an editor-owned region.
+
+### Patch Changes
+
+- @bidilens/core@0.4.0
+  - @bidilens/html@0.4.0
+
 ## 0.3.3
 
 ### Patch Changes

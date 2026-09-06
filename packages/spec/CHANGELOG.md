@@ -1,5 +1,9 @@
 # @bidilens/spec
 
+## 0.4.0
+
+Release-group alignment with the integration-guide release; no schema change.
+
 ## 0.3.3
 
 Fixed-version release aligned with the public package set; no package-specific

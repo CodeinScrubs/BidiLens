@@ -24,6 +24,10 @@ recipes, compatibility checks, and rollback. You do not need every package
 or a project-wide RTL migration.
 
 > [!IMPORTANT]
+> This checkout prepares npm `0.4.0` with offline integration guidance and
+> safer DOM exclusions. Publication is pending the protected release process;
+> the verified public release described below remains `0.3.3` until that completes.
+>
 > The JavaScript/web `0.3.3` release is public across all 12 `@bidilens/*`
 > packages with verified registry integrity and SLSA provenance; its exact
 > tarballs, manifest, and SBOM are retained in the immutable

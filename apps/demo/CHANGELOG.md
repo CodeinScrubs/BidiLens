@@ -1,5 +1,10 @@
 # @bidilens/demo
 
+## 0.4.0
+
+Align the private playground version with the integration-guide release and
+exercise the current package group. No additional demo feature is introduced.
+
 ## 0.3.3
 
 ### Patch Changes
