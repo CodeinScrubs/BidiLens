@@ -82,8 +82,8 @@ tested claim.
   production deployment or company adoption is claimed.
 
 Public issues, discussions, and integration pull requests are listed in the
-[outreach log](OUTREACH_LOG.md). One native implementation merged in Streamdown;
-the remaining open submissions prove that review was requested, not that any
+[outreach log](OUTREACH_LOG.md). Native contributions merged in Streamdown and
+CoderAI; these merges and the remaining open submissions do not prove that any
 host adopted the BidiLens dependency, deployed it, or endorsed BidiLens.
 
 ## Compatibility

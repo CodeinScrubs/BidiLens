@@ -1,17 +1,22 @@
 # n8n Community proposal draft
 
-**Status:** prepared for human review; not posted.
+**Status (2026-09-06):** submitted to the n8n Community Feature Requests
+category using its required template. The forum confirmed **Post Needs
+Approval** and one pending post. No public topic URL or moderator approval is
+available yet. The submitted version includes an English translation of the
+Persian fixture, AI-assistance/maintainer disclosure, and an explicit statement
+that this is a design proposal, not a reproduced bug in the latest n8n release.
 
-## Suggested title
+## Submitted title
 
 Per-block mixed RTL/LTR direction in `@n8n/chat` Markdown messages
 
 ## Problem
 
 `@n8n/chat` can display Arabic, Persian, Hebrew, Urdu, and other RTL text, but
-mixed-direction AI answers need a base direction per rendered block. CSS
-`dir="auto"` follows the first strong character, so it misclassifies a
-Persian-majority sentence that begins with a technical English token:
+mixed-direction AI answers need a base direction per rendered block. The HTML
+attribute `dir="auto"` follows the first strong character, which can differ
+from the intended base of a Persian explanation beginning with an English name:
 
 ```text
 React یک کتابخانه جاوااسکریپت بسیار محبوب است.
@@ -51,8 +56,11 @@ against Markdown-It 13.0.2, 14.3.1, and 15.0.1.
 | fenced TypeScript code inside an RTL answer | LTR code | surrounding prose resolves independently |
 | two paragraphs with different majorities | independent | no message-wide direction override |
 
-For every fixture, logical source, `textContent`, selection, and clipboard text
-must remain identical. Existing Markdown-It plugins and `html: false` behavior
+For every fixture, the stored logical Markdown must remain unchanged. Rendered
+`textContent`, selection, and plain-text clipboard output must preserve the
+corresponding visible text in logical order; they need not include Markdown
+syntax that the renderer normally removes. For plain-text fixtures, assert exact
+source identity as well. Existing Markdown-It plugins and `html: false` behavior
 must continue to work.
 
 ## Rollout and rollback
