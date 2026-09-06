@@ -71,6 +71,10 @@ The Persian word کتاب means “book”.
 
 ## Visual proof
 
+Read the practical guide: [When `dir="auto"` gets the first word right and the
+paragraph wrong](docs/MIXED_DIRECTION_TEXT.md), covering native HTML, alignment,
+inline isolation, Markdown, and regression checks.
+
 The first-strong behavior behind `dir="auto"` chooses the wrong paragraph base
 for the flagship sentence. BidiLens analyzes natural-language evidence, keeps
 the immutable logical source, and isolates the technical identifier.

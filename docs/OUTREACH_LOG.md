@@ -2,9 +2,9 @@
 
 **Initial outreach evidence date:** 2026-07-30
 
-**Last response audit:** 2026-09-02 (focused project-mail search)
+**Last response audit:** 2026-09-06 (focused project-mail search)
 
-**Last code-PR and publication audit:** 2026-09-02
+**Last code-PR audit:** 2026-09-06; **last publication audit:** 2026-09-02
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -36,7 +36,7 @@ endorsement.
 |---|---|---|---|
 | NousResearch Hermes Agent | [PR #72508](https://github.com/NousResearch/hermes-agent/pull/72508) | Open and mergeable; automated `hermes-sweeper` review recommended keeping it open with high salvageability; awaiting human maintainer review | Focused TUI implementation and tests. Uses Hermes's existing `bidi-js`, preserves the earlier test contributor's authorship, adds majority/tie/no-op coverage, and keeps an ASCII identity fast path. The focused 8-test suite, TypeScript check, Ink build, ESLint, Prettier, and diff check passed. The automated review rechecked current `main`, found the premise still present at the proposed renderer boundary, and reported no verified problem in the two-file diff. The host currently exposes no automated PR checks for this contribution, and automation is not maintainer approval. |
 | Google Antigravity CLI | [feature request #693](https://github.com/google-antigravity/antigravity-cli/issues/693) | Open | The public repository exposes documentation/examples rather than the product renderer. The request supplies the failure fixture and policy, asks for the correct contribution path, and offers a focused patch. |
-| Anthropic Claude Code | [comment on canonical RTL issue #76712](https://github.com/anthropics/claude-code/issues/76712#issuecomment-5088070430) | Parent issue open | Adds the English-first/Persian-majority gap left by first-strong CSS, a per-block webview plan, composer guidance, and an offer to patch a public renderer boundary. No duplicate issue was opened. |
+| Anthropic Claude Code | [comment on canonical RTL issue #76712](https://github.com/anthropics/claude-code/issues/76712#issuecomment-5088070430) | Closed by inactivity automation on 2026-09-05 | Adds the English-first/Persian-majority gap left by first-strong CSS, a per-block webview plan, composer guidance, and an offer to patch a public renderer boundary. No duplicate issue was opened; a fresh report requires a current reproduction. |
 | OpenAI Codex app/extension | [comment on issue #21563](https://github.com/openai/codex/issues/21563#issuecomment-5088082477) | Parent issue open | Proposes a native render-boundary integration that does not patch application files or stored chats and distinguishes content direction from global layout. |
 | OpenAI Codex CLI | [comment on issue #34871](https://github.com/openai/codex/issues/34871#issuecomment-5088082730) | Parent issue open | Separates bidi ordering from Arabic shaping and terminal capabilities. It offers the policy/corpus for a native Rust design rather than proposing a JavaScript dependency. |
 | OpenAI Codex community | [Show and tell #35557](https://github.com/openai/codex/discussions/35557) | Open | Public technical introduction, package/corpus summary, current integration evidence, limitations, and request for renderer/i18n review. |
@@ -277,6 +277,77 @@ No external outreach thread was edited or bumped, and no email or reminder was
 sent. Publication does not imply product adoption, company endorsement, or
 universal rendering correctness.
 
+## Response and contribution audit (2026-09-06)
+
+The public repository had 10 stars and 1 fork at this check. GitHub's rolling
+14-day traffic totals were 209 views (103 unique visitors) and 1,705 clones
+(82 unique cloners). These windows roll forward and do not attribute traffic
+to an email, article, integration, or individual user.
+
+### Upstream outcomes
+
+- [CoderAI PR #3](https://github.com/mohamadreza1368/coderAI/pull/3) merged on
+  2026-09-04. It corrects native Unicode decimal-digit handling; it does not
+  install a BidiLens dependency. Together with the previously merged
+  [Streamdown #569](https://github.com/vercel/streamdown/pull/569), this makes
+  two verified merged native contributions, not two product adoptions.
+- [Hermes #101641](https://github.com/NousResearch/hermes-agent/pull/101641)
+  was closed after checking a duplicate notice against the actual patch in
+  the earlier [#101628](https://github.com/NousResearch/hermes-agent/pull/101628).
+  Both address odd-level glyph mirroring. A
+  [follow-up comment](https://github.com/NousResearch/hermes-agent/pull/101641#issuecomment-5558031724)
+  preserves the extra regression-test offer and the visual-selection limitation.
+  Our [issue #101606](https://github.com/NousResearch/hermes-agent/issues/101606)
+  remains open and is linked by the earlier implementation. Neither PR was
+  claimed as merged in this audit.
+- Hermes #72508, Cline #12724, [Micky #6](https://github.com/xmannii/micky/pull/6),
+  [awesome-i18n #59](https://github.com/oh-jon-paul/awesome-i18n/pull/59), and
+  [awesome-webdesign-tools #110](https://github.com/nafasebra/awesome-webdesign-tools/pull/110)
+  remain open. Cline's full host CI still
+  needs maintainer approval; successful Socket checks are not a substitute.
+- Claude Code #76712 was closed by inactivity automation. The checked Codex,
+  Sentry, PostHog, Antigravity, OpenCowork, OpenChamber, and AnythingLLM routes
+  had no new human response requiring an answer. No unchanged thread was bumped.
+
+### Editorial and email follow-up
+
+A focused Gmail search reviewed project-related responses after 2026-08-01,
+excluding npm publication notifications and GitHub notifications where useful.
+No unrelated personal conversation was intentionally opened.
+
+- Replied in the existing Frontend Focus editorial thread with the new
+  [mixed-direction text guide](MIXED_DIRECTION_TEXT.md). The guide starts with
+  native HTML, includes before/after regression images and an executed package
+  example, and explains inference and accessibility limits. This is an
+  editorial submission, not an accepted feature or endorsement.
+- Replaced and sent the pending n8n support draft with an accurate acknowledgment
+  and a link to the [scoped proposal](outreach/N8N_COMMUNITY_PROPOSAL.md).
+  Later in the same day's continuation, community sign-in became available.
+  The feature proposal was submitted using the forum template; the forum
+  confirmed **Post Needs Approval** and one pending post. There is no public
+  topic URL, moderator approval, or n8n PR yet. No duplicate submission was made.
+- Gmail showed **Message sent** for both replies. That confirms sender-side
+  submission only, not delivery or reading. No new mass-email wave was sent.
+
+### Repository maintenance
+
+[PR #81](https://github.com/CodeinScrubs/BidiLens/pull/81) updates the private
+development dependency override for `fast-uri` from 3.1.5 to 3.1.6, addressing
+four high-severity advisories. The exact old override prevented Dependabot's
+attempted updates. Local audit, 439 tests, the 932-case corpus reproducibility
+check, package types, and all twelve packed-consumer release checks passed.
+There is no public runtime behavior change or new package release in this work.
+
+The first hosted Chromium job had a blank demo-page failure, while its other
+nine cases and Firefox/WebKit passed. Twenty repeated local demo tests passed
+unchanged. The hosted rerun of the same commit passed all ten Chromium cases,
+and the CI workflow completed successfully. The cause is not established, and
+these results must not be described as proving a fix for that intermittent
+failure. All required checks subsequently passed, and PR #81 merged as
+`265dab95af021bbe72f3a4e8dda31ba93528b71c`. GitHub marked all four alerts
+(#13 through #16) fixed and returned zero open Dependabot alerts in the
+follow-up check. No required gate was bypassed.
+
 ## Deliberate deferrals
 
 | Project/channel | Decision | Reason |
@@ -316,8 +387,8 @@ universal rendering correctness.
   results.
 - **Adopted:** the host confirms continued use in a released product.
 
-Only the first state is evidenced for most routes above. Of the three focused
-code PRs, Streamdown is merged while Hermes and Cline remain submitted without
-maintainer approval. See the [adoption
+Only the first state is evidenced for most routes above. Streamdown and CoderAI
+have merged native contributions; Hermes and Cline remain submitted without
+human maintainer approval. See the [adoption
 strategy](ADOPTION.md), [limitations](LIMITATIONS.md), and [outreach
 kit](OUTREACH.md) before describing this activity publicly.

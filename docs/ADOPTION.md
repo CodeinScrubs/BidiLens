@@ -3,10 +3,13 @@
 No downstream production adoption is claimed. The safest first use is a small,
 measured pilot in an open-source web chat renderer.
 
-The [public outreach log](OUTREACH_LOG.md) records the first submitted code
-integration and repository-specific review requests. Those submissions are
-evidence of contact only; none is a merge, pilot, external audit, adoption, or
-endorsement.
+The [public outreach log](OUTREACH_LOG.md) distinguishes submitted proposals,
+merged contributions, and evidence still needed. Native fixes have merged in
+[Streamdown #569](https://github.com/vercel/streamdown/pull/569) and
+[CoderAI #3](https://github.com/mohamadreza1368/coderAI/pull/3). These are
+upstream contribution results; neither added a BidiLens package dependency.
+Production deployment, accessibility certification, and continued package use
+still require confirmation from the host.
 
 ## Integration sequence
 
@@ -14,8 +17,10 @@ endorsement.
 2. Add the user flagship and local language cases to the host's tests.
 3. Enable `rehypeBidi`, `markdownItBidi`, `renderBidiHtml`, or `applyBidi` in a
    staging surface with raw HTML disabled.
-4. Verify source/log/model payloads remain unchanged and copied selection equals
-   the logical source.
+4. Verify source/log/model payloads remain unchanged. Copied selection should
+   preserve the corresponding visible text in logical order; rendered Markdown
+   may omit source syntax. An explicit raw-source copy action must return the
+   original source exactly.
 5. Exercise model-token boundaries and multiple paragraphs.
 6. Enable the CLI security audit as a non-blocking CI report, then choose an
    explicit fail policy.
@@ -28,7 +33,9 @@ endorsement.
 - the English mirror case remains LTR;
 - code, URLs, paths, and model names remain internally LTR;
 - final stream output equals batch direction/isolation results;
-- source, copy, search, and model payloads are byte-for-byte unchanged;
+- stored source, source-based search inputs, and model payloads are byte-for-byte
+  unchanged; rendered selection/copy preserves visible text in logical order,
+  and raw-source copy returns the original input exactly;
 - an LTR-only fixture produces no BidiLens DOM/AST attributes, wrappers, or
   inline styles unless `intervention: 'always'` is deliberately configured;
 - LTR text nested under an RTL ancestor still receives an explicit LTR base;
