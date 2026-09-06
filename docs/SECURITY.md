@@ -77,6 +77,16 @@ It cannot decide whether every control is malicious. Host applications should
 combine structured findings with file type, syntax, user trust, and review
 policy.
 
+## Development dependency maintenance
+
+The workspace pins `fast-uri` to `3.1.6`, which includes the upstream fixes for
+GHSA-jqff-g426-hqxp, GHSA-f65p-4m7j-42xc, GHSA-fph4-wmhf-6fwf, and
+GHSA-5jgf-p345-68v8. These advisories concern URI normalization and host
+confusion; the dependency is used by development/schema-validation tooling.
+The pin and lockfile must be updated together when a new patch is needed:
+an exact override can prevent Dependabot from resolving an otherwise available
+security update. Run `pnpm run deps:audit` after updating the lockfile.
+
 ## Responsible disclosure
 
 The repository-level `SECURITY.md` records the current reporting channel. A
