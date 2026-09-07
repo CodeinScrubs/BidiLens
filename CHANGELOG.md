@@ -7,7 +7,7 @@ is published under the public `@bidilens` npm scope.
 
 No unreleased changes.
 
-## 0.4.0 - release prepared; publication pending
+## 0.4.0 - 2026-09-07
 
 ### Easier, bounded integration
 
@@ -33,6 +33,9 @@ No unreleased changes.
   findings. No runtime dependency was added.
 - All 12 npm packages align at `0.4.0`; unchanged packages move with the fixed
   release group. Android remains at the verified public `0.1.2` release.
+- Published all 12 packages through the protected OIDC workflow, verified the
+  exact public bytes/provenance and a registry-only consumer, and retained the
+  artifacts and SBOM in the immutable `v0.4.0` release.
 
 ## 0.3.3 - 2026-09-02
 

@@ -24,18 +24,16 @@ recipes, compatibility checks, and rollback. You do not need every package
 or a project-wide RTL migration.
 
 > [!IMPORTANT]
-> This checkout prepares npm `0.4.0` with offline integration guidance and
-> safer DOM exclusions. Publication is pending the protected release process;
-> the verified public release described below remains `0.3.3` until that completes.
->
-> The JavaScript/web `0.3.3` release is public across all 12 `@bidilens/*`
+> The JavaScript/web `0.4.0` release is public across all 12 `@bidilens/*`
 > packages with verified registry integrity and SLSA provenance; its exact
 > tarballs, manifest, and SBOM are retained in the immutable
-> [`v0.3.3` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3).
+> [`v0.4.0` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.4.0).
 > It was published from protected `main` commit
-> `51dcd971efa5873a393b90cb6311c73f4315b8e8` after the complete release gate.
-> Native Android core, Views, and Compose `0.1.2` artifacts from the same
-> commit are signed and public on Maven Central. Their AARs, sample APK,
+> `46b9b21c6b58cdaa7b0b5e3473aa253ee6c07e52` after the complete release gate.
+> Version `0.4.0` adds offline integration guidance and safer DOM exclusions.
+> Native Android core, Views, and Compose remain at signed Maven Central
+> version `0.1.2`, published separately from commit
+> `51dcd971efa5873a393b90cb6311c73f4315b8e8`. Their AARs, sample APK,
 > public signature/checksum evidence, and clean public-consumer verification
 > are recorded in the immutable
 > [`android-v0.1.2` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2).
@@ -187,9 +185,9 @@ reordering and shaping; BidiLens supplies the application structure they need.
 
 All public packages are ESM-only, require maintained Node.js 22.12 or newer for
 server-side use, include declarations, a package README, license, and runnable example.
-Browser packages target current standards-based browsers. The complete `0.3.3`
+Browser packages target current standards-based browsers. The complete `0.4.0`
 package set is [published under the `@bidilens` npm scope](https://www.npmjs.com/org/bidilens);
-the prior `0.3.2` and `0.3.1` sets remain available as historical releases.
+the prior `0.3.3`, `0.3.2`, and `0.3.1` sets remain available as historical releases.
 
 ## Consumer install
 
@@ -211,7 +209,7 @@ For a no-build browser page, the published Web Component also exposes a
 standalone entry that bundles the core and needs no import map:
 
 ```html
-<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.3"></script>
+<script type="module" src="https://unpkg.com/@bidilens/web-component@0.4.0"></script>
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 

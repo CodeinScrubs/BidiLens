@@ -13,18 +13,17 @@
 [مشارکت](CONTRIBUTING.md) · [وضعیت پروژه](docs/V1_BUILD_REPORT.md)
 
 > [!IMPORTANT]
-> این checkout برای نسخهٔ npm `0.4.0` آماده شده است؛ انتشار آن هنوز در انتظار
-> بررسی‌ها و فرایند انتشار محافظت‌شده است. نسخهٔ عمومی تأییدشده تا پایان این
-> فرایند همان `0.3.3` است.
->
-> نسخهٔ `0.3.3` بخش وب و JavaScript برای هر ۱۲ بستهٔ `@bidilens/*` در npm
+> نسخهٔ `0.4.0` بخش وب و JavaScript برای هر ۱۲ بستهٔ `@bidilens/*` در npm
 > عمومی است و یکپارچگی رجیستری و SLSA provenance آن‌ها تأیید شده است؛ tarballها،
 > manifest و SBOM دقیق آن در
-> [انتشار تغییرناپذیر `v0.3.3`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3)
+> [انتشار تغییرناپذیر `v0.4.0`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.4.0)
 > نگه‌داری می‌شود. این نسخه پس از عبور از گیت کامل انتشار، از commit محافظت‌شدهٔ
-> `51dcd971efa5873a393b90cb6311c73f4315b8e8` منتشر شده است. نسخهٔ `0.1.2`
-> هستهٔ Kotlin و ماژول‌های Android Views و Jetpack Compose نیز از همین commit،
-> امضاشده و در Maven Central عمومی است؛ فایل‌های AAR، برنامهٔ نمونه، شواهد
+> `46b9b21c6b58cdaa7b0b5e3473aa253ee6c07e52` منتشر شده است. راهنمای ادغام آفلاین
+> و محافظت بهتر از نواحی مستثناشدهٔ DOM در نسخهٔ `0.4.0` اضافه شده‌اند.
+> هستهٔ Kotlin و ماژول‌های Android Views و Jetpack Compose همچنان در نسخهٔ
+> `0.1.2` باقی می‌مانند؛ انتشار جداگانهٔ آن‌ها از commit
+> `51dcd971efa5873a393b90cb6311c73f4315b8e8`، امضاشده و در Maven Central عمومی
+> است. فایل‌های AAR، برنامهٔ نمونه، شواهد
 > امضا و checksum و نتیجهٔ آزمون مصرف‌کنندهٔ تمیز از رجیستری عمومی در
 > [انتشار تغییرناپذیر `android-v0.1.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
 > ثبت شده‌اند. نسخه‌های پیشین نیز به‌صورت آرشیو تغییرناپذیر در دسترس هستند.
@@ -93,9 +92,9 @@ The Persian word کتاب means “book”.
 Compose و Views در [راهنمای Android](android/README.md) قرار دارد.
 
 تمام بسته‌های عمومی ESM-only هستند و برای استفادهٔ سمت سرور به Node.js 22.12 یا
-جدیدتر نیاز دارند. مجموعهٔ کامل `0.3.3` در
+جدیدتر نیاز دارند. مجموعهٔ کامل `0.4.0` در
 [سازمان `@bidilens` در npm](https://www.npmjs.com/org/bidilens) منتشر شده است؛
-مجموعه‌های `0.3.2` و `0.3.1` نیز به‌عنوان نسخه‌های تاریخی تغییرناپذیر باقی مانده‌اند.
+مجموعه‌های `0.3.3`، `0.3.2` و `0.3.1` نیز به‌عنوان نسخه‌های تاریخی تغییرناپذیر باقی مانده‌اند.
 
 پروژه با [مجوز MIT](LICENSE) متن‌باز است. شرایط داده‌های Unicode و بخش
 Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حفظ شده
@@ -109,7 +108,7 @@ Apache-2.0 پیکره در [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) حف
 استفاده است:
 
 ```html
-<script type="module" src="https://unpkg.com/@bidilens/web-component@0.3.3"></script>
+<script type="module" src="https://unpkg.com/@bidilens/web-component@0.4.0"></script>
 <bidi-message text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."></bidi-message>
 ```
 

@@ -1,25 +1,40 @@
 # BidiLens current verification and release report
 
 > This report separates verified publication from broader production claims.
-> Web/package `0.3.3` and Android `0.1.2` are public, with protected publication,
+> Web/package `0.4.0` and Android `0.1.2` are public, with protected publication,
 > registry-only consumer checks, and immutable release evidence. That does not
 > certify every language, device, accessibility path, or downstream application.
 
-**Current-tree evidence date:** 2026-09-06
+**Current-tree evidence date:** 2026-09-07
 
-## 0.4.0 preparation — 2026-09-06
+## Current 0.4.0 release evidence — 2026-09-07
 
-The current source prepares npm `0.4.0`; registry publication is pending.
-Android stays at `0.1.2`. The earlier publication evidence below remains a
-historical record and is not a claim that `0.4.0` has been published.
+All 12 npm `0.4.0` packages are public from protected source commit
+`46b9b21c6b58cdaa7b0b5e3473aa253ee6c07e52`; Android stays at its separately
+published `0.1.2`. [PR #84](https://github.com/CodeinScrubs/BidiLens/pull/84)
+passed all [19 CI jobs](https://github.com/CodeinScrubs/BidiLens/actions/runs/34053633393)
+and [five CodeQL analyses](https://github.com/CodeinScrubs/BidiLens/actions/runs/34053633462).
+The reviewed and merged trees match exactly. Protected npm run
+[`34104056339`](https://github.com/CodeinScrubs/BidiLens/actions/runs/34104056339)
+repeated the release gates and published through OIDC.
 
 The integration change passed 479 tests in 19 files, with 92.32% statements,
 86.43% branches, 95.02% functions, and 95.07% lines. All 12 packed packages,
 declaration layouts, executable package examples, and the four actual CLI
 recipes passed consumer checks. The new editor exclusion regression passed
-in Chromium, Firefox, and WebKit. Hosted Firefox/WebKit passed; a local
+in Chromium, Firefox, and WebKit. All 33 hosted browser tests passed. A local
 Firefox navigation timeout also reproduced against a minimal non-BidiLens
-HTTP server. The full protected matrix must pass on the release commit.
+HTTP server; universal local-browser reliability is not claimed.
+
+All retained/public package bytes, `latest` tags, registry integrity and SLSA
+source provenance were independently verified. A separate registry-only
+consumer passed strict TypeScript, adapter/runtime/source-preservation/LTR,
+guide and DOM-exclusion checks, installed CLI corpus tests, and `npm audit
+signatures`. The annotated immutable
+[`v0.4.0` release](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.4.0)
+retains exact artifacts, manifest, public evidence, and a validated CI SBOM
+(523 components, 537 dependency relationships); asset digests and GitHub's
+signed release attestation were verified. See [publication evidence](PUBLISHING.md).
 
 The Start here guide, CLI adapter selection, editor-free starter guard,
 idempotent cleanup, DOM `skipSelector` fix, and AST bundle import audit were
@@ -29,8 +44,8 @@ independently reviewed. No inference policy or native source changed.
 
 **License:** MIT, with Unicode-data and Apache-2.0 corpus third-party notices
 
-**Publication status:** all 12 `0.3.3` packages are public with verified
-registry integrity, `latest` tags, and SLSA provenance; exact source commit
+**Historical publication status:** all 12 `0.3.3` packages were independently
+verified with registry integrity, then-current `latest` tags, and SLSA provenance; exact source commit
 `51dcd971efa5873a393b90cb6311c73f4315b8e8` has an annotated `v0.3.3` tag and an
 immutable GitHub release containing the retained tarballs, release manifest,
 and CycloneDX 1.7 SBOM. Earlier releases remain immutable historical archives.
@@ -61,7 +76,7 @@ opposite-direction runs.
 | Surface | Status | Evidence / boundary |
 |---|---|---|
 | `@bidilens/core` | Complete and tested | Unicode analysis, raw and policy-adjusted evidence, configurable technical vocabulary, dual-offset isolation, security, revisable streaming with tested final chunk invariance, properties; 96.32% lines |
-| `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, styles, observer lifecycle, detached/cross-realm DOM |
+| `@bidilens/dom` | Complete and tested | apply/restore, custom selectors, protected descendant/standalone-code exclusions, styles, observer lifecycle, detached/cross-realm DOM |
 | `@bidilens/html` | Complete and tested | escaped semantic blocks and `<bdi>` isolation, tag validation, source preservation |
 | `@bidilens/markdown` | Complete and tested | unified/remark/rehype and typed Markdown-It batch adapters; blocks/lists/tables/quotes/code/math/XSS; rich Markdown-It stream with AST/HTML/isolation/security final parity, dirty/pending ranges, and 97.30% lines |
 | `@bidilens/playwright` | Complete and tested | reusable direction/source/isolation/selection/clipboard/geometry assertions; 100% lines and real three-browser use |
@@ -71,7 +86,7 @@ opposite-direction runs.
 | `@bidilens/svelte` | Complete and tested | idiomatic analysis and streaming stores |
 | `@bidilens/web-component` | Complete and tested | Side-effect-free main import, explicit/auto registration entries, safe DOM construction, self-contained CDN entry, real three-browser loading |
 | `@bidilens/terminal` | Complete and tested | ANSI-aware conservative output; emulator shaping remains host-dependent |
-| `@bidilens/cli` | Complete and tested | inspect/render/test/audit/lint/security-scan/sanitize; human/JSON/SARIF; real packed binary |
+| `@bidilens/cli` | Complete and tested | offline guide with 12 routes/four tested recipes; inspect/render/test/audit/lint/security-scan/sanitize; human/JSON/SARIF; real packed binary |
 | Bundled GitHub Action | Complete and tested | Node 24 audit/corpus action, human/JSON/SARIF, workspace-safe report path, real exit codes; source and generated-bundle probes |
 | React/Vite playground | Complete and tested | Static/offline; EN/FA UI, policy/security controls, adjustable stream, live four-way comparison, AST/evidence/isolation/security, searchable 932-case asset, copy verification, JSON/semantic HTML export, hash state and explicit theme; three-browser flow |
 | Corpus | Partial (with exact missing functionality) | 932 schema-valid technical/user cases, including 196 attributed sibling seeds; zero native-speaker-certified templates |
@@ -81,9 +96,13 @@ opposite-direction runs.
 | Windows .NET/WPF | Implemented in source; NuGet and physical-device validation pending | Dependency-free .NET 8 core, WPF adapters, 932-case executable corpus gate, state/selection restoration, physical-left RTL test, sample, build and package gates |
 | Rust | Implemented in source; crates.io and downstream validation pending | Native core, generated Unicode 17 tables, byte/UTF-16/code-point offsets, 932-case conformance, Linux/macOS/Windows CI, and a runnable example |
 | Flutter and React Native | Unsupported (with technical reason) | No implementations, generated corpus representations, package builds, widget tests, or host integration evidence exist in this repository |
-| Upstream AI-product integrations | One native implementation merged; two code PRs open | [Streamdown #569](https://github.com/vercel/streamdown/pull/569) is merged as a dependency-free native patch. [Hermes #72508](https://github.com/NousResearch/hermes-agent/pull/72508) and [Cline #12724](https://github.com/cline/cline/pull/12724) remain open. A merge is not evidence of BidiLens dependency adoption, a production pilot, or company endorsement; see the [outreach log](OUTREACH_LOG.md). |
+| Upstream AI-product integrations | Two native contributions merged; two code PRs open (checked 2026-09-07) | [Streamdown #569](https://github.com/vercel/streamdown/pull/569) and [CoderAI #3](https://github.com/mohamadreza1368/coderAI/pull/3) are merged as native fixes without a BidiLens package dependency. [Hermes #72508](https://github.com/NousResearch/hermes-agent/pull/72508) and [Cline #12724](https://github.com/cline/cline/pull/12724) remain open. A merge is not evidence of BidiLens dependency adoption, a production pilot, or company endorsement; see the [outreach log](OUTREACH_LOG.md). |
 
-## Reproduced validation
+## Historical 0.3.3 validation snapshot — 2026-09-02
+
+These exact counts, versions, and commands preserve the earlier release's
+evidence. Current 0.4.0 validation is recorded above; historical `latest` and
+dependency-update results are not current registry claims.
 
 | Command / gate | Observed result |
 |---|---|
@@ -119,10 +138,10 @@ opposite-direction runs.
 ## Post-release outreach evidence
 
 Outreach remains independent of publication. The [outreach log](OUTREACH_LOG.md)
-links every live route, records the merged Streamdown native patch and two
+links every live route, records the merged Streamdown and CoderAI native fixes and two
 open host-code PRs, explains the issue/discussion routes, and lists deliberate
-anti-spam deferrals. Only the Streamdown change has a verified upstream merge;
-neither submissions nor that merge establish a downstream pilot, production
+anti-spam deferrals. The Streamdown and CoderAI changes have verified upstream merges;
+neither submissions nor those merges establish a downstream pilot, production
 deployment, BidiLens dependency adoption, or company endorsement.
 
 Visual coverage includes the four-way flagship comparison, geometry, English
@@ -130,15 +149,15 @@ mirror, per-paragraph direction, logical selection in three engines, actual
 Chromium clipboard text, stream settlement, dark mode/zoom, and structured
 Markdown heading/list/blockquote/table/code output.
 
-## Artifact sizes
+## 0.4.0 artifact sizes
 
 Aggregate emitted JavaScript, including chunks and before minification/gzip:
 
 | Package | Bytes | Enforced budget |
 |---|---:|---:|
-| CLI | 16,330 | 32,768 |
+| CLI | 27,731 | 32,768 |
 | Core | 112,136 | 126,976 |
-| DOM | 18,321 | 20,480 |
+| DOM | 18,465 | 20,480 |
 | HTML | 4,361 | 12,288 |
 | Markdown | 79,833 | 81,920 |
 | Playwright | 8,542 | 16,384 |
@@ -221,18 +240,18 @@ local numbers, not a service-level objective.
 ## Sibling-project comparison
 
 The canonical checkout is the strongest reproducible JavaScript/web
-implementation among the local sibling folders: 12 public packages, 17 test
-files with 439 tests, 932 fixtures, current generated Unicode data, real
+implementation among the audited local sibling folders: 12 public packages, 19 test
+files with 479 tests, 932 fixtures, current generated Unicode data, real
 three-engine visual evidence, and clean package-consumer gates. Broader
 native/desktop ideas found in sibling documentation are retained in the
 [traceability audit](PROJECT_COMPARISON.md), not misrepresented as working code.
 
 ## Release decision
 
-The `0.3.3` web packages and Android `0.1.2` modules are published for
+The `0.4.0` web packages and Android `0.1.2` modules are published for
 **maintainer-controlled, bounded pilots**. npm and Maven publication, package
 provenance/signatures, registry-integrity verification, per-package trusted
-publishing, protected human approval, the annotated `v0.3.3` and
+publishing, protected maintainer approval, the annotated `v0.4.0` and
 `android-v0.1.2` tags, and immutable releases are complete. Broad rollout still
 requires:
 
@@ -248,6 +267,6 @@ and TalkBack validation, physical iOS/VoiceOver and Windows accessibility/IME
 labs, native registry publication beyond Android, PDF support, additional
 upstream integrations, native-speaker certification, an external security audit,
 and a real downstream pilot remain incomplete. Historical milestone tags
-between `m1` and the current `v0.3.3` release tag were not retroactively fabricated;
+between `m1` and the current `v0.4.0` release tag were not retroactively fabricated;
 publishing the reviewed source does not reconstruct the original stepwise tag
 history.
