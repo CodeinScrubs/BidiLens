@@ -2,23 +2,45 @@
 
 The canonical source is published at
 [`CodeinScrubs/BidiLens`](https://github.com/CodeinScrubs/BidiLens). This
-checklist records the completed web/npm `0.3.3` and Android/Maven `0.1.2`
+checklist records the completed web/npm `0.4.0` and Android/Maven `0.1.2`
 releases, preserves earlier publication evidence, and defines the controls
 required for future releases.
 
-## Pending npm 0.4.0 release
+## Current verified npm release — 2026-09-07
 
-The source checkout prepares the fixed npm package group at `0.4.0` for the
-offline integration guide and protected DOM exclusion fix. Android has no new
-changes requiring publication and remains `0.1.2`. Root/package/demo versions,
-Changesets changelogs, the citation, and the bundled Action must remain aligned.
+All 12 npm packages are public at `0.4.0` from protected `main` commit
+`46b9b21c6b58cdaa7b0b5e3473aa253ee6c07e52`. The integration changes in
+[PR #83](https://github.com/CodeinScrubs/BidiLens/pull/83) and release preparation
+in [PR #84](https://github.com/CodeinScrubs/BidiLens/pull/84) were independently
+reviewed. The release candidate passed all 19
+[CI jobs](https://github.com/CodeinScrubs/BidiLens/actions/runs/34053633393) and
+five [CodeQL analyses](https://github.com/CodeinScrubs/BidiLens/actions/runs/34053633462).
+Its reviewed head and merged commit share tree
+`8769b57e5837f67c51d2a9c5d12ee1e415459138`.
 
-Do not treat this preparation as registry availability. Publish only after the
-reviewed release commit passes the complete protected matrix, then verify
-registry integrity/provenance and a clean registry-only consumer. Retain the
-exact publishing-run tarballs and SBOM in the immutable `v0.4.0` release.
+- Protected npm run
+  [`34104056339`](https://github.com/CodeinScrubs/BidiLens/actions/runs/34104056339)
+  repeated the quality, audit, and clean packed-consumer gates, then published
+  the complete fixed group through OIDC. No new npm token was required.
+- Independent verification matched all 12 retained/public tarball bytes,
+  SHA-256 and registry SHA-512 integrity, `latest@0.4.0`, and SLSA provenance
+  tied to that source commit and publishing workflow. A fresh registry-only
+  consumer passed strict TypeScript, runtime/source-preservation/LTR checks,
+  protected DOM exclusion, installed CLI guidance and corpus tests, and
+  cryptographic verification with `npm audit signatures` (115 verified registry
+  signatures and 54 attestations across the whole consumer dependency tree).
+- Annotated tag and immutable release
+  [`v0.4.0`](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.4.0) retain
+  the exact 12 tarballs, publication manifest, independent registry evidence,
+  and validated CI CycloneDX 1.7 SBOM. GitHub asset digests match local SHA-256;
+  the signed release attestation was verified.
 
-## Current verified releases — 2026-09-02
+Android has no new source changes in this release and remains at public
+`0.1.2`, tied to its earlier source commit and evidence below. Apple, Windows,
+and Rust implementations remain source-distributed; this npm release does not
+claim native registry publication or physical-device/accessibility certification.
+
+## Earlier npm release and current Android evidence — 2026-09-02
 
 Web/package `0.3.3` and Android `0.1.2` are public from protected `main` commit
 `51dcd971efa5873a393b90cb6311c73f4315b8e8`. The release preparation in
@@ -134,13 +156,13 @@ new version.
 - MIT project license plus Unicode and imported-corpus notices;
 - human-controlled release preparation and protected npm publication
   workflows;
-- all 12 `@bidilens/*@0.3.3` packages published publicly with SLSA provenance;
+- all 12 `@bidilens/*@0.4.0` packages published publicly with SLSA provenance;
 - retained release tarballs whose SHA-512 values match the public registry;
 - per-package GitHub OIDC trusted publishers bound to `publish.yml` and the
   protected `npm-release` environment;
 - token-based publishing disabled through npm's recommended
   `Require two-factor authentication and disallow tokens` package setting;
-- annotated `v0.3.3` tag and immutable GitHub release for the exact published
+- annotated `v0.4.0` tag and immutable GitHub release for the exact published
   source commit, with all package tarballs, release manifest, and SBOM attached;
 - signed Android `0.1.2` artifacts published under the verified
   `io.github.codeinscrubs.bidilens` namespace, with protected release evidence,

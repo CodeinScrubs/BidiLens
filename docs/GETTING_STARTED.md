@@ -209,9 +209,16 @@ Use [Playwright helpers](../packages/playwright/README.md) and the
 
 ## Offline CLI guidance (0.4.0+)
 
-Version `0.4.0` adds the `guide` command; it is **not in `0.3.3`**. Check the
-[release status](../README.md) before requesting a version from npm. With CLI
-`0.4.0` installed, run `bidilens guide`, `bidilens guide react`, or
+Version `0.4.0` adds the `guide` command; it is **not in `0.3.3`**. To try the
+published CLI without installing it globally:
+
+```bash
+npx --package=@bidilens/cli@0.4.0 bidilens guide react
+npx --package=@bidilens/cli@0.4.0 bidilens guide dom --json
+```
+
+`npx` downloads the package when needed; the guide command itself is offline.
+With CLI `0.4.0` installed, run `bidilens guide`, `bidilens guide react`, or
 `bidilens guide dom --json`. From a source checkout:
 
 ```bash
