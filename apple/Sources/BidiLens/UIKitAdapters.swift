@@ -98,14 +98,19 @@ public enum BidiUIKit {
         }
         let currentAlignment = label.textAlignment
         let alignmentOwned = currentAlignment == state.renderedAlignment
+        var restored: NSAttributedString?
         if let current = label.attributedText, current.string == state.source {
-            label.attributedText = restoringParagraphState(
+            restored = restoringParagraphState(
                 current, from: state.paragraphs,
                 renderedDirection: state.renderedDirection,
                 renderedAlignment: state.renderedAlignment
             )
         }
+        // UILabel's scalar setter applies alignment to all attributed text.
+        // Install the preserved per-paragraph styles after that setter, so a
+        // host's independently edited paragraph alignment is not flattened.
         label.textAlignment = alignmentOwned ? state.alignment : currentAlignment
+        if let restored { label.attributedText = restored }
     }
 
 

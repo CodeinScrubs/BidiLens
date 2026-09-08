@@ -247,6 +247,13 @@ function isHTMLElement(value: Element): value is HTMLElement {
 
 function inheritedDirection(element: HTMLElement): ResolvedDirection {
   const state = originalStates.get(element);
+  if (state?.applied.has('dir') && element.getAttribute('dir') !== state.applied.get('dir')) {
+    // An observable author handoff ends the old ownership session. Restore
+    // only still-owned properties before reading the actual CSS cascade;
+    // otherwise our inline direction can hide the author's replacement dir.
+    restoreElementState(element);
+    return inheritedDirection(element);
+  }
   const original = originalDirections.get(element);
   const authoredDir = (state?.applied.has('dir') && element.getAttribute('dir') === state.applied.get('dir')
     ? state.attributes.get('dir') : element.getAttribute('dir'))?.toLowerCase();

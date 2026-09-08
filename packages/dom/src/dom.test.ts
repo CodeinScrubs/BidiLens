@@ -3,6 +3,32 @@ import { describe, expect, it } from 'vitest';
 import { applyBidi, installBidiStyles, observeBidi, restoreBidi } from './index.js';
 
 describe('DOM adapter', () => {
+  it('ends the old direction session when the host replaces its dir attribute', () => {
+    document.body.innerHTML = '<main dir="ltr"><p dir="rtl">سلام دنیا</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    applyBidi(root);
+    paragraph.dir = 'ltr';
+    paragraph.textContent = '---';
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(paragraph.outerHTML).toBe('<p dir="ltr">---</p>');
+  });
+
+  it('retains authored inline CSS during a dir attribute handoff', () => {
+    document.body.innerHTML = '<main dir="ltr"><p style="direction:rtl" dir="rtl">سلام دنیا</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    applyBidi(root);
+    paragraph.dir = 'ltr';
+    paragraph.textContent = '---';
+    expect(applyBidi(root).annotated).toBe(1);
+    expect(getComputedStyle(paragraph).direction).toBe('rtl');
+    restoreBidi(root);
+    expect(paragraph.dir).toBe('ltr');
+    expect(paragraph.style.direction).toBe('rtl');
+  });
+
   it('treats host-enriched generated isolates as markup boundaries', () => {
     document.body.innerHTML = '<p>سلام page</p>';
     const paragraph = document.querySelector('p')!;

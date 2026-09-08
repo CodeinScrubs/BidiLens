@@ -40,6 +40,31 @@ test('incremental DOM isolation preserves phrase order and left alignment', asyn
   await expect(page.locator('#css')).toHaveCSS('direction', 'ltr');
 });
 
+test('honors changed author dir without losing real stylesheet precedence', async ({ page }) => {
+  await page.setContent('<style>.host-direction { direction:rtl }</style><main dir="ltr"><p id="plain" dir="rtl">سلام دنیا</p><p id="styled" class="host-direction" dir="rtl">سلام دنیا</p></main>');
+  await page.addScriptTag({ content: bundle });
+  await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    api.applyBidi(document.body);
+    for (const paragraph of document.querySelectorAll('p')) {
+      paragraph.dir = 'ltr';
+      paragraph.textContent = '---';
+    }
+    api.applyBidi(document.body);
+    api.applyBidi(document.body);
+  });
+  await expect(page.locator('#plain')).toHaveAttribute('dir', 'ltr');
+  await expect(page.locator('#plain')).not.toHaveAttribute('style');
+  await expect(page.locator('#plain')).not.toHaveAttribute('data-bidilens-block');
+  await expect(page.locator('#styled')).toHaveCSS('direction', 'rtl');
+  await page.evaluate(() => {
+    (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom.restoreBidi(document.body);
+  });
+  await expect(page.locator('#styled')).toHaveAttribute('dir', 'ltr');
+  await expect(page.locator('#styled')).toHaveCSS('direction', 'rtl');
+  await expect(page.locator('#styled')).not.toHaveAttribute('style');
+});
+
 test('restores case-insensitive authored auto direction after an LTR update', async ({ page }) => {
   await page.setContent('<main dir="ltr"><p dir="AUTO" style="text-align:left">سلام دنیا</p></main>');
   await page.addScriptTag({ content: bundle });

@@ -11,19 +11,20 @@ application is certified. Release status remains in the changelog and registry.
 | Formatting security | Avoid repeated reverse-stack scans in TypeScript, Kotlin, and Rust | Deep isolate stacks followed by unmatched PDF controls |
 | Inline isolation | Split generated ranges at Unicode paragraph boundaries in all five cores | CR, LF, CRLF, NEL, U+001C through U+001E, and U+2029 cases |
 | Incremental DOM | Reconcile adjacent owned isolates and appended text without rebuilding stable nodes | Ordered `page 97`, observer settlement, source and node identity |
-| DOM ownership | Respect own CSS direction, case-insensitive `dir=auto`, and host-enriched markup during cleanup | Real-browser direction/alignment tests and retained host elements |
+| DOM ownership | Respect own CSS direction, changed author `dir`, case-insensitive `dir=auto`, and host-enriched markup during cleanup | Real-browser direction/alignment tests and retained host elements |
 | Markdown | Use decoded visible prose instead of hidden link targets/titles as direction evidence | Paragraph, heading, table, entity, and streamed/batch equivalence cases |
-| UIKit | Restore managed scalar alignment independently of source replacement or paragraph-property handoff | New UILabel tests; macOS/iOS CI required for this patch |
+| UIKit | Restore managed scalar alignment independently of source replacement or paragraph-property handoff; retain host per-paragraph styles | New UILabel tests; macOS/iOS CI required for this patch |
 | Compose | Keep default display layout source-safe; provide isolated read-only selection through `BidiSelectableText` | Real Android system-clipboard copy preserves source and an authored RLM |
 | Maintenance | Update the supported npm security line and exclude generated browser reports from lint | Manifest-linked docs checks and lint after trace generation |
 
 ## Local results
 
 - TypeScript type checking and ESLint passed.
-- 496 JavaScript tests passed; line coverage was 95.2%, branch coverage 86.75%.
-- 39 Playwright tests passed across Chromium, Firefox, and WebKit with one
+- 498 JavaScript tests passed; line coverage was 95.2%, branch coverage 86.79%.
+- 42 Playwright tests passed across Chromium, Firefox, and WebKit with one
   worker. Parallel runs exposed a Firefox page-load timeout; focused and full
   serial reruns passed. A serial result is not evidence of parallel stability.
+  These include author-direction handoff coverage on all three engines.
 - 932 corpus fixtures and generated Unicode/native representations passed
   reproducibility checks. None of these fixtures is native-speaker certified.
 - All 12 package type-layout checks passed. Markdown-It 13, 14, and 15 packed
@@ -40,6 +41,8 @@ application is certified. Release status remains in the changelog and registry.
 - Rust 1.85 formatting, all-target compiler checks, strict Clippy, and all
   28 conformance tests passed locally on Windows.
 - Full JavaScript/demo builds and the checked-in Action bundle checks passed.
+- Clean release-artifact verification passed for all 12 packages, including
+  packed examples and compiled integration guides. This is not publication.
 
 ## Compatibility and remaining gates
 
