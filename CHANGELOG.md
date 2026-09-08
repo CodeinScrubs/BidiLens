@@ -5,7 +5,22 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
-No unreleased changes.
+- Fix DOM append-time isolation reconciliation and CSS direction precedence;
+  preserve authored inline markup and stable nodes on repeated application.
+- Detect Markdown paragraph, heading, and table direction from decoded prose,
+  excluding hidden link destinations/titles while preserving raw source ranges.
+- Keep generated inline isolates within UAX paragraph boundaries in TypeScript,
+  Kotlin, Swift, C#, and Rust.
+- Remove repeated formatting-stack searches from TypeScript, Kotlin, and Rust
+  security scanning; add deep-stack regression coverage.
+- Restore UIKit label alignment independently of changed source and authored
+  paragraph properties.
+- Make Compose `BidiText` selection-safe by default; add `BidiSelectableText`
+  for isolated read-only display with native source-offset selection/copy.
+  Explicit isolated `BidiText` is display-only. See `android/README.md`.
+- Update npm security support to `0.4.x` and check it against the manifest.
+- Exclude generated Playwright trace reports from source linting. See the
+  [hardening verification record](docs/AUDIT_HARDENING.md) for checks and limits.
 
 ## 0.4.0 - 2026-09-07
 

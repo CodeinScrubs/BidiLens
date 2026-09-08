@@ -67,6 +67,11 @@ const markdownLink = /(?<!!)\[[^\]]*\]\(([^)]+)\)/gu;
 const rootManifest = JSON.parse(
   await readFile(resolve(root, 'package.json'), 'utf8')
 ) as { version?: unknown };
+const supportedNpmLine = String(rootManifest.version).split('.').slice(0, 2).join('.') + '.x';
+const securityPolicy = await readFile(resolve(root, 'SECURITY.md'), 'utf8');
+if (!securityPolicy.includes(`The public \`${supportedNpmLine}\` npm line`)) {
+  failures.push(`SECURITY.md must declare support for the current npm ${supportedNpmLine} line.`);
+}
 const [
   androidBuild,
   androidWrapper,

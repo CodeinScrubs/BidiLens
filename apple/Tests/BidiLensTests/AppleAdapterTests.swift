@@ -5,6 +5,33 @@ import XCTest
 @testable import BidiLens
 
 final class AppleAdapterTests: XCTestCase {
+    @MainActor
+    func testImperativeLabelSourceReplacementRestoresOwnedAlignment() {
+        let label = UILabel()
+        label.text = "سلام دنیا"
+        label.textAlignment = .center
+        BidiUIKit.apply(to: label)
+        XCTAssertEqual(label.textAlignment, .right)
+        label.text = "Hello world"
+        BidiUIKit.apply(to: label)
+        XCTAssertEqual(label.text, "Hello world")
+        XCTAssertEqual(label.textAlignment, .center)
+    }
+
+    @MainActor
+    func testLabelAlignmentHandoffStillRestoresOwnedParagraphDirection() throws {
+        let label = UILabel()
+        label.text = "سلام دنیا"
+        BidiUIKit.apply(to: label)
+        label.textAlignment = .left
+        BidiUIKit.restore(label)
+        XCTAssertEqual(label.textAlignment, .left)
+        let paragraph = try XCTUnwrap(label.attributedText?.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle)
+        XCTAssertEqual(paragraph.baseWritingDirection, .natural)
+    }
+
     private let rtl = "React یک کتابخانه جاوااسکریپت بسیار محبوب است."
     private let ltr = "React is a popular JavaScript library."
 

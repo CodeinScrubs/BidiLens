@@ -180,7 +180,26 @@ private fun normalizeIsolationPlan(
             merged += isolation
         }
     }
-    return merged
+    return merged.flatMap { isolation ->
+        val pieces = mutableListOf<BidiIsolation>()
+        var start = isolation.start
+        fun append(end: Int) {
+            if (start < end) pieces += isolation.copy(
+                text = text.substring(start, end), start = start, end = end,
+                sourceRange = text.sourceRange(start, end),
+            )
+        }
+        for (index in isolation.start until isolation.end) {
+            if (text[index] in "\r\n\u0085\u001c\u001d\u001e\u2029") {
+                append(index)
+                start = index + 1
+            }
+        }
+        if (start == isolation.start) listOf(isolation) else {
+            append(isolation.end)
+            pieces
+        }
+    }
 }
 
 fun planInlineIsolation(

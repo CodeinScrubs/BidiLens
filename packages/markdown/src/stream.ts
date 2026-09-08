@@ -23,6 +23,7 @@ import type {
   MarkdownItRuntime,
   MarkdownItToken
 } from './types.js';
+import { proseText } from './prose.js';
 
 const OPEN_BLOCKS = new Map<string, { close: string; kind: 'prose' | 'code' }>([
   ['paragraph_open', { close: 'paragraph_close', kind: 'prose' }],
@@ -102,7 +103,7 @@ function nestedBlockText(tokens: readonly MarkdownItToken[], index: number, clos
       nested -= 1;
       continue;
     }
-    if (token.type === 'inline' && token.content) values.push(token.content);
+    if (token.type === 'inline') values.push(proseText(token));
   }
   return values.join(' ');
 }
@@ -113,7 +114,7 @@ function textForBlock(tokens: readonly MarkdownItToken[], index: number, closeTy
   if (token.type === 'blockquote_open' || token.type === 'list_item_open') {
     return nestedBlockText(tokens, index, closeType);
   }
-  return tokens[index + 1]?.type === 'inline' ? tokens[index + 1]!.content : token.content;
+  return tokens[index + 1]?.type === 'inline' ? proseText(tokens[index + 1]) : token.content;
 }
 
 function blockAnalysisOptions(options: BidiMarkdownStreamOptions): BidiMarkdownStreamOptions {
@@ -150,7 +151,8 @@ function collectBlocks(
       analysis
     });
   }
-  const documentIntervention = blocks.some((block) => interventionRequired(
+  const documentIntervention = tokens.some((token) => needsBidiIntervention(proseText(token, true)))
+    || blocks.some((block) => interventionRequired(
     block.text,
     block.analysis.direction,
     options

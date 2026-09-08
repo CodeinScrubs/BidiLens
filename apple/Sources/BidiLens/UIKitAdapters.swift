@@ -51,8 +51,10 @@ public enum BidiUIKit {
         let source = label.text ?? label.attributedText?.string ?? ""
         let analysis = BidiAnalyzer.analyze(source, options: options)
         var state = objc_getAssociatedObject(label, &labelStateKey) as? LabelState
-        if let existing = state, !ownsRendering(label, state: existing) {
-            objc_setAssociatedObject(label, &labelStateKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        if state != nil {
+            // Reconcile scalar and paragraph ownership independently before
+            // capturing a new source. Never restore an old string or its ranges.
+            restore(label)
             state = nil
         }
         if !analysis.interventionRequired {
@@ -94,46 +96,18 @@ public enum BidiUIKit {
         defer {
             objc_setAssociatedObject(label, &labelStateKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
-        guard ownsRendering(label, state: state) else {
-            return
-        }
+        let currentAlignment = label.textAlignment
+        let alignmentOwned = currentAlignment == state.renderedAlignment
         if let current = label.attributedText, current.string == state.source {
-            label.attributedText = restoringParagraphState(current, from: state.paragraphs)
+            label.attributedText = restoringParagraphState(
+                current, from: state.paragraphs,
+                renderedDirection: state.renderedDirection,
+                renderedAlignment: state.renderedAlignment
+            )
         }
-        label.textAlignment = state.alignment
+        label.textAlignment = alignmentOwned ? state.alignment : currentAlignment
     }
 
-    private static func ownsRendering(
-        _ label: UILabel,
-        state: LabelState
-    ) -> Bool {
-        guard let expectedAlignment = state.renderedAlignment,
-              let expectedDirection = state.renderedDirection,
-              label.textAlignment == expectedAlignment else {
-            return false
-        }
-        let current = label.attributedText
-        guard (current?.string ?? label.text ?? "") == state.source else {
-            return false
-        }
-        guard let current, current.length > 0 else {
-            return state.source.isEmpty
-        }
-        var matches = true
-        current.enumerateAttribute(
-            .paragraphStyle,
-            in: NSRange(location: 0, length: current.length)
-        ) { value, _, stop in
-            guard let paragraph = value as? NSParagraphStyle,
-                  paragraph.alignment == expectedAlignment,
-                  paragraph.baseWritingDirection == expectedDirection else {
-                matches = false
-                stop.pointee = true
-                return
-            }
-        }
-        return matches
-    }
 
     /// Uses UITextInput's native paragraph direction API and preserves selection.
     @discardableResult
@@ -386,7 +360,9 @@ public enum BidiUIKit {
 
     private static func restoringParagraphState(
         _ attributed: NSAttributedString,
-        from states: [ParagraphState]
+        from states: [ParagraphState],
+        renderedDirection: NSWritingDirection?,
+        renderedAlignment: NSTextAlignment?
     ) -> NSAttributedString {
         let restored = NSMutableAttributedString(attributedString: attributed)
         for state in states where NSMaxRange(state.range) <= restored.length {
@@ -394,8 +370,12 @@ public enum BidiUIKit {
             restored.enumerateAttribute(.paragraphStyle, in: state.range) { value, range, _ in
                 let paragraph = ((value as? NSParagraphStyle)?.mutableCopy()
                     as? NSMutableParagraphStyle) ?? NSMutableParagraphStyle()
-                paragraph.baseWritingDirection = state.direction
-                paragraph.alignment = state.alignment
+                if paragraph.baseWritingDirection == renderedDirection {
+                    paragraph.baseWritingDirection = state.direction
+                }
+                if paragraph.alignment == renderedAlignment {
+                    paragraph.alignment = state.alignment
+                }
                 updates.append((range, paragraph))
             }
             for (range, paragraph) in updates {

@@ -4071,15 +4071,10 @@ function visibleBidiControls(text) {
   }
   return result;
 }
-function lastFrameIndex(stack, kind) {
-  for (let index = stack.length - 1; index >= 0; index -= 1) {
-    if (stack[index]?.kind === kind) return index;
-  }
-  return -1;
-}
 function balanceParagraph(controls, boundary) {
   const findings = [];
   const stack = [];
+  const isolates = [];
   for (const control of controls) {
     const codePoint = control.codePoint;
     if (codePoint === "U+202A" || codePoint === "U+202B" || codePoint === "U+202D" || codePoint === "U+202E") {
@@ -4087,13 +4082,12 @@ function balanceParagraph(controls, boundary) {
       continue;
     }
     if (codePoint === "U+2066" || codePoint === "U+2067" || codePoint === "U+2068") {
+      isolates.push(stack.length);
       stack.push({ kind: "isolate", control });
       continue;
     }
     if (codePoint === "U+202C") {
-      const isolateIndex = lastFrameIndex(stack, "isolate");
-      const embeddingIndex = lastFrameIndex(stack, "embedding");
-      if (embeddingIndex <= isolateIndex) {
+      if (stack.at(-1)?.kind !== "embedding") {
         findings.push({
           code: "BIDI_UNMATCHED_PDF",
           severity: "high",
@@ -4103,13 +4097,13 @@ function balanceParagraph(controls, boundary) {
           control
         });
       } else {
-        stack.splice(embeddingIndex, 1);
+        stack.pop();
       }
       continue;
     }
     if (codePoint === "U+2069") {
-      const isolateIndex = lastFrameIndex(stack, "isolate");
-      if (isolateIndex < 0) {
+      const isolateIndex = isolates.pop();
+      if (isolateIndex === void 0) {
         findings.push({
           code: "BIDI_UNMATCHED_PDI",
           severity: "high",
@@ -4155,9 +4149,9 @@ function balanceFindings(text, controls) {
       paragraphControls.push(controls[controlIndex]);
       controlIndex += 1;
     }
-    findings.push(...balanceParagraph(paragraphControls, "paragraph"));
+    for (const finding of balanceParagraph(paragraphControls, "paragraph")) findings.push(finding);
   }
-  findings.push(...balanceParagraph(controls.slice(controlIndex), "text"));
+  for (const finding of balanceParagraph(controls.slice(controlIndex), "text")) findings.push(finding);
   return findings;
 }
 function isAsciiIdentifierCharacter(value) {
@@ -4370,6 +4364,10 @@ function trimNeutralBoundaries(text, start, end) {
   return { start, end };
 }
 var HARD_FRAGMENT_SEPARATOR = /[,،;؛:!?؟|]/u;
+var PARAGRAPH_SEPARATOR = new RegExp(
+  `[\\r\\n\\u0085${String.fromCodePoint(28)}-${String.fromCodePoint(30)}\\u2029]`,
+  "gu"
+);
 function normalizeIsolationPlan(text, isolations) {
   const split = [];
   for (const isolation of isolations) {
@@ -4417,7 +4415,20 @@ function normalizeIsolationPlan(text, isolations) {
       merged.push({ ...isolation });
     }
   }
-  return merged;
+  return merged.flatMap((isolation) => {
+    const pieces = [];
+    let start = isolation.start;
+    const append = (end) => {
+      if (start < end) pieces.push({ ...isolation, start, end, text: text.slice(start, end) });
+    };
+    for (const match of isolation.text.matchAll(PARAGRAPH_SEPARATOR)) {
+      const end = isolation.start + match.index;
+      append(end);
+      start = end + match[0].length;
+    }
+    append(isolation.end);
+    return pieces;
+  });
 }
 function segmentDirectionalRuns(text) {
   if (!text) return [];

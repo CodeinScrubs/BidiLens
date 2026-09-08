@@ -11,6 +11,50 @@ const bundle = buildSync({
   globalName: 'BidiLensDom'
 }).outputFiles[0]!.text;
 
+test('incremental DOM isolation preserves phrase order and left alignment', async ({ page }) => {
+  await page.setContent('<main dir="ltr"><p id="stream" style="text-align:left">سلام page</p><p id="css" style="direction:rtl">Hello world</p></main>');
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    api.applyBidi(document.body);
+    const paragraph = document.querySelector('#stream')!;
+    paragraph.append(' 97');
+    api.applyBidi(document.body);
+    const isolate = paragraph.querySelector('bdi')!;
+    const text = isolate.firstChild!;
+    const range = document.createRange();
+    range.setStart(text, 0); range.setEnd(text, 4);
+    const pageLeft = range.getBoundingClientRect().left;
+    range.setStart(text, 5); range.setEnd(text, 7);
+    const numberLeft = range.getBoundingClientRect().left;
+    api.applyBidi(document.body);
+    return { phrase: isolate.textContent, pageLeft, numberLeft,
+      stable: paragraph.querySelector('bdi') === isolate,
+      source: paragraph.textContent };
+  });
+  expect(evidence.phrase).toBe('page 97');
+  expect(evidence.pageLeft).toBeLessThan(evidence.numberLeft);
+  expect(evidence.stable).toBe(true);
+  expect(evidence.source).toBe('سلام page 97');
+  await expect(page.locator('#stream')).toHaveCSS('text-align', 'left');
+  await expect(page.locator('#css')).toHaveCSS('direction', 'ltr');
+});
+
+test('restores case-insensitive authored auto direction after an LTR update', async ({ page }) => {
+  await page.setContent('<main dir="ltr"><p dir="AUTO" style="text-align:left">سلام دنیا</p></main>');
+  await page.addScriptTag({ content: bundle });
+  await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    api.applyBidi(document.body);
+    document.querySelector('p')!.textContent = 'Hello world';
+    api.applyBidi(document.body);
+  });
+  await expect(page.locator('p')).toHaveAttribute('dir', 'AUTO');
+  await expect(page.locator('p')).not.toHaveAttribute('data-bidilens-block');
+  await expect(page.locator('p')).toHaveCSS('direction', 'ltr');
+  await expect(page.locator('p')).toHaveCSS('text-align', 'left');
+});
+
 test('DOM exclusions preserve nested editor content and selection while correcting adjacent prose', async ({ page }) => {
   await page.setContent(`<main>
     <p id="protected">React یک کتابخانه محبوب است.

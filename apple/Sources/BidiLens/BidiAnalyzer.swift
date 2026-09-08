@@ -611,7 +611,33 @@ public enum BidiAnalyzer {
             }
             merged.append(isolation)
         }
-        return merged
+        let units = Array(text.utf16)
+        var paragraphs: [BidiIsolation] = []
+        for isolation in merged {
+            var start = isolation.utf16Range.lowerBound
+            func append(_ end: Int) {
+                guard start < end else { return }
+                paragraphs.append(BidiIsolation(
+                    text: UnicodeClassifier.substring(text, utf16Range: start..<end),
+                    direction: isolation.direction,
+                    utf16Range: start..<end,
+                    codePointRange: UnicodeClassifier.codePointOffset(text, utf16Offset: start)..<UnicodeClassifier.codePointOffset(text, utf16Offset: end),
+                    kind: isolation.kind
+                ))
+            }
+            for index in isolation.utf16Range {
+                if [0x0a, 0x0d, 0x85, 0x1c, 0x1d, 0x1e, 0x2029].contains(units[index]) {
+                    append(index)
+                    start = index + 1
+                }
+            }
+            if start == isolation.utf16Range.lowerBound {
+                paragraphs.append(isolation)
+            } else {
+                append(isolation.utf16Range.upperBound)
+            }
+        }
+        return paragraphs
     }
 
     private static func addNormalizedPiece(

@@ -25,6 +25,12 @@ internal static class Program
         }
 
         const string flagship = "React یک کتابخانه جاوااسکریپت بسیار محبوب است.";
+        foreach (var separator in new[] { "\n", "\r\n", "\r", "\u0085", "\u001c", "\u001d", "\u001e", "\u2029" })
+        {
+            var ranges = BidiAnalyzer.Analyze($"سلام React{separator}JavaScript").Isolations;
+            True(ranges.Select(value => value.Text).SequenceEqual(new[] { "React", "JavaScript" }),
+                "isolation crosses a paragraph boundary");
+        }
         const string mirror = "The Persian word کتاب means book.";
         Equal(BidiDirection.RightToLeft, BidiAnalyzer.DetectDirection(flagship), "flagship direction");
         Equal(BidiDirection.LeftToRight, BidiAnalyzer.DetectDirection(mirror), "mirror direction");

@@ -32,6 +32,30 @@ function cpuMillisecondsSince(started: NodeJS.CpuUsage): number {
 }
 
 describe('Markdown plugins', () => {
+  it('keeps block intervention consistent with RTL inline code rendering', () => {
+    const md = new MarkdownIt();
+    const result = analyzeBidiMarkdown(md, 'Hello `سلام`');
+    expect(result.blocks[0]?.intervention).toBe(true);
+    expect(result.blocks[0]?.direction).toBe('ltr');
+  });
+
+  it.each(['[سلام](thisisaverylongdestination)', '[سلام](x "a very long English title")', 'سلام &amp; &amp; &amp;']) (
+    'detects rendered prose rather than invisible syntax: %s', (source) => {
+      const md = new MarkdownIt();
+      markdownItBidi(md);
+      expect(md.render(source)).toContain('<p dir="rtl"');
+      expect(md.render(`# ${source}`)).toContain('<h1 dir="rtl"');
+      expect(md.render(`| title |\n|---|\n| ${source} |`)).toContain('<td dir="rtl"');
+      const analysis = analyzeBidiMarkdown(md, source);
+      expect(analysis.blocks.find((block) => block.tokenType === 'paragraph_open')?.direction).toBe('rtl');
+      const stream = createBidiMarkdownStream(new MarkdownIt());
+      for (const character of source) stream.push(character);
+      const final = stream.finish();
+      expect(final.source).toBe(source);
+      expect(final.document).toEqual(analysis);
+    }
+  );
+
   it('is output-identical to unconfigured Markdown-It for an LTR-only document', () => {
     const source = '# React guide\n\nUse `npm test` in a normal English project.';
     const baseline = new MarkdownIt({ html: false }).render(source);

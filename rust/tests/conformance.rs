@@ -8,6 +8,41 @@ use bidilens_core::{
 };
 use serde::Deserialize;
 
+#[test]
+fn isolation_ranges_stay_inside_paragraphs() {
+    for separator in [
+        "\n", "\r\n", "\r", "\u{85}", "\u{1c}", "\u{1d}", "\u{1e}", "\u{2029}",
+    ] {
+        let source = format!("سلام React{separator}JavaScript");
+        let plans =
+            plan_inline_isolation(&source, Direction::Rtl, &AnalysisOptions::default()).unwrap();
+        assert_eq!(
+            plans
+                .iter()
+                .map(|value| value.text.as_str())
+                .collect::<Vec<_>>(),
+            ["React", "JavaScript"]
+        );
+    }
+}
+
+#[test]
+fn deep_formatting_stack_has_bounded_work() {
+    let count = 32_000;
+    let source = format!("{}{}", "\u{2066}".repeat(count), "\u{202c}".repeat(count));
+    let started = Instant::now();
+    let report = scan_bidi_security(&source);
+    assert_eq!(
+        report
+            .findings
+            .iter()
+            .filter(|f| f.code == "BIDI_UNMATCHED_PDF")
+            .count(),
+        count
+    );
+    assert!(started.elapsed() < Duration::from_secs(5));
+}
+
 #[derive(Debug, Deserialize)]
 struct Fixture {
     id: String,

@@ -499,7 +499,32 @@ public static partial class BidiAnalyzer
                 merged.Add(isolation);
             }
         }
-        return merged;
+        var paragraphs = new List<BidiIsolation>();
+        foreach (var isolation in merged)
+        {
+            var start = isolation.Utf16Start;
+            void Append(int end)
+            {
+                if (start >= end) return;
+                paragraphs.Add(isolation with
+                {
+                    Text = text[start..end], Utf16Start = start, Utf16End = end,
+                    CodePointStart = UnicodeClassifier.CodePointOffset(text, start),
+                    CodePointEnd = UnicodeClassifier.CodePointOffset(text, end),
+                });
+            }
+            for (var index = isolation.Utf16Start; index < isolation.Utf16End; index++)
+            {
+                if (text[index] is '\r' or '\n' or '\u0085' or >= '\u001c' and <= '\u001e' or '\u2029')
+                {
+                    Append(index);
+                    start = index + 1;
+                }
+            }
+            if (start == isolation.Utf16Start) paragraphs.Add(isolation);
+            else Append(isolation.Utf16End);
+        }
+        return paragraphs;
     }
 
     private static void AddNormalizedPiece(
