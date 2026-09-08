@@ -23,6 +23,33 @@ final class AppleAdapterTests: XCTestCase {
     }
 
     @MainActor
+    func testReplacementLabelSourceKeepsDifferentHostDirectionAndAttributes() throws {
+        let label = UILabel()
+        label.text = "سلام دنیا"
+        BidiUIKit.apply(to: label)
+        let hostStyle = NSMutableParagraphStyle()
+        hostStyle.baseWritingDirection = .leftToRight
+        hostStyle.alignment = .center
+        label.attributedText = NSAttributedString(
+            string: "Hi", attributes: [
+                .paragraphStyle: hostStyle,
+                .foregroundColor: UIColor.systemPurple,
+            ]
+        )
+        BidiUIKit.apply(to: label)
+        let restored = try XCTUnwrap(label.attributedText)
+        let paragraph = try XCTUnwrap(restored.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle)
+        XCTAssertEqual(restored.string, "Hi")
+        XCTAssertEqual(paragraph.baseWritingDirection, .leftToRight)
+        XCTAssertEqual(paragraph.alignment, .center)
+        XCTAssertEqual(restored.attribute(
+            .foregroundColor, at: 0, effectiveRange: nil
+        ) as? UIColor, UIColor.systemPurple)
+    }
+
+    @MainActor
     func testLabelRestorePreservesHostPerParagraphAlignment() throws {
         let label = UILabel()
         let first = "سلام دنیا"

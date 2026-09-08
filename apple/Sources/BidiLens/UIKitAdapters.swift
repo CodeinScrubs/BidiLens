@@ -99,9 +99,24 @@ public enum BidiUIKit {
         let currentAlignment = label.textAlignment
         let alignmentOwned = currentAlignment == state.renderedAlignment
         var restored: NSAttributedString?
-        if let current = label.attributedText, current.string == state.source {
+        if let current = label.attributedText {
+            // UIKit can carry paragraph properties into a replacement string.
+            // Never reuse the old source's ranges: reset only still-owned
+            // values over current ranges. A mixed old baseline has no mapping
+            // onto new paragraphs, so its replacement direction is natural.
+            let firstDirection = state.paragraphs.first?.direction ?? .natural
+            let replacementDirection = state.paragraphs.allSatisfy {
+                $0.direction == firstDirection
+            } ? firstDirection : .natural
+            let paragraphs = current.string == state.source ? state.paragraphs : [
+                ParagraphState(
+                    range: NSRange(location: 0, length: current.length),
+                    direction: replacementDirection,
+                    alignment: state.alignment
+                )
+            ]
             restored = restoringParagraphState(
-                current, from: state.paragraphs,
+                current, from: paragraphs,
                 renderedDirection: state.renderedDirection,
                 renderedAlignment: state.renderedAlignment
             )

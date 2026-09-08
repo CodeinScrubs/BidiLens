@@ -117,7 +117,7 @@ Imperative adapter ownership is determined from observable property changes.
 A same-value assignment made while BidiLens already renders that exact value
 cannot be distinguished from no assignment. Before intentionally transferring
 ownership, call `restoreBidi(root)` on the DOM, `view.restoreBidiLens()` on
-Android Views, `BidiUIKit.restore(...)` on editable UIKit controls, or
+Android Views, `BidiUIKit.restore(...)` on UIKit labels or editable controls, or
 `BidiWpf.Restore(control)` on WPF. WPF uses binding-preserving dependency
 property updates; the application binding remains attached while BidiLens is
 active and after restoration.
@@ -127,6 +127,13 @@ can change when the text changes even without a property handoff. BidiLens
 therefore adopts an observable UIKit direction change only while the source is
 unchanged. Call `BidiUIKit.restore(...)` before replacing both text and its
 authored direction.
+
+When a UILabel's source changes during an active intervention, UIKit may carry
+its paragraph properties into the replacement text. Restoration uses the new
+text's ranges and changes only direction/alignment values that still match
+BidiLens's last application. A uniform original paragraph direction can be
+restored; mixed original directions cannot be mapped onto new text and fall
+back to natural direction. Host-supplied different values remain intact.
 
 Public packages are ESM-only. CommonJS consumers must use dynamic `import()`
 or an ESM bridge. Node.js 22.12 is the declared minimum. React 18–19, Vue 3.5+, and
