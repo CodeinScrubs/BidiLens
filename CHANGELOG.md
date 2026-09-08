@@ -5,10 +5,18 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+- Add public Swift/.NET security scanning with paragraph-scoped balance checks,
+  hidden-character diagnostics, dual-offset findings, and audit/warn/strict/off
+  reporting. Existing analysis now flags unmatched/unclosed isolates as high
+  severity. No automatic input blocking or source rewriting is introduced.
+  Add 94 reproducible web/native differential fixtures and native regressions.
+- Reject non-finite .NET majority thresholds, including NaN, before analysis.
 - Fix DOM append-time isolation reconciliation and CSS direction precedence;
   preserve authored inline markup and stable nodes on repeated application.
 - Detect Markdown paragraph, heading, and table direction from decoded prose,
   excluding hidden link destinations/titles while preserving raw source ranges.
+  Retain visible custom inline plugin content as evidence and exclude hidden
+  leaves and structural metadata.
 - Keep generated inline isolates within UAX paragraph boundaries in TypeScript,
   Kotlin, Swift, C#, and Rust.
 - Remove repeated formatting-stack searches from TypeScript, Kotlin, and Rust

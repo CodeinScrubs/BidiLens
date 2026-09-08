@@ -35,9 +35,10 @@ Forms, MAUI, and accessibility laboratory testing remain separate
 host-specific work; the pure core can be consumed by them without taking a
 WPF dependency.
 
-The .NET core inventories bidi formatting controls and flags high-risk
-overrides. The richer balance/context diagnostics in the JavaScript and
-Android implementations are not yet claimed as .NET parity. WPF adapters set
-block direction and alignment; `BidiAnalyzer.FormatForDisplay` is an explicit,
+The source core exposes `BidiAnalyzer.ScanSecurity(text, BidiSecurityMode.Warn)`
+for control inventory, paragraph-scoped balance checks, hidden-character
+diagnostics, UTF-16/code-point ranges, and advisory blocking decisions. See the
+[native security guide](../docs/NATIVE_SECURITY.md) for modes and limitations.
+WPF adapters set block direction and alignment; `BidiAnalyzer.FormatForDisplay` is an explicit,
 display-only inline-isolation option and must never be persisted or applied to
 editable source.

@@ -69,9 +69,11 @@ tested claim.
 - the native Rust core has shared-corpus and three-OS compiler gates, but no
   crates.io release, editor-specific adapter, independent audit, downstream
   product pilot, or claim of adoption by Zed or another Rust host;
-- Swift and .NET currently inventory bidi controls and high-risk overrides,
-  but do not yet claim parity with the richer JavaScript/Android
-  balance-and-context security findings;
+- Swift and .NET source now implement the web scanner's control inventory,
+  paragraph-balance and hidden-character rule set; shared differential fixtures
+  check codes, severities, inventory, dual offsets, and mode decisions. This is
+  not language-aware Trojan Source parsing, confusable analysis, native SARIF
+  export, or security certification; see [native security](NATIVE_SECURITY.md);
 - SwiftUI has a UIKit-backed read-only `BidiText` renderer. Generic editable
   SwiftUI integration remains unclaimed until marked-text composition,
   dictation, selection, and third-party IMEs have dedicated validation;

@@ -90,7 +90,7 @@ public enum BidiAnalyzer {
         _ text: String,
         options: BidiOptions = BidiOptions()
     ) -> Bool {
-        if options.intervention == .always || !scanSecurity(text).controls.isEmpty { return true }
+        if options.intervention == .always || containsBidiControls(text) { return true }
         var hasLTR = false
         var hasRTL = false
         for item in UnicodeClassifier.enumerate(text) {
@@ -660,35 +660,4 @@ public enum BidiAnalyzer {
         ))
     }
 
-    private static func scanSecurity(_ text: String) -> BidiSecurityReport {
-        let metadata: [UInt32: (String, String)] = [
-            0x061c: ("ARABIC LETTER MARK", "low"),
-            0x200e: ("LEFT-TO-RIGHT MARK", "low"),
-            0x200f: ("RIGHT-TO-LEFT MARK", "low"),
-            0x202a: ("LEFT-TO-RIGHT EMBEDDING", "high"),
-            0x202b: ("RIGHT-TO-LEFT EMBEDDING", "high"),
-            0x202c: ("POP DIRECTIONAL FORMATTING", "medium"),
-            0x202d: ("LEFT-TO-RIGHT OVERRIDE", "high"),
-            0x202e: ("RIGHT-TO-LEFT OVERRIDE", "high"),
-            0x2066: ("LEFT-TO-RIGHT ISOLATE", "medium"),
-            0x2067: ("RIGHT-TO-LEFT ISOLATE", "medium"),
-            0x2068: ("FIRST STRONG ISOLATE", "medium"),
-            0x2069: ("POP DIRECTIONAL ISOLATE", "medium"),
-        ]
-        let controls = UnicodeClassifier.enumerate(text).compactMap { item -> BidiControlFinding? in
-            guard let (name, risk) = metadata[item.scalar.value] else { return nil }
-            let width = item.scalar.value > 0xffff ? 2 : 1
-            return BidiControlFinding(
-                character: String(item.scalar),
-                codePoint: String(format: "U+%04X", item.scalar.value),
-                utf16Range: item.utf16..<(item.utf16 + width),
-                name: name,
-                risk: risk
-            )
-        }
-        return BidiSecurityReport(
-            safe: !controls.contains(where: { $0.risk == "high" }),
-            controls: controls
-        )
-    }
 }

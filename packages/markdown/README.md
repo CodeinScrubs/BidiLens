@@ -56,6 +56,13 @@ markdownItBidi(md);
 const html = md.render(markdown);
 ```
 
+Direction evidence uses decoded inline text, not link URLs/titles or HTML
+syntax. Non-hidden custom inline leaf tokens contribute their `content`,
+preserving text-rendering plugin compatibility. Code/math and structural
+tokens are excluded from prose evidence. Arbitrary renderer plugins can
+display something different from token content; validate those integrations
+and supply an explicit direction when that evidence does not match the UI.
+
 ## Rich Markdown streaming
 
 The rich stream accepts a caller-owned Markdown-It instance, so the host keeps

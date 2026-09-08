@@ -46,6 +46,37 @@ application is certified. Release status remains in the changelog and registry.
 
 ## Compatibility and remaining gates
 
+The original hardening revision `a6042bc` passed all 25 hosted checks, including
+Swift CodeQL and the full functional matrix. Further changes require fresh
+checks; that result does not automatically validate later commits.
+
+### Native security follow-up
+
+An independently authored .NET regression reproduced an unclosed isolate being
+reported as safe. Swift and .NET now expose standalone read-only scanners with
+the same inventory, paragraph-balance, and hidden-character rule set as the web
+scanner. Both use an isolate-index stack so unmatched PDF controls do not
+repeatedly scan the entire formatting stack. Findings retain UTF-16 and
+code-point offsets. Rendering intervention uses a cheap control-presence check
+instead of running the complete security scanner twice.
+
+The follow-up adds 94 reproducible differential fixtures, exercised in four
+modes on each native port, plus independently authored boundary, nested-stack,
+legitimate-joiner, emoji-offset, source-preservation, and 32,000-frame tests.
+Local .NET verification passed 5,631 assertions, including the existing 932-case
+direction corpus. Swift execution for this follow-up requires fresh hosted
+macOS/iOS evidence; no local Swift runtime is claimed on this Windows host.
+
+The same follow-up rejects NaN majority thresholds in .NET and restores
+direction evidence for custom Markdown-It text leaves. Six new Markdown
+regressions cover custom-token RTL/mixed output, batch/stream equivalence,
+pure-LTR non-intervention, and exclusion of hidden/structural metadata. The
+JavaScript suite now passes 504 tests.
+
+The [native security guide](NATIVE_SECURITY.md) explains the stricter `safe`
+result and advisory blocking flags. These source-only APIs are not a new
+registry release.
+
 `BidiText` now defaults to no generated display controls. For full inline
 isolation with source-safe copy, use the read-only `BidiSelectableText` API.
 Its interaction model differs from multi-widget container selection; see the

@@ -50,7 +50,7 @@ public sealed record BidiOptions
             throw new ArgumentException("InheritedDirection must be LeftToRight or RightToLeft.");
         if (MinimumStrongCharacters < 1)
             throw new ArgumentOutOfRangeException(nameof(MinimumStrongCharacters));
-        if (MajorityThreshold is < 0.5 or > 1.0)
+        if (!double.IsFinite(MajorityThreshold) || MajorityThreshold is < 0.5 or > 1.0)
             throw new ArgumentOutOfRangeException(nameof(MajorityThreshold));
     }
 }
@@ -108,9 +108,30 @@ public sealed record BidiControlFinding(
     int Utf16Start,
     int Utf16End,
     string Name,
-    string Risk);
+    string Risk)
+{
+    public int CodePointIndex { get; init; }
+}
 
-public sealed record BidiSecurityReport(bool Safe, IReadOnlyList<BidiControlFinding> Controls);
+public enum BidiSecurityMode { Off, Audit, Warn, Strict }
+public enum BidiSecuritySeverity { Info, Warning, High }
+
+public sealed record BidiSecurityFinding(
+    string Code,
+    BidiSecuritySeverity Severity,
+    string Message,
+    int Utf16Start,
+    int Utf16End,
+    int CodePointStart,
+    int CodePointEnd,
+    string Remediation);
+
+public sealed record BidiSecurityReport(bool Safe, IReadOnlyList<BidiControlFinding> Controls)
+{
+    public BidiSecurityMode Mode { get; init; } = BidiSecurityMode.Audit;
+    public bool ShouldBlock { get; init; }
+    public IReadOnlyList<BidiSecurityFinding> Findings { get; init; } = [];
+}
 
 public sealed record BidiAnalysis(
     string Text,

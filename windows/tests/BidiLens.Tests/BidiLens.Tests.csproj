@@ -11,5 +11,6 @@
     <ProjectReference Include="..\..\src\BidiLens.Core\BidiLens.Core.csproj" />
     <ProjectReference Include="..\..\src\BidiLens.Wpf\BidiLens.Wpf.csproj" />
     <None Include="..\..\..\corpus\cases.json" Link="cases.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\corpus\native-security.json" Link="native-security.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

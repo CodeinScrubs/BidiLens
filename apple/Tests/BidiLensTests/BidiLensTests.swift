@@ -2,6 +2,10 @@ import XCTest
 @testable import BidiLens
 
 final class BidiLensTests: XCTestCase {
+    func testUnclosedIsolateIsNotReportedSafe() {
+        XCTAssertFalse(BidiAnalyzer.analyze("\u{2066}unfinished").security.safe)
+    }
+
     func testIsolationRangesStayInsideParagraphs() {
         for separator in ["\n", "\r\n", "\r", "\u{85}", "\u{1c}", "\u{1d}", "\u{1e}", "\u{2029}"] {
             let result = BidiAnalyzer.analyze("سلام React\(separator)JavaScript")

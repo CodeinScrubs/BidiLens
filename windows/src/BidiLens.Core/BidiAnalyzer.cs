@@ -88,7 +88,7 @@ public static partial class BidiAnalyzer
     {
         options ??= new BidiOptions();
         options.Validate();
-        if (options.Intervention == BidiIntervention.Always || ScanSecurity(text).Controls.Count > 0) return true;
+        if (options.Intervention == BidiIntervention.Always || ContainsBidiControls(text)) return true;
         var hasLtr = false;
         var hasRtl = false;
         foreach (var (rune, _, _) in UnicodeClassifier.Enumerate(text))
@@ -544,32 +544,6 @@ public static partial class BidiAnalyzer
             CodePointStart = UnicodeClassifier.CodePointOffset(text, start),
             CodePointEnd = UnicodeClassifier.CodePointOffset(text, end),
         });
-    }
-
-    private static BidiSecurityReport ScanSecurity(string text)
-    {
-        var metadata = new Dictionary<int, (string Name, string Risk)>
-        {
-            [0x061C] = ("ARABIC LETTER MARK", "low"), [0x200E] = ("LEFT-TO-RIGHT MARK", "low"),
-            [0x200F] = ("RIGHT-TO-LEFT MARK", "low"), [0x202A] = ("LEFT-TO-RIGHT EMBEDDING", "high"),
-            [0x202B] = ("RIGHT-TO-LEFT EMBEDDING", "high"), [0x202C] = ("POP DIRECTIONAL FORMATTING", "medium"),
-            [0x202D] = ("LEFT-TO-RIGHT OVERRIDE", "high"), [0x202E] = ("RIGHT-TO-LEFT OVERRIDE", "high"),
-            [0x2066] = ("LEFT-TO-RIGHT ISOLATE", "medium"), [0x2067] = ("RIGHT-TO-LEFT ISOLATE", "medium"),
-            [0x2068] = ("FIRST STRONG ISOLATE", "medium"), [0x2069] = ("POP DIRECTIONAL ISOLATE", "medium"),
-        };
-        var controls = new List<BidiControlFinding>();
-        foreach (var (rune, utf16, _) in UnicodeClassifier.Enumerate(text))
-        {
-            if (!metadata.TryGetValue(rune.Value, out var value)) continue;
-            controls.Add(new(
-                rune.ToString(),
-                $"U+{rune.Value:X4}",
-                utf16,
-                utf16 + rune.Utf16SequenceLength,
-                value.Name,
-                value.Risk));
-        }
-        return new(!controls.Any(control => control.Risk == "high"), controls);
     }
 
     /// <summary>

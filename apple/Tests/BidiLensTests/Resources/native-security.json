@@ -1,0 +1,4192 @@
+[
+  {
+    "id": "inventory-61c",
+    "text": "👩🏽‍💻 é؜کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+061C",
+        10,
+        11,
+        7,
+        "ARABIC LETTER MARK",
+        "low"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DIRECTIONAL_MARK",
+        "info",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-200e",
+    "text": "👩🏽‍💻 é‎کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+200E",
+        10,
+        11,
+        7,
+        "LEFT-TO-RIGHT MARK",
+        "low"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DIRECTIONAL_MARK",
+        "info",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-200f",
+    "text": "👩🏽‍💻 é‏کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+200F",
+        10,
+        11,
+        7,
+        "RIGHT-TO-LEFT MARK",
+        "low"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DIRECTIONAL_MARK",
+        "info",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-202a",
+    "text": "👩🏽‍💻 é‪کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+202A",
+        10,
+        11,
+        7,
+        "LEFT-TO-RIGHT EMBEDDING",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-202b",
+    "text": "👩🏽‍💻 é‫کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        10,
+        11,
+        7,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-202c",
+    "text": "👩🏽‍💻 é‬کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+202C",
+        10,
+        11,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-202d",
+    "text": "👩🏽‍💻 é‭کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+202D",
+        10,
+        11,
+        7,
+        "LEFT-TO-RIGHT OVERRIDE",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-202e",
+    "text": "👩🏽‍💻 é‮کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+202E",
+        10,
+        11,
+        7,
+        "RIGHT-TO-LEFT OVERRIDE",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-2066",
+    "text": "👩🏽‍💻 é⁦کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        10,
+        11,
+        7,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-2067",
+    "text": "👩🏽‍💻 é⁧کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+2067",
+        10,
+        11,
+        7,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-2068",
+    "text": "👩🏽‍💻 é⁨کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+2068",
+        10,
+        11,
+        7,
+        "FIRST STRONG ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-2069",
+    "text": "👩🏽‍💻 é⁩کتاب",
+    "safe": false,
+    "controls": [
+      [
+        "U+2069",
+        10,
+        11,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-206a",
+    "text": "👩🏽‍💻 é⁪کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+206A",
+        10,
+        11,
+        7,
+        "INHIBIT SYMMETRIC SWAPPING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DEPRECATED_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-206b",
+    "text": "👩🏽‍💻 é⁫کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+206B",
+        10,
+        11,
+        7,
+        "ACTIVATE SYMMETRIC SWAPPING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DEPRECATED_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-206c",
+    "text": "👩🏽‍💻 é⁬کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+206C",
+        10,
+        11,
+        7,
+        "INHIBIT ARABIC FORM SHAPING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DEPRECATED_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-206d",
+    "text": "👩🏽‍💻 é⁭کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+206D",
+        10,
+        11,
+        7,
+        "ACTIVATE ARABIC FORM SHAPING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DEPRECATED_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-206e",
+    "text": "👩🏽‍💻 é⁮کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+206E",
+        10,
+        11,
+        7,
+        "NATIONAL DIGIT SHAPES",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DEPRECATED_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "inventory-206f",
+    "text": "👩🏽‍💻 é⁯کتاب",
+    "safe": true,
+    "controls": [
+      [
+        "U+206F",
+        10,
+        11,
+        7,
+        "NOMINAL DIGIT SHAPES",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_DEPRECATED_CONTROL",
+        "warning",
+        10,
+        11,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202a-18",
+    "text": "‪hello ",
+    "safe": false,
+    "controls": [
+      [
+        "U+202A",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT EMBEDDING",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "pair-202a-19",
+    "text": "‪hello ‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202A",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202a-20",
+    "text": "‪hello ⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202A",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202a-21",
+    "text": "‪hello ‬⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202A",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-202a-22",
+    "text": "‪hello ⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202A",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-202b-23",
+    "text": "‫hello ",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "pair-202b-24",
+    "text": "‫hello ‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202b-25",
+    "text": "‫hello ⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202b-26",
+    "text": "‫hello ‬⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-202b-27",
+    "text": "‫hello ⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-202d-28",
+    "text": "‭hello ",
+    "safe": false,
+    "controls": [
+      [
+        "U+202D",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT OVERRIDE",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "pair-202d-29",
+    "text": "‭hello ‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202D",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202d-30",
+    "text": "‭hello ⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202D",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202d-31",
+    "text": "‭hello ‬⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202D",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-202d-32",
+    "text": "‭hello ⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202D",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-202e-33",
+    "text": "‮hello ",
+    "safe": false,
+    "controls": [
+      [
+        "U+202E",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT OVERRIDE",
+        "high"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "pair-202e-34",
+    "text": "‮hello ‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202E",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202e-35",
+    "text": "‮hello ⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202E",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-202e-36",
+    "text": "‮hello ‬⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+202E",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-202e-37",
+    "text": "‮hello ⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202E",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT OVERRIDE",
+        "high"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_OVERRIDE_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-2066-38",
+    "text": "⁦hello ",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "pair-2066-39",
+    "text": "⁦hello ‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-2066-40",
+    "text": "⁦hello ⁩",
+    "safe": true,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-2066-41",
+    "text": "⁦hello ‬⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-2066-42",
+    "text": "⁦hello ⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-2067-43",
+    "text": "⁧hello ",
+    "safe": false,
+    "controls": [
+      [
+        "U+2067",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "pair-2067-44",
+    "text": "⁧hello ‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2067",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-2067-45",
+    "text": "⁧hello ⁩",
+    "safe": true,
+    "controls": [
+      [
+        "U+2067",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-2067-46",
+    "text": "⁧hello ‬⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2067",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-2067-47",
+    "text": "⁧hello ⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2067",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-2068-48",
+    "text": "⁨hello ",
+    "safe": false,
+    "controls": [
+      [
+        "U+2068",
+        0,
+        1,
+        0,
+        "FIRST STRONG ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "pair-2068-49",
+    "text": "⁨hello ‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2068",
+        0,
+        1,
+        0,
+        "FIRST STRONG ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-2068-50",
+    "text": "⁨hello ⁩",
+    "safe": true,
+    "controls": [
+      [
+        "U+2068",
+        0,
+        1,
+        0,
+        "FIRST STRONG ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "pair-2068-51",
+    "text": "⁨hello ‬⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2068",
+        0,
+        1,
+        0,
+        "FIRST STRONG ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "pair-2068-52",
+    "text": "⁨hello ⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2068",
+        0,
+        1,
+        0,
+        "FIRST STRONG ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        8,
+        9,
+        8,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        8,
+        9,
+        8,
+        9
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        8,
+        9,
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-0",
+    "text": "👋⁦left\nright⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-0",
+    "text": "👋‫left\nright‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-1",
+    "text": "👋⁦left\r\nright⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        14,
+        15,
+        13,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        14,
+        15,
+        13,
+        14
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        14,
+        15,
+        13,
+        14
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-1",
+    "text": "👋‫left\r\nright‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        14,
+        15,
+        13,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        14,
+        15,
+        13,
+        14
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        14,
+        15,
+        13,
+        14
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-2",
+    "text": "👋⁦left\rright⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-2",
+    "text": "👋‫left\rright‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-3",
+    "text": "👋⁦leftright⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-3",
+    "text": "👋‫leftright‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-4",
+    "text": "👋⁦left\u001cright⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-4",
+    "text": "👋‫left\u001cright‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-5",
+    "text": "👋⁦left\u001dright⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-5",
+    "text": "👋‫left\u001dright‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-6",
+    "text": "👋⁦left\u001eright⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-6",
+    "text": "👋‫left\u001eright‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-7",
+    "text": "👋⁦left right⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-7",
+    "text": "👋‫left right‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNCLOSED_EMBEDDING",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "isolate-boundary-8",
+    "text": "👋⁦left right⁩",
+    "safe": true,
+    "controls": [
+      [
+        "U+2066",
+        2,
+        3,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "embedding-boundary-8",
+    "text": "👋‫left right‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        2,
+        3,
+        1,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        13,
+        14,
+        12,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        1,
+        2
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        13,
+        14,
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "context-0",
+    "text": "",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-1",
+    "text": "Plain English",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-2",
+    "text": "می‌روم",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-3",
+    "text": "👩🏽‍💻",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-4",
+    "text": "‌abc",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-5",
+    "text": "abc‍",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-6",
+    "text": "a‌b",
+    "safe": true,
+    "controls": [],
+    "findings": [
+      [
+        "HIDDEN_IDENTIFIER_JOINER",
+        "warning",
+        1,
+        2,
+        1,
+        2
+      ]
+    ]
+  },
+  {
+    "id": "context-7",
+    "text": "$‍_",
+    "safe": true,
+    "controls": [],
+    "findings": [
+      [
+        "HIDDEN_IDENTIFIER_JOINER",
+        "warning",
+        1,
+        2,
+        1,
+        2
+      ]
+    ]
+  },
+  {
+    "id": "context-8",
+    "text": "1‌2",
+    "safe": true,
+    "controls": [],
+    "findings": [
+      [
+        "HIDDEN_IDENTIFIER_JOINER",
+        "warning",
+        1,
+        2,
+        1,
+        2
+      ]
+    ]
+  },
+  {
+    "id": "context-9",
+    "text": "a‌کتاب",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-10",
+    "text": "کتاب‍a",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-11",
+    "text": "​",
+    "safe": true,
+    "controls": [],
+    "findings": [
+      [
+        "HIDDEN_ZERO_WIDTH_SPACE",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ]
+    ]
+  },
+  {
+    "id": "context-12",
+    "text": "👋a​b⁠c﻿",
+    "safe": true,
+    "controls": [],
+    "findings": [
+      [
+        "HIDDEN_ZERO_WIDTH_SPACE",
+        "warning",
+        3,
+        4,
+        2,
+        3
+      ],
+      [
+        "HIDDEN_WORD_JOINER",
+        "info",
+        5,
+        6,
+        4,
+        5
+      ],
+      [
+        "HIDDEN_MIDSTREAM_BOM",
+        "warning",
+        7,
+        8,
+        6,
+        7
+      ]
+    ]
+  },
+  {
+    "id": "context-13",
+    "text": "﻿hello",
+    "safe": true,
+    "controls": [],
+    "findings": []
+  },
+  {
+    "id": "context-14",
+    "text": "﻿hello﻿",
+    "safe": true,
+    "controls": [],
+    "findings": [
+      [
+        "HIDDEN_MIDSTREAM_BOM",
+        "warning",
+        6,
+        7,
+        6,
+        7
+      ]
+    ]
+  },
+  {
+    "id": "context-15",
+    "text": "⁦a⁧b⁩c⁩",
+    "safe": true,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2067",
+        2,
+        3,
+        2,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        4,
+        5,
+        4,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        6,
+        7,
+        6,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        4,
+        5,
+        4,
+        5
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        6,
+        7,
+        6,
+        7
+      ]
+    ]
+  },
+  {
+    "id": "context-16",
+    "text": "⁨a‫b⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2068",
+        0,
+        1,
+        0,
+        "FIRST STRONG ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202B",
+        2,
+        3,
+        2,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2069",
+        4,
+        5,
+        4,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        5,
+        6,
+        5,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_FORMAT_CROSSES_ISOLATE_BOUNDARY",
+        "high",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        4,
+        5,
+        4,
+        5
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        5,
+        6,
+        5,
+        6
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        5,
+        6,
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": "context-17",
+    "text": "‫a⁦b‬c⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2066",
+        2,
+        3,
+        2,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        4,
+        5,
+        4,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        6,
+        7,
+        6,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        7,
+        8,
+        7,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        4,
+        5,
+        4,
+        5
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        4,
+        5,
+        4,
+        5
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        6,
+        7,
+        6,
+        7
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        7,
+        8,
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "context-18",
+    "text": "⁦a‫b‬c⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202B",
+        2,
+        3,
+        2,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+202C",
+        4,
+        5,
+        4,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ],
+      [
+        "U+2069",
+        6,
+        7,
+        6,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        4,
+        5,
+        4,
+        5
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        6,
+        7,
+        6,
+        7
+      ]
+    ]
+  },
+  {
+    "id": "context-19",
+    "text": "⁦⁧‫⁩⁩",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2067",
+        1,
+        2,
+        1,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202B",
+        2,
+        3,
+        2,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2069",
+        3,
+        4,
+        3,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        4,
+        5,
+        4,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        1,
+        2,
+        1,
+        2
+      ],
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_FORMAT_CROSSES_ISOLATE_BOUNDARY",
+        "high",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        3,
+        4,
+        3,
+        4
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        4,
+        5,
+        4,
+        5
+      ]
+    ]
+  },
+  {
+    "id": "context-20",
+    "text": "‫⁦⁧⁩⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+202B",
+        0,
+        1,
+        0,
+        "RIGHT-TO-LEFT EMBEDDING",
+        "high"
+      ],
+      [
+        "U+2066",
+        1,
+        2,
+        1,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2067",
+        2,
+        3,
+        2,
+        "RIGHT-TO-LEFT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        3,
+        4,
+        3,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        4,
+        5,
+        4,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        5,
+        6,
+        5,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_EMBEDDING_CONTROL",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        1,
+        2,
+        1,
+        2
+      ],
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        3,
+        4,
+        3,
+        4
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        4,
+        5,
+        4,
+        5
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        5,
+        6,
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": "context-21",
+    "text": "⁦\n⁩\r‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2066",
+        0,
+        1,
+        0,
+        "LEFT-TO-RIGHT ISOLATE",
+        "medium"
+      ],
+      [
+        "U+2069",
+        2,
+        3,
+        2,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        4,
+        5,
+        4,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_ISOLATE_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNCLOSED_ISOLATE",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        4,
+        5,
+        4,
+        5
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        4,
+        5,
+        4,
+        5
+      ]
+    ]
+  },
+  {
+    "id": "context-22",
+    "text": "⁩‬",
+    "safe": false,
+    "controls": [
+      [
+        "U+2069",
+        0,
+        1,
+        0,
+        "POP DIRECTIONAL ISOLATE",
+        "medium"
+      ],
+      [
+        "U+202C",
+        1,
+        2,
+        1,
+        "POP DIRECTIONAL FORMATTING",
+        "medium"
+      ]
+    ],
+    "findings": [
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_UNMATCHED_PDI",
+        "high",
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        "BIDI_POP_CONTROL",
+        "warning",
+        1,
+        2,
+        1,
+        2
+      ],
+      [
+        "BIDI_UNMATCHED_PDF",
+        "high",
+        1,
+        2,
+        1,
+        2
+      ]
+    ]
+  }
+]
