@@ -34,3 +34,9 @@ body:
           required: true
         - label: I searched existing issues and the documented limitations/roadmap.
           required: true
+  - type: input
+    id: discovery
+    attributes:
+      label: How did you find BidiLens? (optional)
+      description: A public post, documentation link, upstream PR, or event name helps us improve our guides. This issue is public; do not include private messages or personal information.
+      placeholder: e.g. a Streamdown PR or a search for mixed Persian/English text

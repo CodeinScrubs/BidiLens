@@ -4,6 +4,8 @@
 
 # BidiLens
 
+**نمایش متن ترکیبی فارسی، عربی، عبری و انگلیسی—بدون برعکس‌کردن متن اصلی.**
+
 [![CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml/badge.svg)](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/%40bidilens%2Fcore?color=cb3837&label=npm)](https://www.npmjs.com/package/@bidilens/core)
 [![MIT License](https://img.shields.io/badge/license-MIT-22c55e.svg)](LICENSE)
@@ -11,6 +13,41 @@
 
 [English README](README.md) · [شروع سریع و انتخاب ابزار مناسب (انگلیسی)](docs/GETTING_STARTED.md) · [امنیت](SECURITY.md) ·
 [مشارکت](CONTRIBUTING.md) · [وضعیت پروژه](docs/V1_BUILD_REPORT.md)
+
+## روی یک پیام امتحان کنید
+
+[آزمایش زنده در مرورگر](https://codeinscrubs.github.io/BidiLens/) ·
+[HTML بومی کافی است یا به کتابخانه نیاز دارم؟ (انگلیسی)](docs/NATIVE_OR_BIDILENS.md)
+
+برای React فقط یک بسته نصب کنید:
+
+```sh
+npm install @bidilens/react
+```
+
+```tsx
+import { BidiMessage } from '@bidilens/react';
+
+<BidiMessage
+  text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."
+  inheritedDirection="ltr"
+  style={{ textAlign: 'left' }}
+/>
+```
+
+جهت خواندن این جمله راست‌به‌چپ است، اما عمداً از سمت چپ تراز می‌شود؛
+متن ذخیره‌شده تغییر نمی‌کند. مقدار `inheritedDirection` را مطابق جهت واقعی
+محیط قرار دهید. اگر تراز وابسته به جهت می‌خواهید، استایل `textAlign` را حذف کنید.
+در React Server Components، این کامپوننت را داخل مرز کلاینت قرار دهید.
+برای متن کاملاً انگلیسی در محیط LTR، سیاست پیش‌فرض نشانه‌گذاری جهت و ایزوله‌سازی
+اضافه نمی‌کند. نیازی به تغییر جهت کل برنامه یا نصب همهٔ بسته‌ها نیست.
+
+**وضعیت انتشار:** بسته‌های وب و JavaScript با نسخهٔ `0.4.0` در npm و Android
+با نسخهٔ `0.1.2` در Maven Central منتشر شده‌اند. پیاده‌سازی‌های Swift/iOS،
+.NET/Windows و Rust فعلاً در سطح سورس هستند و انتشار رجیستری محسوب نمی‌شوند.
+
+<details>
+<summary>جزئیات انتشار و شواهد اعتبارسنجی</summary>
 
 > [!IMPORTANT]
 > نسخهٔ `0.4.0` بخش وب و JavaScript برای هر ۱۲ بستهٔ `@bidilens/*` در npm
@@ -27,6 +64,8 @@
 > امضا و checksum و نتیجهٔ آزمون مصرف‌کنندهٔ تمیز از رجیستری عمومی در
 > [انتشار تغییرناپذیر `android-v0.1.2`](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
 > ثبت شده‌اند. نسخه‌های پیشین نیز به‌صورت آرشیو تغییرناپذیر در دسترس هستند.
+
+</details>
 
 BidiLens یک ابزار متن‌باز و آفلاین برای نمایش درست متن‌های ترکیبی راست‌به‌چپ
 و چپ‌به‌راست در رابط‌های هوش مصنوعی، Markdown، برنامه‌های وب و Android است.

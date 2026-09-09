@@ -1,0 +1,30 @@
+# BidiLens
+
+> Source-preserving mixed RTL/LTR text tooling for AI chat, Markdown, web, and native integrations. MIT licensed. Offline runtime; no LLM is required.
+
+BidiLens supplies paragraph-direction policy and structural inline isolation.
+The host renderer still performs Unicode bidi layout and glyph shaping.
+Do not reverse source strings or persist display-only Unicode controls.
+Direction, text alignment, and component placement are independent choices.
+The default LTR no-op policy is scoped to LTR hosts without RTL strong characters or bidi formatting controls; it is not a promise of zero runtime cost.
+Content-majority is a heuristic. Preserve explicit caller choices and test ambiguous text in the target renderer.
+JavaScript/web and Android have registry releases. Swift/iOS, .NET/Windows, and Rust are source-level integrations with separate validation limits, not registry releases. Verify current versions in the release records below.
+
+## Start
+
+- [Project overview and release status](https://github.com/CodeinScrubs/BidiLens/blob/main/README.md): Current package and platform availability.
+- [One-message integration guide](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/GETTING_STARTED.md): Choose one adapter, use supported APIs, and retain rollback.
+- [Native HTML or BidiLens?](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/NATIVE_OR_BIDILENS.md): When native markup is enough and how to compose with a UI library.
+- [Persian guide](https://github.com/CodeinScrubs/BidiLens/blob/main/README.fa.md): Persian-language overview and quick start.
+
+## Safety and validation
+
+- [Limitations](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/LIMITATIONS.md): Heuristic, renderer, editor, and platform boundaries.
+- [Accessibility](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/ACCESSIBILITY.md): Source order, assistive technology, and verification limits.
+- [Security](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/SECURITY.md): Bidi-control auditing and untrusted-content handling.
+- [Releases](https://github.com/CodeinScrubs/BidiLens/releases): Published artifacts and provenance. Source on main can be newer than a release.
+
+## Optional
+
+- [Architecture](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/ARCHITECTURE.md): Core analysis and adapter boundaries.
+- [Contribution guide](https://github.com/CodeinScrubs/BidiLens/blob/main/CONTRIBUTING.md): Focused reproductions and contribution checks.
