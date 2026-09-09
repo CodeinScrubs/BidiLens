@@ -11,13 +11,13 @@ public enum BidiAnalyzer {
         "rollup", "safari", "stencil", "storybook", "tailwind", "turbopack", "vite", "vitest",
     ]
 
+    private static let numericValue = #"[0-9\u0660-\u0669\u06F0-\u06F9]+(?:[.,\u066B\u066C][0-9\u0660-\u0669\u06F0-\u06F9]+)*"#
     private static let technicalPatterns: [(String, TechnicalTokenKind, NSRegularExpression.Options)] = [
         (#"```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\r\n]+`+"#, .code, []),
         (#"</?[A-Za-z][^<>\r\n]*>"#, .html, []),
-        (#"\$\$[^\r\n]*?\$\$|\$[^\$\r\n]+\$|\\\([^\r\n]*?\\\)"#, .math, []),
         (#"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}"']+"#, .url, [.caseInsensitive]),
         (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])"#, .email, [.caseInsensitive]),
-        (#"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}]+"#, .path, []),
+        (#"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}"'“”‘’«»]+"#, .path, []),
         (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"#, .path, []),
         (#"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*"#, .identifier, [.caseInsensitive]),
         (#"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"#, .identifier, []),
@@ -26,6 +26,8 @@ public enum BidiAnalyzer {
         (#"(?<![\p{L}\p{N}_])\+?[0-9][0-9 ()-]{6,}[0-9](?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])"#, .number, [.caseInsensitive]),
+        (#"(?<![\p{L}\p{N}_])(?:\p{Sc}[+-]?"# + numericValue + "|[+-]?" + numericValue + #"\p{Sc})(?![\p{L}\p{N}_])"#, .number, []),
+        (#"(?<![\p{L}\p{N}_])[+-]?"# + numericValue + "[-–][+-]?" + numericValue + #"(?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"#, .version, []),
         (#"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])"#, .hash, [.caseInsensitive]),
         (#"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"#, .number, []),
@@ -144,7 +146,7 @@ public enum BidiAnalyzer {
         customIdentifiers: Set<String> = []
     ) -> [TechnicalTokenRange] {
         let fullRange = NSRange(location: 0, length: (text as NSString).length)
-        var ranges: [TechnicalTokenRange] = []
+        var ranges = mathRanges(text)
         let normalizedCustomIdentifiers = Set(customIdentifiers.map { $0.lowercased() })
         for (pattern, kind, options) in technicalPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { continue }

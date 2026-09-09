@@ -11,6 +11,32 @@ const bundle = buildSync({
   globalName: 'BidiLensDom'
 }).outputFiles[0]!.text;
 
+test('currency and ranges preserve internal order in left-aligned RTL prose', async ({ page }) => {
+  await page.setContent('<main dir="ltr"><p style="text-align:left">هزینه $10 و صفحات 10-20 است.</p></main>');
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(() => {
+    (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom.applyBidi(document.body);
+    const paragraph = document.querySelector('p')!;
+    return {
+      source: paragraph.textContent,
+      tokens: [...paragraph.querySelectorAll('bdi')].map((element) => {
+        const node = element.firstChild!;
+        const range = document.createRange();
+        range.setStart(node, 0); range.setEnd(node, 1);
+        const first = range.getBoundingClientRect().left;
+        const lastIndex = (node.textContent?.length ?? 1) - 1;
+        range.setStart(node, lastIndex); range.setEnd(node, lastIndex + 1);
+        return { text: element.textContent, first, last: range.getBoundingClientRect().left };
+      })
+    };
+  });
+  expect(evidence.source).toBe('هزینه $10 و صفحات 10-20 است.');
+  expect(evidence.tokens.map((token) => token.text)).toEqual(['$10', '10-20']);
+  for (const token of evidence.tokens) expect(token.first).toBeLessThan(token.last);
+  await expect(page.locator('p')).toHaveCSS('direction', 'rtl');
+  await expect(page.locator('p')).toHaveCSS('text-align', 'left');
+});
+
 test('incremental DOM isolation preserves phrase order and left alignment', async ({ page }) => {
   await page.setContent('<main dir="ltr"><p id="stream" style="text-align:left">سلام page</p><p id="css" style="direction:rtl">Hello world</p></main>');
   await page.addScriptTag({ content: bundle });

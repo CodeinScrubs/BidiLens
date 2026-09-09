@@ -5,6 +5,15 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+- Keep compact currency amounts and hyphen/en-dash numeric ranges together,
+  exclude surrounding quotes from paths, and distinguish dollar math from
+  prices/escaped delimiters in TypeScript, Kotlin, Swift, C#, and Rust.
+  Pin math-boundary whitespace across runtimes. Reconcile corresponding live
+  streaming boundaries with rollback for a digit after a tentative closing `$`.
+- Restore actual web-component author nodes instead of clones, retaining
+  event listeners and mutable input state when returning to the no-op path.
+- Verify an external AI review against the current checkout and record rejected,
+  reproduced, and remaining findings in [the review report](docs/EXTERNAL_REVIEW_2026_09.md).
 - Add public Swift/.NET security scanning with paragraph-scoped balance checks,
   hidden-character diagnostics, dual-offset findings, and audit/warn/strict/off
   reporting. Existing analysis now flags unmatched/unclosed isolates as high

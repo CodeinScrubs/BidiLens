@@ -19,7 +19,8 @@ export class BidiMessageElement extends HTMLElementBase {
 
   #captureAuthorContent(): void {
     this.#initialContent = this.textContent ?? '';
-    this.#initialChildren = [...this.childNodes].map((node) => node.cloneNode(true));
+    // Retain actual detached nodes: cloning discards listeners and live state.
+    this.#initialChildren = [...this.childNodes];
   }
 
   connectedCallback(): void {
@@ -81,7 +82,7 @@ export class BidiMessageElement extends HTMLElementBase {
       this.replaceChildren(this.ownerDocument.createTextNode(source));
       this.#contentOwned = true;
     } else if (this.#contentOwned) {
-      this.replaceChildren(...(this.#initialChildren ?? []).map((node) => node.cloneNode(true)));
+      this.replaceChildren(...(this.#initialChildren ?? []));
       this.#contentOwned = false;
     }
   }

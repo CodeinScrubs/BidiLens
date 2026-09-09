@@ -3539,6 +3539,9 @@ var DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
   "vitest"
 ]);
 var KNOWN_TECHNICAL_TOKENS = new Set(DEFAULT_TECHNICAL_IDENTIFIERS);
+var NUMERIC_VALUE = "[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*";
+var CURRENCY_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\p{Sc})(?![\\p{L}\\p{N}_])`, "gu");
+var NUMBER_RANGE_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}[-\u2013][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, "gu");
 var CUSTOM_TECHNICAL_IDENTIFIER_CACHE = /* @__PURE__ */ new WeakMap();
 function normalizeOptions(options = {}) {
   const strategy = options.strategy ?? DEFAULT_OPTIONS.strategy;
@@ -3582,21 +3585,35 @@ function addMatches(text, ranges, expression, kind, group = 0) {
 }
 function addMathRanges(text, ranges) {
   let i = 0;
-  let scanned = -1;
+  const scanned = { "$": -1, "$$": -1, "\\)": -1 };
   while (i < text.length) {
     const p = text[i] === "\\" && text[i + 1] === "(";
-    const d = text[i] === "$" ? text[i + 1] === "$" ? "$$" : "$" : p && i >= scanned ? "\\)" : "";
-    if (!d) {
+    if (text[i] === "\\" && !p) {
+      i += 2;
+      continue;
+    }
+    const d = text[i] === "$" ? text[i + 1] === "$" ? "$$" : "$" : p ? "\\)" : "";
+    if (!d || i < scanned[d]) {
+      i++;
+      continue;
+    }
+    if (d === "$" && (i + 1 === text.length || /\s/u.test(text[i + 1]))) {
       i++;
       continue;
     }
     let e = i + (p ? 2 : d.length);
-    while (e < text.length && text[e] !== "\r" && text[e] !== "\n" && !text.startsWith(d, e)) e++;
+    while (e < text.length && text[e] !== "\r" && text[e] !== "\n" && !text.startsWith(d, e)) {
+      e += text[e] === "\\" && e + 1 < text.length && !/[\r\n]/u.test(text[e + 1]) ? 2 : 1;
+    }
     if (text.startsWith(d, e) && (d !== "$" || e > i + 1)) {
+      if (d === "$" && (/\s/u.test(text[e - 1]) || /[0-9\u0660-\u0669\u06F0-\u06F9]/u.test(text[e + 1] ?? ""))) {
+        i = e;
+        continue;
+      }
       addRange(ranges, text, i, e + d.length, "math");
       i = e + d.length;
     } else {
-      if (p) scanned = e;
+      scanned[d] = e;
       i++;
     }
   }
@@ -3813,7 +3830,7 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addNormalizedMatches(
     text,
     ranges,
-    /(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}\/|~\/)[^\s<>()\x5B\x5D{}]+/gu,
+    /(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}\/|~\/)[^\s<>()\x5B\x5D{}"'“”‘’«»]+/gu,
     "path",
     trimTechnicalPunctuation
   );
@@ -3832,6 +3849,8 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])\+?\d[\d ()-]{6,}\d(?![\p{L}\p{N}_])/gu, "number");
   addMatches(text, ranges, /\b\d{4}[-/]\d{1,2}[-/]\d{1,2}(?:[T ]\d{1,2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:?\d{2})?)?\b/gu, "number");
   addMatches(text, ranges, /\b\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?\b/giu, "number");
+  addMatches(text, ranges, CURRENCY_TOKEN, "number");
+  addMatches(text, ranges, NUMBER_RANGE_TOKEN, "number");
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, "version");
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, "hash");
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, "number");

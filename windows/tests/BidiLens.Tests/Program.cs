@@ -24,6 +24,7 @@ internal static class Program
             if (!value) throw new InvalidOperationException(message);
         }
         assertions += SecurityTests.Run();
+        assertions += TokenBoundaryTests.Run();
         foreach (var threshold in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity, 0.49, 1.01 })
         {
             var rejected = false;

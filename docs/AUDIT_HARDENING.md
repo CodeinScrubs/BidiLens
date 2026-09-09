@@ -44,6 +44,10 @@ application is certified. Release status remains in the changelog and registry.
 - Clean release-artifact verification passed for all 12 packages, including
   packed examples and compiled integration guides. This is not publication.
 
+The later [external AI review verification](EXTERNAL_REVIEW_2026_09.md) records
+token-boundary and web-component restoration fixes, claim dispositions, and
+remaining streaming/corpus limitations. Its changes require fresh checks.
+
 ## Compatibility and remaining gates
 
 The original hardening revision `a6042bc` passed all 25 hosted checks, including

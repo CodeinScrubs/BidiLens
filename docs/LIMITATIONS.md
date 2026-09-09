@@ -52,6 +52,19 @@ intentionally produce different linkification HTML because its upstream
 reports remain equivalent. Other parser major versions are not a supported or
 tested claim.
 
+The core live stream is also provisional: adversarial overlaps between `$`,
+environment identifiers, escapes, and incomplete math can differ from the batch
+policy before `finish()`. Repeated ambiguity can trigger exact rescans and
+quadratic behavior; there is no universal linear-time streaming guarantee.
+Use completed paragraph results for authoritative classification and bound or
+batch untrusted streams. See the [external-review record](EXTERNAL_REVIEW_2026_09.md).
+
+Unicode classification covers scripts through generated data, but classification
+is not a language-quality certification. The current corpus has no dedicated
+`sd`, `syr`, `dv`, or `yi` tagged fixtures (Sindhi, Syriac, Divehi/Thaana, Yiddish).
+Native-speaker-authored mixed-language examples and review are still needed;
+inventing translations or relabeling existing examples would not close that gap.
+
 ## Validation boundaries
 
 - the corpus contains broad authored template matrices, but currently records
