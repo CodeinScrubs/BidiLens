@@ -392,3 +392,35 @@ have merged native contributions; Hermes and Cline remain submitted without
 human maintainer approval. See the [adoption
 strategy](ADOPTION.md), [limitations](LIMITATIONS.md), and [outreach
 kit](OUTREACH.md) before describing this activity publicly.
+
+## 2026-09-09: invited contribution and adoption follow-up
+
+- **PersianLabs UI:** followed the maintainer's invitation on
+  [issue #84](https://github.com/persianlabs/ui/issues/84) with
+  [PR #95](https://github.com/persianlabs/ui/pull/95). The example composes
+  existing Message/Bubble components with native paragraph direction and inline
+  isolation; no BidiLens dependency or global behavior change is proposed.
+  Local build, typecheck, MDX checks, and three-browser/narrow-width checks passed.
+  Submitted is not merged or adopted; screen-reader/editor/system-clipboard
+  validation is not claimed.
+- **OpenAI Codex:** replied to the new Windows terminal report on
+  [issue #34871](https://github.com/openai/codex/issues/34871#issuecomment-5603956086)
+  with a focused distinction between logical source and terminal rendering, plus
+  chunk-boundary, wrapping, selection, and renderer-specific test suggestions.
+  This was technical follow-up, not a claim that a terminal integration is solved.
+- **BidiLens onboarding:**
+  [PR #90](https://github.com/CodeinScrubs/BidiLens/pull/90) shortens both README
+  quick starts, adds native-versus-toolkit guidance and a documentation index,
+  and asks an optional public-source discovery question on integration requests.
+  No runtime telemetry is introduced; public demo changes still require deployment.
+- **Maintenance:** hardening
+  [PR #89](https://github.com/CodeinScrubs/BidiLens/pull/89) was marked ready after
+  all 25 hosted checks passed. The separate AGP update
+  [PR #86](https://github.com/CodeinScrubs/BidiLens/pull/86#issuecomment-5603956599)
+  remains held: AGP 9.4.0 requires Gradle 9.6.0 or newer, while that branch uses
+  9.5.1. Do not merge it based on unrelated green jobs.
+
+The next priority is feedback on invited/reviewed contributions and bounded
+integration pilots. Star counts and merged native patches are not evidence that
+an upstream project adopted BidiLens as a dependency. Do not send duplicate
+promotional issues or bump unchanged proposals.
