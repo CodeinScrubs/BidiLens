@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   BIDI_CONTROLS,
+  isStrongRtlCodePoint,
+  isStrongLtrCodePoint,
   analyzeText,
   analyzePlainText,
   analyzeBlock,
@@ -22,6 +24,14 @@ import {
 } from './index.js';
 
 describe('direction detection', () => {
+  it('evaluates strong RTL and LTR code point predicates correctly', () => {
+    expect(isStrongRtlCodePoint(0x0633)).toBe(true); // Persian Sin
+    expect(isStrongRtlCodePoint(0x05D0)).toBe(true); // Hebrew Alef
+    expect(isStrongRtlCodePoint(0x0041)).toBe(false); // Latin A
+    expect(isStrongLtrCodePoint(0x0041)).toBe(true);
+    expect(isStrongLtrCodePoint(0x0020)).toBe(false); // Space
+  });
+
   it('provides specification-oriented aliases with identical behavior', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(detectBaseDirection(source)).toBe(detectDirection(source));
