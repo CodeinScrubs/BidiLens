@@ -281,6 +281,11 @@ export class BidiStream {
     return this.snapshot();
   }
 
+  /** Clears completed paragraph history to free memory in continuous streams. */
+  clearHistory(): void {
+    this.#completedParagraphs = [];
+  }
+
   /** Clears the session and optionally analyzes replacement source in one step. */
   reset(initialText = ''): BidiStreamSnapshot {
     this.#text = '';
