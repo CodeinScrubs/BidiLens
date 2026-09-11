@@ -1,8 +1,20 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, renderBidiHtml, renderInlineBidiHtml } from './index.js';
+import {
+  SAFE_BLOCK_TAGS,
+  SAFE_CONTAINER_TAGS,
+  escapeHtml,
+  renderBidiHtml,
+  renderInlineBidiHtml
+} from './index.js';
 
 describe('semantic HTML serializer', () => {
+  it('exports safe block and container tag sets', () => {
+    expect(SAFE_BLOCK_TAGS.has('div')).toBe(true);
+    expect(SAFE_BLOCK_TAGS.has('p')).toBe(true);
+    expect(SAFE_CONTAINER_TAGS.has('article')).toBe(true);
+  });
+
   it('adds no BidiLens markup to ordinary LTR-only input by default', () => {
     const source = 'React is a very popular JavaScript library.';
     const result = renderBidiHtml(source);

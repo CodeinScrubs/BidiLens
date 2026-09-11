@@ -34,12 +34,14 @@ export interface RenderedBidiHtml {
 }
 
 const SAFE_TAG = /^[a-z][a-z0-9-]*$/u;
-const SAFE_BLOCK_TAGS = new Set([
+/** Whitelisted safe HTML block-level tags. */
+export const SAFE_BLOCK_TAGS: ReadonlySet<string> = new Set([
   'address', 'article', 'aside', 'blockquote', 'dd', 'div', 'dt', 'figcaption',
   'footer', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'li', 'main', 'nav',
   'p', 'pre', 'section', 'span', 'td', 'th'
 ]);
-const SAFE_CONTAINER_TAGS = new Set([
+/** Whitelisted safe HTML container tags. */
+export const SAFE_CONTAINER_TAGS: ReadonlySet<string> = new Set([
   'article', 'aside', 'blockquote', 'div', 'footer', 'header', 'main', 'nav', 'section', 'span'
 ]);
 
