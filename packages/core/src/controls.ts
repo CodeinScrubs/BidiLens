@@ -26,7 +26,10 @@ export function isolateText(text: string, direction: Direction = 'neutral'): str
   return `${opener}${text}${BIDI_CONTROLS.PDI}`;
 }
 
-export function stripBidiControls(text: string): string {
+export function stripBidiControls(text: string, options?: { preserveLength?: boolean }): string {
+  if (options?.preserveLength) {
+    return text.replace(ALL_CONTROLS_RE, ' ');
+  }
   return text.replace(ALL_CONTROLS_RE, '');
 }
 
