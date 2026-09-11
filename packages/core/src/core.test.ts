@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BIDI_CONTROLS,
+  normalizeDirectionOverride,
   analyzeText,
   analyzePlainText,
   analyzeBlock,
@@ -22,6 +23,14 @@ import {
 } from './index.js';
 
 describe('direction detection', () => {
+  it('normalizes direction override values safely', () => {
+    expect(normalizeDirectionOverride('  RTL ')).toBe('rtl');
+    expect(normalizeDirectionOverride('LTR')).toBe('ltr');
+    expect(normalizeDirectionOverride('auto')).toBe('auto');
+    expect(normalizeDirectionOverride('invalid')).toBeUndefined();
+    expect(normalizeDirectionOverride(123)).toBeUndefined();
+  });
+
   it('provides specification-oriented aliases with identical behavior', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(detectBaseDirection(source)).toBe(detectDirection(source));

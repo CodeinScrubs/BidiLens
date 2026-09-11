@@ -12,3 +12,5 @@ export { DEFAULT_PARAGRAPH_SEPARATOR_SOURCE } from './paragraph.js';
 // Specification-oriented aliases retained alongside the original concise API.
 export { analyzeText as analyzePlainText, detectDirection as detectBaseDirection } from './detect.js';
 export { segmentDirectionalRuns as findDirectionalRuns } from './segments.js';
+
+export { normalizeDirectionOverride } from './options.js';
