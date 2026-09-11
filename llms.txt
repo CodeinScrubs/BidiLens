@@ -1,0 +1,23 @@
+# BidiLens: Production-Grade Bidirectional Text Engine
+
+> Comprehensive bidirectional text analysis, inline isolation, and Trojan Source security scanner for modern AI applications.
+
+## Packages
+
+- @bidilens/core: Zero-dependency bidirectional analysis, UAX #9 heuristics, streaming hysteresis, and security scanner.
+- @bidilens/react: React components (<BidiBlock>) and hooks (useBidi, useBidiStream).
+- @bidilens/vue: Vue 3 components and v-bidi directive.
+- @bidilens/svelte: Svelte store and action utilities.
+- @bidilens/web-component: Standalone <bidi-message> custom element.
+- @bidilens/markdown: Markdown-it and Remark plugins for bidirectional AST annotation.
+- @bidilens/html: HTML string annotation with <bdi> tag injection.
+- @bidilens/dom: Dynamic DOM TreeWalker with mutation observation.
+- @bidilens/cli: Terminal scanner and CLI utility.
+
+## Canonical Documentation
+
+- [Getting Started](docs/GETTING_STARTED.md): Quick-start guide across web and native platforms.
+- [Why Not dir="auto"?](docs/why-not-dir-auto.md): Technical comparison with native browser behavior.
+- [Comparison Guide](docs/comparison-guide.md): Evaluating alternatives (direction, bidi-js).
+- [Trojan Source Security](docs/trojan-source-security.md): Bidi control vulnerability defenses.
+- [Streaming Architecture](docs/architecture/adr/adr-006-streaming-directional-hysteresis.md): Directional hysteresis design.
