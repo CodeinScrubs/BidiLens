@@ -35,7 +35,10 @@ export const DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
   'angular', 'astro', 'chrome', 'docker', 'esbuild', 'eslint', 'firefox',
   'kubernetes', 'kubectl', 'nuxt', 'playwright', 'pnpm', 'preact', 'remix',
   'rollup', 'safari', 'stencil', 'storybook', 'tailwind', 'turbopack', 'vite',
-  'vitest'
+  'vitest',
+  'aws', 'azure', 'biome', 'bun', 'cloudflare', 'deno', 'django', 'fastapi',
+  'firebase', 'gcp', 'graphql', 'mongodb', 'mysql', 'ollama', 'postgres',
+  'prisma', 'pytorch', 'redis', 'supabase', 'turborepo'
 ] as const);
 const KNOWN_TECHNICAL_TOKENS = new Set<string>(DEFAULT_TECHNICAL_IDENTIFIERS);
 const CUSTOM_TECHNICAL_IDENTIFIER_CACHE = new WeakMap<readonly string[], ReadonlySet<string>>();
