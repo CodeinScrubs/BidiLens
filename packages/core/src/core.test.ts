@@ -57,6 +57,12 @@ describe('direction detection', () => {
     expect(detectDirection('React یک کتابخانه است.')).toBe('rtl');
   });
 
+  it('recognizes modern backend and runtime identifiers as technical tokens', () => {
+    const ranges = findTechnicalTokenRanges('اتصال به postgres و redis با bun و deno');
+    expect(ranges.map((range) => range.text)).toEqual(['postgres', 'redis', 'bun', 'deno']);
+    expect(detectDirection('با redis کش کنید.')).toBe('rtl');
+  });
+
   it('keeps hyphenated English compounds as natural-language evidence', () => {
     // A hyphen is ordinary English compounding. Excluding these tokens removes
     // only LTR evidence, which silently biases mixed blocks toward RTL.
