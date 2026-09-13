@@ -30,13 +30,15 @@ bdi {
 }
 `;
 
-const DEFAULT_BLOCK_SELECTOR = [
+/** Default CSS selector for block-level elements scanned by BidiLens. */
+export const DEFAULT_BLOCK_SELECTOR = [
   'p', 'li', 'blockquote', 'dd', 'dt', 'figcaption',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'td', 'th', '[data-bidilens-candidate]'
 ].join(',');
 
-const DEFAULT_CODE_SELECTOR = 'pre, code, kbd, samp, var, [data-bidilens-code]';
+/** Default CSS selector for inline and block code elements isolated by BidiLens. */
+export const DEFAULT_CODE_SELECTOR = 'pre, code, kbd, samp, var, [data-bidilens-code]';
 
 export interface ApplyBidiOptions extends DetectionOptions {
   blockSelector?: string;

@@ -1,8 +1,21 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { applyBidi, installBidiStyles, observeBidi, restoreBidi } from './index.js';
+import {
+  DEFAULT_BLOCK_SELECTOR,
+  DEFAULT_CODE_SELECTOR,
+  applyBidi,
+  installBidiStyles,
+  observeBidi,
+  restoreBidi
+} from './index.js';
 
 describe('DOM adapter', () => {
+  it('exports default selector constants', () => {
+    expect(DEFAULT_BLOCK_SELECTOR).toContain('p');
+    expect(DEFAULT_BLOCK_SELECTOR).toContain('blockquote');
+    expect(DEFAULT_CODE_SELECTOR).toContain('code');
+  });
+
   it('does not mutate an LTR-only scope', () => {
     document.body.innerHTML = '<main id="root"><p class="message">React is popular.</p><pre><code>npm test</code></pre></main>';
     const root = document.querySelector<HTMLElement>('#root')!;
