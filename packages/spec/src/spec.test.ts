@@ -4,6 +4,7 @@ import { analyzeBlock, createBidiStream, scanBidiSecurity } from '@bidilens/core
 import {
   SPEC_VERSION,
   blockAnalysisSchema,
+  listBidiLensSchemaIds,
   commonSchema,
   getBidiLensSchema,
   indexSchema,
@@ -23,6 +24,13 @@ function validator() {
 }
 
 describe('@bidilens/spec', () => {
+  it('enumerates all schema IDs via listBidiLensSchemaIds()', () => {
+    const ids = listBidiLensSchemaIds();
+    expect(ids).toContain(schemaIds.common);
+    expect(ids).toContain(schemaIds.blockAnalysis);
+    expect(ids.length).toBe(Object.keys(schemaIds).length);
+  });
+
   it('publishes stable, unique, versioned schema identifiers', () => {
     expect(SPEC_VERSION).toBe('0.1.0');
     expect(schemas).toHaveLength(5);

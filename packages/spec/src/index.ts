@@ -43,6 +43,11 @@ const schemaById = new Map<string, BidiLensJsonSchema>(
   schemas.map((schema) => [schema.$id, schema])
 );
 
+/** Returns a list of all known schema IDs defined in the specification. */
+export function listBidiLensSchemaIds(): readonly BidiLensSchemaId[] {
+  return Object.values(schemaIds);
+}
+
 export function isBidiLensSchemaId(value: string): value is BidiLensSchemaId {
   return schemaById.has(value);
 }
