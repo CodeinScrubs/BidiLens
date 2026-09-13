@@ -22,6 +22,12 @@ import {
 } from './index.js';
 
 describe('direction detection', () => {
+  it('supports preserveLength in stripBidiControls', () => {
+    const text = 'a\u202Eb';
+    expect(stripBidiControls(text)).toBe('ab');
+    expect(stripBidiControls(text, { preserveLength: true })).toBe('a b');
+  });
+
   it('provides specification-oriented aliases with identical behavior', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(detectBaseDirection(source)).toBe(detectDirection(source));
