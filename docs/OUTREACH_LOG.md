@@ -392,3 +392,63 @@ have merged native contributions; Hermes and Cline remain submitted without
 human maintainer approval. See the [adoption
 strategy](ADOPTION.md), [limitations](LIMITATIONS.md), and [outreach
 kit](OUTREACH.md) before describing this activity publicly.
+
+## 2026-09-09: invited contribution and adoption follow-up
+
+- **PersianLabs UI:** followed the maintainer's invitation on
+  [issue #84](https://github.com/persianlabs/ui/issues/84) with
+  [PR #95](https://github.com/persianlabs/ui/pull/95). The example composes
+  existing Message/Bubble components with native paragraph direction and inline
+  isolation; no BidiLens dependency or global behavior change is proposed.
+  Local build, typecheck, MDX checks, and three-browser/narrow-width checks passed.
+  Submitted is not merged or adopted; screen-reader/editor/system-clipboard
+  validation is not claimed.
+- **OpenAI Codex:** replied to the new Windows terminal report on
+  [issue #34871](https://github.com/openai/codex/issues/34871#issuecomment-5603956086)
+  with a focused distinction between logical source and terminal rendering, plus
+  chunk-boundary, wrapping, selection, and renderer-specific test suggestions.
+  This was technical follow-up, not a claim that a terminal integration is solved.
+- **BidiLens onboarding:**
+  [PR #90](https://github.com/CodeinScrubs/BidiLens/pull/90) shortens both README
+  quick starts, adds native-versus-toolkit guidance and a documentation index,
+  and asks an optional public-source discovery question on integration requests.
+  No runtime telemetry is introduced; public demo changes still require deployment.
+- **Maintenance:** hardening
+  [PR #89](https://github.com/CodeinScrubs/BidiLens/pull/89) was marked ready after
+  all 25 hosted checks passed. The separate AGP update
+  [PR #86](https://github.com/CodeinScrubs/BidiLens/pull/86#issuecomment-5603956599)
+  remains held: AGP 9.4.0 requires Gradle 9.6.0 or newer, while that branch uses
+  9.5.1. Do not merge it based on unrelated green jobs.
+
+The next priority is feedback on invited/reviewed contributions and bounded
+integration pilots. Star counts and merged native patches are not evidence that
+an upstream project adopted BidiLens as a dependency. Do not send duplicate
+promotional issues or bump unchanged proposals.
+
+## 2026-09-13: verified launch claims and targeted introductions
+
+- **PersianLabs:** [PR #95](https://github.com/persianlabs/ui/pull/95) is now
+  merged (September 9). This is a native example contribution, not adoption of
+  BidiLens as a dependency.
+- **Google ADK Web:** shared renderer-specific fixture ideas in
+  [Show and tell #529](https://github.com/google/adk-web/discussions/529).
+  No reproduced ADK defect or agent-runtime change is claimed.
+- **Microsoft Agent Framework:** introduced client-side rendering cases in
+  [Show and tell #8340](https://github.com/microsoft/agent-framework/discussions/8340),
+  explicitly separating DevUI/custom clients from the Python/.NET backend.
+- **Meta Lexical:** shared read-only consumer fixture ideas in
+  [Show and tell #9165](https://github.com/facebook/lexical/discussions/9165),
+  acknowledging existing direction work and avoiding editor DOM mutation.
+
+All three introductions were checked for existing BidiLens discussions and read
+back after publication. Submitted introductions are not maintainer approval,
+pilots, endorsements, or package adoption. GitHub reported 10 stars at this check;
+no new star attribution is established.
+
+External AI launch drafts contained incorrect package/API names, licensing and
+Rust publication claims, plus unverified performance and growth promises. Those
+claims were not used. A fresh Chromium/Firefox/WebKit check confirmed that
+appending Persian after `Hello` does not change `dir=auto` away from LTR, and
+Persian-first RTL text can retain physical left alignment. This focused check is
+not a full-platform validation. No bulk submission script or repeat email blast
+was run.

@@ -4,7 +4,7 @@
 
 # BidiLens
 
-**Standards-first mixed RTL/LTR infrastructure for AI interfaces.**
+**Render Persian, Arabic, Hebrew, and English together—without reversing your text.**
 
 [![CI](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml/badge.svg)](https://github.com/CodeinScrubs/BidiLens/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/%40bidilens%2Fcore?color=cb3837&label=npm)](https://www.npmjs.com/package/@bidilens/core)
@@ -18,10 +18,49 @@
 [Contributing](CONTRIBUTING.md) ·
 [Project status](docs/V1_BUILD_REPORT.md)
 
+## Try it on one message
+
+[Open the live playground](https://codeinscrubs.github.io/BidiLens/) ·
+[See the before/after example](#visual-proof) ·
+[Do I need a library or just native HTML?](docs/NATIVE_OR_BIDILENS.md) ·
+[Documentation index for AI tools](apps/demo/public/llms.txt)
+
+For a React message, install one package:
+
+```sh
+npm install @bidilens/react
+```
+
+```tsx
+import { BidiMessage } from '@bidilens/react';
+
+<BidiMessage
+  text="React یک کتابخانه جاوااسکریپت بسیار محبوب است."
+  inheritedDirection="ltr"
+  style={{ textAlign: 'left' }}
+/>
+```
+
+The Persian paragraph reads RTL while staying aligned to the physical left.
+Your stored text stays unchanged. Set `inheritedDirection` to the actual host
+direction; omit the alignment style if you want direction-aware alignment.
+For React Server Components, put the component in a client boundary.
+
+For English-only content in an LTR host, the default intervention policy does
+not add direction/isolation markup. This is a scoped rendering tool, not a
+global stylesheet, a language model, or a replacement for your design system.
+
 **Adding BidiLens to an existing app?** Follow the
 [integration guide](docs/GETTING_STARTED.md) for one-package setup, copyable
 recipes, compatibility checks, and rollback. You do not need every package
 or a project-wide RTL migration.
+
+**Available today:** JavaScript/web packages on npm (`0.4.0`) and Android on
+Maven Central (`0.1.2`). Swift/iOS, .NET/Windows, and Rust remain source-level
+integrations with separate validation limits; they are not registry releases.
+
+<details>
+<summary>Release provenance and platform validation details</summary>
 
 > [!IMPORTANT]
 > The JavaScript/web `0.4.0` release is public across all 12 `@bidilens/*`
@@ -42,6 +81,8 @@ or a project-wide RTL migration.
 > present in source with dedicated CI gates, but are not yet registry-published
 > or validated in a downstream production/accessibility lab. Other
 > native/desktop platforms remain explicit roadmap work.
+
+</details>
 
 BidiLens is an offline, standards-first toolkit for mixed right-to-left and
 left-to-right text in AI chat, Markdown, streaming interfaces, web, Android,
