@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { applyBidi, installBidiStyles, observeBidi, restoreBidi } from './index.js';
+import {
+  DEFAULT_BLOCK_SELECTOR,
+  DEFAULT_CODE_SELECTOR,
+  applyBidi,
+  installBidiStyles,
+  observeBidi,
+  restoreBidi
+} from './index.js';
 
 describe('DOM adapter', () => {
   it('ends the old direction session when the host replaces its dir attribute', () => {
@@ -91,6 +98,24 @@ describe('DOM adapter', () => {
     restoreBidi(root);
     expect(paragraph.style.direction).toBe('rtl');
     expect(paragraph.style.textAlign).toBe('left');
+  });
+
+  it('exports default selector constants', () => {
+    expect(document.createElement('p').matches(DEFAULT_BLOCK_SELECTOR)).toBe(true);
+    expect(document.createElement('blockquote').matches(DEFAULT_BLOCK_SELECTOR)).toBe(true);
+    expect(document.createElement('code').matches(DEFAULT_CODE_SELECTOR)).toBe(true);
+  });
+
+  it('lets a host extend selectors without changing defaults or LTR siblings', () => {
+    document.body.innerHTML = '<main><section data-message>سلام React</section><p>Hello world</p></main>';
+    const root = document.querySelector('main')!;
+    const sibling = root.querySelector('p')!;
+    const before = sibling.outerHTML;
+    applyBidi(root, { blockSelector: `${DEFAULT_BLOCK_SELECTOR},[data-message]` });
+    expect(root.querySelector('section')?.getAttribute('dir')).toBe('rtl');
+    expect(root.querySelector('section')?.textContent).toBe('سلام React');
+    expect(sibling.outerHTML).toBe(before);
+    expect(document.createElement('section').matches(DEFAULT_BLOCK_SELECTOR)).toBe(false);
   });
 
   it('does not mutate an LTR-only scope', () => {

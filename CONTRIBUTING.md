@@ -46,6 +46,18 @@ pnpm -r --if-present run example
 
 ## Change requirements
 
+Documentation examples must use real package exports and current signatures.
+Compile or execute new examples in a suitable host harness; a successful
+Markdown/link check alone does not validate code snippets. Keep examples
+source-preserving and distinguish direction from the host's chosen alignment.
+
+Name tests for what their assertions establish. A direction-string assertion
+is not a visual punctuation-placement test, and a few language fixtures are
+not Unicode algorithm conformance or native-speaker validation. Do not invent
+performance percentages, platform certification, or universal safety claims.
+New repository-authored material follows the MIT license; do not add unrelated
+license headers without an explicit licensing decision.
+
 Direction-policy changes require:
 
 1. a regression template in `scripts/generate-corpus.ts` or a clearly

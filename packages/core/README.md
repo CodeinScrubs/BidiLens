@@ -110,3 +110,16 @@ documented clamping behavior.
 
 Run the packaged example after building with
 `pnpm --filter @bidilens/core example`.
+
+## Control diagnostics (unreleased)
+
+`BIDI_CONTROLS` names the 12 Unicode `Bidi_Control` characters and the six
+deprecated formatting controls U+206A–U+206F already recognized by the scanner.
+The extra constants do not change detection or automatic rendering policy.
+
+`stripBidiControls(source, { preserveLength: true })` replaces each recognized
+control with one ASCII space instead of deleting it. This preserves UTF-16 and
+code-point offsets of the other characters for diagnostic overlays. The
+default still deletes controls. Both modes explicitly change content: keep the
+original source and never apply this silently to editing or clipboard paths.
+Neither mode replaces an HTML sanitizer or a source-code security review.

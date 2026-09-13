@@ -16,12 +16,37 @@ import {
   segmentDirectionalRuns,
   findDirectionalRuns,
   stripBidiControls,
+  hasBidiControls,
   findTechnicalTokenRanges,
   needsBidiIntervention,
   planInlineIsolation
 } from './index.js';
 
 describe('direction detection', () => {
+  it('does not flag these eight ordinary multilingual prose samples', () => {
+    const benignSentences = [
+      'گزارش فروش سه‌ماهه اول سال ۲۰۲۶ منتشر شد.',
+      'التقرير السنوي لعام ٢٠٢٦ جاهز للتحميل من الرابط.',
+      'המדריך למשתמש עודכן לאחרונה בגרסה 3.0.',
+      'ہماری نئی ویب سائٹ اگلے ہفتے لانچ ہوگی۔',
+      'داده‌های آماری نشان‌دهنده رشد ۲۰ درصدی هستند.',
+      'يرجى مراجعة صفحة الأسئلة الشائعة لمزيد من المعلومات.',
+      'המערכת פועלת באופן תקין וללא שגיאות.',
+      'براہ کرم اپنی ای میل کی تصدیق کریں۔'
+    ];
+    for (const sentence of benignSentences) {
+      const report = scanBidiSecurity(sentence, { mode: 'strict' });
+      expect(report.findings).toHaveLength(0);
+      expect(report.safe).toBe(true);
+    }
+  });
+
+  it('supports preserveLength in stripBidiControls', () => {
+    const text = 'a\u202Eb';
+    expect(stripBidiControls(text)).toBe('ab');
+    expect(stripBidiControls(text, { preserveLength: true })).toBe('a b');
+  });
+
   it('provides specification-oriented aliases with identical behavior', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(detectBaseDirection(source)).toBe(detectDirection(source));
@@ -1175,5 +1200,25 @@ describe('security', () => {
     const hidden = report.findings.find((finding) => finding.code === 'HIDDEN_ZERO_WIDTH_SPACE')!;
     expect(hidden.sourceRange.utf16.start).toBe(3);
     expect(hidden.sourceRange.codePoint.start).toBe(2);
+  });
+
+  it('exposes the 12 bidi controls and six deprecated formatting controls scanned by security', () => {
+    const controls = Object.values(BIDI_CONTROLS);
+    expect(controls).toHaveLength(18);
+    for (const ctrl of controls) {
+      expect(hasBidiControls(`a${ctrl}b`)).toBe(true);
+      expect(stripBidiControls(`a${ctrl}b`)).toBe('ab');
+      expect(stripBidiControls(`a${ctrl}b`, { preserveLength: false })).toBe('ab');
+      const source = `👋a${ctrl}ب\u200cج`;
+      const display = stripBidiControls(source, { preserveLength: true });
+      expect(display).toBe('👋a ب\u200cج');
+      expect(display.length).toBe(source.length);
+      expect([...display]).toHaveLength([...source].length);
+      expect(display.indexOf('ب')).toBe(source.indexOf('ب'));
+      expect(hasBidiControls(display)).toBe(false);
+    }
+    expect(Object.isFrozen(BIDI_CONTROLS)).toBe(true);
+    expect(new Set(controls).size).toBe(18);
+    expect(stripBidiControls('plain 👋 فارسی\u200c', { preserveLength: true })).toBe('plain 👋 فارسی\u200c');
   });
 });
