@@ -22,6 +22,24 @@ import {
 } from './index.js';
 
 describe('direction detection', () => {
+  it('confirms zero false positives on comprehensive benign sentences', () => {
+    const benignSentences = [
+      'گزارش فروش سه‌ماهه اول سال ۲۰۲۶ منتشر شد.',
+      'التقرير السنوي لعام ٢٠٢٦ جاهز للتحميل من الرابط.',
+      'המדריך למשתמש עודכן לאחרונה בגרסה 3.0.',
+      'ہماری نئی ویب سائٹ اگلے ہفتے لانچ ہوگی۔',
+      'داده‌های آماری نشان‌دهنده رشد ۲۰ درصدی هستند.',
+      'يرجى مراجعة صفحة الأسئلة الشائعة لمزيد من المعلومات.',
+      'המערכת פועלת באופן תקין וללא שגיאות.',
+      'براہ کرم اپنی ای میل کی تصدیق کریں۔'
+    ];
+    for (const sentence of benignSentences) {
+      const report = scanBidiSecurity(sentence, { mode: 'strict' });
+      expect(report.findings).toHaveLength(0);
+      expect(report.safe).toBe(true);
+    }
+  });
+
   it('provides specification-oriented aliases with identical behavior', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(detectBaseDirection(source)).toBe(detectDirection(source));
