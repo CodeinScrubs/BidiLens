@@ -345,6 +345,16 @@ export class BidiStream {
     return this.snapshot();
   }
 
+  /** Reports whether the stream has finished. */
+  get isFinished(): boolean {
+    return this.#finished;
+  }
+
+  /** Total count of paragraphs (completed plus current open paragraph). */
+  get paragraphCount(): number {
+    return this.#completedParagraphs.length + 1;
+  }
+
   snapshot(): BidiStreamSnapshot {
     const currentParagraph: StreamParagraph = {
       text: this.#currentText,
