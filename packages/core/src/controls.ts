@@ -12,7 +12,13 @@ export const BIDI_CONTROLS = Object.freeze({
   LRI: '\u2066',
   RLI: '\u2067',
   FSI: '\u2068',
-  PDI: '\u2069'
+  PDI: '\u2069',
+  ISS: '\u206A',
+  ASS: '\u206B',
+  IAFS: '\u206C',
+  AAFS: '\u206D',
+  NADS: '\u206E',
+  NODS: '\u206F'
 });
 
 const ALL_CONTROLS_RE = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u206F]/g;

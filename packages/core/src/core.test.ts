@@ -16,6 +16,7 @@ import {
   segmentDirectionalRuns,
   findDirectionalRuns,
   stripBidiControls,
+  hasBidiControls,
   findTechnicalTokenRanges,
   needsBidiIntervention,
   planInlineIsolation
@@ -1175,5 +1176,14 @@ describe('security', () => {
     const hidden = report.findings.find((finding) => finding.code === 'HIDDEN_ZERO_WIDTH_SPACE')!;
     expect(hidden.sourceRange.utf16.start).toBe(3);
     expect(hidden.sourceRange.codePoint.start).toBe(2);
+  });
+
+  it('exposes all 18 Unicode bidirectional formatting controls and strips them', () => {
+    const controls = Object.values(BIDI_CONTROLS);
+    expect(controls).toHaveLength(18);
+    for (const ctrl of controls) {
+      expect(hasBidiControls(`a${ctrl}b`)).toBe(true);
+      expect(stripBidiControls(`a${ctrl}b`)).toBe('ab');
+    }
   });
 });
