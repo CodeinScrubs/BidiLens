@@ -22,6 +22,15 @@ import {
 } from './index.js';
 
 describe('direction detection', () => {
+  it('clears completed paragraph history with clearHistory()', () => {
+    const stream = createBidiStream();
+    stream.push('پاراگراف یک\n\nپاراگراف دو');
+    expect(stream.snapshot().paragraphs).toHaveLength(3);
+    stream.clearHistory();
+    expect(stream.snapshot().paragraphs).toHaveLength(1);
+    expect(stream.snapshot().currentParagraph.text).toBe('پاراگراف دو');
+  });
+
   it('provides specification-oriented aliases with identical behavior', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(detectBaseDirection(source)).toBe(detectDirection(source));
