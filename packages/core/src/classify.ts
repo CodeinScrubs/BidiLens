@@ -30,3 +30,13 @@ export function classifyCharacter(character: string): Direction {
 export const UNICODE_DATA_VERSION = UNICODE_BIDI_VERSION;
 export const UNICODE_DATA_SHA256 = UNICODE_BIDI_SHA256;
 export const UNICODE_LETTER_DATA_SHA256 = UNICODE_GENERAL_CATEGORY_SHA256;
+
+/** Reports whether a code point is in the Syriac script blocks (U+0700-U+074F, U+0860-U+086F). */
+export function isSyriacCodePoint(codePoint: number): boolean {
+  return (codePoint >= 0x0700 && codePoint <= 0x074F) || (codePoint >= 0x0860 && codePoint <= 0x086F);
+}
+
+/** Reports whether a code point is in the Thaana (Divehi) script block (U+0780-U+07BF). */
+export function isThaanaCodePoint(codePoint: number): boolean {
+  return codePoint >= 0x0780 && codePoint <= 0x07BF;
+}

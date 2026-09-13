@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   BIDI_CONTROLS,
+  isSyriacCodePoint,
+  isThaanaCodePoint,
   analyzeText,
   analyzePlainText,
   analyzeBlock,
@@ -22,6 +24,13 @@ import {
 } from './index.js';
 
 describe('direction detection', () => {
+  it('identifies Syriac and Thaana script code points', () => {
+    expect(isSyriacCodePoint(0x0710)).toBe(true); // Syriac Alaph
+    expect(isSyriacCodePoint(0x0041)).toBe(false);
+    expect(isThaanaCodePoint(0x0780)).toBe(true); // Thaana Haa
+    expect(isThaanaCodePoint(0x0627)).toBe(false);
+  });
+
   it('provides specification-oriented aliases with identical behavior', () => {
     const source = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
     expect(detectBaseDirection(source)).toBe(detectDirection(source));
