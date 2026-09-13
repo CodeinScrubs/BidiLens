@@ -17,14 +17,14 @@ public static partial class BidiAnalyzer
         "rollup", "safari", "stencil", "storybook", "tailwind", "turbopack", "vite", "vitest",
     };
 
+    private const string NumericValue = @"[0-9\u0660-\u0669\u06F0-\u06F9]+(?:[.,\u066B\u066C][0-9\u0660-\u0669\u06F0-\u06F9]+)*";
     private static readonly (Regex Regex, TechnicalTokenKind Kind)[] TechnicalPatterns =
     [
         (Pattern(@"```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\r\n]+`+"), TechnicalTokenKind.Code),
         (Pattern(@"</?[A-Za-z][^<>\r\n]*>"), TechnicalTokenKind.Html),
-        (Pattern(@"\$\$[^\r\n]*?\$\$|\$[^\$\r\n]+\$|\\\([^\r\n]*?\\\)"), TechnicalTokenKind.Math),
         (Pattern(@"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}""']+", RegexOptions.IgnoreCase), TechnicalTokenKind.Url),
         (Pattern(@"(?<![A-Za-z0-9_])[A-Z0-9_][A-Z0-9._%+-]*@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Email),
-        (Pattern(@"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}]+"), TechnicalTokenKind.Path),
+        (Pattern(@"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}""'“”‘’«»]+"), TechnicalTokenKind.Path),
         (Pattern(@"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"), TechnicalTokenKind.Path),
         (Pattern(@"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*", RegexOptions.IgnoreCase), TechnicalTokenKind.Identifier),
         (Pattern(@"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"), TechnicalTokenKind.Identifier),
@@ -33,6 +33,8 @@ public static partial class BidiAnalyzer
         (Pattern(@"(?<![\p{L}\p{N}_])\+?[0-9][0-9 ()-]{6,}[0-9](?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![\p{L}\p{N}_])(?:\p{Sc}[+-]?" + NumericValue + @"|[+-]?" + NumericValue + @"\p{Sc})(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![\p{L}\p{N}_])[+-]?" + NumericValue + "[-–][+-]?" + NumericValue + @"(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"), TechnicalTokenKind.Version),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Hash),
         (Pattern(@"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
@@ -88,7 +90,7 @@ public static partial class BidiAnalyzer
     {
         options ??= new BidiOptions();
         options.Validate();
-        if (options.Intervention == BidiIntervention.Always || ScanSecurity(text).Controls.Count > 0) return true;
+        if (options.Intervention == BidiIntervention.Always || ContainsBidiControls(text)) return true;
         var hasLtr = false;
         var hasRtl = false;
         foreach (var (rune, _, _) in UnicodeClassifier.Enumerate(text))
@@ -107,6 +109,7 @@ public static partial class BidiAnalyzer
         IReadOnlySet<string>? customIdentifiers = null)
     {
         var ranges = new List<TechnicalTokenRange>();
+        AddMathRanges(text, ranges);
         var normalizedCustomIdentifiers = customIdentifiers is null
             ? null
             : new HashSet<string>(customIdentifiers, StringComparer.OrdinalIgnoreCase);
@@ -499,7 +502,32 @@ public static partial class BidiAnalyzer
                 merged.Add(isolation);
             }
         }
-        return merged;
+        var paragraphs = new List<BidiIsolation>();
+        foreach (var isolation in merged)
+        {
+            var start = isolation.Utf16Start;
+            void Append(int end)
+            {
+                if (start >= end) return;
+                paragraphs.Add(isolation with
+                {
+                    Text = text[start..end], Utf16Start = start, Utf16End = end,
+                    CodePointStart = UnicodeClassifier.CodePointOffset(text, start),
+                    CodePointEnd = UnicodeClassifier.CodePointOffset(text, end),
+                });
+            }
+            for (var index = isolation.Utf16Start; index < isolation.Utf16End; index++)
+            {
+                if (text[index] is '\r' or '\n' or '\u0085' or >= '\u001c' and <= '\u001e' or '\u2029')
+                {
+                    Append(index);
+                    start = index + 1;
+                }
+            }
+            if (start == isolation.Utf16Start) paragraphs.Add(isolation);
+            else Append(isolation.Utf16End);
+        }
+        return paragraphs;
     }
 
     private static void AddNormalizedPiece(
@@ -519,32 +547,6 @@ public static partial class BidiAnalyzer
             CodePointStart = UnicodeClassifier.CodePointOffset(text, start),
             CodePointEnd = UnicodeClassifier.CodePointOffset(text, end),
         });
-    }
-
-    private static BidiSecurityReport ScanSecurity(string text)
-    {
-        var metadata = new Dictionary<int, (string Name, string Risk)>
-        {
-            [0x061C] = ("ARABIC LETTER MARK", "low"), [0x200E] = ("LEFT-TO-RIGHT MARK", "low"),
-            [0x200F] = ("RIGHT-TO-LEFT MARK", "low"), [0x202A] = ("LEFT-TO-RIGHT EMBEDDING", "high"),
-            [0x202B] = ("RIGHT-TO-LEFT EMBEDDING", "high"), [0x202C] = ("POP DIRECTIONAL FORMATTING", "medium"),
-            [0x202D] = ("LEFT-TO-RIGHT OVERRIDE", "high"), [0x202E] = ("RIGHT-TO-LEFT OVERRIDE", "high"),
-            [0x2066] = ("LEFT-TO-RIGHT ISOLATE", "medium"), [0x2067] = ("RIGHT-TO-LEFT ISOLATE", "medium"),
-            [0x2068] = ("FIRST STRONG ISOLATE", "medium"), [0x2069] = ("POP DIRECTIONAL ISOLATE", "medium"),
-        };
-        var controls = new List<BidiControlFinding>();
-        foreach (var (rune, utf16, _) in UnicodeClassifier.Enumerate(text))
-        {
-            if (!metadata.TryGetValue(rune.Value, out var value)) continue;
-            controls.Add(new(
-                rune.ToString(),
-                $"U+{rune.Value:X4}",
-                utf16,
-                utf16 + rune.Utf16SequenceLength,
-                value.Name,
-                value.Risk));
-        }
-        return new(!controls.Any(control => control.Risk == "high"), controls);
     }
 
     /// <summary>

@@ -66,6 +66,18 @@ integrations remain the preferred path for structured documents. Use
 `first-strong` or `strict-uax9` only when compatibility with first-strong host
 behavior is required.
 
+Raw-text token recognition is a heuristic, not a TeX/Markdown parser. Compact
+currency amounts (`$10`, `€12.50`, `۱۰€`) and signed numeric ranges (`10-20`,
+`10–20`, `-10--2`) are single technical units. Paths stop at surrounding quote
+characters; put paths containing literal quotes in explicit code nodes/spans.
+Single-dollar math requires non-whitespace inner boundaries and a closing `$`
+not immediately followed by an ASCII, Arabic-Indic, or Persian digit. Escaped
+dollars are literal. Invalid candidate closers are reconsidered as new openers,
+so a price followed by `$x+1$` does not consume the intervening prose. These
+checks use a pinned ECMAScript whitespace set on every core; they are inspired
+by [Pandoc's dollar-math boundaries](https://pandoc.org/MANUAL.html#math), not a
+claim of full Pandoc compatibility. Raw math ranges never cross CR/LF.
+
 Built-in recognition covers conservative, unambiguous tool and product names.
 Add private or domain-specific single-token identifiers without changing global
 state:
@@ -85,6 +97,12 @@ The default stream direction remains provisional and revisable until
 `finish()`. Choose `sticky-majority` only when UI stability is more important
 than correcting a misleading prefix before completion.
 
+Dense, ambiguous combinations of environment variables and math delimiters can
+still produce transient stream/batch differences and repeated exact rescans.
+Do not use provisional direction as a persisted classification or assume a
+worst-case linear stream. Call `finish()` and use completed paragraph results;
+see the [review limitations](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/EXTERNAL_REVIEW_2026_09.md).
+
 Numeric detection and stream thresholds must be finite. `NaN` and positive or
 negative infinity are rejected with `RangeError` instead of silently disabling
 direction decisions or stream locking; ordinary finite values retain the
@@ -92,3 +110,16 @@ documented clamping behavior.
 
 Run the packaged example after building with
 `pnpm --filter @bidilens/core example`.
+
+## Control diagnostics (unreleased)
+
+`BIDI_CONTROLS` names the 12 Unicode `Bidi_Control` characters and the six
+deprecated formatting controls U+206A–U+206F already recognized by the scanner.
+The extra constants do not change detection or automatic rendering policy.
+
+`stripBidiControls(source, { preserveLength: true })` replaces each recognized
+control with one ASCII space instead of deleting it. This preserves UTF-16 and
+code-point offsets of the other characters for diagnostic overlays. The
+default still deletes controls. Both modes explicitly change content: keep the
+original source and never apply this silently to editing or clipboard paths.
+Neither mode replaces an HTML sanitizer or a source-code security review.

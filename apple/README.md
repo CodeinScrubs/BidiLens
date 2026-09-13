@@ -75,8 +75,9 @@ SwiftUI wrapper is not claimed yet: marked-text composition, dictation,
 selection, and third-party IMEs require dedicated validation. Use the UIKit
 `UITextView` and `UITextField` adapters for editable integration today.
 
-The Swift core inventories bidi formatting controls and flags high-risk
-overrides. The richer balance/context diagnostics in the JavaScript and
-Android implementations are not yet claimed as Swift parity. UIKit adapters
-set block direction and alignment; `formatForDisplay` is an explicit,
+The source core exposes `BidiAnalyzer.scanSecurity(text, mode: .warn)` for
+control inventory, paragraph-scoped balance checks, hidden-character
+diagnostics, UTF-16/code-point ranges, and advisory blocking decisions. See the
+[native security guide](../docs/NATIVE_SECURITY.md) for modes and limitations.
+UIKit adapters set block direction and alignment; `formatForDisplay` is an explicit,
 display-only inline-isolation option and must never be persisted.

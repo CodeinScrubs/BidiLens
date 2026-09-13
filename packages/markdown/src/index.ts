@@ -9,6 +9,7 @@ import {
   type Direction
 } from '@bidilens/core';
 import { visit } from 'unist-util-visit';
+import { proseText } from './prose.js';
 import {
   BidiMarkdownStream,
   analyzeConfiguredBidiMarkdown
@@ -309,7 +310,7 @@ function markdownItBlockContent(tokens: MarkdownItToken[], index: number, closeT
       nested -= 1;
       continue;
     }
-    if (token.type === 'inline' && token.content) values.push(token.content);
+    if (token.type === 'inline') values.push(proseText(token));
   }
   return values.join(' ');
 }
@@ -342,7 +343,7 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
     const required = tokens.some((token) => (token.type === 'inline'
       || token.type === 'code_inline'
       || token.type === 'code_block'
-      || token.type === 'fence') && shouldIntervene(token.content, options));
+      || token.type === 'fence') && shouldIntervene(proseText(token, true), options));
     interventionCache.set(tokens, required);
     return required;
   };
@@ -357,7 +358,7 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
         ? original(tokens, index, renderOptions, env, self)
         : self.renderToken(tokens, index, renderOptions);
     }
-    const content = tokens[index + 1]?.content ?? '';
+    const content = proseText(tokens[index + 1]);
     const direction = detectWithOptions(content, options);
     activeDirection = direction === 'neutral' ? null : direction;
     if (direction !== 'neutral') tokens[index]?.attrSet('dir', direction);
@@ -386,7 +387,7 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
         ? originalHeading(tokens, index, renderOptions, env, self)
         : self.renderToken(tokens, index, renderOptions);
     }
-    const content = tokens[index + 1]?.content ?? '';
+    const content = proseText(tokens[index + 1]);
     const direction = detectWithOptions(content, options);
     activeDirection = direction === 'neutral' ? null : direction;
     if (direction !== 'neutral') tokens[index]?.attrSet('dir', direction);
@@ -418,7 +419,7 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
           ? originalOpen(tokens, index, renderOptions, env, self)
           : self.renderToken(tokens, index, renderOptions);
       }
-      const content = tokens[index + 1]?.content ?? '';
+      const content = proseText(tokens[index + 1]);
       const direction = detectWithOptions(content, options);
       activeDirection = direction === 'neutral' ? null : direction;
       if (direction !== 'neutral') tokens[index]?.attrSet('dir', direction);

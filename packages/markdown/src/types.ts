@@ -137,11 +137,14 @@ export interface BidiMarkdownBlock {
   tokenIndex: number;
   tokenType: string;
   kind: 'prose' | 'code';
+  /** Decoded prose evidence (excluding code/math), or literal standalone code. */
   text: string;
+  /** Range in the original document source, not offsets into decoded text. */
   sourceRange: MarkdownSourceRange;
   lineRange?: [number, number];
   direction: ResolvedDirection;
   intervention: boolean;
+  /** Evidence and isolation offsets are relative to this block's decoded text. */
   analysis: BlockAnalysis;
 }
 

@@ -3,6 +3,7 @@ package io.github.codeinscrubs.bidilens.compose
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
@@ -89,7 +90,7 @@ fun BidiText(
     style: TextStyle = TextStyle.Default,
     options: BidiOptions = BidiOptions(),
     alignToContent: Boolean = true,
-    isolateRuns: Boolean = true,
+    isolateRuns: Boolean = false,
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
     minLines: Int = 1,
@@ -99,23 +100,57 @@ fun BidiText(
     val transformed = remember(text, state.visualTransformation) {
         state.visualTransformation.filter(AnnotatedString(text)).text
     }
-    BasicText(
-        text = transformed,
-        modifier = if (state.analysis.interventionRequired) {
-            modifier.semantics {
-                // BasicText renders an isolated display string, but accessibility
-                // and selection semantics must expose the untouched source.
-                this.text = AnnotatedString(text)
-                bidiLensDirection = state.analysis.resolvedDirection.name.lowercase()
-            }
-        } else {
-            modifier
-        },
-        style = state.textStyle,
-        softWrap = softWrap,
-        maxLines = maxLines,
-        minLines = minLines,
-        onTextLayout = onTextLayout,
+    val content: @Composable () -> Unit = {
+        BasicText(
+            text = transformed,
+            modifier = if (state.analysis.interventionRequired) {
+                modifier.semantics {
+                    // BasicText may render isolates, but accessibility exposes
+                    // source. Native selection uses layout input, so isolated
+                    // display text is excluded from SelectionContainer.
+                    this.text = AnnotatedString(text)
+                    bidiLensDirection = state.analysis.resolvedDirection.name.lowercase()
+                }
+            } else {
+                modifier
+            },
+            style = state.textStyle,
+            softWrap = softWrap,
+            maxLines = maxLines,
+            minLines = minLines,
+            onTextLayout = onTextLayout,
+        )
+    }
+    if (isolateRuns && state.analysis.isolations.isNotEmpty()) {
+        DisableSelection { content() }
+    } else {
+        content()
+    }
+}
+
+/**
+ * Selectable, read-only text with display-only isolation and native source-offset
+ * selection/copy. Use directly, without an enclosing SelectionContainer.
+ */
+@Composable
+@JvmOverloads
+fun BidiSelectableText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = TextStyle.Default,
+    options: BidiOptions = BidiOptions(),
+    alignToContent: Boolean = true,
+    isolateRuns: Boolean = true,
+) {
+    BidiBasicTextField(
+        value = text,
+        onValueChange = {},
+        modifier = modifier,
+        readOnly = true,
+        textStyle = style,
+        options = options,
+        alignToContent = alignToContent,
+        isolateRuns = isolateRuns,
     )
 }
 

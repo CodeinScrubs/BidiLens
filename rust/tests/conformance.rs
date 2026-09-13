@@ -8,6 +8,105 @@ use bidilens_core::{
 };
 use serde::Deserialize;
 
+#[test]
+fn amount_range_path_and_math_boundaries() {
+    for token in [
+        "$10",
+        "€12.50",
+        "£25",
+        "۱۰€",
+        "10-20",
+        "10–20",
+        "-10--2",
+        "۱۰-۲۰",
+        "١٠-٢٠",
+    ] {
+        let source = format!("👋 مقدار {token} است.");
+        let ranges =
+            plan_inline_isolation(&source, Direction::Rtl, &AnalysisOptions::default()).unwrap();
+        assert_eq!(
+            ranges
+                .iter()
+                .map(|range| range.text.as_str())
+                .collect::<Vec<_>>(),
+            [token]
+        );
+    }
+    for quote in ["\"", "'", "“", "”", "«", "»"] {
+        let source = format!("مسیر {quote}/usr/local/bin{quote} است.");
+        assert_eq!(
+            find_technical_token_ranges(&source, &[])
+                .iter()
+                .map(|range| range.text.as_str())
+                .collect::<Vec<_>>(),
+            ["/usr/local/bin"]
+        );
+    }
+    let math = |source: &str| {
+        find_technical_token_ranges(source, &[])
+            .into_iter()
+            .filter(|range| range.kind == bidilens_core::TechnicalTokenKind::Math)
+            .map(|range| range.text)
+            .collect::<Vec<_>>()
+    };
+    for source in ["$ x$", "$x $", "$10 and $20", "\\$x\\$"] {
+        assert!(math(source).is_empty(), "{source}");
+    }
+    assert_eq!(
+        find_technical_token_ranges("هزینه این کتاب $10 و آن یکی $20 است.", &[])
+            .iter()
+            .map(|range| range.text.as_str())
+            .collect::<Vec<_>>(),
+        ["$10", "$20"]
+    );
+    assert_eq!(math("قیمت $10 است و $x+1$ درست است."), ["$x+1$"]);
+    assert_eq!(math("$x\\$y$"), ["$x\\$y$"]);
+    for space in ['\u{feff}', '\u{a0}', '\u{202f}'] {
+        for source in [format!("${space}x$"), format!("$x{space}$")] {
+            assert!(math(&source).is_empty());
+        }
+    }
+    for content in ['\u{85}', '\u{1c}'] {
+        let source = format!("${content}x$");
+        assert_eq!(math(&source), [source]);
+    }
+}
+
+#[test]
+fn isolation_ranges_stay_inside_paragraphs() {
+    for separator in [
+        "\n", "\r\n", "\r", "\u{85}", "\u{1c}", "\u{1d}", "\u{1e}", "\u{2029}",
+    ] {
+        let source = format!("سلام React{separator}JavaScript");
+        let plans =
+            plan_inline_isolation(&source, Direction::Rtl, &AnalysisOptions::default()).unwrap();
+        assert_eq!(
+            plans
+                .iter()
+                .map(|value| value.text.as_str())
+                .collect::<Vec<_>>(),
+            ["React", "JavaScript"]
+        );
+    }
+}
+
+#[test]
+fn deep_formatting_stack_has_bounded_work() {
+    let count = 32_000;
+    let source = format!("{}{}", "\u{2066}".repeat(count), "\u{202c}".repeat(count));
+    let started = Instant::now();
+    let report = scan_bidi_security(&source);
+    assert_eq!(
+        report
+            .findings
+            .iter()
+            .filter(|f| f.code == "BIDI_UNMATCHED_PDF")
+            .count(),
+        count
+    );
+    assert!(started.elapsed() < Duration::from_secs(5));
+}
+
 #[derive(Debug, Deserialize)]
 struct Fixture {
     id: String,

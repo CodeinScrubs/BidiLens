@@ -48,3 +48,19 @@ code intentionally takes ownership of an inline property by assigning exactly
 the value BidiLens already owns, that same-value assignment is not observable
 through the DOM. Call `restoreBidi(root)` before that handoff; subsequent author
 styles are then entirely outside BidiLens ownership.
+
+## Extending selectors (unreleased)
+
+`DEFAULT_BLOCK_SELECTOR` and `DEFAULT_CODE_SELECTOR` expose the adapter's
+default selector strings. Extend them per call without changing global state:
+
+```ts
+import { applyBidi, DEFAULT_BLOCK_SELECTOR } from '@bidilens/dom';
+
+applyBidi(document.querySelector('#messages')!, {
+  blockSelector: `${DEFAULT_BLOCK_SELECTOR},[data-chat-message]`
+});
+```
+
+Keep the scope restricted to display content. Additional selectors do not make
+the DOM adapter safe to run inside a rich-text editor.

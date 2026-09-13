@@ -103,6 +103,31 @@ describe('BidiMessageElement', () => {
     expect(element.hasAttribute('data-bidilens-block')).toBe(false);
   });
 
+  it('restores the actual author nodes, listeners, and mutable input state', () => {
+    const element = document.createElement('bidi-message') as BidiMessageElement;
+    const button = document.createElement('button');
+    button.textContent = 'Click here';
+    let clicks = 0;
+    button.addEventListener('click', () => { clicks++; });
+    const input = document.createElement('input');
+    input.value = 'user edited value';
+    element.append(button, input);
+    document.body.append(element);
+    for (let cycle = 0; cycle < 2; cycle++) {
+      element.text = 'سلام دنیا';
+      expect(button.isConnected).toBe(false);
+      element.removeAttribute('text');
+      expect(element.firstChild).toBe(button);
+      expect(element.lastChild).toBe(input);
+      expect(input.value).toBe('user edited value');
+      button.click();
+      expect(clicks).toBe(cycle + 1);
+    }
+    element.remove();
+    document.body.append(element);
+    expect(element.firstChild).toBe(button);
+  });
+
   it('passes LTR-only text through and restores author presentation attributes', () => {
     const element = document.createElement('bidi-message') as BidiMessageElement;
     element.setAttribute('dir', 'auto');

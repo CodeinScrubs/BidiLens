@@ -32,7 +32,8 @@ pnpm run android:check
   :compose:connectedDebugAndroidTest
 ```
 
-Direction or isolation changes must update TypeScript and Kotlin together. The
+Direction or isolation changes must update TypeScript, Kotlin, Swift, C#, and
+Rust together, with regression tests for every affected implementation. The
 generated Kotlin Unicode/corpus files are reproducibility outputs; do not edit
 them by hand. Views changes must preserve the host manifest/layout boundary,
 and editable integrations must never store isolation controls.
@@ -44,6 +45,18 @@ pnpm -r --if-present run example
 ```
 
 ## Change requirements
+
+Documentation examples must use real package exports and current signatures.
+Compile or execute new examples in a suitable host harness; a successful
+Markdown/link check alone does not validate code snippets. Keep examples
+source-preserving and distinguish direction from the host's chosen alignment.
+
+Name tests for what their assertions establish. A direction-string assertion
+is not a visual punctuation-placement test, and a few language fixtures are
+not Unicode algorithm conformance or native-speaker validation. Do not invent
+performance percentages, platform certification, or universal safety claims.
+New repository-authored material follows the MIT license; do not add unrelated
+license headers without an explicit licensing decision.
 
 Direction-policy changes require:
 
@@ -67,7 +80,9 @@ RTL false-positive tests, and never silently strip controls by default.
 - Change corpus templates, then run `pnpm run corpus:generate`.
 - Change Unicode data only through the documented process in `unicode/README.md`.
 - Do not hand-edit `packages/core/src/generated/bidi-ranges.ts`.
-- Do not commit `dist`, coverage, Playwright reports, or package tarballs.
+- Do not commit package `dist`, coverage, Playwright reports, or package tarballs.
+  The tracked `action/dist` bundle is the exception: regenerate it with
+  `pnpm run action:build` and verify it with `pnpm run action:check`.
 
 ## Native-language review
 
