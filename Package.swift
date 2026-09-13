@@ -26,7 +26,7 @@ let package = Package(
             name: "BidiLensTests",
             dependencies: ["BidiLens"],
             path: "apple/Tests/BidiLensTests",
-            resources: [.copy("Resources/cases.json")]
+            resources: [.copy("Resources/cases.json"), .copy("Resources/native-security.json")]
         ),
     ]
 )

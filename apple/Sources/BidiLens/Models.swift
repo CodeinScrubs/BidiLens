@@ -99,11 +99,32 @@ public struct BidiControlFinding: Equatable, Sendable {
     public let utf16Range: Range<Int>
     public let name: String
     public let risk: String
+    public let codePointIndex: Int
+}
+
+public enum BidiSecurityMode: String, CaseIterable, Sendable {
+    case off, audit, warn, strict
+}
+
+public enum BidiSecuritySeverity: String, Sendable {
+    case info, warning, high
+}
+
+public struct BidiSecurityFinding: Equatable, Sendable {
+    public let code: String
+    public let severity: BidiSecuritySeverity
+    public let message: String
+    public let utf16Range: Range<Int>
+    public let codePointRange: Range<Int>
+    public let remediation: String
 }
 
 public struct BidiSecurityReport: Equatable, Sendable {
     public let safe: Bool
     public let controls: [BidiControlFinding]
+    public let mode: BidiSecurityMode
+    public let shouldBlock: Bool
+    public let findings: [BidiSecurityFinding]
 }
 
 public struct BidiAnalysis: Equatable, Sendable {

@@ -116,19 +116,13 @@ interface FormattingFrame {
   control: BidiControlFinding;
 }
 
-function lastFrameIndex(stack: readonly FormattingFrame[], kind: FormattingFrame['kind']): number {
-  for (let index = stack.length - 1; index >= 0; index -= 1) {
-    if (stack[index]?.kind === kind) return index;
-  }
-  return -1;
-}
-
 function balanceParagraph(
   controls: readonly BidiControlFinding[],
   boundary: 'paragraph' | 'text'
 ): BidiSecurityFinding[] {
   const findings: BidiSecurityFinding[] = [];
   const stack: FormattingFrame[] = [];
+  const isolates: number[] = [];
 
   for (const control of controls) {
     const codePoint = control.codePoint;
@@ -137,13 +131,13 @@ function balanceParagraph(
       continue;
     }
     if (codePoint === 'U+2066' || codePoint === 'U+2067' || codePoint === 'U+2068') {
+      isolates.push(stack.length);
       stack.push({ kind: 'isolate', control });
       continue;
     }
     if (codePoint === 'U+202C') {
-      const isolateIndex = lastFrameIndex(stack, 'isolate');
-      const embeddingIndex = lastFrameIndex(stack, 'embedding');
-      if (embeddingIndex <= isolateIndex) {
+      // PDF can only close the top frame; it never crosses an isolate.
+      if (stack.at(-1)?.kind !== 'embedding') {
         findings.push({
           code: 'BIDI_UNMATCHED_PDF',
           severity: 'high',
@@ -153,13 +147,13 @@ function balanceParagraph(
           control
         });
       } else {
-        stack.splice(embeddingIndex, 1);
+        stack.pop();
       }
       continue;
     }
     if (codePoint === 'U+2069') {
-      const isolateIndex = lastFrameIndex(stack, 'isolate');
-      if (isolateIndex < 0) {
+      const isolateIndex = isolates.pop();
+      if (isolateIndex === undefined) {
         findings.push({
           code: 'BIDI_UNMATCHED_PDI',
           severity: 'high',
@@ -217,10 +211,10 @@ function balanceFindings(text: string, controls: readonly BidiControlFinding[]):
       paragraphControls.push(controls[controlIndex]!);
       controlIndex += 1;
     }
-    findings.push(...balanceParagraph(paragraphControls, 'paragraph'));
+    for (const finding of balanceParagraph(paragraphControls, 'paragraph')) findings.push(finding);
   }
 
-  findings.push(...balanceParagraph(controls.slice(controlIndex), 'text'));
+  for (const finding of balanceParagraph(controls.slice(controlIndex), 'text')) findings.push(finding);
   return findings;
 }
 

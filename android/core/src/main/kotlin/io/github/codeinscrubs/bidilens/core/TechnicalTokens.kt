@@ -230,6 +230,43 @@ private fun isTechnicalIdentifier(
             )
 }
 
+/** Forward-only math heuristic, matching the core dollar-boundary policy. */
+private fun isMathWhitespace(char: Char): Boolean = char in '\u0009'..'\u000d' || char in '\u2000'..'\u200a' ||
+    char in " \u00a0\u1680\u2028\u2029\u202f\u205f\u3000\ufeff"
+
+private fun addMathRanges(text: String, ranges: MutableList<TechnicalTokenRange>) {
+    val scanned = mutableMapOf("$" to -1, "$$" to -1, "\\)" to -1)
+    var i = 0
+    while (i < text.length) {
+        val paren = text.startsWith("\\(", i)
+        if (text[i] == '\\' && !paren) { i += 2; continue }
+        val delimiter = when {
+            text.startsWith("$$", i) -> "$$"
+            text[i] == '$' -> "$"
+            paren -> "\\)"
+            else -> ""
+        }
+        if (delimiter.isEmpty() || i < scanned.getValue(delimiter)) { i++; continue }
+        if (delimiter == "$" && (i + 1 == text.length || isMathWhitespace(text[i + 1]))) { i++; continue }
+        var end = i + if (paren) 2 else delimiter.length
+        while (end < text.length && text[end] != '\r' && text[end] != '\n' && !text.startsWith(delimiter, end)) {
+            end += if (text[end] == '\\' && end + 1 < text.length && text[end + 1] != '\r' && text[end + 1] != '\n') 2 else 1
+        }
+        if (text.startsWith(delimiter, end) && (delimiter != "$" || end > i + 1)) {
+            val next = text.getOrNull(end + 1)
+            if (delimiter == "$" && (isMathWhitespace(text[end - 1]) || next in '0'..'9' || next in '\u0660'..'\u0669' || next in '\u06f0'..'\u06f9')) {
+                i = end
+                continue
+            }
+            ranges.addRange(text, i, end + delimiter.length, TechnicalTokenKind.MATH)
+            i = end + delimiter.length
+        } else {
+            scanned[delimiter] = end
+            i++
+        }
+    }
+}
+
 /** Finds technical spans that should not decide natural-language direction. */
 fun findTechnicalTokenRanges(
     text: String,
@@ -238,11 +275,7 @@ fun findTechnicalTokenRanges(
     val ranges = mutableListOf<TechnicalTokenRange>()
     addCodeRanges(text, ranges)
     ranges.addMatches(text, Regex("</?[A-Za-z][^<>\\r\\n]*>"), TechnicalTokenKind.HTML)
-    ranges.addMatches(
-        text,
-        Regex("(?:\\$\\$[^\\r\\n]*?\\$\\$|\\$[^\\$\\r\\n]+\\$|\\\\\\([^\\r\\n]*?\\\\\\))"),
-        TechnicalTokenKind.MATH,
-    )
+    addMathRanges(text, ranges)
 
     for (match in Regex("\\b(?:https?|ftp)://[^\\s<>{}\"']+", RegexOption.IGNORE_CASE).findAll(text)) {
         var value = trimTechnicalPunctuation(match.value)
@@ -266,7 +299,7 @@ fun findTechnicalTokenRanges(
     )
     ranges.addMatches(
         text,
-        Regex("(?<![\\p{L}\\p{N}_])(?:[A-Za-z]:[\\\\/]|\\.{0,2}/|~/)[^\\s<>()\\[\\]{}]+"),
+        Regex("(?<![\\p{L}\\p{N}_])(?:[A-Za-z]:[\\\\/]|\\.{0,2}/|~/)[^\\s<>()\\[\\]{}\"'“”‘’«»]+"),
         TechnicalTokenKind.PATH,
         normalize = ::trimTechnicalPunctuation,
     )
@@ -320,6 +353,9 @@ fun findTechnicalTokenRanges(
         Regex("\\b\\d{1,2}:\\d{2}(?::\\d{2})?(?:\\s?[AP]M)?\\b", RegexOption.IGNORE_CASE),
         TechnicalTokenKind.NUMBER,
     )
+    val numericValue = "[0-9\u0660-\u0669\u06F0-\u06F9]+(?:[.,\u066B\u066C][0-9\u0660-\u0669\u06F0-\u06F9]+)*"
+    ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?$numericValue|[+-]?$numericValue\\p{Sc})(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
+    ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])[+-]?$numericValue[-–][+-]?$numericValue(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
     ranges.addMatches(text, Regex("\\bv?\\d+(?:\\.\\d+){1,}\\b"), TechnicalTokenKind.VERSION)
     ranges.addMatches(
         text,

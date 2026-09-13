@@ -3,6 +3,96 @@ import { describe, expect, it } from 'vitest';
 import { applyBidi, installBidiStyles, observeBidi, restoreBidi } from './index.js';
 
 describe('DOM adapter', () => {
+  it('ends the old direction session when the host replaces its dir attribute', () => {
+    document.body.innerHTML = '<main dir="ltr"><p dir="rtl">سلام دنیا</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    applyBidi(root);
+    paragraph.dir = 'ltr';
+    paragraph.textContent = '---';
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(paragraph.outerHTML).toBe('<p dir="ltr">---</p>');
+  });
+
+  it('retains authored inline CSS during a dir attribute handoff', () => {
+    document.body.innerHTML = '<main dir="ltr"><p style="direction:rtl" dir="rtl">سلام دنیا</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    applyBidi(root);
+    paragraph.dir = 'ltr';
+    paragraph.textContent = '---';
+    expect(applyBidi(root).annotated).toBe(1);
+    expect(getComputedStyle(paragraph).direction).toBe('rtl');
+    restoreBidi(root);
+    expect(paragraph.dir).toBe('ltr');
+    expect(paragraph.style.direction).toBe('rtl');
+  });
+
+  it('treats host-enriched generated isolates as markup boundaries', () => {
+    document.body.innerHTML = '<p>سلام page</p>';
+    const paragraph = document.querySelector('p')!;
+    applyBidi(document.body);
+    const isolate = paragraph.querySelector('bdi')!;
+    const emphasis = document.createElement('em');
+    emphasis.append(...isolate.childNodes);
+    isolate.append(emphasis);
+    paragraph.append(' 97');
+    applyBidi(document.body);
+    expect(emphasis.isConnected).toBe(true);
+    expect(paragraph.textContent).toBe('سلام page 97');
+    restoreBidi(document.body);
+    expect(emphasis.isConnected).toBe(true);
+    expect(paragraph.textContent).toBe('سلام page 97');
+    expect(paragraph.querySelector('bdi')).toBeNull();
+  });
+
+  it('reconciles observed appends without repeated node replacement', async () => {
+    document.body.innerHTML = '<main><p>سلام page</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    const controller = observeBidi(root, { debounceMs: 0 });
+    try {
+      paragraph.append(' 97');
+      await expect.poll(() => paragraph.querySelector('bdi')?.textContent).toBe('page 97');
+      const isolate = paragraph.querySelector('bdi');
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      expect(paragraph.querySelector('bdi')).toBe(isolate);
+      expect(paragraph.textContent).toBe('سلام page 97');
+    } finally {
+      controller.disconnect();
+    }
+  });
+
+  it('reconciles appended text with owned isolates without touching authored bdi', () => {
+    document.body.innerHTML = '<main><p>سلام page</p><bdi id="authored">host</bdi></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    const authored = root.querySelector('#authored');
+    applyBidi(root);
+    paragraph.append(' 97');
+    applyBidi(root);
+    expect([...paragraph.querySelectorAll('bdi')].map((node) => node.textContent)).toEqual(['page 97']);
+    const isolate = paragraph.querySelector('bdi');
+    applyBidi(root);
+    expect(paragraph.querySelector('bdi')).toBe(isolate);
+    expect(root.querySelector('#authored')).toBe(authored);
+    expect(paragraph.textContent).toBe('سلام page 97');
+  });
+
+  it('respects own CSS before a conflicting ancestor dir and restores it', () => {
+    document.body.innerHTML = '<main dir="ltr"><p style="direction:rtl;text-align:left">Hello world</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    expect(applyBidi(root).annotated).toBe(1);
+    expect(getComputedStyle(paragraph).direction).toBe('ltr');
+    expect(paragraph.style.textAlign).toBe('left');
+    applyBidi(root);
+    restoreBidi(root);
+    expect(paragraph.style.direction).toBe('rtl');
+    expect(paragraph.style.textAlign).toBe('left');
+  });
+
   it('does not mutate an LTR-only scope', () => {
     document.body.innerHTML = '<main id="root"><p class="message">React is popular.</p><pre><code>npm test</code></pre></main>';
     const root = document.querySelector<HTMLElement>('#root')!;

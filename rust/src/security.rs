@@ -138,22 +138,18 @@ fn balance_paragraph(
     findings: &mut Vec<SecurityFinding>,
 ) {
     let mut stack: Vec<(FrameKind, usize)> = Vec::new();
+    let mut isolates: Vec<usize> = Vec::new();
     for (index, control) in controls.iter().enumerate() {
         match control.character {
             '\u{202A}' | '\u{202B}' | '\u{202D}' | '\u{202E}' => {
                 stack.push((FrameKind::Embedding, index));
             }
             '\u{2066}' | '\u{2067}' | '\u{2068}' => {
+                isolates.push(stack.len());
                 stack.push((FrameKind::Isolate, index));
             }
             '\u{202C}' => {
-                let isolate = stack
-                    .iter()
-                    .rposition(|(kind, _)| matches!(kind, FrameKind::Isolate));
-                let embedding = stack
-                    .iter()
-                    .rposition(|(kind, _)| matches!(kind, FrameKind::Embedding));
-                if embedding.is_none() || embedding <= isolate {
+                if !matches!(stack.last(), Some((FrameKind::Embedding, _))) {
                     findings.push(SecurityFinding {
                         code: "BIDI_UNMATCHED_PDF",
                         message: "POP DIRECTIONAL FORMATTING has no matching active embedding or override."
@@ -161,15 +157,12 @@ fn balance_paragraph(
                         source_range: control.source_range.clone(),
                         risk: BidiControlRisk::High,
                     });
-                } else if let Some(position) = embedding {
-                    stack.remove(position);
+                } else {
+                    stack.pop();
                 }
             }
             '\u{2069}' => {
-                if let Some(position) = stack
-                    .iter()
-                    .rposition(|(kind, _)| matches!(kind, FrameKind::Isolate))
-                {
+                if let Some(position) = isolates.pop() {
                     for (_, opener) in stack.iter().skip(position + 1) {
                         let opener = &controls[*opener];
                         findings.push(SecurityFinding {
