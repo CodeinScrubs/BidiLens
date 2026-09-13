@@ -105,6 +105,9 @@ function trimNeutralBoundaries(text: string, start: number, end: number): { star
 }
 
 const HARD_FRAGMENT_SEPARATOR = /[,،;؛:!?؟|]/u;
+const PARAGRAPH_SEPARATOR = new RegExp(
+  `[\\r\\n\\u0085${String.fromCodePoint(0x1c)}-${String.fromCodePoint(0x1e)}\\u2029]`, 'gu'
+);
 
 /**
  * Punctuation separates semantic LTR fragments in an RTL paragraph, while
@@ -165,7 +168,22 @@ function normalizeIsolationPlan(text: string, isolations: PlannedIsolation[]): P
       merged.push({ ...isolation });
     }
   }
-  return merged;
+  // Formatting state ends at every UAX #9 paragraph boundary, including when
+  // a technical range or a whitespace merge originally crossed that boundary.
+  return merged.flatMap((isolation) => {
+    const pieces: PlannedIsolation[] = [];
+    let start = isolation.start;
+    const append = (end: number): void => {
+      if (start < end) pieces.push({ ...isolation, start, end, text: text.slice(start, end) });
+    };
+    for (const match of isolation.text.matchAll(PARAGRAPH_SEPARATOR)) {
+      const end = isolation.start + match.index;
+      append(end);
+      start = end + match[0].length;
+    }
+    append(isolation.end);
+    return pieces;
+  });
 }
 
 export function segmentDirectionalRuns(text: string): DirectionalRun[] {
@@ -201,9 +219,15 @@ export function segmentDirectionalRuns(text: string): DirectionalRun[] {
 }
 
 export function isolateDirectionalRuns(text: string): string {
-  return segmentDirectionalRuns(text)
-    .map((run) => isolateText(run.text, run.direction))
-    .join('');
+  let output = '';
+  let cursor = 0;
+  const render = (paragraph: string): string => segmentDirectionalRuns(paragraph)
+    .map((run) => isolateText(run.text, run.direction)).join('');
+  for (const match of text.matchAll(PARAGRAPH_SEPARATOR)) {
+    output += render(text.slice(cursor, match.index)) + match[0];
+    cursor = match.index + match[0].length;
+  }
+  return output + render(text.slice(cursor));
 }
 
 /**

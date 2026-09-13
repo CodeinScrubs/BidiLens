@@ -47,3 +47,8 @@ Programmatic runners can import `runCli` for controlled stdout/stderr and exit
 codes. Security modes are `off`, `audit`, `warn`, and `strict`; default audit
 never mutates input. Render intervention modes are `auto` (the non-interfering
 default) and `always`. Run `pnpm --filter @bidilens/cli example` after building.
+
+Audit mode is read-only, not an unconditional success exit. The audit command's
+`--fail-on` threshold (default `high`) can return exit code 2 for findings even
+when core audit mode's advisory `shouldBlock` flag is false. Command/file-read
+errors return 1; they are never reported as a successful safe scan.

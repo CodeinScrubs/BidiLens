@@ -37,6 +37,9 @@ implementation or adoption claim.
 
 ## Implemented in source; native release evidence pending
 
+- public Swift/.NET security scanning with paragraph-balance and hidden-character
+  findings, dual offsets, and explicit reporting modes; 94 reproducible
+  differential fixtures supplement hand-authored native regressions;
 - Swift Package core, UIKit adapters, and a UIKit-backed SwiftUI `BidiText`
   renderer with generated Unicode 17 data, independent direction/alignment
   policy, shared 932-case corpus tests, a runnable core example, macOS

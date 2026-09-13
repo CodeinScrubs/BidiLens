@@ -5,7 +5,39 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
-No unreleased changes.
+- Keep compact currency amounts and hyphen/en-dash numeric ranges together,
+  exclude surrounding quotes from paths, and distinguish dollar math from
+  prices/escaped delimiters in TypeScript, Kotlin, Swift, C#, and Rust.
+  Pin math-boundary whitespace across runtimes. Reconcile corresponding live
+  streaming boundaries with rollback for a digit after a tentative closing `$`.
+- Restore actual web-component author nodes instead of clones, retaining
+  event listeners and mutable input state when returning to the no-op path.
+- Verify an external AI review against the current checkout and record rejected,
+  reproduced, and remaining findings in [the review report](docs/EXTERNAL_REVIEW_2026_09.md).
+- Add public Swift/.NET security scanning with paragraph-scoped balance checks,
+  hidden-character diagnostics, dual-offset findings, and audit/warn/strict/off
+  reporting. Existing analysis now flags unmatched/unclosed isolates as high
+  severity. No automatic input blocking or source rewriting is introduced.
+  Add 94 reproducible web/native differential fixtures and native regressions.
+- Reject non-finite .NET majority thresholds, including NaN, before analysis.
+- Fix DOM append-time isolation reconciliation and CSS direction precedence;
+  preserve authored inline markup and stable nodes on repeated application.
+- Detect Markdown paragraph, heading, and table direction from decoded prose,
+  excluding hidden link destinations/titles while preserving raw source ranges.
+  Retain visible custom inline plugin content as evidence and exclude hidden
+  leaves and structural metadata.
+- Keep generated inline isolates within UAX paragraph boundaries in TypeScript,
+  Kotlin, Swift, C#, and Rust.
+- Remove repeated formatting-stack searches from TypeScript, Kotlin, and Rust
+  security scanning; add deep-stack regression coverage.
+- Restore UIKit label alignment independently of changed source and authored
+  paragraph properties.
+- Make Compose `BidiText` selection-safe by default; add `BidiSelectableText`
+  for isolated read-only display with native source-offset selection/copy.
+  Explicit isolated `BidiText` is display-only. See `android/README.md`.
+- Update npm security support to `0.4.x` and check it against the manifest.
+- Exclude generated Playwright trace reports from source linting. See the
+  [hardening verification record](docs/AUDIT_HARDENING.md) for checks and limits.
 
 ## 0.4.0 - 2026-09-07
 

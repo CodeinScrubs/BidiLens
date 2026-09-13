@@ -32,6 +32,93 @@ function cpuMillisecondsSince(started: NodeJS.CpuUsage): number {
 }
 
 describe('Markdown plugins', () => {
+  it.each([
+    ['سلام دنیا', false], ['سلام دنیا', true],
+    ['The word کتاب means book.', false], ['The word کتاب means book.', true]
+  ] as const)('keeps custom inline plugin text as direction evidence: %s (empty children: %s)', (source, emptyChildren) => {
+    const parser = () => {
+      const md = new MarkdownIt();
+      md.core.ruler.after('inline', 'custom_text', (state) => {
+        for (const token of state.tokens) {
+          for (const child of token.children ?? []) {
+            if (child.type === 'text') {
+              child.type = 'custom_text';
+              if (emptyChildren) child.children = [];
+            }
+          }
+        }
+      });
+      md.renderer.rules.custom_text = (tokens, index) => md.utils.escapeHtml(tokens[index]!.content);
+      return md;
+    };
+    const expectedDirection = source.startsWith('The') ? 'ltr' : 'rtl';
+    const md = parser();
+    markdownItBidi(md);
+    expect(md.render(source)).toContain(`<p dir="${expectedDirection}"`);
+    const batch = analyzeBidiMarkdown(parser(), source);
+    expect(batch.blocks[0]).toMatchObject({ text: source, direction: expectedDirection, intervention: true });
+    const stream = createBidiMarkdownStream(parser());
+    for (const character of source) stream.push(character);
+    expect(stream.finish().document).toEqual(batch);
+    const plain = 'Plain English text';
+    expect(md.render(plain)).toBe(parser().render(plain));
+  });
+
+  it('keeps block intervention consistent with RTL inline code rendering', () => {
+    const md = new MarkdownIt();
+    const result = analyzeBidiMarkdown(md, 'Hello `سلام`');
+    expect(result.blocks[0]?.intervention).toBe(true);
+    expect(result.blocks[0]?.direction).toBe('ltr');
+  });
+
+  it('does not use hidden custom leaves or structural token metadata as prose evidence', () => {
+    const md = new MarkdownIt();
+    md.core.ruler.after('inline', 'hidden_metadata', (state) => {
+      for (const token of state.tokens) {
+        for (const child of token.children ?? []) {
+          if (child.type === 'text' && child.content === 'سلام') {
+            child.type = 'custom_hidden';
+            child.hidden = true;
+          }
+          if (child.nesting !== 0) child.content = 'سلام دنیا '.repeat(20);
+        }
+      }
+    });
+    md.renderer.rules.custom_hidden = () => '';
+    const result = analyzeBidiMarkdown(md, 'Hello **سلام**');
+    expect(result.blocks[0]).toMatchObject({ text: 'Hello ', direction: 'ltr', intervention: false });
+    expect(result.html).not.toContain('data-bidilens');
+  });
+
+  it('does not fall back to raw content when an inline container has no rendered children', () => {
+    const md = new MarkdownIt();
+    md.core.ruler.after('inline', 'empty_inline', (state) => {
+      for (const token of state.tokens) {
+        if (token.type === 'inline') token.children = [];
+      }
+    });
+    const result = analyzeBidiMarkdown(md, 'سلام دنیا');
+    expect(result.blocks[0]).toMatchObject({ text: '', intervention: false });
+    expect(result.html).toBe('<p></p>\n');
+  });
+
+  it.each(['[سلام](thisisaverylongdestination)', '[سلام](x "a very long English title")', 'سلام &amp; &amp; &amp;']) (
+    'detects rendered prose rather than invisible syntax: %s', (source) => {
+      const md = new MarkdownIt();
+      markdownItBidi(md);
+      expect(md.render(source)).toContain('<p dir="rtl"');
+      expect(md.render(`# ${source}`)).toContain('<h1 dir="rtl"');
+      expect(md.render(`| title |\n|---|\n| ${source} |`)).toContain('<td dir="rtl"');
+      const analysis = analyzeBidiMarkdown(md, source);
+      expect(analysis.blocks.find((block) => block.tokenType === 'paragraph_open')?.direction).toBe('rtl');
+      const stream = createBidiMarkdownStream(new MarkdownIt());
+      for (const character of source) stream.push(character);
+      const final = stream.finish();
+      expect(final.source).toBe(source);
+      expect(final.document).toEqual(analysis);
+    }
+  );
+
   it('is output-identical to unconfigured Markdown-It for an LTR-only document', () => {
     const source = '# React guide\n\nUse `npm test` in a normal English project.';
     const baseline = new MarkdownIt({ html: false }).render(source);

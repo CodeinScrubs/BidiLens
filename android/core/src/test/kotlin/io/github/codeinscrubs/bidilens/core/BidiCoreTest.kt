@@ -9,6 +9,22 @@ import org.junit.Test
 
 class BidiCoreTest {
     @Test
+    fun generatedIsolationsStayInsideEachParagraph() {
+        for (separator in listOf("\n", "\r\n", "\r", "\u0085", "\u001c", "\u001d", "\u001e", "\u2029")) {
+            val source = "سلام React${separator}JavaScript"
+            assertEquals(listOf("React", "JavaScript"), planInlineIsolation(source, BidiDirection.RTL).map { it.text })
+        }
+    }
+
+    @Test(timeout = 5000)
+    fun deepFormattingStacksDoNotRequireRepeatedReverseScans() {
+        val count = 32000
+        val report = scanBidiSecurity("\u2066".repeat(count) + "\u202c".repeat(count))
+        assertEquals(count, report.findings.count { it.code == "BIDI_UNMATCHED_PDF" })
+        assertEquals(count, report.findings.count { it.code == "BIDI_UNCLOSED_ISOLATE" })
+    }
+
+    @Test
     fun flagshipUsesPersianMajorityDespiteLeadingReact() {
         val source = "React یک کتابخانه جاوااسکریپت بسیار محبوب است."
         val analysis = analyzeBidi(source)

@@ -11,13 +11,13 @@ public enum BidiAnalyzer {
         "rollup", "safari", "stencil", "storybook", "tailwind", "turbopack", "vite", "vitest",
     ]
 
+    private static let numericValue = #"[0-9\u0660-\u0669\u06F0-\u06F9]+(?:[.,\u066B\u066C][0-9\u0660-\u0669\u06F0-\u06F9]+)*"#
     private static let technicalPatterns: [(String, TechnicalTokenKind, NSRegularExpression.Options)] = [
         (#"```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\r\n]+`+"#, .code, []),
         (#"</?[A-Za-z][^<>\r\n]*>"#, .html, []),
-        (#"\$\$[^\r\n]*?\$\$|\$[^\$\r\n]+\$|\\\([^\r\n]*?\\\)"#, .math, []),
         (#"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}"']+"#, .url, [.caseInsensitive]),
         (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])"#, .email, [.caseInsensitive]),
-        (#"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}]+"#, .path, []),
+        (#"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}"'“”‘’«»]+"#, .path, []),
         (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"#, .path, []),
         (#"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*"#, .identifier, [.caseInsensitive]),
         (#"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"#, .identifier, []),
@@ -26,6 +26,8 @@ public enum BidiAnalyzer {
         (#"(?<![\p{L}\p{N}_])\+?[0-9][0-9 ()-]{6,}[0-9](?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])"#, .number, [.caseInsensitive]),
+        (#"(?<![\p{L}\p{N}_])(?:\p{Sc}[+-]?"# + numericValue + "|[+-]?" + numericValue + #"\p{Sc})(?![\p{L}\p{N}_])"#, .number, []),
+        (#"(?<![\p{L}\p{N}_])[+-]?"# + numericValue + "[-–][+-]?" + numericValue + #"(?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"#, .version, []),
         (#"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])"#, .hash, [.caseInsensitive]),
         (#"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"#, .number, []),
@@ -90,7 +92,7 @@ public enum BidiAnalyzer {
         _ text: String,
         options: BidiOptions = BidiOptions()
     ) -> Bool {
-        if options.intervention == .always || !scanSecurity(text).controls.isEmpty { return true }
+        if options.intervention == .always || containsBidiControls(text) { return true }
         var hasLTR = false
         var hasRTL = false
         for item in UnicodeClassifier.enumerate(text) {
@@ -144,7 +146,7 @@ public enum BidiAnalyzer {
         customIdentifiers: Set<String> = []
     ) -> [TechnicalTokenRange] {
         let fullRange = NSRange(location: 0, length: (text as NSString).length)
-        var ranges: [TechnicalTokenRange] = []
+        var ranges = mathRanges(text)
         let normalizedCustomIdentifiers = Set(customIdentifiers.map { $0.lowercased() })
         for (pattern, kind, options) in technicalPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { continue }
@@ -611,7 +613,33 @@ public enum BidiAnalyzer {
             }
             merged.append(isolation)
         }
-        return merged
+        let units = Array(text.utf16)
+        var paragraphs: [BidiIsolation] = []
+        for isolation in merged {
+            var start = isolation.utf16Range.lowerBound
+            func append(_ end: Int) {
+                guard start < end else { return }
+                paragraphs.append(BidiIsolation(
+                    text: UnicodeClassifier.substring(text, utf16Range: start..<end),
+                    direction: isolation.direction,
+                    utf16Range: start..<end,
+                    codePointRange: UnicodeClassifier.codePointOffset(text, utf16Offset: start)..<UnicodeClassifier.codePointOffset(text, utf16Offset: end),
+                    kind: isolation.kind
+                ))
+            }
+            for index in isolation.utf16Range {
+                if [0x0a, 0x0d, 0x85, 0x1c, 0x1d, 0x1e, 0x2029].contains(units[index]) {
+                    append(index)
+                    start = index + 1
+                }
+            }
+            if start == isolation.utf16Range.lowerBound {
+                paragraphs.append(isolation)
+            } else {
+                append(isolation.utf16Range.upperBound)
+            }
+        }
+        return paragraphs
     }
 
     private static func addNormalizedPiece(
@@ -634,35 +662,4 @@ public enum BidiAnalyzer {
         ))
     }
 
-    private static func scanSecurity(_ text: String) -> BidiSecurityReport {
-        let metadata: [UInt32: (String, String)] = [
-            0x061c: ("ARABIC LETTER MARK", "low"),
-            0x200e: ("LEFT-TO-RIGHT MARK", "low"),
-            0x200f: ("RIGHT-TO-LEFT MARK", "low"),
-            0x202a: ("LEFT-TO-RIGHT EMBEDDING", "high"),
-            0x202b: ("RIGHT-TO-LEFT EMBEDDING", "high"),
-            0x202c: ("POP DIRECTIONAL FORMATTING", "medium"),
-            0x202d: ("LEFT-TO-RIGHT OVERRIDE", "high"),
-            0x202e: ("RIGHT-TO-LEFT OVERRIDE", "high"),
-            0x2066: ("LEFT-TO-RIGHT ISOLATE", "medium"),
-            0x2067: ("RIGHT-TO-LEFT ISOLATE", "medium"),
-            0x2068: ("FIRST STRONG ISOLATE", "medium"),
-            0x2069: ("POP DIRECTIONAL ISOLATE", "medium"),
-        ]
-        let controls = UnicodeClassifier.enumerate(text).compactMap { item -> BidiControlFinding? in
-            guard let (name, risk) = metadata[item.scalar.value] else { return nil }
-            let width = item.scalar.value > 0xffff ? 2 : 1
-            return BidiControlFinding(
-                character: String(item.scalar),
-                codePoint: String(format: "U+%04X", item.scalar.value),
-                utf16Range: item.utf16..<(item.utf16 + width),
-                name: name,
-                risk: risk
-            )
-        }
-        return BidiSecurityReport(
-            safe: !controls.contains(where: { $0.risk == "high" }),
-            controls: controls
-        )
-    }
 }

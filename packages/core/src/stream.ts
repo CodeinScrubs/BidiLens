@@ -150,6 +150,16 @@ export class BidiStream {
   #policyDollarEnvironment: 'none' | 'brace-open' | 'unbraced' | 'braced' = 'none';
   #policySingleDollarOpen = false;
   #policyDollarOverlapEnvironment = false;
+  #policyDollarMathAllowed = true;
+  #policyNestedEnvironment: 'none' | 'start' | 'brace-open' | 'unbraced' | 'braced' = 'none';
+  #policyPreviousCharacter = '';
+  #policyEscapeNext = false;
+  #policyCharacterEscaped = false;
+  #policyDollarRollback: {
+    ltr: number; rtl: number; correctionLtr: number; correctionRtl: number;
+    firstStrong: Direction; direction: Direction; adopted: boolean; hadEvidence: boolean;
+    doubleDollar: boolean; structureLtr: number; structureRtl: number; structureFirstStrong: Direction;
+  } | null = null;
   #policyClosingRun = 0;
   #policyBacktickOpeningRun = 0;
   #policyBacktickContentStarted = false;
@@ -255,13 +265,13 @@ export class BidiStream {
     // the still-open lexical run here so live classification has the exact
     // same punctuation, URL, path, package, and identifier semantics as the
     // batch policy without rescanning the full paragraph.
-    this.#reconcilePolicyToken();
+    const provisional = this.#reconcilePolicyToken();
     // Source-length checkpoints may have inspected a partial technical token
     // immediately before this push ended. Majority mode is intentionally
     // non-sticky, so let the incremental policy state settle the observable
     // snapshot after every boundary; exact reconciliation below still wins
     // for future-sensitive overlaps.
-    if (this.#strategy === 'majority') this.#refreshPolicyDirection();
+    if (this.#strategy === 'majority') this.#refreshPolicyDirection(provisional?.firstStrong);
     if (this.#policyBacktickAmbiguousDelimiter > 0
       && this.#policyMode === 'backtick'
       && !this.#policyBacktickContentStarted) {
@@ -307,6 +317,9 @@ export class BidiStream {
     this.#policyTechnicalContinuationLastCharacter = '';
     this.#policyTechnicalContinuationWord = '';
     this.#policySingleDollarOpen = false;
+    this.#policyPreviousCharacter = '';
+    this.#policyEscapeNext = false;
+    this.#policyDollarRollback = null;
     this.#policyDormantBacktickDelimiter = 0;
     this.#policyBacktickAmbiguousDelimiter = 0;
     this.#resetPolicyToken();
@@ -416,7 +429,34 @@ export class BidiStream {
       }
       return;
     }
+    this.#policyCharacterEscaped = this.#policyEscapeNext;
+    this.#policyEscapeNext = character === '\\' && !this.#policyEscapeNext;
+    if (this.#policyDollarRollback !== null) {
+      const saved = this.#policyDollarRollback;
+      this.#policyDollarRollback = null;
+      if (/[0-9\u0660-\u0669\u06F0-\u06F9]/u.test(character)) {
+        // A closing dollar cannot be followed by a decimal digit. Restore the
+        // provisional prose and reconsider that dollar as the price opener.
+        this.#policyLtr = saved.ltr;
+        this.#policyRtl = saved.rtl;
+        this.#policyCorrectionLtr = saved.correctionLtr;
+        this.#policyCorrectionRtl = saved.correctionRtl;
+        this.#policyFirstStrong = saved.firstStrong;
+        this.#direction = saved.direction;
+        this.#adoptedDirection = saved.adopted;
+        this.#hadAdoptionEvidence = saved.hadEvidence;
+        this.#resetPolicyStructure();
+        this.#policyMode = saved.doubleDollar ? 'double-dollar' : 'dollar';
+        this.#policySingleDollarOpen = !saved.doubleDollar;
+        if (saved.doubleDollar) {
+          this.#policyStructureLtr = saved.structureLtr;
+          this.#policyStructureRtl = saved.structureRtl;
+          this.#policyStructureFirstStrong = saved.structureFirstStrong;
+        }
+      }
+    }
     this.#processPolicyCharacter(character);
+    this.#policyPreviousCharacter = character;
     // Schedule by source position, not by push() boundaries. This guarantees
     // identical live decisions for one large chunk and any subdivision of it.
     const strongDirection = classifyBidiStrongCharacter(character);
@@ -462,6 +502,9 @@ export class BidiStream {
     this.#policyTechnicalContinuationLastCharacter = '';
     this.#policyTechnicalContinuationWord = '';
     this.#policySingleDollarOpen = false;
+    this.#policyPreviousCharacter = '';
+    this.#policyEscapeNext = false;
+    this.#policyDollarRollback = null;
     this.#policyDormantBacktickDelimiter = 0;
     this.#policyBacktickAmbiguousDelimiter = 0;
     this.#resetPolicyToken();
@@ -571,6 +614,9 @@ export class BidiStream {
     this.#policyTechnicalContinuationLastCharacter = '';
     this.#policyTechnicalContinuationWord = '';
     this.#policySingleDollarOpen = false;
+    this.#policyPreviousCharacter = '';
+    this.#policyEscapeNext = false;
+    this.#policyDollarRollback = null;
     this.#policyDormantBacktickDelimiter = 0;
     this.#policyBacktickAmbiguousDelimiter = 0;
     this.#resetPolicyToken();
@@ -740,7 +786,7 @@ export class BidiStream {
         ? !/[<>{}"']/u.test(lastCharacter)
         : this.#policyTokenStableTechnical === 'path'
           ? this.#policyTokenStablePathIsOpenEnded
-            ? !/[<>()[\]{}]/u.test(lastCharacter)
+            ? !/[<>()[\]{}"'“”‘’«»]/u.test(lastCharacter)
             : /[A-Za-z0-9_.\\/-]/u.test(lastCharacter)
           : this.#policyTokenStableTechnical === 'email'
             ? /[A-Za-z0-9._%+-]/u.test(lastCharacter)
@@ -925,6 +971,34 @@ export class BidiStream {
       this.#policyDormantBacktickDelimiter = 0;
       this.#policySingleDollarOpen = false;
     }
+    // Environment identifiers are recognized independently of math. In an
+    // unfinished structure, an escaped dollar may still introduce ${NAME}.
+    if (this.#policyNestedEnvironment !== 'none') {
+      const state = this.#policyNestedEnvironment;
+      if ((state === 'start' || state === 'brace-open') && /^[A-Z_]$/u.test(character)) {
+        this.#policyNestedEnvironment = state === 'start' ? 'unbraced' : 'braced';
+        this.#policyClosingRun = 0;
+        this.#policyPreviousWasSlash = false;
+        return;
+      }
+      if (state === 'start' && character === '{') {
+        this.#policyNestedEnvironment = 'brace-open';
+        this.#policyClosingRun = 0;
+        this.#policyPreviousWasSlash = false;
+        return;
+      }
+      if ((state === 'unbraced' || state === 'braced') && /^[A-Z0-9_]$/u.test(character)) {
+        this.#policyClosingRun = 0;
+        this.#policyPreviousWasSlash = false;
+        return;
+      }
+      this.#policyNestedEnvironment = 'none';
+      if (state === 'braced' && character === '}') return;
+    }
+    if (character === '$' && this.#policyCharacterEscaped
+      && (this.#policyMode === 'dollar' || this.#policyMode === 'double-dollar' || this.#policyMode === 'paren')) {
+      this.#policyNestedEnvironment = 'start';
+    }
     if (this.#policyTechnicalContinuation === 'command-url') {
       if (!/\s/u.test(character) && !/[<>{}"']/u.test(character)) {
         this.#policyTechnicalContinuationLastCharacter = character;
@@ -978,17 +1052,17 @@ export class BidiStream {
       if (this.#policyDormantBacktickDelimiter > 0) {
         this.#policyDormantBacktickClosingRun = 0;
       }
-      if (/^[()]$/u.test(character) && this.#policyToken.endsWith('\\')) {
+      if (/^[()]$/u.test(character) && this.#policyCharacterEscaped && this.#policyToken.endsWith('\\')) {
         this.#completePolicyToken();
         this.#resetPolicyStructure();
         if (character === '(') this.#policyMode = 'paren';
         return;
       }
-      if (/^[()[\]{},;!?"'،؛؟。।۔]$/u.test(character)) {
+      if (/^[()[\]{},;!?"'“”‘’«»،؛؟。।۔]$/u.test(character)) {
         const url = /\b(?:https?|ftp):\/\//iu.test(this.#policyToken);
         const openPath = /^(?:[A-Za-z]:[\\/]|\.{0,2}\/|~\/)/u.test(this.#policyToken);
         const urlPunctuation = url && !/^["']$/u.test(character);
-        const openPathPunctuation = openPath && !/^[()[\]{}"']$/u.test(character);
+        const openPathPunctuation = openPath && !/^[()[\]{}"'“”‘’«»]$/u.test(character);
         if (!urlPunctuation && !openPathPunctuation) {
           this.#completePolicyToken();
           return;
@@ -1016,6 +1090,8 @@ export class BidiStream {
       }
       if (character === '`' || character === '<' || character === '$') {
         this.#completePolicyToken();
+        if (character === '$' && !this.#policyCharacterEscaped && this.#policySingleDollarOpen
+          && !/\s/u.test(this.#policyPreviousCharacter)) this.#rememberDollarRollback();
         this.#resetPolicyStructure();
         if (character === '`') {
           this.#policyMode = 'backtick';
@@ -1026,6 +1102,9 @@ export class BidiStream {
         }
         else if (character === '$') {
           this.#policyMode = 'dollar';
+          this.#policyDollarMathAllowed = !this.#policyCharacterEscaped;
+          if (this.#policyCharacterEscaped) return;
+          if (/\s/u.test(this.#policyPreviousCharacter)) this.#policySingleDollarOpen = false;
           if (this.#policySingleDollarOpen) {
             this.#policySingleDollarOpen = false;
             this.#policyDollarOverlapEnvironment = true;
@@ -1225,6 +1304,25 @@ export class BidiStream {
     }
 
     if (this.#policyMode === 'dollar') {
+      if (!this.#policyDollarMathAllowed && this.#policyDollarEnvironment === 'none'
+        && !/^[A-Z_{]$/u.test(character)) {
+        this.#commitProvisionalPolicyStructure();
+        this.#processPolicyCharacter(character);
+        return;
+      }
+      if (character === '$' && !this.#policyCharacterEscaped && /\s/u.test(this.#policyPreviousCharacter)) {
+        this.#commitProvisionalPolicyStructure();
+        this.#policyMode = 'dollar';
+        this.#policySingleDollarOpen = true;
+        return;
+      }
+      if (!this.#policyDollarHasContent && this.#policyDollarEnvironment === 'none'
+        && !this.#policyDollarOverlapEnvironment && /\s/u.test(character)) {
+        this.#commitProvisionalPolicyStructure();
+        this.#policySingleDollarOpen = false;
+        this.#processPolicyCharacter(character);
+        return;
+      }
       if (this.#policyDollarOverlapEnvironment) {
         this.#policyDollarOverlapEnvironment = false;
         if (/^[A-Z_]$/u.test(character)) {
@@ -1261,9 +1359,10 @@ export class BidiStream {
         if (character !== '}') this.#processPolicyCharacter(character);
         return;
       }
-      if (character === '$') {
+      if (character === '$' && !this.#policyCharacterEscaped) {
         this.#policySingleDollarOpen = false;
         if (this.#policyDollarHasContent) {
+          this.#rememberDollarRollback();
           this.#discardTechnicalPolicyStructure();
           this.#policyMode = 'dollar';
           this.#policyDollarOverlapEnvironment = true;
@@ -1285,8 +1384,15 @@ export class BidiStream {
     }
 
     if (this.#policyMode === 'double-dollar') {
-      if (character === '$') {
+      if (character === '$' && !this.#policyCharacterEscaped) {
         this.#policyClosingRun += 1;
+        // Until a second closing dollar arrives, batch scanning can recognize
+        // a single-dollar fallback starting inside an unmatched $$ opener.
+        if (this.#policyClosingRun === 1 && (this.#policyStructureLtr > 0 || this.#policyStructureRtl > 0)) {
+          this.#rememberDollarRollback();
+          this.#exactLiveAnalysisDue = true;
+        }
+        if (this.#policyClosingRun === 1) this.#policyNestedEnvironment = 'start';
         if (this.#policyClosingRun === 2) {
           this.#discardTechnicalPolicyStructure();
           this.#policyMode = 'dollar';
@@ -1303,11 +1409,14 @@ export class BidiStream {
     }
 
     if (this.#policyMode === 'paren') {
+      if (character === '$' && !this.#policyCharacterEscaped && (this.#policyStructureLtr > 0 || this.#policyStructureRtl > 0)) {
+        this.#exactLiveAnalysisDue = true;
+      }
       if (this.#policyPreviousWasSlash && character === ')') {
         this.#discardTechnicalPolicyStructure();
       } else {
         this.#recordPolicyCharacter(character, 'structure');
-        this.#policyPreviousWasSlash = character === '\\';
+        this.#policyPreviousWasSlash = character === '\\' && !this.#policyCharacterEscaped;
       }
     }
   }
@@ -1468,6 +1577,18 @@ export class BidiStream {
     this.#refreshPolicyDirection();
   }
 
+  #rememberDollarRollback(): void {
+    this.#policyDollarRollback = {
+      ltr: this.#policyLtr, rtl: this.#policyRtl,
+      correctionLtr: this.#policyCorrectionLtr, correctionRtl: this.#policyCorrectionRtl,
+      firstStrong: this.#policyFirstStrong === 'neutral' ? this.#policyStructureFirstStrong : this.#policyFirstStrong,
+      direction: this.#direction, adopted: this.#adoptedDirection, hadEvidence: this.#hadAdoptionEvidence,
+      doubleDollar: this.#policyMode === 'double-dollar',
+      structureLtr: this.#policyStructureLtr, structureRtl: this.#policyStructureRtl,
+      structureFirstStrong: this.#policyStructureFirstStrong
+    };
+  }
+
   #removePolicyStructureEvidence(): void {
     this.#policyLtr -= this.#policyStructureLtr;
     this.#policyRtl -= this.#policyStructureRtl;
@@ -1528,6 +1649,8 @@ export class BidiStream {
     this.#policyDollarHasContent = false;
     this.#policyDollarEnvironment = 'none';
     this.#policyDollarOverlapEnvironment = false;
+    this.#policyDollarMathAllowed = true;
+    this.#policyNestedEnvironment = 'none';
     this.#policyClosingRun = 0;
     this.#policyBacktickOpeningRun = 0;
     this.#policyBacktickContentStarted = false;

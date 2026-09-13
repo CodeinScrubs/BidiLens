@@ -405,6 +405,86 @@ fn is_technical_identifier(token: &str, custom: &HashSet<String>, uppercase_pros
                 .all(|character| character.is_ascii_uppercase()))
 }
 
+// Scan Unicode scalars once so escaped delimiters and boundary whitespace are
+// handled without restarting a lazy regex at every unmatched opener.
+fn is_math_whitespace(ch: char) -> bool {
+    matches!(ch, '\u{9}'..='\u{d}' | '\u{2000}'..='\u{200a}' | ' ' | '\u{a0}' | '\u{1680}'
+        | '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' | '\u{3000}' | '\u{feff}')
+}
+
+fn add_math_ranges(text: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
+    if !text.contains('$') && !text.contains("\\(") {
+        return;
+    }
+    let chars: Vec<(usize, char)> = text.char_indices().collect();
+    let mut scanned = [0; 3];
+    let mut i = 0;
+    let at = |index: usize, delimiter: &[char]| {
+        index + delimiter.len() <= chars.len()
+            && delimiter
+                .iter()
+                .enumerate()
+                .all(|(offset, ch)| chars[index + offset].1 == *ch)
+    };
+    while i < chars.len() {
+        let paren = at(i, &['\\', '(']);
+        if chars[i].1 == '\\' && !paren {
+            i += 2;
+            continue;
+        }
+        let kind = if chars[i].1 == '$' {
+            if at(i, &['$', '$']) { 1 } else { 0 }
+        } else if paren {
+            2
+        } else {
+            i += 1;
+            continue;
+        };
+        if i < scanned[kind] {
+            i += 1;
+            continue;
+        }
+        let delimiter: &[char] = match kind {
+            0 => &['$'],
+            1 => &['$', '$'],
+            _ => &['\\', ')'],
+        };
+        if kind == 0 && (i + 1 == chars.len() || is_math_whitespace(chars[i + 1].1)) {
+            i += 1;
+            continue;
+        }
+        let mut end = i + delimiter.len();
+        while end < chars.len() && !matches!(chars[end].1, '\r' | '\n') && !at(end, delimiter) {
+            end += if chars[end].1 == '\\'
+                && end + 1 < chars.len()
+                && !matches!(chars[end + 1].1, '\r' | '\n')
+            {
+                2
+            } else {
+                1
+            };
+        }
+        if at(end, delimiter) && (kind != 0 || end > i + 1) {
+            let next = chars.get(end + 1).map_or('\0', |(_, ch)| *ch);
+            if kind == 0
+                && (is_math_whitespace(chars[end - 1].1)
+                    || matches!(next, '0'..='9' | '\u{660}'..='\u{669}' | '\u{6f0}'..='\u{6f9}'))
+            {
+                i = end;
+                continue;
+            }
+            let byte_end = chars
+                .get(end + delimiter.len())
+                .map_or(text.len(), |(byte, _)| *byte);
+            add_range(ranges, chars[i].0..byte_end, TechnicalTokenKind::Math);
+            i = end + delimiter.len();
+        } else {
+            scanned[kind] = end;
+            i += 1;
+        }
+    }
+}
+
 /// Finds technical spans that should not decide natural-language direction.
 #[must_use]
 pub fn find_technical_token_ranges(
@@ -422,15 +502,7 @@ pub fn find_technical_token_ranges(
         |value| value,
         |_| true,
     );
-    add_matches(
-        text,
-        &mut ranges,
-        r"(?:\$\$[^\r\n]*?\$\$|\$[^$\r\n]+\$|\\\([^\r\n]*?\\\))",
-        TechnicalTokenKind::Math,
-        0,
-        |value| value,
-        |_| true,
-    );
+    add_math_ranges(text, &mut ranges);
 
     let urls = built_in_regex(r#"(?i)(?-u:\b)(?:https?|ftp)://[^\s<>{}\"']+"#);
     for found in urls.find_iter(text) {
@@ -467,7 +539,7 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r"(?:^|[^\p{L}\p{N}_])((?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}]+)",
+        r#"(?:^|[^\p{L}\p{N}_])((?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}"'“”‘’«»]+)"#,
         TechnicalTokenKind::Path,
         1,
         trim_technical_punctuation,
@@ -560,6 +632,20 @@ pub fn find_technical_token_ranges(
         0,
         |value| value,
         |_| true,
+    );
+    add_matches_with_unicode_end_boundary(
+        text,
+        &mut ranges,
+        r"(?:^|[^\p{L}\p{N}_])((?:\p{Sc}[+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*|[+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*\p{Sc}))",
+        TechnicalTokenKind::Number,
+        1,
+    );
+    add_matches_with_unicode_end_boundary(
+        text,
+        &mut ranges,
+        r"(?:^|[^\p{L}\p{N}_])([+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*[-–][+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*)",
+        TechnicalTokenKind::Number,
+        1,
     );
     add_matches(
         text,

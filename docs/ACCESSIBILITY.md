@@ -15,8 +15,11 @@ uses logical CSS alignment.
   streaming settlement, structured Markdown, dark mode, and 150% zoom.
 - Adapter tests preserve heading/list/table/blockquote semantics and avoid
   inserting focusable wrappers.
-- Android Compose UI tests verify that display-only controls are not exposed
-  as the semantic text and editable callbacks remain control-free.
+- Android Compose UI tests verify that generated display controls are not
+  exposed as semantic text, default `BidiText` keeps its exact logical layout
+  input, and editable callbacks do not acquire generated controls. The new
+  `BidiSelectableText` test invokes native copy and reads the system clipboard,
+  verifying the original source including an authored direction mark.
 - Android Views device tests verify the real paragraph direction, source
   equality, and `Editable`/cursor identity on API 36.1.
 - iOS Simulator tests verify SwiftUI/UILabel paragraph direction, physical

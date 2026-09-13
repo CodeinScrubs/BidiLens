@@ -86,15 +86,17 @@ private fun balanceParagraph(
 ): List<BidiSecurityFinding> {
     val findings = mutableListOf<BidiSecurityFinding>()
     val stack = mutableListOf<FormattingFrame>()
+    val isolates = mutableListOf<Int>()
 
     for (control in controls) {
         when (val code = control.character.codePointAt(0)) {
             0x202A, 0x202B, 0x202D, 0x202E -> stack += FormattingFrame(false, control)
-            0x2066, 0x2067, 0x2068 -> stack += FormattingFrame(true, control)
+            0x2066, 0x2067, 0x2068 -> {
+                isolates += stack.size
+                stack += FormattingFrame(true, control)
+            }
             0x202C -> {
-                val embedding = stack.indexOfLast { !it.isolate }
-                val isolate = stack.indexOfLast { it.isolate }
-                if (embedding <= isolate) {
+                if (stack.lastOrNull()?.isolate != false) {
                     findings += BidiSecurityFinding(
                         code = "BIDI_UNMATCHED_PDF",
                         message = "POP DIRECTIONAL FORMATTING has no matching active embedding or override.",
@@ -102,12 +104,12 @@ private fun balanceParagraph(
                         risk = BidiControlRisk.HIGH,
                     )
                 } else {
-                    stack.removeAt(embedding)
+                    stack.removeAt(stack.lastIndex)
                 }
             }
             0x2069 -> {
-                val isolate = stack.indexOfLast { it.isolate }
-                if (isolate < 0) {
+                val isolate = if (isolates.isEmpty()) null else isolates.removeAt(isolates.lastIndex)
+                if (isolate == null) {
                     findings += BidiSecurityFinding(
                         code = "BIDI_UNMATCHED_PDI",
                         message = "POP DIRECTIONAL ISOLATE has no matching isolate opener.",

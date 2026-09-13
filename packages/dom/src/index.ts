@@ -246,45 +246,42 @@ function isHTMLElement(value: Element): value is HTMLElement {
 }
 
 function inheritedDirection(element: HTMLElement): ResolvedDirection {
-  let current: HTMLElement | null = element;
-  while (current) {
-    const state = originalStates.get(current);
-    const authoredDir = state?.attributes.has('dir')
-      ? state.attributes.get('dir')
-      : current.getAttribute('dir');
-    if (authoredDir?.toLowerCase() === 'rtl') return 'rtl';
-    if (authoredDir?.toLowerCase() === 'ltr') return 'ltr';
-    if (authoredDir?.toLowerCase() === 'auto') {
-      const parentDirection = current.parentElement ? inheritedDirection(current.parentElement) : 'ltr';
-      const auto = detectDirection(current.textContent ?? '', {
-        strategy: 'first-strong',
-        fallback: parentDirection
-      });
-      return auto === 'rtl' ? 'rtl' : 'ltr';
-    }
-    current = current.parentElement;
+  const state = originalStates.get(element);
+  if (state?.applied.has('dir') && element.getAttribute('dir') !== state.applied.get('dir')) {
+    // An observable author handoff ends the old ownership session. Restore
+    // only still-owned properties before reading the actual CSS cascade;
+    // otherwise our inline direction can hide the author's replacement dir.
+    restoreElementState(element);
+    return inheritedDirection(element);
   }
-
   const original = originalDirections.get(element);
+  const authoredDir = (state?.applied.has('dir') && element.getAttribute('dir') === state.applied.get('dir')
+    ? state.attributes.get('dir') : element.getAttribute('dir'))?.toLowerCase();
+  const parent = (): ResolvedDirection => element.parentElement ? inheritedDirection(element.parentElement) : 'ltr';
   if (original) {
-    if (!original.ownCssDirection) {
-      return element.parentElement ? inheritedDirection(element.parentElement) : 'ltr';
-    }
-    const state = originalStates.get(element);
     if (state?.style.appliedDirection !== undefined
       && (element.style.getPropertyValue('direction') !== state.style.appliedDirection
         || element.style.getPropertyPriority('direction') !== state.style.appliedDirectionPriority)) {
       const authored = element.style.getPropertyValue('direction');
       if (authored === 'rtl' || authored === 'ltr') return authored;
-      return element.parentElement ? inheritedDirection(element.parentElement) : 'ltr';
+      return parent();
     }
     if (state?.style.originalDirection === 'rtl' || state?.style.originalDirection === 'ltr') {
       return state.style.originalDirection;
     }
-    return original.resolved;
+    if (original.ownCssDirection && authoredDir !== 'auto') return original.resolved;
+  } else {
+    // Computed CSS wins over presentational dir attributes on any ancestor.
+    const computed = element.ownerDocument.defaultView?.getComputedStyle(element).direction;
+    if (computed === 'rtl' || computed === 'ltr') return computed;
   }
-  const view = element.ownerDocument.defaultView;
-  return view?.getComputedStyle(element).direction === 'rtl' ? 'rtl' : 'ltr';
+  if (authoredDir === 'rtl') return 'rtl';
+  if (authoredDir === 'ltr') return 'ltr';
+  if (authoredDir === 'auto') {
+    return detectDirection(element.textContent ?? '', { strategy: 'first-strong', fallback: parent() }) === 'rtl'
+      ? 'rtl' : 'ltr';
+  }
+  return parent();
 }
 
 function rememberOriginalDirection(element: HTMLElement, direction: ResolvedDirection): void {
@@ -313,10 +310,18 @@ function annotateCode(element: HTMLElement, hostDirection = inheritedDirection(e
   markApplied(element, ['dir', 'data-bidilens-code', 'style']);
 }
 
+function unwrapGeneratedIsolate(isolate: HTMLElement): void {
+  // A host may enrich an owned wrapper after application. Unwrap the wrapper,
+  // preserving the actual child nodes, their attributes, and event handlers.
+  const fragment = isolate.ownerDocument.createDocumentFragment();
+  while (isolate.firstChild) fragment.appendChild(isolate.firstChild);
+  isolate.replaceWith(fragment);
+}
+
 function restoreOwnedSubtree(root: HTMLElement): number {
   const generated = [...root.querySelectorAll<HTMLElement>('[data-bidilens-dom-generated]')];
   for (const isolate of generated) {
-    isolate.replaceWith(isolate.ownerDocument.createTextNode(isolate.textContent ?? ''));
+    unwrapGeneratedIsolate(isolate);
   }
   const elements = [root, ...root.querySelectorAll<HTMLElement>('*')];
   let restored = 0;
@@ -336,40 +341,67 @@ function isolateInlineText(
   technicalIdentifiers: readonly string[] | undefined
 ): number {
   const documentRef = element.ownerDocument;
+  const isOwnedText = (node: Node): boolean => node.nodeType === 1
+    && (node as Element).hasAttribute('data-bidilens-dom-generated')
+    && [...node.childNodes].every((child) => child.nodeType === 3);
   const showText = documentRef.defaultView?.NodeFilter.SHOW_TEXT ?? 4;
   const walker = documentRef.createTreeWalker(element, showText);
-  const textNodes: Text[] = [];
+  const parents = new Set<HTMLElement>();
   let current: Node | null;
   while ((current = walker.nextNode()) !== null) {
     if (current.nodeType !== 3) continue;
-    const parent = current.parentElement;
+    let parent = current.parentElement;
+    if (parent && isOwnedText(parent)) parent = parent.parentElement;
     if (!parent || parent.closest('[data-bidilens-isolate],bdi,script,style,textarea')) continue;
     if (parent.closest(codeSelector)) continue;
     if (parent.closest(blockSelector) !== element) continue;
-    textNodes.push(current as Text);
+    parents.add(parent);
   }
 
   let isolated = 0;
-  for (const node of textNodes) {
-    const source = node.data;
-    const plans = planInlineIsolation(source, direction, { intervention, technicalIdentifiers });
-    if (!plans.length) continue;
-    const fragment = documentRef.createDocumentFragment();
-    let cursor = 0;
-    for (const plan of plans) {
-      fragment.append(documentRef.createTextNode(source.slice(cursor, plan.start)));
-      const isolate = documentRef.createElement('bdi');
-      isolate.dir = plan.direction;
-      isolate.dataset.bidilensIsolate = '';
-      isolate.dataset.bidilensKind = plan.kind;
-      isolate.dataset.bidilensDomGenerated = '';
-      isolate.textContent = plan.text;
-      fragment.append(isolate);
-      cursor = plan.end;
-      isolated += 1;
+  for (const parent of parents) {
+    const groups: Node[][] = [];
+    let group: Node[] = [];
+    for (const child of parent.childNodes) {
+      if (child.nodeType === 3 || isOwnedText(child)) group.push(child);
+      else if (group.length) { groups.push(group); group = []; }
     }
-    fragment.append(documentRef.createTextNode(source.slice(cursor)));
-    node.replaceWith(fragment);
+    if (group.length) groups.push(group);
+    for (const nodes of groups) {
+      const source = nodes.map((node) => node.textContent ?? '').join('');
+      const plans = planInlineIsolation(source, direction, { intervention, technicalIdentifiers });
+      // Compare semantic boundaries first: repeated apply/observer flush must not
+      // replace stable nodes, disturb selection, or create a mutation loop.
+      let offset = 0;
+      const existing = nodes.flatMap((node) => {
+        const start = offset;
+        offset += node.textContent?.length ?? 0;
+        return node.nodeType === 1 ? [{ start, end: offset,
+          direction: (node as HTMLElement).dir, kind: (node as HTMLElement).dataset.bidilensKind }] : [];
+      });
+      if (existing.length === plans.length && existing.every((value, index) => {
+        const plan = plans[index]!;
+        return value.start === plan.start && value.end === plan.end
+          && value.direction === plan.direction && value.kind === plan.kind;
+      })) continue;
+      const fragment = documentRef.createDocumentFragment();
+      let cursor = 0;
+      for (const plan of plans) {
+        fragment.append(documentRef.createTextNode(source.slice(cursor, plan.start)));
+        const isolate = documentRef.createElement('bdi');
+        isolate.dir = plan.direction;
+        isolate.dataset.bidilensIsolate = '';
+        isolate.dataset.bidilensKind = plan.kind;
+        isolate.dataset.bidilensDomGenerated = '';
+        isolate.textContent = plan.text;
+        fragment.append(isolate);
+        cursor = plan.end;
+        isolated += 1;
+      }
+      fragment.append(documentRef.createTextNode(source.slice(cursor)));
+      parent.insertBefore(fragment, nodes[0]!);
+      for (const node of nodes) parent.removeChild(node);
+    }
   }
   return isolated;
 }
@@ -482,7 +514,7 @@ export interface RestoreBidiOptions {
 /** Restores attributes/styles and unwraps only nodes generated by applyBidi. */
 export function restoreBidi(root: ParentNode, options: RestoreBidiOptions = {}): number {
   const generated = [...root.querySelectorAll<HTMLElement>('[data-bidilens-dom-generated]')];
-  for (const isolate of generated) isolate.replaceWith(isolate.ownerDocument.createTextNode(isolate.textContent ?? ''));
+  for (const isolate of generated) unwrapGeneratedIsolate(isolate);
 
   const elements: HTMLElement[] = [...root.querySelectorAll('*')].filter(isHTMLElement);
   if (options.includeRoot && root.nodeType === 1 && isHTMLElement(root as Element)) elements.unshift(root as HTMLElement);

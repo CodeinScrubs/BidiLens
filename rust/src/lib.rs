@@ -666,7 +666,39 @@ fn normalize_isolations(text: &str, isolations: Vec<InlineIsolation>) -> Vec<Inl
         }
         merged.push(isolation);
     }
-    merged
+    let mut paragraphs = Vec::new();
+    for isolation in merged {
+        let range = isolation.source_range.bytes.clone();
+        let mut start = range.start;
+        for (offset, character) in text[range.clone()].char_indices() {
+            if matches!(
+                character,
+                '\r' | '\n' | '\u{0085}' | '\u{001c}'..='\u{001e}' | '\u{2029}'
+            ) {
+                let end = range.start + offset;
+                if start < end {
+                    paragraphs.push(planned_isolation(
+                        text,
+                        start..end,
+                        isolation.direction,
+                        isolation.kind,
+                    ));
+                }
+                start = end + character.len_utf8();
+            }
+        }
+        if start == range.start {
+            paragraphs.push(isolation);
+        } else if start < range.end {
+            paragraphs.push(planned_isolation(
+                text,
+                start..range.end,
+                isolation.direction,
+                isolation.kind,
+            ));
+        }
+    }
+    paragraphs
 }
 
 /// Plans display-only isolation ranges without changing stored text.

@@ -69,6 +69,15 @@ API signal while a rich document is between checkpoints.
 
 ## Complexity and regression safeguards
 
+These safeguards are workload-specific, not a global complexity guarantee.
+An external-review follow-up reproduced pre-existing repeated full rescans on
+character-by-character streams of `$A$1 ` repetitions. Such ambiguous
+environment/math overlaps remain a worst-case limitation even though ordinary
+price prose and dense delimiter regression tests pass. Batch input where
+possible, limit untrusted response length, and reconcile at `finish()`.
+An external 11.8x BMP lookup microbenchmark targets a different implementation;
+it is not an end-to-end BidiLens speedup and is not used as a product claim.
+
 - generated bidi-class and natural-letter ranges use binary search;
 - technical ranges are sorted and traversed with a monotonic cursor;
 - isolation planning does not rescan completed ranges;

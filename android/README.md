@@ -95,6 +95,26 @@ BidiBasicTextField(
 BidiText("React یک کتابخانه جاوااسکریپت بسیار محبوب است.")
 ```
 
+### Selection and copy (next source release)
+
+`BidiText` now defaults to `isolateRuns = false`: it preserves the exact layout
+input and can safely participate in an application's `SelectionContainer`.
+Paragraph direction and independent alignment still apply. This does not group
+technical fragments into display isolates. For full isolation **and** native
+selection/copy, use the new read-only component directly:
+
+```kotlin
+BidiSelectableText("از جلد سه qb، page 97")
+```
+
+It uses the text-field visual transformation and offset mapping; the field
+value and copied substrings remain the original logical source, including any
+controls the author actually supplied. It has read-only field interaction and
+semantics, rather than being part of a multi-widget `SelectionContainer`.
+Explicit `BidiText(isolateRuns = true)` is display-only and is excluded from
+native container selection to prevent copying generated controls. These changes
+are not in Maven `0.1.2`; use the next tested Android release when published.
+
 The rest of the screen can remain LTR. Each value is analyzed independently.
 For pure English content, the original `TextStyle` instance and unmodified
 modifier path are retained.

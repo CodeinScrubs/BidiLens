@@ -27,6 +27,13 @@ LTR-only content under an LTR parent keeps the element free of BidiLens-owned
 presentation attributes and existing light-DOM markup are preserved. Add
 `intervention="always"` to retain stable annotations for all content.
 
+During intervention this component owns a **plain-text** rendering surface; it
+does not preserve child markup in the displayed output. Returning to the no-op
+path restores the original child nodes, including their event listeners and
+mutable form values. Detaching interactive children can still affect focus and
+custom-element lifecycle callbacks. Use the DOM adapter with explicit exclusions
+for existing rich or interactive content instead of treating this as an editor.
+
 For a no-build page, use the self-contained browser entry. It bundles core on
 purpose, contains no bare package imports, and registers `<bidi-message>`:
 

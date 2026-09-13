@@ -5,6 +5,103 @@ import XCTest
 @testable import BidiLens
 
 final class AppleAdapterTests: XCTestCase {
+    @MainActor
+    func testImperativeLabelSourceReplacementRestoresOwnedAlignment() {
+        let label = UILabel()
+        label.text = "سلام دنیا"
+        label.textAlignment = .center
+        BidiUIKit.apply(to: label)
+        XCTAssertEqual(label.textAlignment, .right)
+        label.text = "Hello world"
+        BidiUIKit.apply(to: label)
+        XCTAssertEqual(label.text, "Hello world")
+        XCTAssertEqual(label.textAlignment, .center)
+        let paragraph = label.attributedText?.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle
+        XCTAssertEqual(paragraph?.baseWritingDirection ?? .natural, .natural)
+    }
+
+    @MainActor
+    func testReplacementLabelSourceKeepsDifferentHostDirectionAndAttributes() throws {
+        let label = UILabel()
+        label.text = "سلام دنیا"
+        BidiUIKit.apply(to: label)
+        let hostStyle = NSMutableParagraphStyle()
+        hostStyle.baseWritingDirection = .leftToRight
+        hostStyle.alignment = .center
+        label.attributedText = NSAttributedString(
+            string: "Hi", attributes: [
+                .paragraphStyle: hostStyle,
+                .foregroundColor: UIColor.systemPurple,
+            ]
+        )
+        BidiUIKit.apply(to: label)
+        let restored = try XCTUnwrap(label.attributedText)
+        let paragraph = try XCTUnwrap(restored.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle)
+        XCTAssertEqual(restored.string, "Hi")
+        XCTAssertEqual(paragraph.baseWritingDirection, .leftToRight)
+        XCTAssertEqual(paragraph.alignment, .center)
+        XCTAssertEqual(restored.attribute(
+            .foregroundColor, at: 0, effectiveRange: nil
+        ) as? UIColor, UIColor.systemPurple)
+    }
+
+    @MainActor
+    func testLabelRestorePreservesHostPerParagraphAlignment() throws {
+        let label = UILabel()
+        let first = "سلام دنیا"
+        let source = first + "\n" + first
+        label.text = source
+        label.textAlignment = .left
+        BidiUIKit.apply(to: label)
+
+        let secondStart = (first as NSString).length + 1
+        let hostUpdate = NSMutableAttributedString(
+            attributedString: try XCTUnwrap(label.attributedText)
+        )
+        let originalSecond = try XCTUnwrap(hostUpdate.attribute(
+            .paragraphStyle, at: secondStart, effectiveRange: nil
+        ) as? NSParagraphStyle)
+        let secondStyle = try XCTUnwrap(originalSecond.mutableCopy() as? NSMutableParagraphStyle)
+        secondStyle.alignment = .center
+        hostUpdate.addAttribute(
+            .paragraphStyle, value: secondStyle,
+            range: NSRange(location: secondStart, length: hostUpdate.length - secondStart)
+        )
+        label.attributedText = hostUpdate
+        BidiUIKit.restore(label)
+
+        let restored = try XCTUnwrap(label.attributedText)
+        let firstStyle = try XCTUnwrap(restored.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle)
+        let restoredSecond = try XCTUnwrap(restored.attribute(
+            .paragraphStyle, at: secondStart, effectiveRange: nil
+        ) as? NSParagraphStyle)
+        XCTAssertEqual(restored.string, source)
+        XCTAssertEqual(firstStyle.alignment, .left)
+        XCTAssertEqual(restoredSecond.alignment, .center)
+        XCTAssertEqual(firstStyle.baseWritingDirection, .natural)
+        XCTAssertEqual(restoredSecond.baseWritingDirection, .natural)
+    }
+
+    @MainActor
+    func testLabelAlignmentHandoffStillRestoresOwnedParagraphDirection() throws {
+        let label = UILabel()
+        label.text = "سلام دنیا"
+        BidiUIKit.apply(to: label)
+        label.textAlignment = .left
+        BidiUIKit.restore(label)
+        XCTAssertEqual(label.textAlignment, .left)
+        let paragraph = try XCTUnwrap(label.attributedText?.attribute(
+            .paragraphStyle, at: 0, effectiveRange: nil
+        ) as? NSParagraphStyle)
+        XCTAssertEqual(paragraph.baseWritingDirection, .natural)
+    }
+
     private let rtl = "React یک کتابخانه جاوااسکریپت بسیار محبوب است."
     private let ltr = "React is a popular JavaScript library."
 

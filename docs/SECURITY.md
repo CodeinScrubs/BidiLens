@@ -1,5 +1,16 @@
 # Bidi security model
 
+## Resource bounds
+
+Formatting-balance checks in TypeScript, Kotlin, and Rust use a stack plus
+isolate indices: each opener is pushed and removed at most once. Unmatched
+terminators do not rescan the active stack. Regression tests cover deep
+formatting stacks as well as ordinary multilingual text. Finding storage is
+linear in the finding count, and final sorting is O(n log n) in that count;
+hosts should set message-size limits and avoid unbounded synchronous analysis
+on their UI thread. The scanner is not a substitute for application resource
+limits or an independent security review.
+
 ## Assets and trust boundaries
 
 BidiLens can process untrusted chat messages, Markdown, filenames, source-like

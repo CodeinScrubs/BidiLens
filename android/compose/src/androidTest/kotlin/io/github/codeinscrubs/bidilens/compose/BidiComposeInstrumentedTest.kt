@@ -9,6 +9,12 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.ClipboardManager
+import org.junit.Assert.assertEquals
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -24,6 +30,35 @@ import org.junit.runner.RunWith
 class BidiComposeInstrumentedTest {
     @get:Rule
     val compose = createComposeRule()
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun selectableTextCopiesOriginalSourceIncludingAuthoredControls() {
+        val source = "سلام \u200f page 97"
+        var clipboard: ClipboardManager? = null
+        compose.setContent {
+            clipboard = LocalClipboardManager.current
+            BidiSelectableText(text = source, modifier = Modifier.testTag("selectable"))
+        }
+        compose.onNodeWithTag("selectable").performClick()
+        compose.onNodeWithTag("selectable").performSemanticsAction(SemanticsActions.SetSelection) {
+            it(0, source.length, true)
+        }
+        compose.onNodeWithTag("selectable").performSemanticsAction(SemanticsActions.CopyText) { it() }
+        compose.waitUntil(timeoutMillis = 5_000) { clipboard?.getText()?.text == source }
+        compose.runOnIdle { assertEquals(source, clipboard?.getText()?.text) }
+    }
+
+    @Test
+    fun defaultDisplayLayoutKeepsExactLogicalSource() {
+        val source = "سلام page 97"
+        var layout: TextLayoutResult? = null
+        compose.setContent {
+            BidiText(text = source, onTextLayout = { layout = it })
+        }
+        compose.waitUntil { layout != null }
+        compose.runOnIdle { assertEquals(source, layout?.layoutInput?.text?.text) }
+    }
 
     @Test
     fun flagshipExposesRtlSemanticsAndRendersAtRightEdge() {
