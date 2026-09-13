@@ -424,3 +424,31 @@ The next priority is feedback on invited/reviewed contributions and bounded
 integration pilots. Star counts and merged native patches are not evidence that
 an upstream project adopted BidiLens as a dependency. Do not send duplicate
 promotional issues or bump unchanged proposals.
+
+## 2026-09-13: verified launch claims and targeted introductions
+
+- **PersianLabs:** [PR #95](https://github.com/persianlabs/ui/pull/95) is now
+  merged (September 9). This is a native example contribution, not adoption of
+  BidiLens as a dependency.
+- **Google ADK Web:** shared renderer-specific fixture ideas in
+  [Show and tell #529](https://github.com/google/adk-web/discussions/529).
+  No reproduced ADK defect or agent-runtime change is claimed.
+- **Microsoft Agent Framework:** introduced client-side rendering cases in
+  [Show and tell #8340](https://github.com/microsoft/agent-framework/discussions/8340),
+  explicitly separating DevUI/custom clients from the Python/.NET backend.
+- **Meta Lexical:** shared read-only consumer fixture ideas in
+  [Show and tell #9165](https://github.com/facebook/lexical/discussions/9165),
+  acknowledging existing direction work and avoiding editor DOM mutation.
+
+All three introductions were checked for existing BidiLens discussions and read
+back after publication. Submitted introductions are not maintainer approval,
+pilots, endorsements, or package adoption. GitHub reported 10 stars at this check;
+no new star attribution is established.
+
+External AI launch drafts contained incorrect package/API names, licensing and
+Rust publication claims, plus unverified performance and growth promises. Those
+claims were not used. A fresh Chromium/Firefox/WebKit check confirmed that
+appending Persian after `Hello` does not change `dir=auto` away from LTR, and
+Persian-first RTL text can retain physical left alignment. This focused check is
+not a full-platform validation. No bulk submission script or repeat email blast
+was run.
