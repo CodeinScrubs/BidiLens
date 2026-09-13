@@ -16,3 +16,13 @@ export function boundedNumberOption(
   }
   return Math.min(maximum, Math.max(minimum, resolved));
 }
+
+/** Normalizes a user-provided direction override string. */
+export function normalizeDirectionOverride(value: unknown): 'ltr' | 'rtl' | 'neutral' | 'auto' | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'ltr' || normalized === 'rtl' || normalized === 'neutral' || normalized === 'auto') {
+    return normalized;
+  }
+  return undefined;
+}
