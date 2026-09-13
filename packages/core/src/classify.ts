@@ -30,3 +30,13 @@ export function classifyCharacter(character: string): Direction {
 export const UNICODE_DATA_VERSION = UNICODE_BIDI_VERSION;
 export const UNICODE_DATA_SHA256 = UNICODE_BIDI_SHA256;
 export const UNICODE_LETTER_DATA_SHA256 = UNICODE_GENERAL_CATEGORY_SHA256;
+
+/** Reports whether a Unicode code point has a strong RTL bidi class (R or AL). */
+export function isStrongRtlCodePoint(codePoint: number): boolean {
+  return classifyBidiStrongCharacter(String.fromCodePoint(codePoint)) === 'rtl';
+}
+
+/** Reports whether a Unicode code point has a strong LTR bidi class (L). */
+export function isStrongLtrCodePoint(codePoint: number): boolean {
+  return classifyBidiStrongCharacter(String.fromCodePoint(codePoint)) === 'ltr';
+}
