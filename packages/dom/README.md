@@ -49,6 +49,21 @@ the value BidiLens already owns, that same-value assignment is not observable
 through the DOM. Call `restoreBidi(root)` before that handoff; subsequent author
 styles are then entirely outside BidiLens ownership.
 
+## Cleanup boundaries (unreleased)
+
+`restoreBidi` and automatic RTL-to-LTR cleanup do not normalize the root's
+text nodes. Unrelated adjacent or empty text nodes remain intact, including
+selection anchors inside excluded editors. Removing generated wrappers may
+leave adjacent text nodes in the restored display content; logical text and
+rendering are unchanged. BidiLens does not promise to reconstruct the exact
+text-node objects it split while first isolating a managed message.
+
+Generated wrappers are owned by node identity in the current adapter instance,
+not by `data-bidilens-*` attributes alone. Author-supplied markup or clones from
+another instance are not automatically adopted or unwrapped. Use the same
+adapter instance for application and restoration, and disconnect an observer
+before final cleanup so it does not reapply direction to the restored content.
+
 ## Extending selectors (unreleased)
 
 `DEFAULT_BLOCK_SELECTOR` and `DEFAULT_CODE_SELECTOR` expose the adapter's

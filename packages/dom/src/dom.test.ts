@@ -10,6 +10,102 @@ import {
 } from './index.js';
 
 describe('DOM adapter', () => {
+  it.each(['element', 'document', 'fragment'] as const)(
+    'restoration without owned changes is a text-node no-op for a %s root', (kind) => {
+      const doc = document.implementation.createHTMLDocument('no-op');
+      const fragment = doc.createDocumentFragment();
+      const paragraph = doc.createElement('p');
+      const nodes = [doc.createTextNode('Hello'), doc.createTextNode(''), doc.createTextNode(' world')];
+      paragraph.append(...nodes);
+      const root = kind === 'document' ? doc : kind === 'fragment' ? fragment : doc.body;
+      (kind === 'fragment' ? fragment : doc.body).append(paragraph);
+
+      expect(restoreBidi(root)).toBe(0);
+      expect([...paragraph.childNodes]).toEqual(nodes);
+      for (const node of nodes) expect(node.parentNode).toBe(paragraph);
+      expect(nodes.map((node) => node.data)).toEqual(['Hello', '', ' world']);
+    }
+  );
+
+  it('restores an adjacent message without normalizing excluded editor nodes', () => {
+    document.body.innerHTML = '<main><p id="message">سلام page 97</p><div contenteditable="true"></div></main>';
+    const root = document.querySelector('main')!;
+    const editor = root.querySelector('div')!;
+    const nodes = [document.createTextNode('Hello'), document.createTextNode(''), document.createTextNode(' world')];
+    editor.append(...nodes);
+    const observer = new MutationObserver(() => {});
+    observer.observe(editor, { subtree: true, childList: true, characterData: true });
+    try {
+      applyBidi(root, { skipSelector: '[contenteditable]' });
+      expect(restoreBidi(root)).toBe(1);
+      expect(root.querySelector('bdi')).toBeNull();
+      expect(root.querySelector('p')?.textContent).toBe('سلام page 97');
+      expect([...editor.childNodes]).toEqual(nodes);
+      expect(observer.takeRecords()).toHaveLength(0);
+      expect(restoreBidi(root)).toBe(0);
+      expect(observer.takeRecords()).toHaveLength(0);
+    } finally {
+      observer.disconnect();
+    }
+  });
+
+  it('does not normalize host text nodes when an annotated block becomes LTR', () => {
+    document.body.innerHTML = '<main><p>سلام دنیا</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    applyBidi(root);
+    const span = document.createElement('span');
+    const nodes = [document.createTextNode('Hello'), document.createTextNode(' world')];
+    span.append(...nodes);
+    paragraph.replaceChildren(span);
+
+    expect(applyBidi(root).annotated).toBe(0);
+    expect(paragraph.hasAttribute('dir')).toBe(false);
+    expect(paragraph.firstChild).toBe(span);
+    expect([...span.childNodes]).toEqual(nodes);
+    expect(nodes.map((node) => node.data)).toEqual(['Hello', ' world']);
+  });
+
+  it('does not treat author-supplied generated markers as ownership', () => {
+    document.body.innerHTML = '<main><p>سلام <bdi data-bidilens-dom-generated dir="ltr">page</bdi> 97</p></main>';
+    const root = document.querySelector('main')!;
+    const authored = root.querySelector('bdi')!;
+    const child = authored.firstChild;
+    applyBidi(root);
+    expect(authored.parentElement).toBe(root.querySelector('p'));
+    expect(authored.firstChild).toBe(child);
+    expect(authored.textContent).toBe('page');
+    restoreBidi(root);
+    expect(authored.parentElement).toBe(root.querySelector('p'));
+    expect(authored.firstChild).toBe(child);
+  });
+
+  it('does not unwrap a clone of a generated isolate from another ownership session', () => {
+    document.body.innerHTML = '<main><p>سلام page</p><aside></aside></main>';
+    const root = document.querySelector('main')!;
+    applyBidi(root);
+    const generated = root.querySelector('bdi')!;
+    const clone = generated.cloneNode(true);
+    const aside = root.querySelector('aside')!;
+    aside.append(clone);
+
+    restoreBidi(root);
+    expect(root.querySelector('p bdi')).toBeNull();
+    expect(aside.firstChild).toBe(clone);
+    expect(clone.textContent).toBe('page');
+  });
+
+  it('tracks actual generated isolates even if their marker attributes are removed', () => {
+    document.body.innerHTML = '<p>سلام page</p>';
+    applyBidi(document.body);
+    const generated = document.querySelector('bdi')!;
+    generated.removeAttribute('data-bidilens-dom-generated');
+    generated.removeAttribute('data-bidilens-isolate');
+    restoreBidi(document.body);
+    expect(document.querySelector('bdi')).toBeNull();
+    expect(document.querySelector('p')?.textContent).toBe('سلام page');
+  });
+
   it('ends the old direction session when the host replaces its dir attribute', () => {
     document.body.innerHTML = '<main dir="ltr"><p dir="rtl">سلام دنیا</p></main>';
     const root = document.querySelector('main')!;
