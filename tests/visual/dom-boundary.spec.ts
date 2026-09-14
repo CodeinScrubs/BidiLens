@@ -11,6 +11,52 @@ const bundle = buildSync({
   globalName: 'BidiLensDom'
 }).outputFiles[0]!.text;
 
+test('restoration preserves excluded editor selection and unowned marker-like HTML', async ({ page }) => {
+  await page.setContent('<main><p id="message" style="text-align:left">سلام page 97</p><div id="editor" contenteditable="true"></div><aside><bdi data-bidilens-dom-generated dir="ltr">author content</bdi></aside></main>');
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const root = document.querySelector('main')!;
+    const message = root.querySelector<HTMLElement>('#message')!;
+    const editor = root.querySelector<HTMLElement>('#editor')!;
+    const authored = root.querySelector('aside bdi')!;
+    const nodes = ['Hello ', 'world', ''].map((text) => document.createTextNode(text));
+    editor.append(...nodes);
+    editor.focus();
+    const selection = window.getSelection()!;
+    selection.setBaseAndExtent(nodes[1]!, 0, nodes[1]!, 5);
+    const observer = new MutationObserver(() => {});
+    observer.observe(editor, { subtree: true, childList: true, characterData: true });
+    const annotated = api.applyBidi(root, { skipSelector: '[contenteditable]' }).annotated;
+    const correctedDirection = getComputedStyle(message).direction;
+    const correctedAlignment = getComputedStyle(message).textAlign;
+    const restored = api.restoreBidi(root);
+    const repeatedRestore = api.restoreBidi(root);
+    const mutations = observer.takeRecords().length;
+    observer.disconnect();
+    return {
+      annotated, correctedDirection, correctedAlignment, restored, repeatedRestore, mutations,
+      nodesUnchanged: editor.childNodes.length === nodes.length
+        && nodes.every((node, index) => editor.childNodes[index] === node),
+      values: nodes.map((node) => node.data),
+      selectionUnchanged: selection.anchorNode === nodes[1] && selection.focusNode === nodes[1]
+        && selection.anchorOffset === 0 && selection.focusOffset === 5,
+      selected: selection.toString(),
+      focusUnchanged: document.activeElement === editor,
+      authoredUnchanged: root.querySelector('aside bdi') === authored && authored.textContent === 'author content',
+      messageRestored: message.textContent === 'سلام page 97' && !message.hasAttribute('dir')
+        && message.querySelector('bdi') === null && message.style.textAlign === 'left'
+    };
+  });
+  expect(evidence).toEqual({
+    annotated: 1, correctedDirection: 'rtl', correctedAlignment: 'left',
+    restored: 1, repeatedRestore: 0, mutations: 0,
+    nodesUnchanged: true, values: ['Hello ', 'world', ''],
+    selectionUnchanged: true, selected: 'world', focusUnchanged: true,
+    authoredUnchanged: true, messageRestored: true
+  });
+});
+
 test('currency and ranges preserve internal order in left-aligned RTL prose', async ({ page }) => {
   await page.setContent('<main dir="ltr"><p style="text-align:left">هزینه $10 و صفحات 10-20 است.</p></main>');
   await page.addScriptTag({ content: bundle });
