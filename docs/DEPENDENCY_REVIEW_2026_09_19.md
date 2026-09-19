@@ -51,6 +51,13 @@ be reassessed using fresh toolchain evidence, not treated as permanently broken.
 
 ## Release boundary
 
+The first combined hosted run passed 24 of 25 checks, but the API 35 clipboard
+instrumentation test timed out twice. The follow-up adds explicit window-focus,
+selection, and copy-action assertions plus retained emulator diagnostics. These
+are test-harness changes, not a production rendering fix. The combined update
+must remain unmerged until the native test failure is understood and required
+checks pass; local JavaScript and browser results cannot substitute for it.
+
 At review start, the latest GitHub release is `v0.4.0`. The merged source
 hardening in PRs #147 and #148 and these dependency updates are not a new npm
 publication. Release preparation must consume pending changesets and pass the
