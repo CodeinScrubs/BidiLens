@@ -11,9 +11,9 @@
     "@bidilens/core": "workspace:*",
     "@bidilens/markdown": "workspace:*",
     "@bidilens/react": "workspace:*",
-    "markdown-it": "^15.0.1",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "markdown-it": "^15.0.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
@@ -21,6 +21,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.1",
-    "vite": "^8.2.2"
+    "vite": "^8.3.0"
   }
 }
