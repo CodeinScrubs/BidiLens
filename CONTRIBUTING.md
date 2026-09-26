@@ -32,6 +32,13 @@ pnpm run android:check
   :compose:connectedDebugAndroidTest
 ```
 
+Use an unlocked, responsive emulator or device with free internal storage. The
+clipboard test requires the test app's window to be foregrounded; Compose node
+focus alone does not grant Android clipboard access. CI retains Android UI
+reports for seven days and, on failure, captures the disposable emulator's
+window state, recent logs, and screenshot before shutdown. Investigate those
+artifacts before treating a timeout as a library regression or retrying it.
+
 Direction or isolation changes must update TypeScript, Kotlin, Swift, C#, and
 Rust together, with regression tests for every affected implementation. The
 generated Kotlin Unicode/corpus files are reproducibility outputs; do not edit

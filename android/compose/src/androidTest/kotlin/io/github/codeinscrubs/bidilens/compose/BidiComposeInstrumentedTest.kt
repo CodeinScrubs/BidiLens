@@ -1,21 +1,26 @@
 package io.github.codeinscrubs.bidilens.compose
 
+import android.view.View
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ClipboardManager
 import org.junit.Assert.assertEquals
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,15 +41,28 @@ class BidiComposeInstrumentedTest {
     fun selectableTextCopiesOriginalSourceIncludingAuthoredControls() {
         val source = "سلام \u200f page 97"
         var clipboard: ClipboardManager? = null
+        var hostView: View? = null
         compose.setContent {
             clipboard = LocalClipboardManager.current
+            hostView = LocalView.current
             BidiSelectableText(text = source, modifier = Modifier.testTag("selectable"))
         }
-        compose.onNodeWithTag("selectable").performClick()
-        compose.onNodeWithTag("selectable").performSemanticsAction(SemanticsActions.SetSelection) {
-            it(0, source.length, true)
+        // Compose node focus alone is insufficient: Android denies clipboard
+        // reads while the host window is still in the background.
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.runOnUiThread { hostView?.hasWindowFocus() == true }
         }
-        compose.onNodeWithTag("selectable").performSemanticsAction(SemanticsActions.CopyText) { it() }
+        compose.onNodeWithTag("selectable").performClick()
+        compose.onNodeWithTag("selectable").assertIsFocused()
+        compose.onNodeWithTag("selectable").performSemanticsAction(SemanticsActions.SetSelection) {
+            assertTrue("Source selection action must be accepted", it(0, source.length, true))
+        }
+        compose.onNodeWithTag("selectable").assert(
+            SemanticsMatcher.expectValue(SemanticsProperties.TextSelectionRange, TextRange(0, source.length)),
+        )
+        compose.onNodeWithTag("selectable").performSemanticsAction(SemanticsActions.CopyText) {
+            assertTrue("Copy action must be accepted", it())
+        }
         compose.waitUntil(timeoutMillis = 5_000) { clipboard?.getText()?.text == source }
         compose.runOnIdle { assertEquals(source, clipboard?.getText()?.text) }
     }

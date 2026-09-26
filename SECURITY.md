@@ -27,8 +27,12 @@ Pull requests, pushes to `main`, and weekly scheduled runs use CodeQL's
 Rust. Compiled Kotlin and Swift analysis uses explicit production-relevant
 build commands so those sources are extracted rather than silently skipped.
 The regular CI workflow also performs the pinned dependency audit and validates
-the generated CycloneDX SBOM. These automated gates supplement, but do not
-replace, independent security review or private vulnerability reports.
+the generated CycloneDX SBOM. A separate weekly dependency audit checks the
+committed npm lockfile against current advisories even when no code changes.
+It installs with lifecycle scripts disabled, fails on reported vulnerabilities
+or audit errors, and never updates or publishes packages. These automated gates
+supplement, but do not replace, independent security review or private
+vulnerability reports.
 
 ## Bidi security scope
 
