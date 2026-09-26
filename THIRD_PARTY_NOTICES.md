@@ -4,7 +4,10 @@
 
 BidiLens vendors `DerivedBidiClass-17.0.0.txt` and
 `DerivedGeneralCategory-17.0.0.txt` from the Unicode Character Database and
-generates runtime range tables from them.
+generates runtime range tables from them. Extended-grapheme tables and tests
+also use Unicode 17 `GraphemeBreakProperty.txt`, `DerivedCoreProperties.txt`,
+`emoji-data.txt`, and `GraphemeBreakTest.txt`; the vendored files retain their
+upstream headers. Exact upstream URLs and hashes are in `unicode/README.md`.
 
 Copyright © 1991–2025 Unicode, Inc. All rights reserved. Distributed under the
 Unicode Terms of Use. Unicode and the Unicode Logo are registered trademarks

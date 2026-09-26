@@ -145,10 +145,11 @@ export function validateBidiSnapshot(
     issues.push({ code: 'tag-mismatch', message: `Expected <${expected.tagName}>; received <${snapshot.tagName}>.` });
   }
 
-  if (exactIsolations && snapshot.isolations.length !== expectedIsolations.length) {
+  if (snapshot.isolations.length < expectedIsolations.length
+    || (exactIsolations && snapshot.isolations.length !== expectedIsolations.length)) {
     issues.push({
       code: 'isolation-count-mismatch',
-      message: `Expected ${expectedIsolations.length} isolation(s); received ${snapshot.isolations.length}.`
+      message: `Expected ${exactIsolations ? '' : 'at least '}${expectedIsolations.length} isolation(s); received ${snapshot.isolations.length}.`
     });
   }
   for (const [index, expectedIsolation] of expectedIsolations.entries()) {

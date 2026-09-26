@@ -1,5 +1,33 @@
 package io.github.codeinscrubs.bidilens.core
 
+import io.github.codeinscrubs.bidilens.core.generated.TechnicalCommands
+
+private val commandPrefix = Regex("""^([a-z]+)[ \t]+('[^']*'|"[^"]*"|[^ \t]+)""")
+private fun isRecognizableCommand(value: String): Boolean {
+    val match = commandPrefix.find(value) ?: return false
+    return TechnicalCommands.isCommandArgument(match.groupValues[1], match.groupValues[2])
+}
+
+private fun trimUrlSuffix(value: String): String {
+    val balance = IntArray(3)
+    for (character in value) {
+        val opening = "([{".indexOf(character)
+        val closing = ")]}".indexOf(character)
+        if (opening >= 0) balance[opening]++
+        if (closing >= 0) balance[closing]--
+    }
+    var end = value.length
+    while (end > 0) {
+        val character = value[end - 1]
+        if (character in technicalTrailingPunctuation) { end--; continue }
+        val closing = ")]}".indexOf(character)
+        if (closing < 0 || balance[closing] >= 0) break
+        balance[closing]++
+        end--
+    }
+    return value.substring(0, end)
+}
+
 private val DEFAULT_TECHNICAL_IDENTIFIERS = setOf(
     "ai", "api", "anthropic", "chatgpt", "claude", "cli", "codex", "copilot", "cursor",
     "deepseek", "electron", "gemini", "github", "gitlab", "grok", "huggingface",
@@ -278,17 +306,7 @@ fun findTechnicalTokenRanges(
     addMathRanges(text, ranges)
 
     for (match in Regex("\\b(?:https?|ftp)://[^\\s<>{}\"']+", RegexOption.IGNORE_CASE).findAll(text)) {
-        var value = trimTechnicalPunctuation(match.value)
-        for ((open, close) in listOf('(' to ')', '[' to ']', '{' to '}')) {
-            if (!value.endsWith(close)) continue
-            var balance = value.count { it == open } - value.count { it == close }
-            var end = value.length
-            while (balance < 0 && end > 0 && value[end - 1] == close) {
-                balance += 1
-                end -= 1
-            }
-            value = value.substring(0, end)
-        }
+        val value = trimUrlSuffix(match.value)
         ranges.addRange(text, match.range.first, match.range.first + value.length, TechnicalTokenKind.URL)
     }
 
@@ -322,9 +340,10 @@ fun findTechnicalTokenRanges(
         text,
         Regex(
             "\\b(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)" +
-                "(?:\\s+(?:--?[A-Za-z0-9_-]+|[@./\\\\A-Za-z0-9_:=+-]+|'[^'\\r\\n]*'|\"[^\"\\r\\n]*\"))+",
+                "(?:[ \\t]+(?:--?[A-Za-z0-9_-]+|[@./\\\\A-Za-z0-9_:=+-]+|'[^'\\r\\n]*'|\"[^\"\\r\\n]*\"))+",
         ),
         TechnicalTokenKind.COMMAND,
+        validate = ::isRecognizableCommand,
     )
     ranges.addMatches(
         text,

@@ -46,7 +46,9 @@ try {
   await writeFile(resolve(temporary, 'safe.ts'), 'const message = "سلام React";\n', 'utf8');
   const safe = await execute(temporary, {
     GITHUB_WORKSPACE: temporary,
-    GITHUB_ACTION_PATH: actionDirectory,
+    // A JavaScript action has no GITHUB_ACTION_PATH. Its bundled corpus must
+    // resolve from dist/index.cjs, not from the consumer's working directory.
+    GITHUB_ACTION_PATH: '',
     GITHUB_OUTPUT: output,
     INPUT_PATHS: 'safe.ts',
     INPUT_FORMAT: 'json'
@@ -69,6 +71,14 @@ try {
   assert(JSON.parse(dangerous.stdout).reports.length === 1, 'Built Action did not report the dangerous file.');
   assert(await readFile(resolve(temporary, 'danger.ts'), 'utf8') === dangerousSource,
     'Built Action mutated audited source.');
+  const corpus = await execute(temporary, {
+    GITHUB_WORKSPACE: temporary,
+    GITHUB_ACTION_PATH: '',
+    INPUT_COMMAND: 'test',
+    INPUT_FORMAT: 'json'
+  });
+  assert(corpus.code === 0, `Built Action default corpus probe failed: ${corpus.stdout}${corpus.stderr}`);
+  assert(JSON.parse(corpus.stdout).total > 0, 'Built Action could not find its bundled corpus.');
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }

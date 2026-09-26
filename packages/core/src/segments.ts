@@ -3,6 +3,7 @@ import { isolateText } from './controls.js';
 import { findTechnicalTokenRanges } from './detect.js';
 import { COMBINING_MARK_RANGES } from './generated/bidi-ranges.js';
 import { needsBidiIntervention } from './intervention.js';
+import { graphemeRangeExpander } from './graphemes.js';
 import type { BidiInterventionMode } from './intervention.js';
 import type { Direction, DirectionalRun, InlineIsolation } from './types.js';
 import { containsCodePoint } from './unicode-ranges.js';
@@ -78,7 +79,7 @@ function mergeAdjacent(runs: DirectionalRun[]): DirectionalRun[] {
 
 function trimNeutralBoundaries(text: string, start: number, end: number): { start: number; end: number } {
   while (start < end) {
-    const character = text.slice(start).match(/^./su)?.[0];
+    const character = String.fromCodePoint(text.codePointAt(start)!);
     // Combining marks are bidi-neutral, but they are part of the preceding
     // grapheme. Trimming one from an isolate changes the visible word (for
     // example Persian `مثلاً` became `مثلا` plus a detached tanwin), so marks
@@ -92,7 +93,10 @@ function trimNeutralBoundaries(text: string, start: number, end: number): { star
     start += character.length;
   }
   while (end > start) {
-    const character = text.slice(0, end).match(/.$/su)?.[0];
+    const last = text.charCodeAt(end - 1);
+    const before = text.charCodeAt(end - 2);
+    const width = last >= 0xdc00 && last <= 0xdfff && before >= 0xd800 && before <= 0xdbff ? 2 : 1;
+    const character = text.slice(end - width, end);
     const codePoint = character?.codePointAt(0);
     if (
       !character ||
@@ -102,6 +106,30 @@ function trimNeutralBoundaries(text: string, start: number, end: number): { star
     end -= character.length;
   }
   return { start, end };
+}
+
+function graphemeSafePlan(text: string, plans: PlannedIsolation[]): PlannedIsolation[] {
+  if (!plans.length) return plans;
+  const expand = graphemeRangeExpander(text);
+  const result: PlannedIsolation[] = [];
+  let conflictedEnd = -1;
+  for (const plan of plans) {
+    const { start, end } = expand(plan.start, plan.end);
+    if (start < conflictedEnd) { conflictedEnd = Math.max(conflictedEnd, end); continue; }
+    const previous = result.at(-1);
+    if (previous && start < previous.end && previous.direction !== plan.direction) {
+      // Never impose two incompatible directions on parts of one grapheme.
+      // Leave the entire conflicting cluster to the host Unicode renderer.
+      result.pop();
+      conflictedEnd = Math.max(previous.end, end);
+      continue;
+    }
+    if (previous && previous.direction === plan.direction && start <= previous.end) {
+      previous.end = Math.max(previous.end, end);
+      previous.text = text.slice(previous.start, previous.end);
+    } else result.push({ ...plan, start, end, text: text.slice(start, end) });
+  }
+  return result;
 }
 
 const HARD_FRAGMENT_SEPARATOR = /[,،;؛:!?؟|]/u;
@@ -261,7 +289,7 @@ export function planInlineIsolation(
   }));
 
   if (options.isolateOppositeRuns === false) {
-    return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
+    return attachSourceRanges(text, graphemeSafePlan(text, normalizeIsolationPlan(text, isolations)));
   }
 
   let technicalIndex = 0;
@@ -301,5 +329,5 @@ export function planInlineIsolation(
     }
   }
 
-  return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
+  return attachSourceRanges(text, graphemeSafePlan(text, normalizeIsolationPlan(text, isolations)));
 }

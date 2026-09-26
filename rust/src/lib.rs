@@ -61,6 +61,8 @@ pub struct AnalysisOptions {
     pub minimum_strong_characters: usize,
     pub majority_threshold: f64,
     pub exclude_technical_tokens: bool,
+    /// Explicit policy override. None preserves legacy strategy-aware defaults.
+    pub technical_token_exclusion: Option<bool>,
     pub technical_identifiers: Vec<String>,
     pub intervention: Intervention,
 }
@@ -74,6 +76,7 @@ impl Default for AnalysisOptions {
             minimum_strong_characters: 1,
             majority_threshold: 0.5,
             exclude_technical_tokens: true,
+            technical_token_exclusion: None,
             technical_identifiers: Vec::new(),
             intervention: Intervention::Auto,
         }
@@ -81,6 +84,19 @@ impl Default for AnalysisOptions {
 }
 
 impl AnalysisOptions {
+    /// Select an explicit exclusion policy, including in first-strong modes.
+    #[must_use]
+    pub fn with_technical_token_exclusion(mut self, exclude: bool) -> Self {
+        self.technical_token_exclusion = Some(exclude);
+        self
+    }
+
+    fn excludes_technical_tokens(&self) -> bool {
+        self.technical_token_exclusion.unwrap_or(
+            self.exclude_technical_tokens && self.strategy == DetectionStrategy::ContentMajority,
+        )
+    }
+
     /// Rejects ambiguous or nonsensical host configuration.
     pub fn validate(&self) -> Result<(), OptionsError> {
         if self.inherited_direction == Direction::Neutral {
@@ -288,7 +304,25 @@ fn count_strong(text: &str, options: &AnalysisOptions, exclude_technical: bool) 
     let mut counts = StrongCharacterCounts::default();
     let mut first_strong = Direction::Neutral;
     let mut token_index = 0;
+    let mut isolate_depth: usize = 0;
     for (byte_index, character) in text.char_indices() {
+        if options.strategy == DetectionStrategy::StrictUax9 {
+            match character {
+                '\n' | '\r' | '\u{85}' | '\u{1c}' | '\u{1d}' | '\u{1e}' | '\u{2029}' => {
+                    isolate_depth = 0
+                }
+                '\u{2066}' | '\u{2067}' | '\u{2068}' => {
+                    isolate_depth += 1;
+                    continue;
+                }
+                '\u{2069}' => {
+                    isolate_depth = isolate_depth.saturating_sub(1);
+                    continue;
+                }
+                _ if isolate_depth > 0 => continue,
+                _ => {}
+            }
+        }
         while technical_tokens
             .get(token_index)
             .is_some_and(|token| byte_index >= token.byte_range.end)
@@ -384,8 +418,7 @@ fn raw_first_strong(text: &str) -> Direction {
 /// Detects semantic base direction without rewriting the input.
 pub fn detect_direction(text: &str, options: &AnalysisOptions) -> Result<Direction, OptionsError> {
     options.validate()?;
-    let exclude =
-        options.exclude_technical_tokens && options.strategy == DetectionStrategy::ContentMajority;
+    let exclude = options.excludes_technical_tokens();
     Ok(direction_from_counts(
         &count_strong(text, options, exclude),
         options,
@@ -414,8 +447,7 @@ pub fn needs_bidi_intervention(text: &str, options: &AnalysisOptions) -> bool {
 /// Produces immutable block analysis, inline isolation metadata, and security findings.
 pub fn analyze(text: &str, options: &AnalysisOptions) -> Result<Analysis, OptionsError> {
     options.validate()?;
-    let exclude =
-        options.exclude_technical_tokens && options.strategy == DetectionStrategy::ContentMajority;
+    let exclude = options.excludes_technical_tokens();
     let result = count_strong(text, options, exclude);
     let direction = direction_from_counts(&result, options);
     let mut raw_options = options.clone();
@@ -715,7 +747,7 @@ pub fn plan_inline_isolation(
     if !needs_bidi_intervention(text, &contextual) {
         return Ok(Vec::new());
     }
-    let technical = if options.exclude_technical_tokens {
+    let technical = if options.excludes_technical_tokens() {
         find_technical_token_ranges(text, &options.technical_identifiers)
     } else {
         Vec::new()

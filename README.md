@@ -59,6 +59,11 @@ or a project-wide RTL migration.
 Maven Central (`0.1.2`). Swift/iOS, .NET/Windows, and Rust remain source-level
 integrations with separate validation limits; they are not registry releases.
 
+The [current audit repair ledger](docs/audit-repair-status.md) separates newer
+source fixes from those published artifacts and records the remaining native
+paragraph, grapheme, and platform-validation gaps. Audit-branch source changes
+must not be assumed present in npm `0.4.0` or Maven `0.1.2`.
+
 <details>
 <summary>Release provenance and platform validation details</summary>
 

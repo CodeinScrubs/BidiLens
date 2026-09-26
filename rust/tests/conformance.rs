@@ -9,6 +9,108 @@ use bidilens_core::{
 use serde::Deserialize;
 
 #[test]
+fn explicit_exclusion_is_honored_in_first_strong_modes() {
+    for strategy in [
+        DetectionStrategy::FirstStrong,
+        DetectionStrategy::StrictUax9,
+    ] {
+        let automatic = AnalysisOptions {
+            strategy,
+            ..AnalysisOptions::default()
+        };
+        assert_eq!(
+            detect_direction("React فارسی", &automatic),
+            Ok(Direction::Ltr)
+        );
+        assert_eq!(
+            detect_direction(
+                "React فارسی",
+                &automatic.clone().with_technical_token_exclusion(true)
+            ),
+            Ok(Direction::Rtl)
+        );
+        assert_eq!(
+            detect_direction(
+                "React فارسی",
+                &automatic.with_technical_token_exclusion(false)
+            ),
+            Ok(Direction::Ltr)
+        );
+    }
+}
+
+#[test]
+fn commands_are_conservative_and_urls_trim_mixed_closers() {
+    for source in [
+        "go is a verb that means رفتن.",
+        "python is a language for humans زبان.",
+        "git is a great tool ابزار.",
+    ] {
+        assert!(
+            !find_technical_token_ranges(source, &[])
+                .iter()
+                .any(|r| r.kind == bidilens_core::TechnicalTokenKind::Command)
+        );
+    }
+    for source in [
+        "npm install",
+        "pnpm run test",
+        "git status",
+        "go run main.go",
+        "python -m pip",
+        "node script.js",
+    ] {
+        assert!(
+            find_technical_token_ranges(source, &[])
+                .iter()
+                .any(|r| r.kind == bidilens_core::TechnicalTokenKind::Command)
+        );
+    }
+    for (source, expected) in [
+        ("برو https://example.com/foo)]!", "https://example.com/foo"),
+        (
+            "برو https://example.com/foo(bar))].",
+            "https://example.com/foo(bar)",
+        ),
+    ] {
+        assert_eq!(
+            find_technical_token_ranges(source, &[])
+                .iter()
+                .find(|r| r.kind == bidilens_core::TechnicalTokenKind::Url)
+                .unwrap()
+                .text,
+            expected
+        );
+    }
+}
+
+#[test]
+fn strict_uax9_skips_isolates_and_resets_at_paragraph_boundaries() {
+    let options = AnalysisOptions {
+        strategy: DetectionStrategy::StrictUax9,
+        ..AnalysisOptions::default()
+    };
+    for text in [
+        "\u{2067}עברית\u{2069} ordinary",
+        "\u{2067}א\u{2066}ABC\u{2069}ב\u{2069} ordinary",
+    ] {
+        assert_eq!(detect_direction(text, &options), Ok(Direction::Ltr));
+    }
+    assert_eq!(
+        detect_direction("\u{2067}עברית ordinary", &options),
+        Ok(Direction::Neutral)
+    );
+    for separator in [
+        "\n", "\r\n", "\r", "\u{85}", "\u{1c}", "\u{1d}", "\u{1e}", "\u{2029}",
+    ] {
+        assert_eq!(
+            detect_direction(&format!("\u{2067}עברית{separator}ordinary"), &options),
+            Ok(Direction::Ltr)
+        );
+    }
+}
+
+#[test]
 fn amount_range_path_and_math_boundaries() {
     for token in [
         "$10",

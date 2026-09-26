@@ -8,13 +8,20 @@ strict strong-character behavior, while pinned general categories identify
 natural-language letters and `Mn`/`Mc`/`Me` combining marks without depending
 on a host runtime's Unicode version.
 
-Unicode 17 remains the reproducible release baseline. Unicode 18.0.0 is still
-the Consortium's prepublication/beta line as of 2026-08-23, with a planned
-September 2026 final release; BidiLens deliberately does not ship beta UCD
-data. After the final data is published, upgrade through the pinned-file and
-checksum review process below rather than silently following host-runtime
-Unicode changes. See the [Unicode 18 beta notice](https://www.unicode.org/versions/beta-18.0.0.html)
-for the upstream status.
+Unicode 17 remains the reproducible release baseline; it is not a claim to
+track the latest Unicode release. Upgrade through the pinned-file, checksum,
+native-port, and conformance review process below rather than silently
+following host-runtime Unicode changes.
+
+Inline isolation additionally uses Unicode 17 extended grapheme boundaries
+([UAX #29 revision 47](https://www.unicode.org/reports/tr29/tr29-47.html)).
+`scripts/generate-grapheme-data.ts` pins SHA-256 hashes for
+`GraphemeBreakProperty`, `DerivedCoreProperties` (Indic conjunct properties),
+`emoji-data` (extended pictographic properties), and `GraphemeBreakTest`.
+The official grapheme test vectors run in the core test suite. Normal
+generation and checks are offline. An explicit `--download` on this generator
+fetches only these exact pinned files and rejects any checksum mismatch before
+writing each file; it never updates version or checksum pins automatically.
 
 The source file and generated table are checked into the repository so normal
 builds and runtime analysis are offline. To verify them:

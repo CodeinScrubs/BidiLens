@@ -1,6 +1,7 @@
 import { DEFAULT_TECHNICAL_IDENTIFIERS, countStrongCharacters, detectDirection } from './detect.js';
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
 import { boundedNumberOption } from './options.js';
+import { isCommandArgument } from './commands.js';
 import {
   DEFAULT_PARAGRAPH_SEPARATOR_SOURCE,
   isDefaultParagraphBoundaryCharacter
@@ -192,6 +193,7 @@ export class BidiStream {
   #quotedCommandNestedCommand = false;
   #quotedCommandNestedArgumentPrefix = '';
   #quotedCommandNestedArgumentUrl = false;
+  #quotedCommandNestedArgumentHasSyntax = false;
   #policyCommandInUnquotedArgument = false;
   #policyCommandAfterQuotedArgument = false;
   #policyCommandArgumentIsFlag = false;
@@ -201,6 +203,10 @@ export class BidiStream {
   #policyCommandTechnical = false;
   #policyCommandStarterLtr = 0;
   #policyCommandStarterRtl = 0;
+  #policyCommandExecutable = '';
+  #policyCommandPendingArgument = false;
+  #policyCommandPreventLock = false;
+  #policyCommandPriorFirstStrong: Direction = 'neutral';
   #requiresExactLiveAnalysis = false;
   #exactLiveAnalysisDue = false;
   #policyTechnicalContinuation: 'command-url' | null = null;
@@ -427,6 +433,17 @@ export class BidiStream {
         this.#direction = this.#rawFirstStrong;
         this.#locked = this.#direction !== 'neutral';
       }
+      return;
+    }
+    if (this.#excludeTechnicalTokens === false) {
+      const actual = classifyCharacter(character);
+      if (actual !== 'neutral') {
+        this.#strongCharacters += 1;
+        if (actual === 'ltr') this.#policyLtr += 1;
+        else this.#policyRtl += 1;
+        if (this.#policyFirstStrong === 'neutral') this.#policyFirstStrong = actual;
+      }
+      this.#refreshPolicyDirection();
       return;
     }
     this.#policyCharacterEscaped = this.#policyEscapeNext;
@@ -761,7 +778,8 @@ export class BidiStream {
   #reconcilePolicyToken(): { ltr: number; rtl: number; firstStrong: Direction } | null {
     if (!this.#policyToken) return null;
     let counts: { ltr: number; rtl: number; firstStrong: Direction };
-    if (this.#policyTokenLtr + this.#policyTokenRtl === 0) {
+    if ((this.#policyMode === 'command' && this.#policyCommandPendingArgument && this.#policyCommandTechnical)
+      || this.#policyTokenLtr + this.#policyTokenRtl === 0) {
       counts = { ltr: 0, rtl: 0, firstStrong: 'neutral' };
     } else if (this.#policyTokenIdentifierShape) {
       const technical = this.#policyTokenTrailingSeparator
@@ -936,7 +954,7 @@ export class BidiStream {
       this.#direction = hasMinimumEvidence ? candidate : this.#fallback;
       // Only committed lexical evidence is irreversible. A partial ASCII word
       // can still become a recognized identifier as more characters arrive.
-      this.#locked = hasMinimumEvidence && this.#policyFirstStrong !== 'neutral';
+      this.#locked = hasMinimumEvidence && this.#policyFirstStrong !== 'neutral' && !this.#policyCommandPreventLock;
       return;
     }
     if (this.#strategy === 'majority') {
@@ -1022,7 +1040,9 @@ export class BidiStream {
       this.#resetPolicyStructure();
       if (COMMAND_STARTERS.has(trailingTechnicalWord)) {
         this.#policyMode = 'command';
-        this.#policyCommandTechnical = true;
+        this.#policyCommandExecutable = trailingTechnicalWord;
+        this.#policyCommandPendingArgument = true;
+        this.#policyCommandPriorFirstStrong = this.#policyFirstStrong;
       }
       this.#processPolicyCharacter(character);
       return;
@@ -1070,15 +1090,22 @@ export class BidiStream {
       }
       if (/\s/u.test(character)) {
         const commandMatch = /[A-Za-z]+$/u.exec(this.#policyToken);
-        const commandStarter = commandMatch?.[0].toLowerCase();
+        const commandStarter = commandMatch?.[0];
         const commandStart = commandMatch?.index ?? -1;
         const command = commandStarter !== undefined
           && COMMAND_STARTERS.has(commandStarter)
           && (commandStart === 0 || !/[A-Za-z0-9_]/u.test(this.#policyToken[commandStart - 1]!));
+        const priorFirstStrong = this.#policyFirstStrong;
+        const preventLock = command && !this.#locked;
+        if (preventLock) this.#policyCommandPreventLock = true;
         const counts = this.#completePolicyToken();
         if (command && counts) {
           this.#resetPolicyStructure();
           this.#policyMode = 'command';
+          this.#policyCommandExecutable = commandStarter;
+          this.#policyCommandPendingArgument = true;
+          this.#policyCommandPreventLock = preventLock;
+          this.#policyCommandPriorFirstStrong = priorFirstStrong;
           const starterCounts = countStrongCharacters(commandStarter, {
             strategy: 'content-majority',
             technicalIdentifiers: this.#technicalIdentifiers
@@ -1121,6 +1148,53 @@ export class BidiStream {
     }
 
     if (this.#policyMode === 'command') {
+      if (this.#policyCommandPendingArgument && this.#policyCommandQuote === null) {
+        if (character === '=' && this.#policyToken.startsWith('-') && this.#policyCommandTechnical) {
+          this.#resetPolicyToken();
+          this.#resetPolicyStructure();
+          this.#processPolicyCharacter(character);
+          return;
+        }
+        if (/[@./\\A-Za-z0-9_:=+-]/u.test(character)) {
+          this.#policyToken += character;
+          this.#recordPolicyCharacter(character, 'token');
+          this.#reconcilePolicyToken();
+          const recognized = isCommandArgument(this.#policyCommandExecutable, this.#policyToken);
+          if (recognized) {
+            this.#policyLtr -= this.#policyTokenContributionLtr;
+            this.#policyRtl -= this.#policyTokenContributionRtl;
+            this.#policyTokenContributionLtr = 0;
+            this.#policyTokenContributionRtl = 0;
+            this.#activatePolicyCommand();
+            this.#policyFirstStrong = this.#policyCommandPriorFirstStrong;
+          } else if (this.#policyCommandTechnical) {
+            this.#policyLtr += this.#policyCommandStarterLtr;
+            this.#policyRtl += this.#policyCommandStarterRtl;
+            this.#policyCommandTechnical = false;
+            this.#policyFirstStrong = this.#policyCommandPriorFirstStrong !== 'neutral'
+              ? this.#policyCommandPriorFirstStrong : 'ltr';
+          }
+          this.#refreshPolicyDirection(this.#policyTokenFirstStrong);
+          return;
+        }
+        if (!this.#policyToken && /[ \t]/u.test(character)) return;
+        if (!this.#policyToken && (character === "'" || character === '"')) {
+          this.#policyCommandPendingArgument = false;
+          // A quoted first argument is recognized only after its closing quote.
+        } else {
+          const recognized = this.#policyCommandTechnical;
+          if (recognized) this.#resetPolicyToken();
+          else this.#completePolicyToken();
+          this.#policyCommandPendingArgument = false;
+          this.#policyCommandPreventLock = false;
+          if (!recognized) {
+            this.#resetPolicyStructure();
+            this.#processPolicyCharacter(character);
+            this.#refreshPolicyDirection();
+            return;
+          }
+        }
+      }
       if (isDefaultParagraphBoundaryCharacter(character)) {
         this.#commitProvisionalPolicyStructure();
         return;
@@ -1137,6 +1211,7 @@ export class BidiStream {
           this.#activatePolicyCommand();
           this.#policyCommandQuote = null;
           this.#policyCommandAfterQuotedArgument = true;
+          this.#policyCommandPreventLock = false;
           this.#exactLiveAnalysisDue = true;
         } else {
           const technicalWord = this.#advanceQuotedCommandClassifier(character);
@@ -1443,6 +1518,7 @@ export class BidiStream {
       if (/\s/u.test(character)) {
         this.#quotedCommandNestedArgumentPrefix = '';
         this.#quotedCommandNestedArgumentUrl = false;
+        this.#quotedCommandNestedArgumentHasSyntax = false;
         return true;
       }
       if (commandArgumentCharacter) {
@@ -1454,6 +1530,16 @@ export class BidiStream {
         }
         if (this.#quotedCommandNestedArgumentPrefix.length < 12) {
           this.#quotedCommandNestedArgumentPrefix += character;
+          // A nested command is provisional until its bounded first argument
+          // becomes recognizable (e.g. `go t` is prose evidence, `go test` is not).
+          this.#exactLiveAnalysisDue = true;
+        }
+        // Recognizable syntax can appear after the bounded verb/URL prefix.
+        // Reconcile once at that transition, not at every later character of a
+        // long stable path (which would repeatedly rescan the full paragraph).
+        if (!this.#quotedCommandNestedArgumentHasSyntax && /[.@/:\\=]/u.test(character)) {
+          this.#quotedCommandNestedArgumentHasSyntax = true;
+          this.#exactLiveAnalysisDue = true;
         }
         if (/^(?:https?|ftp):\/\//iu.test(this.#quotedCommandNestedArgumentPrefix)) {
           this.#quotedCommandNestedArgumentUrl = true;
@@ -1470,6 +1556,7 @@ export class BidiStream {
         this.#quotedCommandNestedCommand = true;
         this.#quotedCommandNestedArgumentPrefix = character;
         this.#quotedCommandNestedArgumentUrl = false;
+        this.#quotedCommandNestedArgumentHasSyntax = /[.@/:\\=]/u.test(character);
         this.#hadAdoptionEvidence = true;
         this.#exactLiveAnalysisDue = true;
         return true;
@@ -1663,6 +1750,7 @@ export class BidiStream {
     this.#quotedCommandNestedCommand = false;
     this.#quotedCommandNestedArgumentPrefix = '';
     this.#quotedCommandNestedArgumentUrl = false;
+    this.#quotedCommandNestedArgumentHasSyntax = false;
     this.#policyCommandInUnquotedArgument = false;
     this.#policyCommandAfterQuotedArgument = false;
     this.#policyCommandArgumentIsFlag = false;
@@ -1672,6 +1760,10 @@ export class BidiStream {
     this.#policyCommandTechnical = false;
     this.#policyCommandStarterLtr = 0;
     this.#policyCommandStarterRtl = 0;
+    this.#policyCommandExecutable = '';
+    this.#policyCommandPendingArgument = false;
+    this.#policyCommandPreventLock = false;
+    this.#policyCommandPriorFirstStrong = 'neutral';
   }
 }
 

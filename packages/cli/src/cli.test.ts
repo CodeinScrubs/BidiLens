@@ -33,6 +33,25 @@ describe('BidiLens CLI', () => {
     return { code, stdout, stderr };
   }
 
+  it('declares its Unicode newline model and encodes SARIF artifact URI segments', async () => {
+    const file = 'گزارش #100%.txt';
+    await writeFile(join(cwd, file), 'one\r\ntwo\u0085three\u2028\u202eX');
+    const result = await invoke(['audit', file, '--sarif']);
+    const run = JSON.parse(result.stdout).runs[0];
+    expect(run.newlineSequences).toEqual(expect.arrayContaining(['\r\n', '\u0085', '\u2028', '\u2029']));
+    expect(run.results[0].locations[0].physicalLocation.artifactLocation.uri).toBe(encodeURIComponent(file));
+    expect(run.results[0].locations[0].physicalLocation.region).toMatchObject({ startLine: 4, startColumn: 1 });
+  });
+
+  it('indexes dense findings once rather than rescanning their source prefixes', async () => {
+    const file = 'dense.txt';
+    await writeFile(join(cwd, file), 'x\u202e\n'.repeat(8_000));
+    const started = performance.now();
+    const result = await invoke(['audit', file, '--sarif']);
+    expect(JSON.parse(result.stdout).runs[0].results.length).toBeGreaterThan(8_000);
+    expect(performance.now() - started).toBeLessThan(3_000);
+  });
+
   it('renders LTR-only input without BidiLens-specific markup', async () => {
     const source = 'React is a very popular JavaScript library.';
     const result = await invoke(['render', '--text', source, '--json']);

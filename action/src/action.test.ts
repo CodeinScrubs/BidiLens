@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -72,6 +72,104 @@ describe('BidiLens GitHub Action', () => {
       INPUT_CORPUS: 'fixtures/custom.json'
     });
     expect(buildCliArguments(inputs)).toContain('fixtures/custom.json');
+  });
+
+  it('finds its packaged corpus without the composite-only GITHUB_ACTION_PATH', async () => {
+    const directory = await temporaryDirectory();
+    const result = await runAction({ cwd: directory,
+      env: { INPUT_COMMAND: 'test', INPUT_FORMAT: 'json', GITHUB_WORKSPACE: directory },
+      log: () => undefined, error: () => undefined });
+    expect(result.exitCode).toBe(0);
+    expect(JSON.parse(result.stdout).total).toBeGreaterThan(100);
+  });
+
+  it('does not overwrite a previous SARIF report after a CLI input failure', async () => {
+    const directory = await temporaryDirectory();
+    const report = resolve(directory, 'bidilens.sarif');
+    await writeFile(report, 'previous report');
+    const result = await runAction({ cwd: directory,
+      env: { INPUT_PATHS: 'missing.ts', INPUT_FORMAT: 'sarif' },
+      log: () => undefined, error: () => undefined });
+    expect(result.exitCode).toBe(1);
+    expect(result.report).toBe('');
+    expect(await readFile(report, 'utf8')).toBe('previous report');
+  });
+
+  it.for(['file', 'parent'] as const)('rejects a linked SARIF %s without touching outside data', async (kind, context) => {
+    const directory = await temporaryDirectory();
+    const outside = await temporaryDirectory();
+    const sentinel = resolve(outside, 'result.sarif');
+    await writeFile(sentinel, 'outside sentinel');
+    await writeFile(resolve(directory, 'safe.txt'), 'safe');
+    const target = kind === 'parent' ? 'linked/result.sarif' : 'result.sarif';
+    try {
+      await symlink(kind === 'parent' ? outside : sentinel,
+        resolve(directory, kind === 'parent' ? 'linked' : target),
+        kind === 'parent' ? 'junction' : 'file');
+    } catch (error) {
+      if (process.platform === 'win32' && (error as NodeJS.ErrnoException).code === 'EPERM') {
+        context.skip(); // Windows file symlinks require Developer Mode or privilege; Linux CI covers this case.
+        return;
+      }
+      throw error;
+    }
+    await expect(runAction({ cwd: directory,
+      env: { INPUT_PATHS: 'safe.txt', INPUT_FORMAT: 'sarif', 'INPUT_SARIF-FILE': target },
+      log: () => undefined, error: () => undefined })).rejects.toThrow(/link|workspace/iu);
+    expect(await readFile(sentinel, 'utf8')).toBe('outside sentinel');
+  });
+
+  it('replaces a hard-linked report atomically without overwriting its other link', async () => {
+    const directory = await temporaryDirectory();
+    const outside = await temporaryDirectory();
+    const sentinel = resolve(outside, 'result.sarif');
+    await writeFile(sentinel, 'outside sentinel');
+    await link(sentinel, resolve(directory, '..report.sarif'));
+    await writeFile(resolve(directory, 'safe.txt'), 'safe');
+    const result = await runAction({ cwd: directory,
+      env: { INPUT_PATHS: 'safe.txt', INPUT_FORMAT: 'sarif', 'INPUT_SARIF-FILE': '..report.sarif' },
+      log: () => undefined, error: () => undefined });
+    expect(result.report).toBe('..report.sarif');
+    expect(JSON.parse(await readFile(resolve(directory, result.report), 'utf8')).version).toBe('2.1.0');
+    expect(await readFile(sentinel, 'utf8')).toBe('outside sentinel');
+  });
+
+  it.skipIf(process.platform === 'win32')('keeps literal POSIX backslashes in the checked parent path', async () => {
+    const directory = await temporaryDirectory();
+    const outside = await temporaryDirectory();
+    const sentinel = resolve(outside, 'result.sarif');
+    await writeFile(sentinel, 'outside sentinel');
+    await writeFile(resolve(directory, 'safe.txt'), 'safe');
+    await symlink(outside, resolve(directory, 'linked\\dir'), 'dir');
+    await expect(runAction({ cwd: directory,
+      env: { INPUT_PATHS: 'safe.txt', INPUT_FORMAT: 'sarif', 'INPUT_SARIF-FILE': 'linked\\dir/result.sarif' },
+      log: () => undefined, error: () => undefined })).rejects.toThrow(/link/iu);
+    expect(await readFile(sentinel, 'utf8')).toBe('outside sentinel');
+  });
+
+  it.skipIf(process.platform !== 'win32')('accepts a case-insensitive alias of a real report directory', async () => {
+    const directory = await temporaryDirectory();
+    await mkdir(resolve(directory, 'Reports'));
+    await writeFile(resolve(directory, 'safe.txt'), 'safe');
+    const result = await runAction({ cwd: directory,
+      env: { INPUT_PATHS: 'safe.txt', INPUT_FORMAT: 'sarif', 'INPUT_SARIF-FILE': 'reports/result.sarif' },
+      log: () => undefined, error: () => undefined });
+    expect(result.exitCode).toBe(0);
+    expect(JSON.parse(await readFile(resolve(directory, 'Reports/result.sarif'), 'utf8')).version).toBe('2.1.0');
+  });
+
+  it('suspends runner commands around both untrusted output streams', async () => {
+    const directory = await temporaryDirectory();
+    const logs: string[] = [];
+    const errors: string[] = [];
+    await runAction({ cwd: directory,
+      env: { GITHUB_ACTIONS: 'true', INPUT_PATHS: '::warning::untrusted.ts' },
+      log: (value) => logs.push(value), error: (value) => errors.push(value) });
+    expect(logs[0]).toMatch(/^::stop-commands::bidilens_/u);
+    const token = logs[0]!.slice('::stop-commands::'.length);
+    expect(logs.at(-1)).toBe(`::${token}::`);
+    expect(logs.join('\n')).toContain('::warning::untrusted.ts');
+    expect(errors).toEqual([]);
   });
 
   it.each([

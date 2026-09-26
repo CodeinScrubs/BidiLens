@@ -18,6 +18,7 @@ benchmarks/results/*.json
 .env.*
 !.env.example
 android/.gradle/
+android/.kotlin/
 android/**/.gradle/
 android/**/build/
 android/local.properties

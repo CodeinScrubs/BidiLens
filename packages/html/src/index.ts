@@ -44,8 +44,8 @@ const SAFE_CONTAINER_TAGS = new Set([
 ]);
 
 export function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/gu, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  return value.replace(/[&<>"'\r]/gu, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '\r': '&#13;'
   }[character] ?? character));
 }
 

@@ -55,6 +55,15 @@ display helper exists for plain-text boundaries that lack semantic markup.
 
 ## Direction is not alignment
 
+Technical-token exclusion defaults to content-majority only. Use
+`options.with_technical_token_exclusion(true)` to explicitly exclude tokens in
+first-strong modes, or `false` to include them. This optional override takes
+precedence over the legacy `exclude_technical_tokens` Boolean; the legacy
+Boolean still disables automatic exclusion when false. Existing struct updates
+using `..AnalysisOptions::default()` remain valid. Exhaustive struct literals
+need the new `technical_token_exclusion: None` field (this source-distributed
+prestable crate has not been published to crates.io).
+
 `analysis.direction` is the paragraph's semantic base. Physical placement is a
 separate host decision. An application may keep Persian text physically aligned
 left while applying an RTL paragraph base:

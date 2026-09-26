@@ -100,6 +100,15 @@ it is not an end-to-end BidiLens speedup and is not used as a product claim.
 - release checks enforce aggregate emitted-JavaScript budgets, including
   code-split chunks.
 
+The September audit adds pinned extended-grapheme data and rich-formatting
+ownership/selection handling. It deliberately increases the complete facade
+size: the measured core, DOM and Markdown artifacts were approximately
+139/25/84 KiB raw and 29.3/5.6/16.4 KiB gzip in the 2026-09-27 artifact check.
+Release gates bound both aggregate raw bytes (145/28/88 KiB) and gzip bytes
+(32/7/18 KiB) for those packages. These are full emitted facades, not a claim
+about a tree-shaken application's final bundle. The July timing tables above
+are historical snapshots, not measurements of this audit branch.
+
 The complete Unicode 17 paragraph-separator set (CR, LF, CRLF, NEL,
 U+001C–U+001E, and U+2029) is recognized incrementally. An arbitrary custom
 paragraph-separator regular expression is buffered and evaluated once by

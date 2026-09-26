@@ -66,6 +66,8 @@ data class BidiParagraphAnalysis(
     val firstStrong: BidiDirection,
     val confidence: Double,
     val counts: StrongCharacterCounts,
+    /** Concrete paragraph base, including fallback/inherited direction for neutral text. */
+    val resolvedDirection: BidiDirection = direction,
 )
 
 data class BidiAnalysis(

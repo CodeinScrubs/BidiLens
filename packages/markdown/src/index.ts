@@ -3,13 +3,13 @@ import type { Content, Root as MdastRoot } from 'mdast';
 import {
   detectDirection,
   needsBidiIntervention,
-  planInlineIsolation,
   type BidiInterventionMode,
   type DetectionOptions,
   type Direction
 } from '@bidilens/core';
 import { visit } from 'unist-util-visit';
 import { proseText } from './prose.js';
+import { isolateForest, type InlineNode } from './inline-forest.js';
 import {
   BidiMarkdownStream,
   analyzeConfiguredBidiMarkdown
@@ -55,6 +55,10 @@ const HAST_BLOCK_TAGS = new Set([
 
 const HAST_CODE_TAGS = new Set(['pre', 'code', 'kbd', 'samp', 'var']);
 
+// Require a non-whitespace value so whitespace cannot backtrack around the
+// normal-value exclusion. Unknown authored values remain conservative barriers.
+const AUTHORED_BIDI_STYLE = /(?:^|;)\s*unicode-bidi\s*:\s*(?!normal\b)\S/iu;
+
 type MdastBidiData = NonNullable<(Content | MdastRoot)['data']> & {
   hProperties?: Record<string, unknown>;
 };
@@ -70,7 +74,7 @@ type MdastMathNode = {
 type ExtendedMdastBidiNode = MdastBidiNode | MdastMathNode;
 
 function mdastText(node: ExtendedMdastBidiNode): string {
-  if (node.type === 'code' || node.type === 'inlineCode' || node.type === 'math' || node.type === 'inlineMath') return '';
+  if (node.type === 'code' || node.type === 'inlineCode' || node.type === 'math' || node.type === 'inlineMath' || node.type === 'html') return '';
   if ('value' in node && typeof node.value === 'string') return node.value;
   if ('children' in node && Array.isArray(node.children)) {
     return node.children.map((child) => mdastText(child as ExtendedMdastBidiNode)).join('');
@@ -186,42 +190,24 @@ function isolateHastChildren(
   intervention: BidiInterventionMode | undefined,
   technicalIdentifiers: readonly string[] | undefined
 ): void {
-  const children: ElementContent[] = [];
-  for (const child of element.children) {
-    if (child.type === 'text') {
-      const plans = planInlineIsolation(child.value, direction, { intervention, technicalIdentifiers });
-      let cursor = 0;
-      for (const plan of plans) {
-        if (cursor < plan.start) children.push({ type: 'text', value: child.value.slice(cursor, plan.start) });
-        children.push({
-          type: 'element',
-          tagName: 'bdi',
-          properties: {
-            dir: plan.direction,
-            'data-bidilens-isolate': '',
-            'data-bidilens-kind': plan.kind
-          },
-          children: [{ type: 'text', value: plan.text }]
-        });
-        cursor = plan.end;
-      }
-      if (plans.length) {
-        if (cursor < child.value.length) children.push({ type: 'text', value: child.value.slice(cursor) });
-      } else children.push(child);
-      continue;
-    }
-    if (child.type === 'element'
-      && !HAST_BLOCK_TAGS.has(child.tagName)
-      && !HAST_CODE_TAGS.has(child.tagName)
-      && child.tagName !== 'bdi'
-      && child.tagName !== 'script'
-      && child.tagName !== 'style'
-      && child.tagName !== 'textarea') {
-      isolateHastChildren(child, direction, intervention, technicalIdentifiers);
-    }
-    children.push(child);
-  }
-  element.children = children;
+  const project = (node: ElementContent): InlineNode<ElementContent> => {
+    if (node.type === 'text') return { value: node, text: node.value };
+    if (node.type !== 'element' || HAST_BLOCK_TAGS.has(node.tagName) || HAST_CODE_TAGS.has(node.tagName)
+      || ['bdi', 'br', 'script', 'style', 'textarea'].includes(node.tagName)
+      || node.properties.dir !== undefined || node.properties['data-bidilens-isolate'] !== undefined
+      || AUTHORED_BIDI_STYLE.test(String(node.properties.style ?? ''))) return { value: node, opaque: true };
+    return { value: node, children: node.children.map(project) };
+  };
+  const materialize = (node: InlineNode<ElementContent>): ElementContent => {
+    if (node.isolation) return { type: 'element', tagName: 'bdi', properties: {
+      dir: node.isolation.direction, 'data-bidilens-isolate': '', 'data-bidilens-kind': node.isolation.kind
+    }, children: node.children!.map(materialize) };
+    const original = node.value!;
+    if (original.type === 'text') return node.text === original.value ? original : { ...original, value: node.text! };
+    if (original.type === 'element' && node.children) original.children = node.children.map(materialize);
+    return original;
+  };
+  element.children = isolateForest(element.children.map(project), direction, { intervention, technicalIdentifiers }).map(materialize);
 }
 
 export function rehypeBidi(options: MarkdownBidiOptions = {}) {
@@ -347,9 +333,6 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
     interventionCache.set(tokens, required);
     return required;
   };
-  const escape = md.utils?.escapeHtml ?? ((value: string) => value.replace(/[&<>"']/gu, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[character] ?? character)));
   const original = md.renderer.rules.paragraph_open;
   md.renderer.rules.paragraph_open = (tokens, index, renderOptions, env, self) => {
     if (!tokensNeedIntervention(tokens)) {
@@ -462,31 +445,54 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
     };
   }
 
-  const originalText = md.renderer.rules.text;
-  md.renderer.rules.text = (tokens, index, renderOptions, env, self) => {
-    const value = tokens[index]?.content ?? '';
-    if (!(options.isolateInline ?? true) || activeDirection === null) {
-      return originalText ? originalText(tokens, index, renderOptions, env, self) : escape(value);
+  const originalInline = md.renderer.renderInline;
+  md.renderer.renderInline = function (tokens, renderOptions, env) {
+    if (!(options.isolateInline ?? true) || activeDirection === null) return originalInline.call(this, tokens, renderOptions, env);
+    type TokenValue = { open: MarkdownItToken; close?: MarkdownItToken };
+    const root: InlineNode<TokenValue> = { children: [] };
+    const stack = [root];
+    for (const token of tokens) {
+      if (token.nesting === -1) {
+        const current = stack.pop();
+        if (!current?.value || stack.length === 0) return originalInline.call(this, tokens, renderOptions, env);
+        current.value.close = token;
+      } else {
+        const node: InlineNode<TokenValue> = { value: { open: token } };
+        if (token.nesting === 1) {
+          node.children = [];
+          node.opaque = !['strong_open', 'em_open', 's_open', 'link_open'].includes(token.type)
+            || token.attrs?.some(([name, value]) => {
+              const attribute = name.toLowerCase();
+              return attribute === 'dir' || attribute === 'data-bidilens-isolate'
+                || (attribute === 'style' && AUTHORED_BIDI_STYLE.test(String(value)));
+            }) === true;
+          stack.at(-1)!.children!.push(node);
+          stack.push(node);
+        } else {
+          if (token.type === 'text' && !token.hidden) node.text = token.content;
+          else node.opaque = true;
+          stack.at(-1)!.children!.push(node);
+        }
+      }
     }
-    const plans = planInlineIsolation(value, activeDirection, {
-      intervention: options.intervention,
-      technicalIdentifiers: options.technicalIdentifiers
+    if (stack.length !== 1) return originalInline.call(this, tokens, renderOptions, env);
+    const copyToken = (token: MarkdownItToken, fields: Partial<MarkdownItToken>): MarkdownItToken =>
+      Object.assign(Object.create(Object.getPrototypeOf(token)) as MarkdownItToken, token, fields);
+    const baseline = tokens[0];
+    if (!baseline) return originalInline.call(this, tokens, renderOptions, env);
+    const materialize = (nodes: InlineNode<TokenValue>[]): MarkdownItToken[] => nodes.flatMap((node) => {
+      if (node.isolation) {
+        const attrs: MarkdownItToken['attrs'] = [['dir', node.isolation.direction], ['data-bidilens-isolate', ''], ['data-bidilens-kind', node.isolation.kind]];
+        const open = copyToken(baseline, { type: 'bidilens_isolate_open', tag: 'bdi', nesting: 1, attrs, content: '', children: null, hidden: false, block: false });
+        const close = copyToken(open, { type: 'bidilens_isolate_close', nesting: -1, attrs: null });
+        return [open, ...materialize(node.children!), close];
+      }
+      const original = node.value!;
+      const open = node.text === undefined || node.text === original.open.content ? original.open : copyToken(original.open, { content: node.text });
+      return [open, ...(node.children ? materialize(node.children) : []), ...(original.close ? [original.close] : [])];
     });
-    if (!plans.length) return originalText ? originalText(tokens, index, renderOptions, env, self) : escape(value);
-    const renderValue = (part: string): string => {
-      if (!originalText) return escape(part);
-      const copy = [...tokens];
-      copy[index] = { ...tokens[index]!, content: part };
-      return originalText(copy, index, renderOptions, env, self);
-    };
-    let rendered = '';
-    let cursor = 0;
-    for (const plan of plans) {
-      rendered += renderValue(value.slice(cursor, plan.start));
-      rendered += `<bdi dir="${plan.direction}" data-bidilens-isolate="" data-bidilens-kind="${plan.kind}">${renderValue(plan.text)}</bdi>`;
-      cursor = plan.end;
-    }
-    return rendered + renderValue(value.slice(cursor));
+    const projected = isolateForest(root.children!, activeDirection, { intervention: options.intervention, technicalIdentifiers: options.technicalIdentifiers });
+    return originalInline.call(this, materialize(projected), renderOptions, env);
   };
 
   for (const ruleName of ['code_inline', 'code_block', 'fence']) {

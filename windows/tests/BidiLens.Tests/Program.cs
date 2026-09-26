@@ -25,6 +25,8 @@ internal static class Program
         }
         assertions += SecurityTests.Run();
         assertions += TokenBoundaryTests.Run();
+        assertions += AuditRegressionTests.Run();
+        assertions += ParagraphTests.Run();
         foreach (var threshold in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity, 0.49, 1.01 })
         {
             var rejected = false;

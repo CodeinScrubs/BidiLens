@@ -3,6 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { escapeHtml, renderBidiHtml, renderInlineBidiHtml } from './index.js';
 
 describe('semantic HTML serializer', () => {
+  it.each(['\r', '\r\n', '\r\n\r'])('round-trips carriage-return separators %j through HTML parsing', (separator) => {
+    const source = `سلام${separator}Hello`;
+    const host = document.createElement('div');
+    host.innerHTML = renderBidiHtml(source).html;
+    expect(host.textContent).toBe(source);
+  });
   it('adds no BidiLens markup to ordinary LTR-only input by default', () => {
     const source = 'React is a very popular JavaScript library.';
     const result = renderBidiHtml(source);

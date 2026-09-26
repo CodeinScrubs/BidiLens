@@ -40,7 +40,13 @@ public sealed record BidiOptions
     public BidiDirection InheritedDirection { get; init; } = BidiDirection.LeftToRight;
     public int MinimumStrongCharacters { get; init; } = 1;
     public double MajorityThreshold { get; init; } = 0.5;
-    public bool ExcludeTechnicalTokens { get; init; } = true;
+    private bool? excludeTechnicalTokens;
+    /// <summary>Defaults to exclusion only for ContentMajority; explicit values override that default.</summary>
+    public bool ExcludeTechnicalTokens
+    {
+        get => excludeTechnicalTokens ?? Strategy == BidiDetectionStrategy.ContentMajority;
+        init => excludeTechnicalTokens = value;
+    }
     public IReadOnlySet<string> TechnicalIdentifiers { get; init; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     public BidiIntervention Intervention { get; init; } = BidiIntervention.Auto;
 

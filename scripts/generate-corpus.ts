@@ -395,6 +395,14 @@ for (const [id, text, expected, tags] of structuredCases) {
 
 const siblingSeedDirectory = resolve('corpus', 'v1.3-her-seeds');
 const importedPolicyOverrides = new Map<string, Pick<ReviewedSiblingSeed, 'expected' | 'expectedIsolations'>>([
+  // "npm package" is a descriptive LTR phrase, not a recognizable command.
+  ['v13-fa-mixed-en-fa-005', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: 'npm package', direction: 'ltr', kind: 'opposite-direction-run' },
+      { text: 'https://npmjs.com/package/foo', direction: 'ltr', kind: 'url' }
+    ]
+  }],
   // Whitespace-joined LTR words and version numbers are one semantic phrase.
   // Keeping them in separate isolates reverses their visual order in RTL.
   ['v13-ar-mixed-en-ar-002', {

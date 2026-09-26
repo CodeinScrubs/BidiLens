@@ -91,11 +91,11 @@ export class BidiMessageElement extends HTMLElementBase {
     if (!this.hasAttribute('text') && !this.#contentOwned) this.#captureAuthorContent();
     const source = this.text;
     const directionalParent = this.parentElement?.closest('[dir]');
-    const parentDirection = directionalParent?.getAttribute('dir')?.toLowerCase() === 'rtl'
-      || (this.parentElement && this.ownerDocument.defaultView
-        ?.getComputedStyle(this.parentElement).direction === 'rtl')
-      ? 'rtl'
-      : 'ltr';
+    const computed = this.parentElement && this.ownerDocument.defaultView
+      ?.getComputedStyle(this.parentElement).direction;
+    const parentDirection = computed === 'ltr' || computed === 'rtl'
+      ? computed
+      : directionalParent?.getAttribute('dir')?.toLowerCase() === 'rtl' ? 'rtl' : 'ltr';
     const intervention = this.getAttribute('intervention') === 'always' ? 'always' : 'auto';
     if (!needsBidiIntervention(source, {
       intervention,

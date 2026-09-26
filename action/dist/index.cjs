@@ -29,6 +29,7 @@ var import_node_process4 = __toESM(require("node:process"), 1);
 var import_promises2 = require("node:fs/promises");
 var import_node_crypto = require("node:crypto");
 var import_node_path3 = require("node:path");
+var import_node_url2 = require("node:url");
 var import_node_process3 = __toESM(require("node:process"), 1);
 
 // packages/cli/src/index.ts
@@ -3464,8 +3465,56 @@ function boundedNumberOption(name, value, defaultValue, minimum, maximum) {
   return Math.min(maximum, Math.max(minimum, resolved));
 }
 
+// packages/core/src/commands.ts
+var COMMAND_SUBCOMMANDS = {
+  npm: "install i ci run test start build exec publish init update uninstall audit pack login",
+  pnpm: "install i add remove run test start build exec dlx publish init update audit",
+  yarn: "install add remove run test start build exec dlx publish init upgrade",
+  npx: "",
+  git: "status diff add commit push pull fetch clone checkout switch branch log show merge rebase tag init remote reset restore",
+  pip: "install uninstall list freeze show check download wheel",
+  python: "",
+  node: "",
+  cargo: "build check run test clippy fmt install update publish new init clean doc",
+  go: "build run test mod get install fmt vet version env clean generate tool",
+  docker: "run build compose pull push images image ps exec stop start rm rmi logs inspect",
+  kubectl: "get describe apply delete create edit logs exec config rollout scale version"
+};
+var SUBCOMMANDS = Object.fromEntries(
+  Object.entries(COMMAND_SUBCOMMANDS).map(([executable, words]) => [executable, new Set(words.split(" ").filter(Boolean))])
+);
+function isCommandArgument(executable, argument) {
+  if (!(executable in SUBCOMMANDS)) return false;
+  return SUBCOMMANDS[executable].has(argument) || /^--?[A-Za-z0-9_-]+$/u.test(argument) || /[./\\@:=]/u.test(argument) || /^(['"]).*\1$/u.test(argument);
+}
+
 // packages/core/src/paragraph.ts
 var DEFAULT_PARAGRAPH_SEPARATOR_SOURCE = "\\r\\n|\\n|\\r|\\u0085|[\\u001C-\\u001E]|\\u2029";
+function isDefaultParagraphBoundaryCharacter(character) {
+  if (character.length !== 1) return false;
+  const codeUnit = character.charCodeAt(0);
+  return codeUnit === 10 || codeUnit === 13 || codeUnit === 133 || codeUnit >= 28 && codeUnit <= 30 || codeUnit === 8233;
+}
+
+// packages/core/src/isolate-scope.ts
+function isolateScope() {
+  let depth = 0;
+  return (character) => {
+    if (isDefaultParagraphBoundaryCharacter(character)) {
+      depth = 0;
+      return true;
+    }
+    if (character === "\u2066" || character === "\u2067" || character === "\u2068") {
+      depth += 1;
+      return false;
+    }
+    if (character === "\u2069") {
+      depth = Math.max(0, depth - 1);
+      return false;
+    }
+    return depth === 0;
+  };
+}
 
 // packages/core/src/detect.ts
 var DEFAULT_OPTIONS = {
@@ -3622,6 +3671,69 @@ function trimTechnicalPunctuation(value) {
   let end = value.length;
   while (end > 0 && /[.,;:!?،؛؟。।۔]/u.test(value[end - 1])) end -= 1;
   return end === value.length ? value : value.slice(0, end);
+}
+function trimUrlSuffix(value) {
+  const balance = { ")": 0, "]": 0, "}": 0 };
+  const closer = { "(": ")", "[": "]", "{": "}" };
+  for (const character of value) {
+    if (closer[character]) balance[closer[character]] += 1;
+    else if (character in balance) balance[character] -= 1;
+  }
+  let end = value.length;
+  while (end > 0) {
+    const character = value[end - 1];
+    if (/[.,;:!?،؛؟。।۔]/u.test(character)) end -= 1;
+    else if (character in balance && balance[character] < 0) {
+      balance[character] += 1;
+      end -= 1;
+    } else break;
+  }
+  return value.slice(0, end);
+}
+function addEmailAndRelativePathRanges(text, ranges) {
+  for (const match of text.matchAll(/[A-Za-z0-9._%+@-]+/gu)) {
+    const value = match[0];
+    let localStart = 0;
+    for (let at = 0; at < value.length; at += 1) {
+      if (value[at] !== "@") continue;
+      while (localStart < at && !/[A-Za-z0-9_]/u.test(value[localStart])) localStart += 1;
+      let cursor = at + 1;
+      let dot = -1;
+      let candidate = -1;
+      let alphabetic = false;
+      while (cursor < value.length && /[A-Za-z0-9.-]/u.test(value[cursor])) {
+        const character = value[cursor];
+        if (character === ".") {
+          dot = cursor;
+          alphabetic = true;
+        } else if (!/[A-Za-z]/u.test(character)) alphabetic = false;
+        cursor += 1;
+        if (alphabetic && dot > at + 1 && cursor - dot - 1 >= 2 && !/[A-Za-z0-9_]/u.test(value[cursor] ?? "")) candidate = cursor;
+      }
+      if (localStart < at && candidate > 0) addRange(ranges, text, match.index + localStart, match.index + candidate, "email");
+      localStart = at + 1;
+      at = cursor - 1;
+    }
+  }
+  for (const match of text.matchAll(/[A-Za-z0-9_.\\/-]+/gu)) {
+    const value = match[0];
+    let start = 0;
+    let firstSeparator = -1;
+    const append = (end) => {
+      while (start < end && !/[A-Za-z0-9_]/u.test(value[start])) start += 1;
+      while (end > start && !/[A-Za-z0-9_]/u.test(value[end - 1])) end -= 1;
+      if (firstSeparator >= start && firstSeparator < end) addRange(ranges, text, match.index + start, match.index + end, "path");
+    };
+    for (let index = 0; index < value.length; index += 1) {
+      if (value[index] !== "/" && value[index] !== "\\") continue;
+      if (index === start || value[index - 1] === "/" || value[index - 1] === "\\") {
+        append(index);
+        start = index + 1;
+        firstSeparator = -1;
+      } else if (firstSeparator < 0) firstSeparator = index;
+    }
+    append(value.length);
+  }
 }
 function addValidatedMatches(text, ranges, expression, kind, validate, group = 0) {
   expression.lastIndex = 0;
@@ -3807,26 +3919,10 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   const urls = /\b(?:https?|ftp):\/\/[^\s<>{}"']+/giu;
   let urlMatch;
   while ((urlMatch = urls.exec(text)) !== null) {
-    let value = urlMatch[0];
-    value = trimTechnicalPunctuation(value);
-    for (const [open, close] of [["(", ")"], ["[", "]"], ["{", "}"]]) {
-      if (!value.endsWith(close)) continue;
-      let balance = 0;
-      for (const character of value) {
-        if (character === open) balance += 1;
-        else if (character === close) balance -= 1;
-      }
-      if (balance >= 0) continue;
-      let end = value.length;
-      while (balance < 0 && end > 0 && value[end - 1] === close) {
-        balance += 1;
-        end -= 1;
-      }
-      if (end !== value.length) value = value.slice(0, end);
-    }
+    const value = trimUrlSuffix(urlMatch[0]);
     addRange(ranges, text, urlMatch.index, urlMatch.index + value.length, "url");
   }
-  addMatches(text, ranges, /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/giu, "email");
+  addEmailAndRelativePathRanges(text, ranges);
   addNormalizedMatches(
     text,
     ranges,
@@ -3834,10 +3930,12 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
     "path",
     trimTechnicalPunctuation
   );
-  addMatches(text, ranges, /\b(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)\b/gu, "path");
   addMatches(text, ranges, /(?<![\w@])@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*/giu, "identifier");
   addMatches(text, ranges, /(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)/gu, "identifier");
-  addMatches(text, ranges, /\b(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+/gu, "command");
+  for (const match2 of text.matchAll(/\b(npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)((?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+)/gu)) {
+    const argument = /^[ \t]+('[^']*'|"[^"]*"|[^ \t]+)/u.exec(match2[2])?.[1] ?? "";
+    if (isCommandArgument(match2[1], argument)) addRange(ranges, text, match2.index, match2.index + match2[0].length, "command");
+  }
   addValidatedMatches(text, ranges, /\b(?:\d{1,3}\.){3}\d{1,3}\b/gu, "number", isIpv4);
   addValidatedMatches(
     text,
@@ -3888,13 +3986,15 @@ function countStrongCharactersNormalized(text, normalized) {
   let index = 0;
   let technicalIndex = 0;
   const classify = normalized.strategy === "first-strong" || normalized.strategy === "strict-uax9" ? classifyBidiStrongCharacter : classifyCharacter;
+  const outsideIsolate = isolateScope();
   for (const character of text) {
     while (technicalIndex < technicalTokens.length && index >= technicalTokens[technicalIndex].end) {
       technicalIndex += 1;
     }
     const technicalRange = technicalTokens[technicalIndex];
     const isTechnical = technicalRange !== void 0 && index >= technicalRange.start && index < technicalRange.end;
-    if (!isTechnical) {
+    const included = normalized.strategy !== "strict-uax9" || outsideIsolate(character);
+    if (!isTechnical && included) {
       const direction = classify(character);
       if (direction === "ltr") ltr += 1;
       if (direction === "rtl") rtl += 1;
@@ -4309,6 +4409,125 @@ function needsBidiIntervention(text, options = {}) {
   return options.inheritedDirection === "rtl" && (hasLtr || text.length > 0);
 }
 
+// packages/core/src/generated/grapheme-ranges.ts
+var EXTENDED_PICTOGRAPHIC = decodeRangeDeltas("4p,0,4,0,68d,0,c,0,60,0,m,0,2i,5,f,1,a7,1,c,0,4m,0,p,a,4,2,5j,0,6f,1,a,0,9,0,1m,3,1,4,9,0,2,0,2,1,2,0,4,0,2,0,1,1,2,0,3,0,3,1,8,2,5,0,1,0,5,b,b,1,2,0,1,1,1,0,i,0,2,1,i,5,1,0,1,1,3,1,5,0,2,1,4,1,b,1,5,1,2,0,5,1,1,0,1,1,k,1,5,5,1,3,2,0,4,0,2,0,2,5,1,0,2,0,1,0,1,0,6,0,3,0,6,0,a,1,f,0,2,0,4,0,1,0,4,2,1,0,b,1,1c,2,9,0,e,0,e,0,ac,1,cv,2,j,1,1f,0,4,0,yi,0,c,0,gp,0,1,0,2fze,0,13,3,2s,b,f,1,f,0,e,1,11,9,34,1,c,1,e,0,2,9,j,1j,r,e,a,0,k,0,2,8,1,3,9,m,6,57,2,33,2,1,1,2,2,2a,2,2,1,3,5,71,1,1q,b,5,1,n,7,1,2,7,c,0,2,3,2,0,4,1,d,1,2,0,8,1,9,0,5,2,c,2,8,2,2,0,1,0,4,0,6,0,3,0,6,2d,1c,1x,5,7,2,g,3,0,1,5,2,c,62,11,c,3,1k,7,a,5,14,7,u,1,c,3,2,d,9,12,c,1a,1,9,1,54,2g,7,e,41,74,sd");
+var GCB_CONTROL = decodeRangeDeltas("0,9,1,1,1,h,2n,w,d,0,12m,0,3jl,0,1ks,0,2,1,o,6,1d,f,17yn,0,6o,b,ab8,f,qxs,3,43z,7,h405,v,2o,3j,6o,2rz");
+var GCB_CR = decodeRangeDeltas("d,0");
+var GCB_EXTEND = decodeRangeDeltas("lc,33,7n,6,7b,18,1,0,1,1,1,1,1,0,20,a,1c,k,g,0,2t,6,2,5,2,1,1,3,z,0,u,q,2j,a,1m,8,9,0,o,3,1,8,1,2,1,4,17,2,1n,8,16,n,1,v,1j,0,1,0,4,7,4,0,3,6,a,1,t,0,1m,0,1,0,2,3,8,0,9,0,a,1,q,0,2,1,1l,0,4,1,4,1,2,2,3,0,u,1,3,0,b,1,1l,0,4,4,1,1,4,0,k,1,m,5,1,0,1m,0,1,1,1,3,8,0,7,2,a,1,u,0,1n,0,1,0,c,0,9,0,14,0,3,0,1j,0,1,2,5,2,1,3,7,1,b,1,t,0,1m,0,2,1,1,0,3,2,1,3,7,1,b,1,s,1,1l,1,1,0,2,3,8,0,9,0,a,1,t,0,20,0,4,0,2,2,1,0,8,0,29,0,2,6,c,7,2q,0,2,8,b,6,21,1,r,0,1,0,1,0,1j,d,1,4,1,1,5,a,1,z,9,0,2u,3,1,5,1,1,2,1,p,1,4,2,g,3,d,0,2,1,6,0,f,0,jj,2,qa,3,s,2,t,1,u,1,1s,1,1,6,8,0,2,a,9,0,19,2,1,0,39,1,y,0,3a,2,4,1,9,0,6,2,63,1,2,0,1m,0,1,6,1,0,1,0,2,7,6,9,2,0,1c,19,2,b,k,3,1c,9,4,2,12,8,c,1,w,3,2,5,1k,0,1,1,3,0,1,4,1k,7,2,1,48,2,1,c,1,6,4,0,6,0,3,1,5i,1r,ek,0,5f,w,2da,2,3x,0,2o,v,fe,5,2x,1,n9w,3,1,9,w,1,28,1,7k,0,3,0,4,0,p,1,5,0,47,1,q,h,d,0,12,7,p,a,1,0,18,2,1c,0,2,3,2,1,2,0,10,0,1v,5,2,1,2,1,c,0,8,0,1b,0,1f,0,1,2,2,1,5,1,1,0,16,1,8,0,6m,0,2,0,4,0,fn4,0,kh,f,g,f,a6,1,gt,0,6a,0,45,4,1ae,2,1,1,5,3,14,2,4,0,4l,1,fx,3,1t,4,8t,1,25,5,1y,a,1d,3,3f,0,1i,e,15,0,2,1,a,2,1d,3,2,1,7,0,1p,2,10,4,1,7,1q,0,c,1,1g,8,1,0,8,3,2,0,2n,2,2,3,6,0,2,0,4d,0,3,7,l,1,1l,1,1,0,1,0,c,0,9,0,e,6,3,4,1v,0,2,5,1,0,2,0,1,2,4,2,1,0,e,1,2d,7,2,2,1,0,n,0,29,0,2,5,1,0,2,0,1,1,1,1,6j,0,2,3,6,1,1,1,r,1,2d,7,2,0,1,1,2y,0,1,0,2,7,2t,0,1,0,2,3,1,4,77,8,1,1,6t,0,a,3,4,0,40,3,2,1,4,0,w,9,14,5,2,3,8,0,9,5,2,2,1a,c,1,1,5i,0,1,2,1,0,5l,6,1,5,1,0,2a,l,2,6,1,1,1,1,3e,5,3,0,1,1,1,6,1,0,20,1,3,0,1,0,9n,1,b,1,1g,4,5,2,n,0,44l,0,6,e,8ug,b,3,2,1xc,4,1n,6,t4,0,1r,3,29,0,b,1,f57,1,3mp,19,2,m,f2,4,3,5,8,7,2,6,u,3,44,2,1iz,1i,4,1d,8,0,e,0,m,4,1,e,11s,6,1,g,2,6,1,1,1,4,2s,0,4g,6,af,0,1p,3,e4,3,72,1,6r,0,2,0,7,1,5,0,d6,6,31,6,240,4,gx7k,2n,3k,6n");
+var GCB_L = decodeRangeDeltas("3cw,2n,u0w,s");
+var GCB_LF = decodeRangeDeltas("a,0");
+var GCB_LV = decodeRangeDeltas("xz4,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0,r,0");
+var GCB_LVT = decodeRangeDeltas("xz5,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q,1,q");
+var GCB_PREPEND = decodeRangeDeltas("16o,5,5z,0,1d,0,ao,1,28,0,vf,0,1f8u,0,f,0,6s,1,el,0,12l,0,1,0,8y,5,jg,0,cb,0");
+var GCB_REGIONAL_INDICATOR = decodeRangeDeltas("2qcm,p");
+var GCB_SPACINGMARK = decodeRangeDeltas("1s3,0,1j,0,2,2,8,3,1,1,1e,1,1n,1,6,1,2,1,1i,0,1m,2,1u,0,1m,2,8,0,1,1,1h,1,1o,0,6,1,2,1,36,0,1,1,3,2,1,2,1g,2,1p,3,1p,1,1m,0,2,0,1,1,1a,0,e,1,1n,1,5,2,1,2,1h,1,24,1,6,6,j,1,1r,0,3j,0,3u,1,1r,0,4x,0,9,1,p,1,18,0,1f5,0,7,7,1,1,9m,3,2,2,4,1,1,5,68,1,1m,0,1,0,l,5,41,0,1l,3,1s,0,u,0,4,1,1r,0,2,2,1,0,1h,7,8,1,4r,0,l,0,rhn,1,2,0,2g,1,1e,f,3y,0,1c,0,1c,1,4,1,2,1,33,1,2,1,o,0,4d,0,2,1,5,0,6l,1,1,1,1,1,1,0,jrn,0,1,0,3j,0,19,2,4,1,37,0,o,1,1n,0,1c,2,9,0,e,0,2l,2,3,1,4s,2,v,1,1n,0,1,3,2,1,2,1,l,1,2d,1,f,0,1,1,2v,2,8,1,3,0,2z,1,6,0,1,1,1,0,2,0,6m,1,6,3,2,0,35,2,8,1,1,0,31,0,1,1,32,0,7,0,79,2,9,0,6w,4,1,1,7,0,1,0,3y,2,8,3,4,0,2c,0,t,1,1q,0,5l,0,3,0,1,0,5j,0,e,0,2y,0,7,0,2,0,5x,4,4,1,1,0,9q,1,c,0,1c,1,8,1,d0q,2,2sk,1i");
+var GCB_T = decodeRangeDeltas("3hk,2f,132j,1c");
+var GCB_V = decodeRangeDeltas("3fk,1z,1348,m,tjw,0,3,3");
+var GCB_ZWJ = decodeRangeDeltas("6bx,0");
+var INCB_CONSONANT = decodeRangeDeltas("1sl,10,u,7,o,7,l,j,1,6,1,0,3,3,y,1,1,0,g,1,4j,j,1,6,1,1,1,4,1r,0,r,j,1,6,1,1,1,4,y,1,1,0,h,0,4j,j,1,f,u,2,56,11,jp,16,k,0,g,5,4,3,3,0,3,1,7,2,4,c,c,0,1dd,1f,h8,1g,52,1,6,w,h,7,1i,t,d,1,b,2,s0b,2,3,z,19,4,2,8,a,4,2p,f,1,2,6,0,3,1,2o,a,5x,q,ilh,0,f,3,1,2,1,s,1cd,z,t,0,2,0,fs,9,1,0,2,0,1,11,11m,6,2,0,2,7,1,1,1,n,5s,0,a,13,t,0,b,13,w0,c,1,x");
+var INCB_EXTEND = decodeRangeDeltas("lc,33,7n,6,7b,18,1,0,1,1,1,1,1,0,20,a,1c,k,g,0,2t,6,2,5,2,1,1,3,z,0,u,q,2j,a,1m,8,9,0,o,3,1,8,1,2,1,4,17,2,1n,8,16,n,1,v,1j,0,1,0,4,7,8,6,a,1,t,0,1m,0,1,0,2,3,i,0,a,1,q,0,2,1,1l,0,4,1,4,1,2,2,3,0,u,1,3,0,b,1,1l,0,4,4,1,1,p,1,m,5,1,0,1m,0,1,1,1,3,g,2,a,1,u,0,1n,0,1,0,c,0,9,0,14,0,3,0,1j,0,1,2,5,2,1,2,8,1,b,1,t,0,1m,0,2,1,1,0,3,2,1,3,7,1,b,1,s,1,1l,1,1,0,2,3,i,0,a,1,t,0,20,0,4,0,2,2,1,0,8,0,29,0,2,6,c,7,2q,0,2,8,b,6,21,1,r,0,1,0,1,0,1j,d,1,4,1,1,5,a,1,z,9,0,2u,3,1,5,2,0,2,1,p,1,4,2,g,3,d,0,2,1,6,0,f,0,jj,2,qa,3,s,2,t,1,u,1,1s,1,1,6,8,0,2,8,1,0,9,0,19,2,1,0,39,1,y,0,3a,2,4,1,9,0,6,2,63,1,2,0,1m,0,1,6,3,0,2,7,6,9,2,0,1c,19,2,b,k,3,1c,9,4,1,13,8,c,1,w,3,2,2,1,1,1k,0,1,1,3,0,1,4,1k,7,2,1,48,2,1,c,1,6,4,0,6,0,3,1,5i,1r,el,0,5e,w,2da,2,3x,0,2o,v,fe,5,2x,1,n9w,3,1,9,w,1,28,1,7k,0,3,0,4,0,p,1,5,0,47,1,q,h,d,0,12,7,p,a,1,0,18,2,1c,0,2,3,2,1,13,0,1v,5,2,1,2,1,c,0,8,0,1b,0,1f,0,1,2,2,1,5,1,1,0,16,1,6v,0,2,0,4,0,fn4,0,kh,f,g,f,a6,1,gt,0,6a,0,45,4,1ae,2,1,1,5,3,14,2,4q,1,fx,3,1t,4,8t,1,25,5,1y,a,1d,3,3f,0,1i,e,15,0,2,1,a,2,1d,3,2,1,7,0,1p,2,10,4,1,5,1,0,1q,0,c,1,1g,8,1,0,8,3,2,0,2n,2,2,3,6,0,2,0,4d,0,3,7,l,1,1l,1,1,0,1,0,c,0,9,0,e,6,3,4,1v,0,2,5,1,0,2,0,1,2,4,1,2,0,e,1,2d,7,2,2,1,0,n,0,29,0,2,5,1,0,2,0,1,1,1,1,6j,0,2,3,6,1,1,1,r,1,2d,7,2,0,1,1,2y,0,1,0,2,7,2t,0,1,0,2,3,1,4,77,8,1,1,6t,0,a,2,5,0,40,3,2,1,4,0,w,9,14,5,2,3,i,5,2,2,1a,c,1,0,5j,0,1,2,1,0,5l,6,1,5,1,0,2a,l,2,6,1,1,1,1,3e,5,3,0,1,1,1,6,1,0,20,1,3,0,1,0,9n,1,b,1,1g,4,5,1,o,0,44l,0,6,e,8ug,b,3,2,1xc,4,1n,6,t4,0,1r,3,29,0,b,1,f57,1,3mp,19,2,m,f2,4,3,5,8,7,2,6,u,3,44,2,1iz,1i,4,1d,8,0,e,0,m,4,1,e,11s,6,1,g,2,6,1,1,1,4,2s,0,4g,6,af,0,1p,3,e4,3,72,1,6r,0,2,0,7,1,5,0,d6,6,31,6,240,4,gx7k,2n,3k,6n");
+var INCB_LINKER = decodeRangeDeltas("1u5,0,3j,0,73,0,3j,0,73,0,73,0,kr,0,1i0,0,i5,0,6b,0,2u,0,s2c,0,8l,0,itk,0,1df,0,ik,0,12l,0,7c,0,29,0,x4,0");
+
+// packages/core/src/graphemes.ts
+var properties = [
+  ["CR", GCB_CR],
+  ["LF", GCB_LF],
+  ["Control", GCB_CONTROL],
+  ["Extend", GCB_EXTEND],
+  ["ZWJ", GCB_ZWJ],
+  ["Regional_Indicator", GCB_REGIONAL_INDICATOR],
+  ["Prepend", GCB_PREPEND],
+  ["SpacingMark", GCB_SPACINGMARK],
+  ["L", GCB_L],
+  ["V", GCB_V],
+  ["T", GCB_T],
+  ["LV", GCB_LV],
+  ["LVT", GCB_LVT]
+];
+var isControl = (property) => property === "CR" || property === "LF" || property === "Control";
+var propertyRanges = properties.flatMap(([property, values]) => {
+  const entries = [];
+  for (let index = 0; index < values.length; index += 2) {
+    entries.push({ start: values[index], end: values[index + 1], property });
+  }
+  return entries;
+}).sort((left, right) => left.start - right.start);
+function breakProperty(codePoint) {
+  if (codePoint < 128) {
+    if (codePoint === 13) return "CR";
+    if (codePoint === 10) return "LF";
+    return codePoint < 32 || codePoint === 127 ? "Control" : "Other";
+  }
+  let low = 0;
+  let high = propertyRanges.length - 1;
+  while (low <= high) {
+    const middle = low + high >>> 1;
+    const range = propertyRanges[middle];
+    if (codePoint < range.start) high = middle - 1;
+    else if (codePoint > range.end) low = middle + 1;
+    else return range.property;
+  }
+  return "Other";
+}
+function graphemeBoundaries(text) {
+  const boundaries = [0];
+  let offset = 0;
+  let previous = "Other";
+  let regionalCount = 0;
+  let pictographicExtend = false;
+  let previousZwjAfterPictographic = false;
+  let conjunctConsonant = false;
+  let conjunctLinker = false;
+  for (const character of text) {
+    const codePoint = character.codePointAt(0);
+    const current = breakProperty(codePoint);
+    const nonAscii = codePoint >= 128;
+    const pictographic = nonAscii && containsCodePoint(EXTENDED_PICTOGRAPHIC, codePoint);
+    const consonant = nonAscii && containsCodePoint(INCB_CONSONANT, codePoint);
+    const linker = nonAscii && containsCodePoint(INCB_LINKER, codePoint);
+    const conjunctExtend = nonAscii && containsCodePoint(INCB_EXTEND, codePoint);
+    let joins = previous === "CR" && current === "LF";
+    if (!joins && !isControl(previous) && !isControl(current)) {
+      joins = previous === "L" && (current === "L" || current === "V" || current === "LV" || current === "LVT") || (previous === "LV" || previous === "V") && (current === "V" || current === "T") || (previous === "LVT" || previous === "T") && current === "T" || current === "Extend" || current === "ZWJ" || current === "SpacingMark" || previous === "Prepend" || consonant && conjunctConsonant && conjunctLinker || pictographic && previousZwjAfterPictographic || previous === "Regional_Indicator" && current === "Regional_Indicator" && regionalCount % 2 === 1;
+    }
+    if (offset > 0 && !joins) boundaries.push(offset);
+    previousZwjAfterPictographic = current === "ZWJ" && pictographicExtend;
+    pictographicExtend = pictographic || current === "Extend" && pictographicExtend;
+    if (consonant) {
+      conjunctConsonant = true;
+      conjunctLinker = false;
+    } else if (linker || conjunctExtend) {
+      conjunctLinker ||= linker && conjunctConsonant;
+    } else {
+      conjunctConsonant = false;
+      conjunctLinker = false;
+    }
+    regionalCount = current === "Regional_Indicator" ? regionalCount + 1 : 0;
+    previous = current;
+    offset += character.length;
+  }
+  if (offset > 0) boundaries.push(offset);
+  return boundaries;
+}
+function graphemeRangeExpander(text) {
+  const boundaries = graphemeBoundaries(text);
+  const floor = (offset) => {
+    let low = 0;
+    let high = boundaries.length;
+    while (low + 1 < high) {
+      const middle = low + high >>> 1;
+      if (boundaries[middle] <= offset) low = middle;
+      else high = middle;
+    }
+    return low;
+  };
+  return (start, end) => {
+    const first = floor(start);
+    const last = floor(end);
+    return { start: boundaries[first], end: boundaries[last] === end ? end : boundaries[last + 1] };
+  };
+}
+
 // packages/core/src/segments.ts
 function attachSourceRanges(text, isolations) {
   const codePointAtUtf16 = new Uint32Array(text.length + 1);
@@ -4369,18 +4588,45 @@ function mergeAdjacent(runs) {
 }
 function trimNeutralBoundaries(text, start, end) {
   while (start < end) {
-    const character = text.slice(start).match(/^./su)?.[0];
+    const character = String.fromCodePoint(text.codePointAt(start));
     const codePoint = character?.codePointAt(0);
     if (!character || classifyCharacter(character) !== "neutral" || codePoint !== void 0 && containsCodePoint(COMBINING_MARK_RANGES, codePoint)) break;
     start += character.length;
   }
   while (end > start) {
-    const character = text.slice(0, end).match(/.$/su)?.[0];
+    const last = text.charCodeAt(end - 1);
+    const before = text.charCodeAt(end - 2);
+    const width = last >= 56320 && last <= 57343 && before >= 55296 && before <= 56319 ? 2 : 1;
+    const character = text.slice(end - width, end);
     const codePoint = character?.codePointAt(0);
     if (!character || classifyCharacter(character) !== "neutral" || codePoint !== void 0 && containsCodePoint(COMBINING_MARK_RANGES, codePoint)) break;
     end -= character.length;
   }
   return { start, end };
+}
+function graphemeSafePlan(text, plans) {
+  if (!plans.length) return plans;
+  const expand = graphemeRangeExpander(text);
+  const result = [];
+  let conflictedEnd = -1;
+  for (const plan of plans) {
+    const { start, end } = expand(plan.start, plan.end);
+    if (start < conflictedEnd) {
+      conflictedEnd = Math.max(conflictedEnd, end);
+      continue;
+    }
+    const previous = result.at(-1);
+    if (previous && start < previous.end && previous.direction !== plan.direction) {
+      result.pop();
+      conflictedEnd = Math.max(previous.end, end);
+      continue;
+    }
+    if (previous && previous.direction === plan.direction && start <= previous.end) {
+      previous.end = Math.max(previous.end, end);
+      previous.text = text.slice(previous.start, previous.end);
+    } else result.push({ ...plan, start, end, text: text.slice(start, end) });
+  }
+  return result;
 }
 var HARD_FRAGMENT_SEPARATOR = /[,،;؛:!?؟|]/u;
 var PARAGRAPH_SEPARATOR = new RegExp(
@@ -4491,7 +4737,7 @@ function planInlineIsolation(text, blockDirection, options = {}) {
     kind: range.kind
   }));
   if (options.isolateOppositeRuns === false) {
-    return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
+    return attachSourceRanges(text, graphemeSafePlan(text, normalizeIsolationPlan(text, isolations)));
   }
   let technicalIndex = 0;
   for (const run of segmentDirectionalRuns(text)) {
@@ -4529,7 +4775,7 @@ function planInlineIsolation(text, blockDirection, options = {}) {
       });
     }
   }
-  return attachSourceRanges(text, normalizeIsolationPlan(text, isolations));
+  return attachSourceRanges(text, graphemeSafePlan(text, normalizeIsolationPlan(text, isolations)));
 }
 
 // packages/html/src/index.ts
@@ -4574,12 +4820,13 @@ var SAFE_CONTAINER_TAGS = /* @__PURE__ */ new Set([
   "span"
 ]);
 function escapeHtml(value) {
-  return value.replace(/[&<>"']/gu, (character) => ({
+  return value.replace(/[&<>"'\r]/gu, (character) => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
-    "'": "&#39;"
+    "'": "&#39;",
+    "\r": "&#13;"
   })[character] ?? character);
 }
 function checkedTag(value, option, allowed) {
@@ -5112,20 +5359,26 @@ function highestFindingRisk(findings) {
   if (findings.length) return "low";
   return null;
 }
-function sourcePosition(text, utf16Offset) {
-  let lineNumber = 1;
-  let lineStart = 0;
+function sourcePositions(text) {
+  const starts = [0];
   const newline = new RegExp(`${DEFAULT_PARAGRAPH_SEPARATOR_SOURCE}|\\u2028`, "gu");
-  let match;
-  while ((match = newline.exec(text)) !== null && match.index < utf16Offset) {
-    lineNumber += 1;
-    lineStart = match.index + match[0].length;
-  }
-  return { line: lineNumber, column: utf16Offset - lineStart + 1 };
+  for (const match of text.matchAll(newline)) starts.push(match.index + match[0].length);
+  return (utf16Offset) => {
+    let low = 0;
+    let high = starts.length;
+    while (low + 1 < high) {
+      const middle = low + high >>> 1;
+      if (starts[middle] <= utf16Offset) low = middle;
+      else high = middle;
+    }
+    return { line: low + 1, column: utf16Offset - starts[low] + 1 };
+  };
 }
 function artifactUri(file, cwd) {
   const local = (0, import_node_path2.relative)(cwd, file);
-  if (local && !local.startsWith("..") && !(0, import_node_path2.isAbsolute)(local)) return local.replaceAll("\\", "/");
+  if (local && local !== ".." && !local.startsWith(`..${import_node_process2.default.platform === "win32" ? "\\" : "/"}`) && !(0, import_node_path2.isAbsolute)(local)) {
+    return local.split(import_node_process2.default.platform === "win32" ? "\\" : "/").map((part) => encodeURIComponent(part)).join("/");
+  }
   return (0, import_node_url.pathToFileURL)(file).href;
 }
 async function readTextInput(options, cwd) {
@@ -5143,27 +5396,31 @@ function sarifForReports(reports, cwd) {
     $schema: "https://json.schemastore.org/sarif-2.1.0.json",
     runs: [{
       columnKind: "utf16CodeUnits",
+      newlineSequences: ["\r\n", "\n", "\r", "\x85", "", "", "", "\u2029", "\u2028"],
       tool: { driver: { name: "BidiLens", semanticVersion: CLI_VERSION } },
-      results: reports.flatMap((report) => report.findings.map((finding) => {
-        const start = sourcePosition(report.text, finding.sourceRange.utf16.start);
-        const end = sourcePosition(report.text, finding.sourceRange.utf16.end);
-        return {
-          ruleId: finding.code,
-          level: finding.severity === "high" ? "error" : finding.severity === "warning" ? "warning" : "note",
-          message: { text: `${finding.message} ${finding.remediation}` },
-          locations: [{
-            physicalLocation: {
-              artifactLocation: { uri: artifactUri(report.file, cwd) },
-              region: {
-                startLine: start.line,
-                startColumn: start.column,
-                endLine: end.line,
-                endColumn: end.column
+      results: reports.flatMap((report) => {
+        const position = sourcePositions(report.text);
+        return report.findings.map((finding) => {
+          const start = position(finding.sourceRange.utf16.start);
+          const end = position(finding.sourceRange.utf16.end);
+          return {
+            ruleId: finding.code,
+            level: finding.severity === "high" ? "error" : finding.severity === "warning" ? "warning" : "note",
+            message: { text: `${finding.message} ${finding.remediation}` },
+            locations: [{
+              physicalLocation: {
+                artifactLocation: { uri: artifactUri(report.file, cwd) },
+                region: {
+                  startLine: start.line,
+                  startColumn: start.column,
+                  endLine: end.line,
+                  endColumn: end.column
+                }
               }
-            }
-          }]
-        };
-      }))
+            }]
+          };
+        });
+      })
     }]
   };
 }
@@ -5219,10 +5476,12 @@ function createCliProgram(state) {
     } else if (!reports.length) line(state.stdout, `No bidi security findings in ${files.length} files.`);
     else {
       for (const report of reports) {
+        const positionFor = sourcePositions(report.text);
+        const file = /[\p{Cc}\p{Cf}\u2028\u2029]/u.test(report.file) ? JSON.stringify(report.file) : report.file;
         line(state.stdout, `
-${report.file} (${report.highestRisk ?? "unknown"})`);
+${file} (${report.highestRisk ?? "unknown"})`);
         for (const finding of report.findings) {
-          const position = sourcePosition(report.text, finding.sourceRange.utf16.start);
+          const position = positionFor(finding.sourceRange.utf16.start);
           line(state.stdout, `  ${finding.code} at ${position.line}:${position.column} [${riskForFinding(finding)}] ${finding.message}`);
         }
       }
@@ -5268,6 +5527,7 @@ async function runCli(argv = import_node_process2.default.argv, runtime = {}) {
 }
 
 // action/src/index.ts
+var import_meta2 = {};
 function input(env, name) {
   return env[`INPUT_${name.toUpperCase()}`]?.trim() ?? "";
 }
@@ -5292,8 +5552,8 @@ function readActionInputs(env = import_node_process3.default.env) {
 function buildCliArguments(inputs, env = import_node_process3.default.env) {
   if (inputs.command === "test") {
     if (inputs.format === "sarif") throw new Error("SARIF output is available only for the audit command.");
-    const actionPath = env.GITHUB_ACTION_PATH ? (0, import_node_path3.resolve)(env.GITHUB_ACTION_PATH) : (0, import_node_path3.resolve)(env.GITHUB_WORKSPACE ?? import_node_process3.default.cwd(), "action");
-    const corpus = inputs.corpus || (0, import_node_path3.resolve)(actionPath, "..", "corpus", "cases.json");
+    const moduleDirectory = typeof __dirname === "string" ? __dirname : (0, import_node_path3.dirname)((0, import_node_url2.fileURLToPath)(import_meta2.url));
+    const corpus = inputs.corpus || (env.GITHUB_ACTION_PATH ? (0, import_node_path3.resolve)(env.GITHUB_ACTION_PATH, "..", "corpus", "cases.json") : (0, import_node_path3.resolve)(moduleDirectory, "..", "..", "corpus", "cases.json"));
     return ["node", "bidilens", "test", "--corpus", corpus, ...inputs.format === "json" ? ["--json"] : []];
   }
   const format = inputs.format === "json" ? ["--json"] : inputs.format === "sarif" ? ["--sarif"] : [];
@@ -5312,10 +5572,59 @@ function buildCliArguments(inputs, env = import_node_process3.default.env) {
 function workspaceFile(cwd, requested) {
   const absolute = (0, import_node_path3.resolve)(cwd, requested);
   const local = (0, import_node_path3.relative)(cwd, absolute);
-  if (!local || local.startsWith("..") || (0, import_node_path3.isAbsolute)(local)) {
+  if (!local || local.split(import_node_path3.sep)[0] === ".." || (0, import_node_path3.isAbsolute)(local)) {
     throw new Error("sarif-file must resolve to a file inside GITHUB_WORKSPACE.");
   }
-  return { absolute, relative: local.replaceAll("\\", "/") };
+  const parts = local.split(import_node_path3.sep);
+  return { absolute, relative: parts.join("/"), parts };
+}
+async function existingEntry(path2) {
+  try {
+    return await (0, import_promises2.lstat)(path2);
+  } catch (error) {
+    if (error.code === "ENOENT") return void 0;
+    throw error;
+  }
+}
+async function writeWorkspaceReport(cwd, requested, contents) {
+  const root = await (0, import_promises2.realpath)(cwd);
+  const target = workspaceFile(root, requested);
+  const parts = target.parts;
+  let parent = root;
+  for (const part of parts.slice(0, -1)) {
+    parent = (0, import_node_path3.resolve)(parent, part);
+    let entry = await existingEntry(parent);
+    if (!entry) {
+      try {
+        await (0, import_promises2.mkdir)(parent);
+      } catch (error) {
+        if (error.code !== "EEXIST") throw error;
+      }
+      entry = await (0, import_promises2.lstat)(parent);
+    }
+    if (entry.isSymbolicLink() || !entry.isDirectory()) throw new Error("SARIF parent must be a real workspace directory, not a link.");
+    const canonical = await (0, import_promises2.realpath)(parent);
+    workspaceFile(root, (0, import_node_path3.resolve)(canonical, parts.at(-1)));
+    parent = canonical;
+  }
+  const destination = await existingEntry(target.absolute);
+  if (destination && (destination.isSymbolicLink() || !destination.isFile())) {
+    throw new Error("SARIF destination must be a regular workspace file, not a link.");
+  }
+  const temporary = (0, import_node_path3.resolve)(parent, `.bidilens-${(0, import_node_crypto.randomUUID)()}.tmp`);
+  const handle = await (0, import_promises2.open)(temporary, "wx", 384);
+  try {
+    await handle.writeFile(contents, "utf8");
+    await handle.close();
+    if ((await (0, import_promises2.lstat)(parent)).isSymbolicLink() || await (0, import_promises2.realpath)(parent) !== parent) {
+      throw new Error("SARIF workspace directory changed while writing the report.");
+    }
+    await (0, import_promises2.rename)(temporary, target.absolute);
+  } finally {
+    await handle.close();
+    await (0, import_promises2.rm)(temporary, { force: true });
+  }
+  return target.relative;
 }
 async function setOutput(path2, name, value) {
   if (!path2) return;
@@ -5341,19 +5650,24 @@ async function runAction(context = {}) {
   const stdoutText = stdout.join("");
   const stderrText = stderr.join("");
   let report = "";
-  if (inputs.format === "sarif") {
-    const target = workspaceFile(cwd, inputs.sarifFile);
-    await (0, import_promises2.mkdir)((0, import_node_path3.dirname)(target.absolute), { recursive: true });
-    await (0, import_promises2.writeFile)(target.absolute, stdoutText, "utf8");
-    report = target.relative;
-    log(`BidiLens SARIF report written to ${report}.`);
-  } else if (stdoutText) {
-    log(stdoutText.trimEnd());
+  if (inputs.format === "sarif" && (exitCode === 0 || exitCode === 2)) {
+    const parsed = JSON.parse(stdoutText);
+    if (parsed.version !== "2.1.0" || !Array.isArray(parsed.runs)) throw new Error("CLI did not produce a valid SARIF report.");
+    report = await writeWorkspaceReport(cwd, inputs.sarifFile, stdoutText);
   }
-  if (stderrText) error(stderrText.trimEnd());
+  const protectedLogs = env.GITHUB_ACTIONS === "true";
+  const token = `bidilens_${(0, import_node_crypto.randomUUID)()}`;
+  if (protectedLogs) log(`::stop-commands::${token}`);
+  try {
+    if (report) log(`BidiLens SARIF report written to ${JSON.stringify(report)}.`);
+    else if (inputs.format !== "sarif" && stdoutText) log(stdoutText.trimEnd());
+    if (stderrText) (protectedLogs ? log : error)(stderrText.trimEnd());
+    if (exitCode !== 0) (protectedLogs ? log : error)(`BidiLens ${inputs.command} failed with exit code ${exitCode}.`);
+  } finally {
+    if (protectedLogs) log(`::${token}::`);
+  }
   await setOutput(env.GITHUB_OUTPUT, "exit-code", String(exitCode));
   await setOutput(env.GITHUB_OUTPUT, "report", report);
-  if (exitCode !== 0) error(`BidiLens ${inputs.command} failed with exit code ${exitCode}.`);
   return { exitCode, report, stdout: stdoutText, stderr: stderrText };
 }
 function workflowError(message) {

@@ -5,6 +5,19 @@ import org.junit.Test
 
 class TokenBoundaryTest {
     @Test
+    fun conservativeCommandsAndMixedUrlClosers() {
+        for (source in listOf("go is a verb that means رفتن.", "python is a language for humans زبان.", "git is a great tool ابزار.")) {
+            assertEquals(false, findTechnicalTokenRanges(source).any { it.kind == TechnicalTokenKind.COMMAND })
+        }
+        for (source in listOf("npm install", "pnpm run test", "git status", "go run main.go", "python -m pip", "node script.js")) {
+            assertEquals(true, findTechnicalTokenRanges(source).any { it.kind == TechnicalTokenKind.COMMAND })
+        }
+        for ((source, expected) in listOf("برو https://example.com/foo)]!" to "https://example.com/foo", "برو https://example.com/foo(bar))]." to "https://example.com/foo(bar)")) {
+            assertEquals(expected, findTechnicalTokenRanges(source).first { it.kind == TechnicalTokenKind.URL }.text)
+        }
+    }
+
+    @Test
     fun mathWhitespaceMatchesOtherCores() {
         for (space in listOf("\ufeff", "\u00a0", "\u202f")) {
             for (source in listOf("\$$space" + "x\$", "\$x$space\$")) {

@@ -10,6 +10,77 @@ import {
 } from './index.js';
 
 describe('DOM adapter', () => {
+  it.each(['سلام CN <strong>IX</strong> پایان', 'لینک https://<strong>example</strong>.com را باز کنید.', 'سلام <strong>hello</strong> world پایان'])(
+    'isolates complete inline phrases across formatting: %s', (html) => {
+      document.body.innerHTML = `<main><p>${html}</p></main>`;
+      const root = document.querySelector('main')!;
+      const paragraph = root.querySelector('p')!;
+      const strong = root.querySelector('strong')!;
+      const source = paragraph.textContent;
+      let clicked = 0;
+      strong.addEventListener('click', () => clicked += 1);
+      applyBidi(root, { strategy: 'rtl' });
+      expect(root.querySelectorAll('bdi')).toHaveLength(1);
+      expect(root.querySelector('bdi strong')).toBe(strong);
+      expect(root.querySelector('bdi')?.textContent).toMatch(/^(?:CN IX|https:\/\/example.com|hello world)$/u);
+      expect(paragraph.textContent).toBe(source);
+      const wrapper = root.querySelector('bdi');
+      applyBidi(root, { strategy: 'rtl' });
+      expect(root.querySelector('bdi')).toBe(wrapper);
+      strong.dispatchEvent(new Event('click'));
+      expect(clicked).toBe(1);
+      restoreBidi(root);
+      expect(root.querySelector('strong')).toBe(strong);
+      expect(paragraph.textContent).toBe(source);
+    });
+
+  it('omits an entire unrepresentable cross-format run instead of splitting or cloning formatting', () => {
+    document.body.innerHTML = '<main><p>قبل <strong>سلام https://</strong>example.com بعد</p></main>';
+    const root = document.querySelector('main')!;
+    const strong = root.querySelector('strong');
+    applyBidi(root);
+    expect(root.querySelector('strong')).toBe(strong);
+    expect(root.querySelectorAll('bdi')).toHaveLength(0);
+  });
+
+  it('keeps representable wrappers stable when another run cannot be represented', () => {
+    document.body.innerHTML = '<main><p>سلام <strong>سلام https://</strong>example.com و React دنیا.</p></main>';
+    const root = document.querySelector('main')!;
+    applyBidi(root);
+    const wrapper = root.querySelector('bdi')!;
+    expect(wrapper.textContent).toBe('React');
+    expect(applyBidi(root).isolated).toBe(0);
+    expect(root.querySelector('bdi')).toBe(wrapper);
+  });
+
+  it('retires owned wrappers enriched with newly authored direction boundaries', () => {
+    document.body.innerHTML = '<main><p>سلام React دنیا.</p></main>';
+    const root = document.querySelector('main')!;
+    applyBidi(root);
+    const wrapper = root.querySelector('bdi')!;
+    const authored = document.createElement('bdi');
+    authored.dir = 'rtl';
+    authored.textContent = 'جدید';
+    wrapper.append(authored);
+    applyBidi(root);
+    expect(wrapper.isConnected).toBe(false);
+    expect(authored.parentElement?.tagName).toBe('P');
+    const generated = root.querySelector('[data-bidilens-dom-generated]');
+    expect(generated?.querySelector('bdi')).toBeNull();
+    expect(applyBidi(root).isolated).toBe(0);
+  });
+
+  it('re-reads authored stylesheet direction after a class change on an owned element', () => {
+    document.body.innerHTML = '<style>.rtl-host { direction: rtl; } .ltr-host { direction: ltr; }</style><main><p class="rtl-host">Hello world!</p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    applyBidi(root);
+    expect(paragraph.hasAttribute('data-bidilens-block')).toBe(true);
+    paragraph.className = 'ltr-host';
+    applyBidi(root);
+    expect(paragraph.hasAttribute('data-bidilens-block')).toBe(false);
+    expect(paragraph.hasAttribute('dir')).toBe(false);
+  });
   it.each(['element', 'document', 'fragment'] as const)(
     'restoration without owned changes is a text-node no-op for a %s root', (kind) => {
       const doc = document.implementation.createHTMLDocument('no-op');

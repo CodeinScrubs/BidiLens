@@ -5248,7 +5248,7 @@ internal val generatedCorpusFixtures = listOf(
             text = "برای نصب از npm package با آدرس https://npmjs.com/package/foo استفاده کنید.",
             expected = BidiDirection.RTL,
             isolations = listOf(
-            ExpectedIsolation("npm package", BidiDirection.LTR, BidiIsolationKind.COMMAND),
+            ExpectedIsolation("npm package", BidiDirection.LTR, BidiIsolationKind.OPPOSITE_DIRECTION_RUN),
             ExpectedIsolation("https://npmjs.com/package/foo", BidiDirection.LTR, BidiIsolationKind.URL)
             ),
         ),

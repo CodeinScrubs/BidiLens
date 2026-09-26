@@ -22,6 +22,8 @@ import org.junit.Assert.assertEquals
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.ResolvedTextDirection
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -35,6 +37,50 @@ import org.junit.runner.RunWith
 class BidiComposeInstrumentedTest {
     @get:Rule
     val compose = createComposeRule()
+
+    @Test
+    fun mixedParagraphLayoutKeepsEachBaseAndPhysicalLeftAlignment() {
+        val source = "React یک کتابخانه محبوب است.\nPlain English\nسلام دنیا"
+        var layout: TextLayoutResult? = null
+        compose.setContent {
+            BidiText(
+                text = source,
+                modifier = Modifier.width(320.dp),
+                style = TextStyle(fontSize = 18.sp, textAlign = TextAlign.Left),
+                alignToContent = false,
+                isolateRuns = false,
+                onTextLayout = { layout = it },
+            )
+        }
+        compose.waitUntil { layout != null }
+        compose.runOnIdle {
+            val result = requireNotNull(layout)
+            assertEquals(source, result.layoutInput.text.text)
+            val starts = listOf(0, source.indexOf("Plain"), source.indexOf("سلام"))
+            val directions = listOf(ResolvedTextDirection.Rtl, ResolvedTextDirection.Ltr, ResolvedTextDirection.Rtl)
+            for ((index, start) in starts.withIndex()) {
+                assertEquals(directions[index], result.getParagraphDirection(start))
+                assertTrue("Physical left alignment changed", result.getLineLeft(result.getLineForOffset(start)) < 2f)
+            }
+        }
+    }
+
+    @Test
+    fun leadingIsolationDoesNotCreateAnEmptyLayoutParagraph() {
+        val source = "React یک کتابخانه است."
+        var layout: TextLayoutResult? = null
+        compose.setContent {
+            BidiText(text = source, modifier = Modifier.width(600.dp),
+                isolateRuns = true, onTextLayout = { layout = it })
+        }
+        compose.waitUntil { layout != null }
+        compose.runOnIdle {
+            val result = requireNotNull(layout)
+            assertEquals(1, result.lineCount)
+            assertEquals(0, result.layoutInput.text.paragraphStyles.first().start)
+            assertEquals(ResolvedTextDirection.Rtl, result.getParagraphDirection(0))
+        }
+    }
 
     @Suppress("DEPRECATION")
     @Test

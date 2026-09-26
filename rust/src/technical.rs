@@ -4,6 +4,7 @@ use std::sync::{LazyLock, Mutex};
 
 use regex::Regex;
 
+use crate::generated::technical_commands::is_command_argument;
 use crate::{Direction, SourceRange, classify_natural};
 
 /// Technical token family used by direction evidence and isolation planning.
@@ -182,6 +183,43 @@ fn trim_technical_punctuation(value: &str) -> &str {
         '.', ',', ';', ':', '!', '?', '\u{060C}', '\u{061B}', '\u{061F}', '\u{3002}', '\u{0964}',
         '\u{06D4}',
     ])
+}
+
+fn trim_url_suffix(value: &str) -> &str {
+    let mut balance = [0_isize; 3];
+    for character in value.chars() {
+        if let Some(slot) = "([{".find(character) {
+            balance[slot] += 1;
+        }
+        if let Some(slot) = ")]}".find(character) {
+            balance[slot] -= 1;
+        }
+    }
+    let mut end = value.len();
+    while end > 0 {
+        let trimmed = trim_technical_punctuation(&value[..end]);
+        if trimmed.len() < end {
+            end = trimmed.len();
+            continue;
+        }
+        let character = value[..end].chars().next_back().expect("nonempty suffix");
+        let Some(slot) = ")]}".find(character) else {
+            break;
+        };
+        if balance[slot] >= 0 {
+            break;
+        }
+        balance[slot] += 1;
+        end -= character.len_utf8();
+    }
+    &value[..end]
+}
+
+fn recognizable_command(value: &str) -> bool {
+    let expression = built_in_regex(r#"^([a-z]+)[ \t]+('[^']*'|"[^"]*"|[^ \t]+)"#);
+    expression
+        .captures(value)
+        .is_some_and(|parts| is_command_argument(&parts[1], &parts[2]))
 }
 
 fn is_ipv4(value: &str) -> bool {
@@ -506,20 +544,7 @@ pub fn find_technical_token_ranges(
 
     let urls = built_in_regex(r#"(?i)(?-u:\b)(?:https?|ftp)://[^\s<>{}\"']+"#);
     for found in urls.find_iter(text) {
-        let mut value = trim_technical_punctuation(found.as_str());
-        for (open, close) in [('(', ')'), ('[', ']'), ('{', '}')] {
-            if !value.ends_with(close) {
-                continue;
-            }
-            let mut balance =
-                value.matches(open).count() as isize - value.matches(close).count() as isize;
-            let mut end = value.len();
-            while balance < 0 && value[..end].ends_with(close) {
-                balance += 1;
-                end -= close.len_utf8();
-            }
-            value = &value[..end];
-        }
+        let value = trim_url_suffix(found.as_str());
         add_range(
             &mut ranges,
             found.start()..found.start() + value.len(),
@@ -575,11 +600,11 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r#"(?-u:\b)(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|\"[^\"\r\n]*\"))+"#,
+        r#"(?-u:\b)(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|\"[^\"\r\n]*\"))+"#,
         TechnicalTokenKind::Command,
         0,
         |value| value,
-        |_| true,
+        recognizable_command,
     );
     add_matches(
         text,

@@ -33374,7 +33374,8 @@
       "برای",
       "نصب",
       "از",
-      "npm package",
+      "npm",
+      "package",
       "با",
       "آدرس",
       "https://npmjs.com/package/foo",
@@ -33393,7 +33394,8 @@
       7,
       8,
       9,
-      10
+      10,
+      11
     ],
     "tags": [
       "fa",
@@ -33407,7 +33409,7 @@
       {
         "text": "npm package",
         "direction": "ltr",
-        "kind": "command"
+        "kind": "opposite-direction-run"
       },
       {
         "text": "https://npmjs.com/package/foo",

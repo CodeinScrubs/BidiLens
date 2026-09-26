@@ -65,6 +65,15 @@ const EXPECTED = {
 };
 
 describe('Playwright bidi assertions', () => {
+  it('still requires expected isolates when additional isolates are allowed', () => {
+    const missing = validSnapshot();
+    missing.isolations = [];
+    expect(validateBidiSnapshot(missing, { ...EXPECTED, exactIsolationCount: false })
+      .map((issue) => issue.code)).toContain('isolation-count-mismatch');
+    const extra = validSnapshot();
+    extra.isolations.push({ ...extra.isolations[0]!, text: 'additional' });
+    expect(validateBidiSnapshot(extra, { ...EXPECTED, exactIsolationCount: false })).toEqual([]);
+  });
   it('inspects block and isolation metadata without mutating source order', async () => {
     document.body.innerHTML = `<p dir="rtl" data-bidilens-block>${FLAGSHIP.replace('React', '<bdi dir="ltr" data-bidilens-isolate data-bidilens-kind="identifier">React</bdi>')}</p>`;
     const element = document.querySelector('p');

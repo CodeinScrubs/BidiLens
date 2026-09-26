@@ -107,8 +107,9 @@ inside the current bidi paragraph. Custom JavaScript regular expressions are
 evaluated once at `finish()` because an arbitrary match may depend on future
 input through lookarounds, anchors, or an extendable match. Before finalization,
 the unresolved custom-separated source remains one open paragraph. This
-explicit tradeoff preserves arbitrary chunk-boundary invariance and linear
-append behavior.
+explicit tradeoff preserves arbitrary chunk-boundary invariance without
+rerunning the custom separator on every append. It does not make all technical
+token recognition or provisional live classification universally linear.
 
 Framework streaming APIs are adapters over the same state machine:
 
@@ -184,8 +185,10 @@ replaces an `Editable`. The host must declare `android:supportsRtl="true"`;
 the library deliberately does not merge this application-wide flag because
 that could change unrelated layouts.
 
-`:compose` applies an explicit paragraph `TextDirection` and content-relative
-alignment. Display-only isolation uses a transient visual string while
+`:compose` applies independent resolved bases through `ParagraphStyle` ranges
+and content-relative or caller-owned physical alignment. Authored paragraph
+styles are split at the same boundaries; other annotations retain payload
+identity and remapped source ranges. Display-only isolation uses a transient visual string while
 accessibility semantics retain the original source. Editable isolation uses a
 `VisualTransformation` with monotonic original/transformed offset maps; the
 state value, IME callbacks, copy source, validation, and storage remain free of
@@ -209,9 +212,10 @@ editable selection. `UITextView` and `UITextField` use the native
 `UITextInput.setBaseWritingDirection` API; `UILabel` uses a copied paragraph
 style whose base direction and alignment are separate fields. The adapter does
 not force the layout direction of a screen or mirror sibling controls.
-The generated mark ranges keep Unicode `Mn`, `Mc`, and `Me` scalars inside an
-isolate, so UIKit receives the same grapheme-cluster boundaries as the web and
-Android cores.
+The generated mark ranges retain trailing Unicode `Mn`, `Mc`, and `Me` scalars
+in opposite-direction runs. This is not full extended-grapheme parity: the
+JavaScript core now applies the pinned Unicode 17 grapheme-break rules, while
+native parity and UIKit multi-paragraph ownership repairs remain audit work.
 `BidiText` is a read-only `UIViewRepresentable` that owns its label, restores
 prior BidiLens state before each SwiftUI update, reapplies caller styling, and
 then assigns and analyzes the immutable source. Editable SwiftUI bridging is
@@ -229,12 +233,16 @@ String
   -> Windows text rendering
 ```
 
-The WPF layer supports `TextBlock` and `TextBox`, saves original state in a
+The WPF layer supports `TextBlock`, `TextBox`, `Paragraph`, and `RichTextBox`, saves original state in a
 weak table, preserves source and selection, and restores authored properties
 when content returns to the pure-LTR no-op path. Physical-left and
 content-relative-start alignment are explicit policies rather than consequences
 of direction detection. Its generated mark ranges keep `Mn`, `Mc`, and `Me`
 code points attached to opposite-direction graphemes during isolation.
+Document paragraphs are managed independently, including nested sections,
+lists and table cells. Restoring an originally inherited paragraph property
+removes the managed local override instead of freezing an old inherited value.
+Plain `TextBlock`/`TextBox` adapters remain whole-control direction integrations.
 
 ## Native Rust
 
@@ -281,8 +289,13 @@ as non-findings.
 
 ## Complexity
 
-Core classification and directional-run planning are linear in code points
-plus recognized technical ranges. Inline-isolation planning uses a monotonic
-range cursor. Streaming re-analysis uses evidence checkpoints instead of
-full-document analysis per token. Performance budgets are regression guards,
-not universal latency promises; see `docs/PERFORMANCE.md`.
+Generated character-property lookup uses binary search, and directional-run
+planning traverses recognized technical ranges with a monotonic cursor.
+JavaScript email/path recognition is bounded on its adversarial regression
+workloads. These facts do not establish an end-to-end linear bound for every
+recognizer, rich-text projection, or native implementation. Streaming normally
+uses evidence checkpoints instead of full-document analysis per token, but
+ambiguous dollar/environment/math overlaps can trigger repeated exact rescans
+and quadratic work. Performance budgets are workload-specific regression
+guards, not universal complexity or latency promises; see
+[performance methodology](PERFORMANCE.md).

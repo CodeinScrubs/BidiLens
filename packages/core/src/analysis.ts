@@ -2,6 +2,7 @@ import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
 import { analyzeText, findTechnicalTokenRanges } from './detect.js';
 import { scanBidiSecurity } from './security.js';
 import { planInlineIsolation } from './segments.js';
+import { isolateScope } from './isolate-scope.js';
 import type { BidiInterventionMode } from './intervention.js';
 import type {
   BlockAnalysis,
@@ -35,12 +36,14 @@ export function collectDirectionEvidence(text: string, options: DetectionOptions
   const classifier = strategy === 'first-strong' || strategy === 'strict-uax9'
     ? classifyBidiStrongCharacter
     : classifyCharacter;
+  const outsideIsolate = isolateScope();
 
   for (const character of text) {
     while (technicalIndex < technical.length && utf16Index >= technical[technicalIndex]!.end) technicalIndex += 1;
     const range = technical[technicalIndex];
     const excluded = range !== undefined && utf16Index >= range.start && utf16Index < range.end;
-    const direction = excluded ? 'ltr' : classifier(character);
+    const included = strategy !== 'strict-uax9' || outsideIsolate(character);
+    const direction = !included ? 'neutral' : excluded ? 'ltr' : classifier(character);
     if (direction !== 'neutral') {
       const previous = evidence.at(-1);
       const reason = excluded ? 'technical-token' : 'natural-language';

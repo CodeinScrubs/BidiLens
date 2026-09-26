@@ -1,5 +1,7 @@
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
 import { boundedNumberOption } from './options.js';
+import { isCommandArgument } from './commands.js';
+import { isolateScope } from './isolate-scope.js';
 import { DEFAULT_PARAGRAPH_SEPARATOR_SOURCE } from './paragraph.js';
 import type {
   DetectionOptions,
@@ -148,6 +150,66 @@ function trimTechnicalPunctuation(value: string): string {
   let end = value.length;
   while (end > 0 && /[.,;:!?،؛؟。।۔]/u.test(value[end - 1]!)) end -= 1;
   return end === value.length ? value : value.slice(0, end);
+}
+
+function trimUrlSuffix(value: string): string {
+  const balance: Record<string, number> = { ')': 0, ']': 0, '}': 0 };
+  const closer: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
+  for (const character of value) {
+    if (closer[character]) balance[closer[character]!]! += 1;
+    else if (character in balance) balance[character]! -= 1;
+  }
+  let end = value.length;
+  while (end > 0) {
+    const character = value[end - 1]!;
+    if (/[.,;:!?،؛؟。।۔]/u.test(character)) end -= 1;
+    else if (character in balance && balance[character]! < 0) { balance[character]! += 1; end -= 1; }
+    else break;
+  }
+  return value.slice(0, end);
+}
+
+/** Failed domain/path candidates cannot restart at every character of a lexical run. */
+function addEmailAndRelativePathRanges(text: string, ranges: TechnicalTokenRange[]): void {
+  for (const match of text.matchAll(/[A-Za-z0-9._%+@-]+/gu)) {
+    const value = match[0];
+    let localStart = 0;
+    for (let at = 0; at < value.length; at += 1) {
+      if (value[at] !== '@') continue;
+      while (localStart < at && !/[A-Za-z0-9_]/u.test(value[localStart]!)) localStart += 1;
+      let cursor = at + 1;
+      let dot = -1;
+      let candidate = -1;
+      let alphabetic = false;
+      while (cursor < value.length && /[A-Za-z0-9.-]/u.test(value[cursor]!)) {
+        const character = value[cursor]!;
+        if (character === '.') { dot = cursor; alphabetic = true; }
+        else if (!/[A-Za-z]/u.test(character)) alphabetic = false;
+        cursor += 1;
+        if (alphabetic && dot > at + 1 && cursor - dot - 1 >= 2 && !/[A-Za-z0-9_]/u.test(value[cursor] ?? '')) candidate = cursor;
+      }
+      if (localStart < at && candidate > 0) addRange(ranges, text, match.index + localStart, match.index + candidate, 'email');
+      localStart = at + 1;
+      at = cursor - 1;
+    }
+  }
+  for (const match of text.matchAll(/[A-Za-z0-9_.\\/-]+/gu)) {
+    const value = match[0];
+    let start = 0;
+    let firstSeparator = -1;
+    const append = (end: number): void => {
+      while (start < end && !/[A-Za-z0-9_]/u.test(value[start]!)) start += 1;
+      while (end > start && !/[A-Za-z0-9_]/u.test(value[end - 1]!)) end -= 1;
+      if (firstSeparator >= start && firstSeparator < end) addRange(ranges, text, match.index + start, match.index + end, 'path');
+    };
+    for (let index = 0; index < value.length; index += 1) {
+      if (value[index] !== '/' && value[index] !== '\\') continue;
+      if (index === start || value[index - 1] === '/' || value[index - 1] === '\\') {
+        append(index); start = index + 1; firstSeparator = -1;
+      } else if (firstSeparator < 0) firstSeparator = index;
+    }
+    append(value.length);
+  }
 }
 
 function addValidatedMatches(
@@ -404,26 +466,10 @@ export function findTechnicalTokenRanges(
   const urls = /\b(?:https?|ftp):\/\/[^\s<>{}"']+/giu;
   let urlMatch: RegExpExecArray | null;
   while ((urlMatch = urls.exec(text)) !== null) {
-    let value = urlMatch[0];
-    value = trimTechnicalPunctuation(value);
-    for (const [open, close] of [['(', ')'], ['[', ']'], ['{', '}']] as const) {
-      if (!value.endsWith(close)) continue;
-      let balance = 0;
-      for (const character of value) {
-        if (character === open) balance += 1;
-        else if (character === close) balance -= 1;
-      }
-      if (balance >= 0) continue;
-      let end = value.length;
-      while (balance < 0 && end > 0 && value[end - 1] === close) {
-        balance += 1;
-        end -= 1;
-      }
-      if (end !== value.length) value = value.slice(0, end);
-    }
+    const value = trimUrlSuffix(urlMatch[0]);
     addRange(ranges, text, urlMatch.index, urlMatch.index + value.length, 'url');
   }
-  addMatches(text, ranges, /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/giu, 'email');
+  addEmailAndRelativePathRanges(text, ranges);
   addNormalizedMatches(
     text,
     ranges,
@@ -431,10 +477,12 @@ export function findTechnicalTokenRanges(
     'path',
     trimTechnicalPunctuation
   );
-  addMatches(text, ranges, /\b(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)\b/gu, 'path');
   addMatches(text, ranges, /(?<![\w@])@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*/giu, 'identifier');
   addMatches(text, ranges, /(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)/gu, 'identifier');
-  addMatches(text, ranges, /\b(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+/gu, 'command');
+  for (const match of text.matchAll(/\b(npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)((?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+)/gu)) {
+    const argument = /^[ \t]+('[^']*'|"[^"]*"|[^ \t]+)/u.exec(match[2]!)?.[1] ?? '';
+    if (isCommandArgument(match[1]!, argument)) addRange(ranges, text, match.index, match.index + match[0].length, 'command');
+  }
   addValidatedMatches(text, ranges, /\b(?:\d{1,3}\.){3}\d{1,3}\b/gu, 'number', isIpv4);
   addValidatedMatches(
     text,
@@ -511,6 +559,7 @@ function countStrongCharactersNormalized(
   const classify = normalized.strategy === 'first-strong' || normalized.strategy === 'strict-uax9'
     ? classifyBidiStrongCharacter
     : classifyCharacter;
+  const outsideIsolate = isolateScope();
 
   for (const character of text) {
     // Technical ranges are sorted and merged, so advance one cursor instead
@@ -523,7 +572,8 @@ function countStrongCharactersNormalized(
     const isTechnical = technicalRange !== undefined
       && index >= technicalRange.start
       && index < technicalRange.end;
-    if (!isTechnical) {
+    const included = normalized.strategy !== 'strict-uax9' || outsideIsolate(character);
+    if (!isTechnical && included) {
       const direction = classify(character);
       if (direction === 'ltr') ltr += 1;
       if (direction === 'rtl') rtl += 1;

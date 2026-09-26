@@ -1,12 +1,13 @@
 import {
   detectDirection,
   needsBidiIntervention,
-  planInlineIsolation,
   type BidiInterventionMode,
   type DetectionOptions,
   type Direction,
   type ResolvedDirection
 } from '@bidilens/core';
+import { isolateInlineForest } from './inline.js';
+import { preserveSelection } from './selection.js';
 
 export const BIDILENS_CSS = `
 :where([data-bidilens-block]) {
@@ -259,27 +260,37 @@ function inheritedDirection(element: HTMLElement): ResolvedDirection {
     restoreElementState(element);
     return inheritedDirection(element);
   }
-  const original = originalDirections.get(element);
   const authoredDir = (state?.applied.has('dir') && element.getAttribute('dir') === state.applied.get('dir')
     ? state.attributes.get('dir') : element.getAttribute('dir'))?.toLowerCase();
   const parent = (): ResolvedDirection => element.parentElement ? inheritedDirection(element.parentElement) : 'ltr';
-  if (original) {
-    if (state?.style.appliedDirection !== undefined
-      && (element.style.getPropertyValue('direction') !== state.style.appliedDirection
-        || element.style.getPropertyPriority('direction') !== state.style.appliedDirectionPriority)) {
-      const authored = element.style.getPropertyValue('direction');
-      if (authored === 'rtl' || authored === 'ltr') return authored;
-      return parent();
+  // Probe the actual selector context with still-owned direction properties
+  // temporarily restored, including owned ancestors. A clone or cached value
+  // misses author class/stylesheet changes and ancestor-dependent selectors.
+  const snapshots: Array<{ element: HTMLElement; dir: string | null; style: string | null }> = [];
+  let computed: string | undefined;
+  try {
+    for (let current: HTMLElement | null = element; current; current = current.parentElement) {
+      const original = originalStates.get(current);
+      if (!original) continue;
+      reconcileStyleBeforeApply(current, original);
+      snapshots.push({ element: current, dir: current.getAttribute('dir'), style: current.getAttribute('style') });
+      if (original.applied.has('dir') && current.getAttribute('dir') === original.applied.get('dir')) restoreOriginalAttribute(current, 'dir');
+      if (original.style.appliedDirection !== undefined && current.style.getPropertyValue('direction') === original.style.appliedDirection
+        && current.style.getPropertyPriority('direction') === original.style.appliedDirectionPriority) {
+        if (original.style.originalDirection) current.style.setProperty('direction', original.style.originalDirection, original.style.originalDirectionPriority);
+        else current.style.removeProperty('direction');
+      }
     }
-    if (state?.style.originalDirection === 'rtl' || state?.style.originalDirection === 'ltr') {
-      return state.style.originalDirection;
+    computed = element.ownerDocument.defaultView?.getComputedStyle(element).direction;
+  } finally {
+    for (const snapshot of snapshots.reverse()) {
+      if (snapshot.dir === null) snapshot.element.removeAttribute('dir');
+      else snapshot.element.setAttribute('dir', snapshot.dir);
+      if (snapshot.style === null) snapshot.element.removeAttribute('style');
+      else snapshot.element.setAttribute('style', snapshot.style);
     }
-    if (original.ownCssDirection && authoredDir !== 'auto') return original.resolved;
-  } else {
-    // Computed CSS wins over presentational dir attributes on any ancestor.
-    const computed = element.ownerDocument.defaultView?.getComputedStyle(element).direction;
-    if (computed === 'rtl' || computed === 'ltr') return computed;
   }
+  if (computed === 'rtl' || computed === 'ltr') return computed;
   if (authoredDir === 'rtl') return 'rtl';
   if (authoredDir === 'ltr') return 'ltr';
   if (authoredDir === 'auto') {
@@ -330,6 +341,7 @@ function ownedIsolates(root: ParentNode): HTMLElement[] {
 }
 
 function restoreOwnedSubtree(root: HTMLElement): number {
+  const restoreSelection = preserveSelection(root);
   const generated = ownedIsolates(root);
   for (const isolate of generated) {
     unwrapGeneratedIsolate(isolate);
@@ -339,6 +351,7 @@ function restoreOwnedSubtree(root: HTMLElement): number {
   for (const element of elements) {
     if (restoreElementState(element)) restored += 1;
   }
+  restoreSelection();
   return restored;
 }
 
@@ -350,71 +363,7 @@ function isolateInlineText(
   intervention: BidiInterventionMode | undefined,
   technicalIdentifiers: readonly string[] | undefined
 ): number {
-  const documentRef = element.ownerDocument;
-  const isOwnedText = (node: Node): boolean => node.nodeType === 1
-    && generatedIsolates.has(node as HTMLElement)
-    && [...node.childNodes].every((child) => child.nodeType === 3);
-  const showText = documentRef.defaultView?.NodeFilter.SHOW_TEXT ?? 4;
-  const walker = documentRef.createTreeWalker(element, showText);
-  const parents = new Set<HTMLElement>();
-  let current: Node | null;
-  while ((current = walker.nextNode()) !== null) {
-    if (current.nodeType !== 3) continue;
-    let parent = current.parentElement;
-    if (parent && isOwnedText(parent)) parent = parent.parentElement;
-    if (!parent || parent.closest('[data-bidilens-isolate],bdi,script,style,textarea')) continue;
-    if (parent.closest(codeSelector)) continue;
-    if (parent.closest(blockSelector) !== element) continue;
-    parents.add(parent);
-  }
-
-  let isolated = 0;
-  for (const parent of parents) {
-    const groups: Node[][] = [];
-    let group: Node[] = [];
-    for (const child of parent.childNodes) {
-      if (child.nodeType === 3 || isOwnedText(child)) group.push(child);
-      else if (group.length) { groups.push(group); group = []; }
-    }
-    if (group.length) groups.push(group);
-    for (const nodes of groups) {
-      const source = nodes.map((node) => node.textContent ?? '').join('');
-      const plans = planInlineIsolation(source, direction, { intervention, technicalIdentifiers });
-      // Compare semantic boundaries first: repeated apply/observer flush must not
-      // replace stable nodes, disturb selection, or create a mutation loop.
-      let offset = 0;
-      const existing = nodes.flatMap((node) => {
-        const start = offset;
-        offset += node.textContent?.length ?? 0;
-        return node.nodeType === 1 ? [{ start, end: offset,
-          direction: (node as HTMLElement).dir, kind: (node as HTMLElement).dataset.bidilensKind }] : [];
-      });
-      if (existing.length === plans.length && existing.every((value, index) => {
-        const plan = plans[index]!;
-        return value.start === plan.start && value.end === plan.end
-          && value.direction === plan.direction && value.kind === plan.kind;
-      })) continue;
-      const fragment = documentRef.createDocumentFragment();
-      let cursor = 0;
-      for (const plan of plans) {
-        fragment.append(documentRef.createTextNode(source.slice(cursor, plan.start)));
-        const isolate = documentRef.createElement('bdi');
-        isolate.dir = plan.direction;
-        isolate.dataset.bidilensIsolate = '';
-        isolate.dataset.bidilensKind = plan.kind;
-        isolate.dataset.bidilensDomGenerated = '';
-        isolate.textContent = plan.text;
-        generatedIsolates.add(isolate);
-        fragment.append(isolate);
-        cursor = plan.end;
-        isolated += 1;
-      }
-      fragment.append(documentRef.createTextNode(source.slice(cursor)));
-      parent.insertBefore(fragment, nodes[0]!);
-      for (const node of nodes) parent.removeChild(node);
-    }
-  }
-  return isolated;
+  return isolateInlineForest(element, direction, blockSelector, codeSelector, intervention, technicalIdentifiers, generatedIsolates, unwrapGeneratedIsolate);
 }
 
 export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): ApplyBidiResult {
@@ -524,6 +473,7 @@ export interface RestoreBidiOptions {
 
 /** Restores attributes/styles and unwraps only nodes generated by applyBidi. */
 export function restoreBidi(root: ParentNode, options: RestoreBidiOptions = {}): number {
+  const restoreSelection = preserveSelection(root);
   const generated = ownedIsolates(root);
   for (const isolate of generated) unwrapGeneratedIsolate(isolate);
 
@@ -535,6 +485,7 @@ export function restoreBidi(root: ParentNode, options: RestoreBidiOptions = {}):
   }
   // Do not normalize the root: adjacent/empty text nodes in an untouched host
   // subtree may be selection anchors or framework/editor-owned references.
+  restoreSelection();
   return restored;
 }
 
