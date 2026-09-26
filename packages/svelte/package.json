@@ -55,7 +55,7 @@
     "svelte": ">=4 <6"
   },
   "devDependencies": {
-    "svelte": "^5.57.0",
+    "svelte": "^5.57.1",
     "tsup": "^8.5.1"
   },
   "engines": {
