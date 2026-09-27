@@ -17,7 +17,7 @@ open bracketed display math uses an explicitly documented exact-analysis
 fallback. The original sibling corpus seeds remain unchanged; reviewed policy
 overrides and nine new fixtures produce 941 canonical cases.
 
-Fresh local follow-up evidence:
+Fresh local follow-up evidence against source commit `7825d65`:
 
 | Gate | Result |
 | --- | --- |
@@ -28,10 +28,12 @@ Fresh local follow-up evidence:
 | Android | 39 core, 13 Compose, and 13 Views JVM/Robolectric tests passed with no skips; all three debug AARs assembled. This follow-up did not execute connected-device instrumentation locally. |
 | Rust minimum 1.85 | Formatting, all-target check, denied-warning Clippy, and all-target tests passed: 34 conformance tests, including the 941-case corpus and numeric-prefix regression. |
 | Dependency/SBOM checks | No known locked npm vulnerabilities reported; unchanged dependency graph still validates as CycloneDX 1.7 with 532 components and 546 relationships. |
+| `pnpm packages:types` | Packed declarations passed supported ESM and bundler resolution for all 12 packages. Node 10 and direct CommonJS resolution remain outside the supported contract; CommonJS uses dynamic import. |
+| `pnpm markdown-it:compat` | Strict packed consumers, 941 canonical cases, and 9 host-structure cases passed on Markdown-It 13.0.2, 14.3.1, and 15.0.1. Semantic reports agree; parser-specific host rendering differences are retained. |
+| `pnpm release:check` | Clean committed source, without `--allow-dirty`: all 12 tarballs and packed examples, strict TypeScript/runtime/CLI consumer, four compiled/exercised integration guides, and every raw/gzip size budget passed. Core measured 144,748 raw bytes and 30,608 gzip bytes. |
 
-Packed consumer/type/parser compatibility and clean-tree release
-artifact gates must finish against this follow-up before publication is
-considered. Apple/iOS source changed in this follow-up and cannot be compiled
+The local packed consumer/type/parser and clean-tree artifact gates are now
+complete for this follow-up. Apple/iOS source changed and cannot be compiled
 on this Windows host; fresh macOS/iOS simulator and all hosted CI/CodeQL gates
 are required. Earlier green native jobs do not certify the new Swift code.
 
@@ -59,9 +61,9 @@ parser. Native option/API compatibility boundaries are documented in the
 respective platform guides. Android Views and WPF `TextBlock`/`TextBox` retain
 whole-control bases; per-paragraph policies use Compose or WPF document APIs.
 
-## Verification of this audit branch
+## Earlier audit verification snapshot
 
-Local Windows checks completed against the latest code revision `81119bc`:
+Historical local Windows checks completed against code revision `81119bc`:
 
 | Gate | Evidence |
 | --- | --- |
@@ -141,7 +143,7 @@ decision and the protected provenance-capable workflow.
 - The new Android layout tests have API 35 evidence, but still need API 36
   and physical-device coverage. Require fresh hosted Node minimum-version,
   cross-platform quality, native, and CodeQL gates against the latest PR head;
-  the green `6f762ca` snapshot predates the final JavaScript lexical repairs.
+  earlier green snapshots do not validate the new source commit `7825d65`.
 - Independent security review, native-speaker corpus certification,
   accessibility/IME laboratory testing, and downstream production pilots
   remain outstanding. No company adoption or universal rendering guarantee

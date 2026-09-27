@@ -121,6 +121,12 @@ measured these complete emitted facades:
 | DOM | 25,567 | 5,773 |
 | Markdown | 85,944 | 16,789 |
 
+The subsequent external-claim repairs at code revision `7825d65`, checked from
+a clean committed tree on 2026-09-27, measured core at 144,748 raw bytes and
+30,608 gzip bytes. DOM and Markdown remained at the sizes above. The added
+numeric scanner and streaming reconciliation cost 2,299 raw bytes and 519 gzip
+bytes versus `81119bc`; no size budget was raised to accommodate these repairs.
+
 Release gates bound both aggregate raw bytes (145/28/88 KiB) and gzip bytes
 (32/7/18 KiB) for those packages. These are full emitted facades, not a claim
 about a tree-shaken application's final bundle. The July timing tables above
