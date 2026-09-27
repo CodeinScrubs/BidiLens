@@ -1,6 +1,6 @@
 # Maintainer outreach kit
 
-BidiLens web `0.3.3` and signed Android `0.1.2` are published for source review
+BidiLens web `0.4.0` and signed Android `0.1.2` are published for source review
 and bounded pilots. Android has emulator and public-consumer evidence;
 physical-device/OEM/IME/TalkBack and production validation remain pending.
 Neither availability is evidence of adoption. Contact maintainers with one
@@ -21,18 +21,21 @@ small renderer pilot
 Hello [team or maintainer],
 
 I maintain [BidiLens](https://github.com/CodeinScrubs/BidiLens), an MIT-licensed
-TypeScript and Android toolkit with SwiftUI/UIKit and .NET/WPF source adapters
-for mixed RTL/LTR AI messages. It fixes a common failure in which a technically
-named sentence such as `React یک کتابخانه … است.` receives the wrong paragraph
-direction, while leaving ordinary LTR content free of BidiLens attributes,
-wrappers, styles, or source changes.
+TypeScript and Android toolkit with source-only SwiftUI/UIKit and .NET/WPF
+adapters for mixed RTL/LTR AI messages. It offers a configurable paragraph
+direction policy for technical-name-first prose such as
+`React یک کتابخانه … است.`, where first-strong direction can differ from author
+intent. By default, ordinary LTR content in an LTR scope receives no BidiLens
+attributes, wrappers, styles, or source changes; LTR text in an RTL ancestor
+still needs protection. Inference is not universally correct, and explicit
+author/user direction should take priority.
 
 The repository includes Unicode 17-derived classification, per-block direction,
 semantic isolation, streaming reconciliation, bidi-control auditing, adapters
 for major web renderers, native Kotlin/Views/Compose modules, compiler-tested
 SwiftUI/UIKit and .NET/WPF adapters, 932 direction fixtures, three-browser
 tests, and Android/iOS simulator tests. Twelve public npm packages include provenance;
-three signed Maven Central modules, source-only Apple/Windows distribution, and
+three signed Maven Central modules, source-only Apple/Windows/Rust distribution, and
 missing external validation are documented explicitly.
 
 Would you be open to reviewing a small, reversible pilot in [specific renderer
@@ -46,7 +49,7 @@ Thank you,
 
 - Problem and quick start: [README](../README.md)
 - Published packages: [`@bidilens` on npm](https://www.npmjs.com/org/bidilens)
-- Versioned web release: [`v0.3.3` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3)
+- Versioned web release: [`v0.4.0` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.4.0)
 - Versioned Android release: [`android-v0.1.2` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
 - Native Android integration: [Android guide](../android/README.md)
 - Apple integration: [SwiftUI/UIKit guide](../apple/README.md)
@@ -69,7 +72,7 @@ pnpm run test:visual
 pnpm run release:check
 ```
 
-For an initial web review, install `@bidilens/core@0.3.3`; for Android, use one
+For an initial web review, install `@bidilens/core@0.4.0`; for Android, use one
 exact `io.github.codeinscrubs.bidilens:*:0.1.2` coordinate. Ask for confirmation
 of the host bug, feedback on the API boundary, or permission to prepare a small
 draft pull request. Do not claim universal rendering, zero defects,
@@ -78,7 +81,15 @@ surfaces, physical Apple/Windows validation, adoption, or company endorsement.
 Registry availability is verifiable, but adoption is not. Browser/OS layout
 engines still perform
 Unicode reordering and shaping; BidiLens supplies the application structure and
-policy they need.
+policy they need. Web npm packages declare Node `>=22.12.0`; check the host's
+build/runtime floor before proposing a dependency. There is no Python or Dart
+package and no published NuGet or Swift registry artifact. A shared-corpus or
+host-native contribution may be preferable to installing BidiLens.
+
+The immutable `v0.4.0` release includes 932 direction fixtures. Later audit-branch
+repairs and its expanded corpus are not part of npm `0.4.0` or Android `0.1.2`.
+Link versioned source when making release claims; do not advertise unreleased
+fixes as available in the registries.
 
 ## Pilot scope
 
