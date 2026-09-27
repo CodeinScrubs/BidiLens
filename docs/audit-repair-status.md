@@ -9,13 +9,13 @@ separate evidence gates. The working branch is
 
 | Area | Repair and scope |
 | --- | --- |
-| JavaScript core | Pinned Unicode 17 extended-grapheme boundaries; strict UAX #9 first-strong handling of existing isolates; conservative first-argument command recognition; bounded email/path scanning; balanced mixed URL delimiters; streaming option/case parity and late syntax inside quoted command arguments. |
+| JavaScript core | Pinned Unicode 17 extended-grapheme boundaries; strict UAX #9 first-strong handling of existing isolates; conservative first-argument command recognition; bounded email/path scanning with legacy non-overlapping email, Unicode simple-fold, and relative-path suffix compatibility; balanced mixed URL delimiters; streaming option/case parity and late syntax inside quoted command arguments. |
 | DOM and Markdown | Isolate complete eligible phrases across formatting nodes without cloning original elements; retain logical text, selection, formatting identity, authored boundaries, and caller alignment. Refresh host CSS direction rather than retaining stale computed values. Unsupported partial cross-format ranges remain unwrapped. Keep cached identical-block analyses independently mutable; respect authored Markdown-It CSS bidi boundaries. |
-| Android Compose | Resolve paragraph bases independently, even when run isolation is disabled; preserve logical editable values and non-paragraph annotation payloads; retain authored paragraph alignment while supplying direction. New layout instrumentation cases are compiled but not yet executed. |
+| Android Compose | Resolve paragraph bases independently, even when run isolation is disabled; preserve logical editable values and non-paragraph annotation payloads; retain authored paragraph alignment while supplying direction. New layout instrumentation cases passed on API 35. |
 | Windows WPF | Add paragraph-aware `Paragraph` and `RichTextBox` application/restoration, including nested lists, sections, and tables. Preserve source, selection, bindings, physical alignment, and current inherited styles. Tolerate malformed UTF-16 during analysis. |
 | Native core policies | Generate the curated command vocabulary from one source for Kotlin, Swift, C#, and Rust; implement conservative command boundaries, strict isolate-aware first-strong logic, strategy-sensitive technical exclusion, and balanced URL delimiters. Platform-specific verification is listed below. |
 | HTML, terminal, assertions | Preserve CR/CRLF through HTML parsing; enforce required Playwright isolate counts; distinguish NEL from ANSI and avoid injecting isolate bytes into incomplete terminal control sequences. |
-| CLI and GitHub Action | Discover the packaged corpus; shield runner logs from untrusted workflow commands; validate SARIF output targets, use exclusive temporary files and atomic replacement, preserve prior reports on failure, index source positions once, and encode artifact URI segments. |
+| CLI and GitHub Action | Discover the packaged corpus; shield runner logs from untrusted workflow commands; isolate consumer probes from ambient runner inputs and explicitly test production log shielding under `GITHUB_ACTIONS=true`; validate SARIF output targets, use exclusive temporary files and atomic replacement, preserve prior reports on failure, index source positions once, and encode artifact URI segments. |
 | Demo | Use the selected direction policy and inherited UI context throughout preview, inspector, exports, and streaming. Reconcile completed streams. Wrap narrow panel toolbars so controls are not silently clipped. |
 
 The native command policy is a curated recognition heuristic, not a shell
@@ -25,25 +25,48 @@ whole-control bases; per-paragraph policies use Compose or WPF document APIs.
 
 ## Verification of this audit branch
 
-Local Windows checks completed against the repaired source:
+Local Windows checks completed against the latest code revision `81119bc`:
 
 | Gate | Evidence |
 | --- | --- |
-| `pnpm check` | TypeScript, ESLint, generated data and package-depth checks; 24 unit suites, 681 passed and 2 platform-specific skips; 932 canonical direction/isolation fixtures and 94 security fixtures; documentation links; workspace builds; bundled Action runtime probes. |
+| `pnpm check` | TypeScript, ESLint, generated data and package-depth checks; 24 unit suites, 694 passed and 2 platform-specific skips; 932 canonical direction/isolation fixtures and 94 security fixtures; documentation links; workspace builds; bundled Action runtime probes. The full run also passed with ambient `GITHUB_ACTIONS=true`. |
 | `pnpm test:visual` | 66 tests passed across Chromium, Firefox, and WebKit, including source/copy/selection, authored boundaries, left alignment, rendering policies, completed streams, and toolbar containment at 320/390/768/1024/1280/1440 px in English and Persian. |
 | Latest Markdown regressions | Eight failing cases reproduced analysis aliasing, authored CSS-boundary crossings, case-insensitive attributes, and a whitespace-related normal-style false positive. Twelve new checks now pass; the complete Markdown and inline-forest suites passed 155 tests. |
+| Latest lexical regressions | Thirteen new checks cover relative paths after non-word prefixes, non-overlapping chained email candidates, and the legacy `ſ`/`K` simple-fold matches. A separate public-API differential probe against `origin/main` matched 26,285 bounded inputs. Independent review exercised 328,265 email and 299,593 relative-path cases. These bounded comparisons are not proof over every input or an RFC email-validation claim. |
 | `pnpm packages:types` | Packed declarations and supported ESM/bundler resolution passed for all 12 JavaScript packages. CommonJS remains dynamic-import-only. |
-| `pnpm markdown-it:compat` | Packed strict TypeScript consumers, 932 canonical cases, and 9 host-structure cases passed on Markdown-It 13.0.2, 14.3.1, and 15.0.1 after the final Markdown repairs. |
+| `pnpm markdown-it:compat` | Packed strict TypeScript consumers, 932 canonical cases, and 9 host-structure cases passed on Markdown-It 13.0.2, 14.3.1, and 15.0.1 after the latest lexical repairs. |
 | `pnpm deps:audit` | No known locked npm dependency vulnerabilities reported. This is not an independent security audit. |
 | `pnpm sbom` / `pnpm sbom:check` | CycloneDX 1.7 validated after incorporating current `main`: 532 components, 546 dependency relationships. |
-| `pnpm release:check --allow-dirty` | All 12 tarballs inspected; clean strict TypeScript/runtime/CLI consumer passed; four integration guides compiled and exercised; all 12 packed examples executed; raw and gzip size budgets passed. Development-only validation, not a publish decision. |
-| Windows native verification | 5,728 assertions and 932 canonical cases passed using local .NET 10 with runtime roll-forward; pinned .NET 8.0.423 verification is still required. |
-| Android | 38 core, 13 Compose, and 13 Views JVM tests passed; new Compose instrumentation tests compiled. No device was connected for execution of these new layout tests. |
-| Rust | Minimum Rust 1.85: formatting, all-target check, Clippy with denied warnings, and all-target tests passed (32 tests, including canonical corpus checks). Other OS compiler runs remain hosted gates. |
+| `pnpm release:check` | Clean-tree run: all 12 tarballs inspected; strict TypeScript/runtime/CLI consumer passed; four integration guides compiled and exercised; all 12 packed examples executed; raw and gzip size budgets passed. The command completed against committed source without `--allow-dirty`; this is still not a publish decision. |
+| Windows native verification | 5,728 assertions and 932 canonical cases passed using local .NET 10 with runtime roll-forward. The hosted pinned .NET 8.0.423 job also passed, including WPF sample builds and both NuGet packs. |
+| Android | 38 core, 13 Compose, and 13 Views JVM tests passed. The API 35 emulator passed 7 Compose and 4 Views instrumentation tests on rerun, including new independent-paragraph/physical-left layout cases and real-clipboard source preservation. The initial infrastructure failure is documented below. |
+| Apple | Hosted Swift core verification and iOS adapter build passed; simulator test output reports 34 tests with zero failures. This Windows host has no local Swift/iOS runtime. |
+| Rust | Minimum Rust 1.85: formatting, all-target check, Clippy with denied warnings, and all-target tests passed locally (32 tests, including canonical corpus checks). Hosted Linux/macOS/Windows jobs also passed. |
 
-Local JavaScript toolchain: Node 25.2.1 / pnpm 10.27.0. Declared Node 22.12
-support still needs the hosted minimum-version gate for this branch. Prior
-platform evidence does not validate changes introduced by this audit.
+Local JavaScript toolchain: Node 25.2.1 / pnpm 10.27.0. The packed-library,
+parser-compatibility, and release-artifact checks above were rerun against
+`81119bc`. Native sources did not change between that revision and the hosted
+snapshot described below.
+
+### Hosted snapshot and Android rerun
+
+Source snapshot `6f762ca9a5dd60b44488756618fbfda356eee3d1` passed all 25
+reported checks: [functional CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36282885982)
+and [CodeQL](https://github.com/CodeinScrubs/BidiLens/actions/runs/36282886006).
+These include minimum Node 22.12 and Node 24.15, cross-platform quality,
+packed consumers, browser tests, Android libraries/sample, native platforms,
+and all five CodeQL language jobs. No open code-scanning alerts were returned
+when checked. Neither green CodeQL nor an empty alert list establishes an
+independent security audit. Later commits require their own hosted results.
+
+In the first API 35 run, the clipboard case timed out at its initial
+window-focus wait, before selecting or copying text. The retained screenshot
+and window diagnostics show a **Quickstep ANR modal owning focus**. The new
+layout cases and all four Views cases passed in that run. A fresh-runner rerun
+passed all seven Compose and four Views cases with no skipped tests; the real
+clipboard and source-equality assertions were not weakened. This records an
+infrastructure flake, not proof that every physical-device clipboard/IME path
+works.
 
 The draft [audit PR #162](https://github.com/CodeinScrubs/BidiLens/pull/162)
 incorporates `main`'s current dependency lockfile and CodeQL action pins. The
@@ -52,15 +75,19 @@ them to the older audit baseline. Hosted checks, not draft status or local
 test counts, determine whether that combined branch can be merged.
 
 Release-artifact checks executed the clean packed consumer, CLI, guides, and
-examples. `--allow-dirty` is a development-only probe; it
-does not authorize publishing or satisfy the clean-tree release requirement.
+examples. Earlier `--allow-dirty` probes were development-only and did not
+satisfy the clean-tree release requirement. The latest clean-tree run does
+satisfy that artifact gate; publication still needs an explicit release
+decision and the protected provenance-capable workflow.
 
 ## Remaining repairs and release gates
 
 - UIKit independent paragraph bases, ownership-aware restoration, and
   marked-text composition still need repair and simulator/device validation.
-  Swift core edits in this branch have not been compiled locally; require
-  macOS Swift, iOS adapter, and Swift CodeQL checks before merge.
+  Existing hosted compiler, simulator, and Swift CodeQL results do not close
+  these unimplemented source gaps. Until repaired, keep separate read-only
+  blocks in separate controls and defer applying/restoring editable adapters
+  while marked text is active; see the [Apple guide](../apple/README.md).
 - Native engines do not yet implement the JavaScript core's full pinned
   extended-grapheme rules. Shared direction fixtures do not establish native
   cluster-boundary parity.
@@ -75,9 +102,10 @@ does not authorize publishing or satisfy the clean-tree release requirement.
   live-stream differences and repeated full rescans. `finish()` is the exact
   batch-reconciliation boundary; no universal linear streaming guarantee is
   claimed.
-- Run new Android layout tests on API 35/36 and physical devices; validate
-  WPF against the pinned .NET 8 SDK; run hosted Node minimum-version,
-  cross-platform quality, native, and CodeQL gates.
+- The new Android layout tests have API 35 evidence, but still need API 36
+  and physical-device coverage. Require fresh hosted Node minimum-version,
+  cross-platform quality, native, and CodeQL gates against the latest PR head;
+  the green `6f762ca` snapshot predates the final JavaScript lexical repairs.
 - Independent security review, native-speaker corpus certification,
   accessibility/IME laboratory testing, and downstream production pilots
   remain outstanding. No company adoption or universal rendering guarantee

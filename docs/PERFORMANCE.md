@@ -102,8 +102,15 @@ it is not an end-to-end BidiLens speedup and is not used as a product claim.
 
 The September audit adds pinned extended-grapheme data and rich-formatting
 ownership/selection handling. It deliberately increases the complete facade
-size: the measured core, DOM and Markdown artifacts were approximately
-139/25/84 KiB raw and 29.3/5.6/16.4 KiB gzip in the 2026-09-27 artifact check.
+size. The clean-tree 2026-09-27 artifact check at code revision `81119bc`
+measured these complete emitted facades:
+
+| Package | Aggregate JavaScript bytes | Gzip bytes |
+| --- | ---: | ---: |
+| Core | 142,449 | 30,089 |
+| DOM | 25,567 | 5,773 |
+| Markdown | 85,944 | 16,789 |
+
 Release gates bound both aggregate raw bytes (145/28/88 KiB) and gzip bytes
 (32/7/18 KiB) for those packages. These are full emitted facades, not a claim
 about a tree-shaken application's final bundle. The July timing tables above

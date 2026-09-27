@@ -85,6 +85,12 @@ The complete specification-to-evidence audit lives in
 
 ## Planned native work
 
+- full pinned Unicode 17 extended-grapheme rules and conformance vectors in
+  native engines, plus dedicated offset/scanner complexity review;
+- independent UIKit paragraph bases, ownership-aware restoration of authored
+  paragraph properties, and safe marked-text composition handling; current
+  source gaps and validation gates are tracked in the
+  [audit repair ledger](audit-repair-status.md);
 - physical-device/OEM/IME and TalkBack validation for the published Android
   libraries;
 - Flutter package and golden tests;

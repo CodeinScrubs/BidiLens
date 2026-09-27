@@ -4,6 +4,10 @@ This records the local verification of the unpublished audit-fix branch based
 on npm 0.4.0. It is not a claim that every platform, input, or downstream
 application is certified. Release status remains in the changelog and registry.
 
+This document preserves earlier hardening snapshots and their original test
+counts. For the latest unpublished repairs, exact source revisions, hosted
+results, and remaining gates, use the [audit repair ledger](audit-repair-status.md).
+
 ## Fixes and regression coverage
 
 | Area | Correction | Regression evidence |
