@@ -24,8 +24,17 @@ private fun countStrongCharacters(
     var technicalIndex = 0
     val strict = options.strategy == BidiDetectionStrategy.FIRST_STRONG ||
         options.strategy == BidiDetectionStrategy.STRICT_UAX9
+    var isolateDepth = 0
 
     text.forEachCodePoint { codePoint, utf16Index, _ ->
+        if (options.strategy == BidiDetectionStrategy.STRICT_UAX9) {
+            when (codePoint) {
+                0x0a, 0x0d, 0x85, 0x1c, 0x1d, 0x1e, 0x2029 -> isolateDepth = 0
+                0x2066, 0x2067, 0x2068 -> { isolateDepth += 1; return@forEachCodePoint }
+                0x2069 -> { isolateDepth = (isolateDepth - 1).coerceAtLeast(0); return@forEachCodePoint }
+                else -> if (isolateDepth > 0) return@forEachCodePoint
+            }
+        }
         while (technicalIndex < technical.size && utf16Index >= technical[technicalIndex].end) {
             technicalIndex += 1
         }
@@ -118,6 +127,7 @@ private fun analyzeParagraph(
         firstStrong = result.firstStrong,
         confidence = confidence(result.counts, direction),
         counts = result.counts,
+        resolvedDirection = resolvedDirection(direction, options),
     )
 }
 
@@ -168,7 +178,29 @@ fun analyzeBidi(
         interventionRequired = interventionRequired,
         technicalTokens = result.technicalTokens,
         isolations = if (interventionRequired) {
-            planInlineIsolation(text, resolved, options)
+            // A neighboring paragraph must not change which runs need isolation.
+            val codePointOffsets = IntArray(text.length + 1)
+            text.forEachCodePoint { codePoint, index, scalarIndex ->
+                codePointOffsets[index] = scalarIndex
+                codePointOffsets[index + Character.charCount(codePoint)] = scalarIndex + 1
+            }
+            paragraphs.flatMap { paragraph ->
+                val start = paragraph.utf16Start
+                val scalarStart = codePointOffsets[start]
+                planInlineIsolation(paragraph.text, paragraph.resolvedDirection,
+                    options.copy(intervention = BidiIntervention.ALWAYS)).map { isolation ->
+                    isolation.copy(
+                        start = isolation.start + start,
+                        end = isolation.end + start,
+                        sourceRange = isolation.sourceRange.copy(
+                            utf16Start = isolation.sourceRange.utf16Start + start,
+                            utf16End = isolation.sourceRange.utf16End + start,
+                            codePointStart = isolation.sourceRange.codePointStart + scalarStart,
+                            codePointEnd = isolation.sourceRange.codePointEnd + scalarStart,
+                        ),
+                    )
+                }
+            }
         } else {
             emptyList()
         },

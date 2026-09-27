@@ -14,6 +14,7 @@ import {
 } from './index.js';
 import { stablePrefixEnd } from './stream.js';
 import type { Root as MdastRoot } from 'mdast';
+import type { Root as HastRoot } from 'hast';
 import { CHATGPT_MIXED_DIRECTION_MARKDOWN } from '../../../scripts/fixtures/chatgpt-mixed-direction.js';
 
 async function render(markdown: string): Promise<string> {
@@ -32,6 +33,102 @@ function cpuMillisecondsSince(started: NodeJS.CpuUsage): number {
 }
 
 describe('Markdown plugins', () => {
+  it.each([
+    ['unicode-bidi: normal', true],
+    [' Unicode-Bidi: NORMAL !important', true],
+    ['color:red; unicode-bidi:normal', true],
+    ['color:red; unicode-bidi: isolate', false]
+  ] as const)('respects the HAST authored style boundary %s', (style, crossesFormatting) => {
+    const tree: HastRoot = { type: 'root', children: [{ type: 'element', tagName: 'p', properties: {}, children: [
+      { type: 'text', value: 'سلام CN ' },
+      { type: 'element', tagName: 'strong', properties: { style }, children: [{ type: 'text', value: 'IX' }] },
+      { type: 'text', value: ' پایان' }
+    ] }] };
+    rehypeBidi({ strategy: 'rtl' })(tree);
+    const html = String(unified().use(rehypeStringify).stringify(tree));
+    expect(/<bdi[^>]*>CN <strong/u.test(html)).toBe(crossesFormatting);
+    expect(html).toContain('>IX</strong>');
+  });
+  it('keeps cached identical block analyses independently mutable', () => {
+    const document = analyzeBidiMarkdown(new MarkdownIt(), '- سلام React\n- سلام React\n');
+    const analyses = document.blocks.filter((block) => block.text === 'سلام React').map((block) => block.analysis);
+    expect(analyses).toHaveLength(4);
+    const before = structuredClone(analyses.slice(1));
+    const assertSeparateObjects = (first: unknown, second: unknown): void => {
+      if (first !== null && typeof first === 'object') {
+        expect(first).not.toBe(second);
+        for (const [key, value] of Object.entries(first)) {
+          assertSeparateObjects(value, (second as Record<string, unknown>)[key]);
+        }
+      }
+    };
+    for (const analysis of analyses.slice(1)) assertSeparateObjects(analyses[0], analysis);
+    analyses[0]!.counts.rtl = 999;
+    analyses[0]!.isolations[0]!.sourceRange.utf16.start = 999;
+    expect(analyses.slice(1)).toEqual(before);
+  });
+  it.each(['isolate', 'embed', 'bidi-override', 'plaintext'])(
+    'does not cross a custom Markdown-It CSS %s boundary', (bidiStyle) => {
+      const md = new MarkdownIt();
+      md.core.ruler.after('inline', 'authored_bidi', (state) => {
+        for (const token of state.tokens) {
+          for (const child of token.children ?? []) {
+            if (child.type === 'strong_open') child.attrSet('style', `unicode-bidi:${bidiStyle};direction:ltr`);
+          }
+        }
+      });
+      markdownItBidi(md, { strategy: 'rtl' });
+      const html = md.render('سلام CN **IX** پایان');
+      expect(html).toContain(`<strong style="unicode-bidi:${bidiStyle};direction:ltr">IX</strong>`);
+      expect(html).not.toMatch(/<bdi[^>]*>CN <strong/u);
+      expect(html).toMatch(/<bdi[^>]*>CN<\/bdi> <strong/u);
+    }
+  );
+  it.each(['DIR', 'DaTa-BiDiLeNs-IsOlAtE'])(
+    'honors case-insensitive custom Markdown-It %s boundary attributes', (attribute) => {
+      const md = new MarkdownIt();
+      md.core.ruler.after('inline', 'authored_attribute', (state) => {
+        for (const token of state.tokens) {
+          for (const child of token.children ?? []) {
+            if (child.type === 'strong_open') child.attrSet(attribute, attribute === 'DIR' ? 'rtl' : '');
+          }
+        }
+      });
+      markdownItBidi(md, { strategy: 'rtl' });
+      const html = md.render('سلام CN **IX** پایان');
+      expect(html).toContain(`<strong ${attribute}=`);
+      expect(html).not.toMatch(/<bdi[^>]*>CN <strong/u);
+    }
+  );
+  it('keeps normal authored unicode-bidi styling eligible for phrase isolation', () => {
+    const md = new MarkdownIt();
+    md.core.ruler.after('inline', 'normal_bidi', (state) => {
+      for (const token of state.tokens) {
+        for (const child of token.children ?? []) {
+          if (child.type === 'strong_open') child.attrSet('STYLE', 'Unicode-Bidi: NORMAL !important');
+        }
+      }
+    });
+    markdownItBidi(md, { strategy: 'rtl' });
+    expect(md.render('سلام CN **IX** پایان')).toMatch(/<bdi[^>]*>CN <strong STYLE=/u);
+  });
+  it.each(['سلام CN **IX** پایان', 'لینک https://**example**.com را باز کنید.', 'سلام **hello** world پایان'])(
+    'isolates complete phrases across formatting in both renderers: %s', async (source) => {
+      const md = new MarkdownIt({ linkify: false });
+      markdownItBidi(md, { strategy: 'rtl' });
+      const hastHtml = String(await unified().use(remarkParse).use(remarkRehype)
+        .use(rehypeBidi, { strategy: 'rtl' }).use(rehypeStringify).process(source));
+      for (const html of [hastHtml, md.render(source)]) {
+        expect(html.match(/<bdi /gu)).toHaveLength(1);
+        expect(html).toMatch(/<bdi[^>]*>(?:CN <strong>IX<\/strong>|https:\/\/<strong>example<\/strong>\.com|<strong>hello<\/strong> world)<\/bdi>/u);
+      }
+    });
+  it('does not count invisible HTML comments in remark-only direction evidence', async () => {
+    const html = String(await unified().use(remarkParse).use(remarkBidi)
+      .use(remarkRehype).use(rehypeStringify)
+      .process('سلام <!-- Ordinary English documentation words which are not visible --> دنیا.'));
+    expect(html).toContain('dir="rtl"');
+  });
   it.each([
     ['سلام دنیا', false], ['سلام دنیا', true],
     ['The word کتاب means book.', false], ['The word کتاب means book.', true]

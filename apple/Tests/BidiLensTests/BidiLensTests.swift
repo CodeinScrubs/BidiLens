@@ -2,6 +2,52 @@ import XCTest
 @testable import BidiLens
 
 final class BidiLensTests: XCTestCase {
+    func testConservativeCommandRecognition() {
+        for source in ["go is a verb that means رفتن.", "python is a language for humans زبان.", "git is a great tool ابزار."] {
+            XCTAssertFalse(BidiAnalyzer.findTechnicalTokenRanges(source).contains { $0.kind == .command })
+        }
+        for source in ["npm install", "pnpm run test", "git status", "go run main.go", "python -m pip", "node script.js"] {
+            XCTAssertTrue(BidiAnalyzer.findTechnicalTokenRanges(source).contains { $0.kind == .command })
+        }
+    }
+
+    func testStrategyDefaultAndExplicitTechnicalExclusion() {
+        for strategy in [BidiDetectionStrategy.firstStrong, .strictUAX9] {
+            var options = BidiOptions(strategy: strategy)
+            XCTAssertEqual(BidiAnalyzer.analyze("React فارسی", options: options).direction, .leftToRight)
+            options.excludeTechnicalTokens = true
+            XCTAssertEqual(BidiAnalyzer.analyze("React فارسی", options: options).direction, .rightToLeft)
+            options.excludeTechnicalTokens = false
+            XCTAssertEqual(BidiAnalyzer.analyze("React فارسی", options: options).direction, .leftToRight)
+        }
+        var automatic = BidiOptions()
+        automatic.strategy = .firstStrong
+        XCTAssertFalse(automatic.excludeTechnicalTokens)
+        automatic.strategy = .contentMajority
+        XCTAssertTrue(automatic.excludeTechnicalTokens)
+    }
+
+    func testStrictUax9SkipsIsolatesAndResetsAtParagraphs() {
+        let options = BidiOptions(strategy: .strictUAX9)
+        for source in ["\u{2067}עברית\u{2069} ordinary", "\u{2067}א\u{2066}ABC\u{2069}ב\u{2069} ordinary"] {
+            XCTAssertEqual(BidiAnalyzer.analyze(source, options: options).direction, .leftToRight)
+        }
+        XCTAssertEqual(BidiAnalyzer.analyze("\u{2067}עברית ordinary", options: options).direction, .neutral)
+        for separator in ["\n", "\r\n", "\r", "\u{85}", "\u{1c}", "\u{1d}", "\u{1e}", "\u{2029}"] {
+            XCTAssertEqual(BidiAnalyzer.analyze("\u{2067}עברית\(separator)ordinary", options: options).direction, .leftToRight)
+        }
+    }
+
+    func testUrlTrailingClosersPreserveOnlyBalancedDelimiters() {
+        for (source, expected) in [
+            ("برو https://example.com/foo)]!", "https://example.com/foo"),
+            ("برو https://example.com/foo(bar).", "https://example.com/foo(bar)"),
+            ("برو https://example.com/foo(bar))].", "https://example.com/foo(bar)")
+        ] {
+            XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges(source).first { $0.kind == .url }?.text, expected)
+        }
+    }
+
     func testUnclosedIsolateIsNotReportedSafe() {
         XCTAssertFalse(BidiAnalyzer.analyze("\u{2066}unfinished").security.safe)
     }
@@ -92,7 +138,7 @@ final class BidiLensTests: XCTestCase {
         }
         let url = try XCTUnwrap(Bundle.module.url(forResource: "cases", withExtension: "json"))
         let cases = try JSONDecoder().decode([CorpusCase].self, from: Data(contentsOf: url))
-        XCTAssertEqual(cases.count, 932)
+        XCTAssertEqual(cases.count, 941)
         for item in cases {
             let expected: BidiDirection = switch item.expected {
             case "rtl": .rightToLeft

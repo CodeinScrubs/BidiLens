@@ -28,20 +28,22 @@ public static partial class BidiAnalyzer
         (Pattern(@"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"), TechnicalTokenKind.Path),
         (Pattern(@"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*", RegexOptions.IgnoreCase), TechnicalTokenKind.Identifier),
         (Pattern(@"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"), TechnicalTokenKind.Identifier),
-        (Pattern(@"(?<![A-Za-z0-9_])(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|""[^""\r\n]*""))+"), TechnicalTokenKind.Command),
+        (Pattern(@"(?<![A-Za-z0-9_])(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|""[^""\r\n]*""))+"), TechnicalTokenKind.Command),
         (Pattern(@"(?<![A-Za-z0-9_])(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![A-Za-z0-9_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![\p{L}\p{N}_])\+?[0-9][0-9 ()-]{6,}[0-9](?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Number),
         (Pattern(@"(?<![\p{L}\p{N}_])(?:\p{Sc}[+-]?" + NumericValue + @"|[+-]?" + NumericValue + @"\p{Sc})(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![\p{L}\p{N}_])(?:[+-]?" + NumericValue + @"[%٪]|[%٪][+-]?" + NumericValue + @")(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![\p{L}\p{N}_])[+-]?" + NumericValue + "[-–][+-]?" + NumericValue + @"(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"), TechnicalTokenKind.Version),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Hash),
-        (Pattern(@"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![\p{L}\p{N}_])[+-]?" + NumericValue + @"(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
     ];
 
     private static Regex Pattern(string value, RegexOptions options = RegexOptions.None) =>
         new(value, options | RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+    private static readonly Regex CommandPrefix = Pattern(@"^([a-z]+)[ \t]+('[^']*'|""[^""]*""|[^ \t]+)");
 
     public static BidiDirection DetectDirection(string text, BidiOptions? options = null) =>
         Analyze(text, options).Direction;
@@ -117,11 +119,15 @@ public static partial class BidiAnalyzer
         {
             foreach (Match match in regex.Matches(text))
             {
+                if (kind == TechnicalTokenKind.Command)
+                {
+                    var prefix = CommandPrefix.Match(match.Value);
+                    if (!prefix.Success || !TechnicalCommands.IsCommandArgument(prefix.Groups[1].Value, prefix.Groups[2].Value)) continue;
+                }
                 var length = match.Length;
                 if (kind is TechnicalTokenKind.Url or TechnicalTokenKind.Path)
                 {
-                    while (length > 0 && ".,;:!?،؛؟。।۔".Contains(match.Value[length - 1]))
-                        length--;
+                    length = TrimTechnicalSuffix(match.Value, kind == TechnicalTokenKind.Url);
                 }
                 if (length <= 0) continue;
                 var value = text.Substring(match.Index, length);
@@ -175,6 +181,30 @@ public static partial class BidiAnalyzer
             else merged.Add(range);
         }
         return merged;
+    }
+
+    private static int TrimTechnicalSuffix(string value, bool trimUnmatchedClosers)
+    {
+        var balance = new int[3];
+        if (trimUnmatchedClosers)
+            foreach (var character in value)
+            {
+                var opening = "([{".IndexOf(character);
+                var closing = ")]}".IndexOf(character);
+                if (opening >= 0) balance[opening]++;
+                if (closing >= 0) balance[closing]--;
+            }
+        var length = value.Length;
+        while (length > 0)
+        {
+            var character = value[length - 1];
+            if (".,;:!?،؛؟。।۔".Contains(character)) { length--; continue; }
+            var closing = ")]}".IndexOf(character);
+            if (!trimUnmatchedClosers || closing < 0 || balance[closing] >= 0) break;
+            balance[closing]++;
+            length--;
+        }
+        return length;
     }
 
     private static void AddStandaloneFenceDelimiters(
@@ -241,8 +271,16 @@ public static partial class BidiAnalyzer
         var first = BidiDirection.Neutral;
         var technicalIndex = 0;
         var strict = options.Strategy is BidiDetectionStrategy.FirstStrong or BidiDetectionStrategy.StrictUax9;
+        var isolateDepth = 0;
         foreach (var (rune, utf16Index, _) in UnicodeClassifier.Enumerate(text))
         {
+            if (options.Strategy == BidiDetectionStrategy.StrictUax9)
+            {
+                if (rune.Value is 0x0a or 0x0d or 0x85 or 0x1c or 0x1d or 0x1e or 0x2029) isolateDepth = 0;
+                else if (rune.Value is 0x2066 or 0x2067 or 0x2068) { isolateDepth++; continue; }
+                else if (rune.Value == 0x2069) { isolateDepth = Math.Max(0, isolateDepth - 1); continue; }
+                else if (isolateDepth > 0) continue;
+            }
             while (technicalIndex < technical.Count && utf16Index >= technical[technicalIndex].End) technicalIndex++;
             var range = technicalIndex < technical.Count ? technical[technicalIndex] : null;
             if (range is not null && utf16Index >= range.Start && utf16Index < range.End) continue;
@@ -404,7 +442,7 @@ public static partial class BidiAnalyzer
         var end = originalEnd;
         while (start < end)
         {
-            var rune = Rune.GetRuneAt(text, start);
+            var rune = UnicodeClassifier.RuneAt(text, start);
             if (UnicodeClassifier.ClassifyNatural(rune.Value) != BidiDirection.Neutral
                 || UnicodeClassifier.IsCombiningMark(rune.Value))
                 break;
@@ -417,7 +455,7 @@ public static partial class BidiAnalyzer
                 && runeStart > start
                 && char.IsHighSurrogate(text[runeStart - 1]))
                 runeStart--;
-            var rune = Rune.GetRuneAt(text, runeStart);
+            var rune = UnicodeClassifier.RuneAt(text, runeStart);
             if (UnicodeClassifier.ClassifyNatural(rune.Value) != BidiDirection.Neutral
                 || UnicodeClassifier.IsCombiningMark(rune.Value))
                 break;
@@ -464,7 +502,7 @@ public static partial class BidiAnalyzer
             var cursor = isolation.Utf16Start;
             while (cursor < isolation.Utf16End)
             {
-                var rune = Rune.GetRuneAt(text, cursor);
+                var rune = UnicodeClassifier.RuneAt(text, cursor);
                 var end = cursor + rune.Utf16SequenceLength;
                 if (rune.IsAscii && HardFragmentSeparators.Contains((char)rune.Value)
                     || rune.Value is 0x060c or 0x061b or 0x061f)

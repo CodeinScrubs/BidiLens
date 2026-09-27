@@ -21,17 +21,20 @@ public enum BidiAnalyzer {
         (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"#, .path, []),
         (#"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*"#, .identifier, [.caseInsensitive]),
         (#"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"#, .identifier, []),
-        (#"(?<![A-Za-z0-9_])(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+"#, .command, []),
+        (#"(?<![A-Za-z0-9_])(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+"#, .command, []),
         (#"(?<![A-Za-z0-9_])(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?![A-Za-z0-9_])"#, .number, []),
         (#"(?<![\p{L}\p{N}_])\+?[0-9][0-9 ()-]{6,}[0-9](?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])"#, .number, [.caseInsensitive]),
         (#"(?<![\p{L}\p{N}_])(?:\p{Sc}[+-]?"# + numericValue + "|[+-]?" + numericValue + #"\p{Sc})(?![\p{L}\p{N}_])"#, .number, []),
+        (#"(?<![\p{L}\p{N}_])(?:[+-]?"# + numericValue + "[%٪]|[%٪][+-]?" + numericValue + #")(?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![\p{L}\p{N}_])[+-]?"# + numericValue + "[-–][+-]?" + numericValue + #"(?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"#, .version, []),
         (#"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])"#, .hash, [.caseInsensitive]),
-        (#"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"#, .number, []),
+        (#"(?<![\p{L}\p{N}_])[+-]?"# + numericValue + #"(?![\p{L}\p{N}_])"#, .number, []),
     ]
+
+    private static let commandPrefix = try? NSRegularExpression(pattern: #"^([a-z]+)[ \t]+('[^']*'|"[^"]*"|[^ \t]+)"#)
 
     public static func detectDirection(
         _ text: String,
@@ -151,18 +154,15 @@ public enum BidiAnalyzer {
         for (pattern, kind, options) in technicalPatterns {
             guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { continue }
             for match in regex.matches(in: text, range: fullRange) {
+                if kind == .command {
+                    let command = (text as NSString).substring(with: match.range) as NSString
+                    guard let prefix = commandPrefix?.firstMatch(in: command as String, range: NSRange(location: 0, length: command.length)),
+                          TechnicalCommands.isCommandArgument(command.substring(with: prefix.range(at: 1)), command.substring(with: prefix.range(at: 2))) else { continue }
+                }
                 var length = match.range.length
                 if kind == .url || kind == .path {
-                    let trailing = CharacterSet(charactersIn: ".,;:!?،؛؟。।۔")
                     let value = (text as NSString).substring(with: match.range) as NSString
-                    while length > 0 {
-                        let value = UInt32(value.character(at: length - 1))
-                        if let scalar = UnicodeScalar(value), trailing.contains(scalar) {
-                            length -= 1
-                        } else {
-                            break
-                        }
-                    }
+                    length = trimTechnicalSuffix(value, trimUnmatchedClosers: kind == .url)
                 }
                 guard length > 0 else { continue }
                 let range = match.range.location..<(match.range.location + length)
@@ -307,6 +307,32 @@ public enum BidiAnalyzer {
         return output
     }
 
+    private static func trimTechnicalSuffix(_ value: NSString, trimUnmatchedClosers: Bool) -> Int {
+        let opening: [UInt16] = [0x28, 0x5b, 0x7b]
+        let closing: [UInt16] = [0x29, 0x5d, 0x7d]
+        var balance = [0, 0, 0]
+        if trimUnmatchedClosers {
+            for index in 0..<value.length {
+                let character = value.character(at: index)
+                if let slot = opening.firstIndex(of: character) { balance[slot] += 1 }
+                if let slot = closing.firstIndex(of: character) { balance[slot] -= 1 }
+            }
+        }
+        let trailing = CharacterSet(charactersIn: ".,;:!?،؛؟。।۔")
+        var length = value.length
+        while length > 0 {
+            let character = value.character(at: length - 1)
+            if let scalar = UnicodeScalar(UInt32(character)), trailing.contains(scalar) {
+                length -= 1
+                continue
+            }
+            guard trimUnmatchedClosers, let slot = closing.firstIndex(of: character), balance[slot] < 0 else { break }
+            balance[slot] += 1
+            length -= 1
+        }
+        return length
+    }
+
     private static func count(
         _ text: String,
         options: BidiOptions,
@@ -317,7 +343,16 @@ public enum BidiAnalyzer {
         var first: BidiDirection = .neutral
         var technicalIndex = 0
         let strict = options.strategy == .firstStrong || options.strategy == .strictUAX9
+        var isolateDepth = 0
         for item in UnicodeClassifier.enumerate(text) {
+            if options.strategy == .strictUAX9 {
+                switch item.scalar.value {
+                case 0xa, 0xd, 0x85, 0x1c, 0x1d, 0x1e, 0x2029: isolateDepth = 0
+                case 0x2066, 0x2067, 0x2068: isolateDepth += 1; continue
+                case 0x2069: isolateDepth = max(0, isolateDepth - 1); continue
+                default: if isolateDepth > 0 { continue }
+                }
+            }
             while technicalIndex < technical.count,
                   item.utf16 >= technical[technicalIndex].utf16Range.upperBound {
                 technicalIndex += 1

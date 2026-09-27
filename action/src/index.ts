@@ -1,6 +1,7 @@
-import { appendFile, mkdir, writeFile } from 'node:fs/promises';
+import { appendFile, lstat, mkdir, open, realpath, rename, rm } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { dirname, isAbsolute, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import { runCli } from '../../packages/cli/src/index.js';
 
@@ -65,10 +66,12 @@ export function readActionInputs(env: NodeJS.ProcessEnv = process.env): ActionIn
 export function buildCliArguments(inputs: ActionInputs, env: NodeJS.ProcessEnv = process.env): string[] {
   if (inputs.command === 'test') {
     if (inputs.format === 'sarif') throw new Error('SARIF output is available only for the audit command.');
-    const actionPath = env.GITHUB_ACTION_PATH
-      ? resolve(env.GITHUB_ACTION_PATH)
-      : resolve(env.GITHUB_WORKSPACE ?? process.cwd(), 'action');
-    const corpus = inputs.corpus || resolve(actionPath, '..', 'corpus', 'cases.json');
+    // __dirname is available in the distributed CJS bundle; import.meta.url
+    // supplies the same location for source ESM. Neither depends on caller cwd.
+    const moduleDirectory = typeof __dirname === 'string' ? __dirname : dirname(fileURLToPath(import.meta.url));
+    const corpus = inputs.corpus || (env.GITHUB_ACTION_PATH
+      ? resolve(env.GITHUB_ACTION_PATH, '..', 'corpus', 'cases.json')
+      : resolve(moduleDirectory, '..', '..', 'corpus', 'cases.json'));
     return ['node', 'bidilens', 'test', '--corpus', corpus, ...(inputs.format === 'json' ? ['--json'] : [])];
   }
 
@@ -81,13 +84,65 @@ export function buildCliArguments(inputs: ActionInputs, env: NodeJS.ProcessEnv =
   ];
 }
 
-function workspaceFile(cwd: string, requested: string): { absolute: string; relative: string } {
+function workspaceFile(cwd: string, requested: string): { absolute: string; relative: string; parts: string[] } {
   const absolute = resolve(cwd, requested);
   const local = relative(cwd, absolute);
-  if (!local || local.startsWith('..') || isAbsolute(local)) {
+  if (!local || local.split(sep)[0] === '..' || isAbsolute(local)) {
     throw new Error('sarif-file must resolve to a file inside GITHUB_WORKSPACE.');
   }
-  return { absolute, relative: local.replaceAll('\\', '/') };
+  const parts = local.split(sep);
+  return { absolute, relative: parts.join('/'), parts };
+}
+
+async function existingEntry(path: string): Promise<Awaited<ReturnType<typeof lstat>> | undefined> {
+  try { return await lstat(path); }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw error;
+  }
+}
+
+/**
+ * Refuse symlink/junction traversal and replace, rather than truncate, a report
+ * inode (which may have hard links). Portable pathname APIs cannot protect
+ * against a malicious process concurrently replacing an ancestor directory.
+ */
+async function writeWorkspaceReport(cwd: string, requested: string, contents: string): Promise<string> {
+  const root = await realpath(cwd);
+  const target = workspaceFile(root, requested);
+  const parts = target.parts;
+  let parent = root;
+  for (const part of parts.slice(0, -1)) {
+    parent = resolve(parent, part);
+    let entry = await existingEntry(parent);
+    if (!entry) {
+      try { await mkdir(parent); }
+      catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; }
+      entry = await lstat(parent);
+    }
+    if (entry.isSymbolicLink() || !entry.isDirectory()) throw new Error('SARIF parent must be a real workspace directory, not a link.');
+    const canonical = await realpath(parent);
+    workspaceFile(root, resolve(canonical, parts.at(-1)!));
+    parent = canonical;
+  }
+  const destination = await existingEntry(target.absolute);
+  if (destination && (destination.isSymbolicLink() || !destination.isFile())) {
+    throw new Error('SARIF destination must be a regular workspace file, not a link.');
+  }
+  const temporary = resolve(parent, `.bidilens-${randomUUID()}.tmp`);
+  const handle = await open(temporary, 'wx', 0o600);
+  try {
+    await handle.writeFile(contents, 'utf8');
+    await handle.close();
+    if ((await lstat(parent)).isSymbolicLink() || await realpath(parent) !== parent) {
+      throw new Error('SARIF workspace directory changed while writing the report.');
+    }
+    await rename(temporary, target.absolute);
+  } finally {
+    await handle.close();
+    await rm(temporary, { force: true });
+  }
+  return target.relative;
 }
 
 async function setOutput(path: string | undefined, name: string, value: string): Promise<void> {
@@ -114,20 +169,28 @@ export async function runAction(context: ActionContext = {}): Promise<ActionResu
   const stderrText = stderr.join('');
   let report = '';
 
-  if (inputs.format === 'sarif') {
-    const target = workspaceFile(cwd, inputs.sarifFile);
-    await mkdir(dirname(target.absolute), { recursive: true });
-    await writeFile(target.absolute, stdoutText, 'utf8');
-    report = target.relative;
-    log(`BidiLens SARIF report written to ${report}.`);
-  } else if (stdoutText) {
-    log(stdoutText.trimEnd());
+  if (inputs.format === 'sarif' && (exitCode === 0 || exitCode === 2)) {
+    const parsed = JSON.parse(stdoutText) as { version?: string; runs?: unknown[] };
+    if (parsed.version !== '2.1.0' || !Array.isArray(parsed.runs)) throw new Error('CLI did not produce a valid SARIF report.');
+    report = await writeWorkspaceReport(cwd, inputs.sarifFile, stdoutText);
   }
-  if (stderrText) error(stderrText.trimEnd());
+
+  // Runner command suspension is global. Send both streams through one writer
+  // inside one protected block, so stdout cannot resume commands before stderr.
+  const protectedLogs = env.GITHUB_ACTIONS === 'true';
+  const token = `bidilens_${randomUUID()}`;
+  if (protectedLogs) log(`::stop-commands::${token}`);
+  try {
+    if (report) log(`BidiLens SARIF report written to ${JSON.stringify(report)}.`);
+    else if (inputs.format !== 'sarif' && stdoutText) log(stdoutText.trimEnd());
+    if (stderrText) (protectedLogs ? log : error)(stderrText.trimEnd());
+    if (exitCode !== 0) (protectedLogs ? log : error)(`BidiLens ${inputs.command} failed with exit code ${exitCode}.`);
+  } finally {
+    if (protectedLogs) log(`::${token}::`);
+  }
 
   await setOutput(env.GITHUB_OUTPUT, 'exit-code', String(exitCode));
   await setOutput(env.GITHUB_OUTPUT, 'report', report);
-  if (exitCode !== 0) error(`BidiLens ${inputs.command} failed with exit code ${exitCode}.`);
   return { exitCode, report, stdout: stdoutText, stderr: stderrText };
 }
 

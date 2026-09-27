@@ -741,7 +741,7 @@ describe('streaming', () => {
       ' $ordinary prose$ ',
       ' $$ordinary prose$$ ',
       ' \\(ordinary prose\\) ',
-      ' npm ordinary prose words remain arguments '
+      ' npm run ordinary prose words remain arguments '
     ]) {
       const stream = createBidiStream();
       stream.push('\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627');

@@ -109,4 +109,22 @@ describe('Svelte adapter', () => {
     expect(replaced.direction).toBe('rtl');
     expect(stream.getText()).toBe('سلام دنیا');
   });
+
+  it.each(['push', 'setText'] as const)('keeps source and subscribers unchanged after a rejected %s', (method) => {
+    const stream = createStreamingBidiMessage();
+    stream.push('Hello');
+    const seen: string[] = [];
+    const unsubscribe = stream.subscribe((snapshot) => seen.push(snapshot.text));
+    const finished = stream.finish();
+    expect(() => method === 'push' ? stream.push(' سلام') : stream.setText('Hello سلام'))
+      .toThrow('Cannot push after finish().');
+    expect(stream.getText()).toBe('Hello');
+    expect(get(stream)).toEqual(finished);
+    expect(seen).toEqual(['Hello', 'Hello']);
+    expect(stream.setText('Hello')).toEqual(finished);
+    stream.reset('سلام');
+    expect(stream.push(' دنیا').text).toBe('سلام دنیا');
+    expect(stream.getText()).toBe('سلام دنیا');
+    unsubscribe();
+  });
 });

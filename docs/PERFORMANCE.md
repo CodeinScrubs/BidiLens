@@ -75,6 +75,10 @@ character-by-character streams of `$A$1 ` repetitions. Such ambiguous
 environment/math overlaps remain a worst-case limitation even though ordinary
 price prose and dense delimiter regression tests pass. Batch input where
 possible, limit untrusted response length, and reconcile at `finish()`.
+Open bracketed display math also requires exact analysis at push boundaries
+until it closes. Long unclosed spans with tiny chunks can therefore perform
+quadratic total work. This correctness-first fallback is not active for
+ordinary plain-text streams.
 An external 11.8x BMP lookup microbenchmark targets a different implementation;
 it is not an end-to-end BidiLens speedup and is not used as a product claim.
 
@@ -97,8 +101,36 @@ it is not an end-to-end BidiLens speedup and is not used as a product claim.
   planning to finish within three seconds on the CI machine;
 - an adversarial unit alarm scans 128,000 UTF-16 units of repeated unmatched
   `\(` delimiters within the batch budget, guarding the linear math scanner;
+- the external-claims regressions scan 32,000 unmatched `\[` openers and
+  16,000-group numbers with each supported separator, including rejected
+  final word boundaries. Currency/percentage/range suffix recognition in the
+  JavaScript core reuses a bounded numeric-candidate scan instead of restarting
+  at every separator. These measured alarms do not establish native regex
+  complexity parity or an unconditional whole-engine complexity guarantee;
 - release checks enforce aggregate emitted-JavaScript budgets, including
   code-split chunks.
+
+The September audit adds pinned extended-grapheme data and rich-formatting
+ownership/selection handling. It deliberately increases the complete facade
+size. The clean-tree 2026-09-27 artifact check at code revision `81119bc`
+measured these complete emitted facades:
+
+| Package | Aggregate JavaScript bytes | Gzip bytes |
+| --- | ---: | ---: |
+| Core | 142,449 | 30,089 |
+| DOM | 25,567 | 5,773 |
+| Markdown | 85,944 | 16,789 |
+
+The subsequent external-claim repairs at code revision `7825d65`, checked from
+a clean committed tree on 2026-09-27, measured core at 144,748 raw bytes and
+30,608 gzip bytes. DOM and Markdown remained at the sizes above. The added
+numeric scanner and streaming reconciliation cost 2,299 raw bytes and 519 gzip
+bytes versus `81119bc`; no size budget was raised to accommodate these repairs.
+
+Release gates bound both aggregate raw bytes (145/28/88 KiB) and gzip bytes
+(32/7/18 KiB) for those packages. These are full emitted facades, not a claim
+about a tree-shaken application's final bundle. The July timing tables above
+are historical snapshots, not measurements of this audit branch.
 
 The complete Unicode 17 paragraph-separator set (CR, LF, CRLF, NEL,
 U+001C–U+001E, and U+2029) is recognized incrementally. An arbitrary custom

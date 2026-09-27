@@ -21,36 +21,40 @@ export interface TerminalFormatResult {
   warnings: string[];
 }
 
-function consumeCsi(source: string, start: number): number {
+interface AnsiControl { end: number; complete: boolean }
+
+function consumeCsi(source: string, start: number): AnsiControl {
   for (let index = start; index < source.length; index += 1) {
     const code = source.charCodeAt(index);
-    if (code >= 0x40 && code <= 0x7e) return index + 1;
+    if (code >= 0x40 && code <= 0x7e) return { end: index + 1, complete: true };
   }
-  return source.length;
+  return { end: source.length, complete: false };
 }
 
-function consumeStringControl(source: string, start: number, allowBell: boolean): number {
+function consumeStringControl(source: string, start: number, allowBell: boolean): AnsiControl {
   for (let index = start; index < source.length; index += 1) {
     const code = source.charCodeAt(index);
-    if (allowBell && code === 0x07) return index + 1;
-    if (code === 0x9c) return index + 1;
-    if (code === 0x1b && source.charCodeAt(index + 1) === 0x5c) return index + 2;
+    if (allowBell && code === 0x07) return { end: index + 1, complete: true };
+    if (code === 0x9c) return { end: index + 1, complete: true };
+    if (code === 0x1b && source.charCodeAt(index + 1) === 0x5c) return { end: index + 2, complete: true };
   }
   // An unterminated string control owns the remainder of the input. Treating
   // its payload as prose could both skew direction and inject isolates into it.
-  return source.length;
+  return { end: source.length, complete: false };
 }
 
-function ansiControlEnd(source: string, start: number): number | undefined {
+function ansiControlEnd(source: string, start: number): AnsiControl | undefined {
   const code = source.charCodeAt(start);
   if (code === 0x9b) return consumeCsi(source, start + 1);
   if (code === 0x9d) return consumeStringControl(source, start + 1, true);
   if (code === 0x90 || code === 0x98 || code === 0x9e || code === 0x9f) {
     return consumeStringControl(source, start + 1, false);
   }
-  if (code >= 0x80 && code <= 0x9f) return start + 1;
+  // NEL is a Unicode paragraph boundary, not ignorable terminal metadata.
+  if (code === 0x85) return undefined;
+  if (code >= 0x80 && code <= 0x9f) return { end: start + 1, complete: true };
   if (code !== 0x1b) return undefined;
-  if (start + 1 >= source.length) return source.length;
+  if (start + 1 >= source.length) return { end: source.length, complete: false };
 
   const next = source.charCodeAt(start + 1);
   if (next === 0x5b) return consumeCsi(source, start + 2);
@@ -66,26 +70,33 @@ function ansiControlEnd(source: string, start: number): number | undefined {
       index += 1;
       continue;
     }
-    return value >= 0x30 && value <= 0x7e ? index + 1 : start + 1;
+    return value >= 0x30 && value <= 0x7e
+      ? { end: index + 1, complete: true }
+      : { end: start + 1, complete: true };
   }
-  return source.length;
+  return { end: source.length, complete: false };
 }
 
-export function maskAnsiForAnalysis(source: string): string {
+function analyzeAnsi(source: string): { masked: string; incomplete: boolean } {
   let result = '';
   let cursor = 0;
   for (let index = 0; index < source.length;) {
-    const end = ansiControlEnd(source, index);
-    if (end === undefined) {
+    const control = ansiControlEnd(source, index);
+    if (control === undefined) {
       index += 1;
       continue;
     }
     result += source.slice(cursor, index);
-    result += ' '.repeat(end - index);
-    cursor = end;
-    index = end;
+    result += ' '.repeat(control.end - index);
+    cursor = control.end;
+    if (!control.complete) return { masked: result, incomplete: true };
+    index = control.end;
   }
-  return result + source.slice(cursor);
+  return { masked: result + source.slice(cursor), incomplete: false };
+}
+
+export function maskAnsiForAnalysis(source: string): string {
+  return analyzeAnsi(source).masked;
 }
 
 function isolateParagraph(
@@ -112,7 +123,8 @@ function isolateParagraph(
  */
 export function formatTerminalText(source: string, options: TerminalFormatOptions = {}): TerminalFormatResult {
   const mode = options.mode ?? 'plain';
-  const analysisText = maskAnsiForAnalysis(source);
+  const ansi = analyzeAnsi(source);
+  const analysisText = ansi.masked;
   const analysis = analyzeText(analysisText, {
     ...options,
     fallback: options.fallback ?? options.inheritedDirection ?? 'ltr'
@@ -132,6 +144,11 @@ export function formatTerminalText(source: string, options: TerminalFormatOption
       controlsInserted: false,
       warnings
     };
+  }
+
+  if (ansi.incomplete) {
+    warnings.push('Isolation skipped because an unterminated ANSI control owns the remaining payload.');
+    return { source, text: source, direction: analysis.direction, mode, controlsInserted: false, warnings };
   }
 
   const chunks = analysis.paragraphs.map((paragraph, index) => {

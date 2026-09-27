@@ -4,6 +4,11 @@
 
 Evidence snapshot: 2026-09-02, web `0.3.3` and Android `0.1.2` release source.
 
+Later source-only update (2026-09-27): the unpublished audit branch expands
+the canonical corpus to 941 cases. See the
+[repair ledger](docs/audit-repair-status.md) for current evidence; the release
+snapshot below is preserved rather than presented as a new publication.
+
 - 12 public JavaScript packages with implementations, declarations, README,
   license, runnable example, and package-local assertion coverage;
 - 932 schema-validated direction fixtures with numbered logical words;

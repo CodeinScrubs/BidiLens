@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.OffsetMapping
@@ -74,8 +75,8 @@ fun rememberBidiComposeState(
     BidiComposeState(
         analysis = analysis,
         textStyle = bidiTextStyle(style, analysis, alignToContent),
-        visualTransformation = if (isolateRuns && analysis.isolations.isNotEmpty()) {
-            BidiVisualTransformation(analysis)
+        visualTransformation = if (analysis.interventionRequired) {
+            BidiVisualTransformation(analysis, isolateRuns)
         } else {
             VisualTransformation.None
         },
@@ -201,9 +202,10 @@ fun BidiBasicTextField(
  */
 class BidiVisualTransformation(
     private val analysis: BidiAnalysis,
+    private val isolateRuns: Boolean = true,
 ) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
-        if (!analysis.interventionRequired || analysis.isolations.isEmpty() || text.text != analysis.text) {
+        if (!analysis.interventionRequired || text.text != analysis.text) {
             return TransformedText(text, OffsetMapping.Identity)
         }
         val original = text.text
@@ -222,7 +224,8 @@ class BidiVisualTransformation(
             }
         }
 
-        for (isolation in analysis.isolations) {
+        val isolations = if (isolateRuns) analysis.isolations else emptyList()
+        for (isolation in isolations) {
             if (isolation.start < source) continue
             appendSource(isolation.start)
             transformedToOriginal += source
@@ -248,6 +251,59 @@ class BidiVisualTransformation(
             override fun transformedToOriginal(offset: Int): Int =
                 transformedToOriginal[offset.coerceIn(0, transformedToOriginal.lastIndex)]
         }
-        return TransformedText(AnnotatedString(transformed.toString()), mapping)
+        // Paragraph ranges include inserted boundary controls. Starting a style
+        // after a leading LRI would create an unintended, empty layout paragraph.
+        val isolationStarts = isolations.mapTo(HashSet()) { it.start }
+        fun paragraphOffset(offset: Int): Int = when {
+            offset == original.length -> transformed.length
+            offset in isolationStarts -> originalToTransformed[offset] - 1
+            else -> originalToTransformed[offset]
+        }
+        val annotations = mutableListOf<AnnotatedString.Range<out AnnotatedString.Annotation>>()
+        val paragraphs = analysis.paragraphs
+        val boundaries = IntArray(paragraphs.size + 1) { index ->
+            paragraphs.getOrNull(index)?.utf16Start ?: original.length
+        }
+        for ((index, paragraph) in paragraphs.withIndex()) {
+            annotations += AnnotatedString.Range(
+                ParagraphStyle(textDirection = paragraph.resolvedDirection.composeDirection()),
+                paragraphOffset(boundaries[index]),
+                paragraphOffset(boundaries[index + 1]),
+            )
+        }
+        // Split authored paragraph styles at the same boundaries, so a style
+        // spanning multiple paragraphs cannot partially overlap the new ranges.
+        // Only direction is replaced; alignment/indent/spacing stay caller-owned.
+        text.mapAnnotations { range ->
+            val style = range.item as? ParagraphStyle
+            if (style == null) {
+                // Preserve payload identity, including link listeners and TTS.
+                annotations += range.copy(
+                    start = originalToTransformed[range.start],
+                    end = originalToTransformed[range.end],
+                )
+            } else {
+                var low = 0
+                var high = paragraphs.lastIndex
+                while (low < high) {
+                    val middle = (low + high + 1) ushr 1
+                    if (boundaries[middle] <= range.start) low = middle else high = middle - 1
+                }
+                var index = low
+                do {
+                    val start = maxOf(range.start, boundaries[index])
+                    val end = minOf(range.end, boundaries[index + 1])
+                    if (start < end || (range.start == range.end && start == end)) {
+                        annotations += AnnotatedString.Range(
+                            style.copy(textDirection = paragraphs[index].resolvedDirection.composeDirection()),
+                            paragraphOffset(start), paragraphOffset(end), range.tag,
+                        )
+                    }
+                    index += 1
+                } while (index < paragraphs.size && boundaries[index] < range.end)
+            }
+            range
+        }
+        return TransformedText(AnnotatedString(transformed.toString(), annotations), mapping)
     }
 }

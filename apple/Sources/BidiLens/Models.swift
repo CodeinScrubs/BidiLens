@@ -36,7 +36,12 @@ public struct BidiOptions: Sendable {
     public var inheritedDirection: BidiDirection
     public var minimumStrongCharacters: Int
     public var majorityThreshold: Double
-    public var excludeTechnicalTokens: Bool
+    private var excludeTechnicalTokensOverride: Bool?
+    /// Defaults to exclusion only for contentMajority. Explicit values remain authoritative.
+    public var excludeTechnicalTokens: Bool {
+        get { excludeTechnicalTokensOverride ?? (strategy == .contentMajority) }
+        set { excludeTechnicalTokensOverride = newValue }
+    }
     public var technicalIdentifiers: Set<String>
     public var intervention: BidiIntervention
 
@@ -46,7 +51,7 @@ public struct BidiOptions: Sendable {
         inheritedDirection: BidiDirection = .leftToRight,
         minimumStrongCharacters: Int = 1,
         majorityThreshold: Double = 0.5,
-        excludeTechnicalTokens: Bool = true,
+        excludeTechnicalTokens: Bool? = nil,
         technicalIdentifiers: Set<String> = [],
         intervention: BidiIntervention = .auto
     ) {
@@ -58,7 +63,7 @@ public struct BidiOptions: Sendable {
         self.inheritedDirection = inheritedDirection
         self.minimumStrongCharacters = minimumStrongCharacters
         self.majorityThreshold = majorityThreshold
-        self.excludeTechnicalTokens = excludeTechnicalTokens
+        self.excludeTechnicalTokensOverride = excludeTechnicalTokens
         self.technicalIdentifiers = technicalIdentifiers
         self.intervention = intervention
     }

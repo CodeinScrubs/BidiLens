@@ -1,10 +1,79 @@
 import { expect, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { resolve } from 'node:path';
 import { expectBidiBlock } from '../../packages/playwright/src/index.js';
 
 const DEMO_ORIGIN = 'http://127.0.0.1:4173';
 const FLAGSHIP = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';
 const SHARED = 'The Persian word کتاب means “book”.';
+
+test('responsive panel headers do not clip controls in either UI language', async ({ page }) => {
+  await page.goto(DEMO_ORIGIN);
+  for (const language of ['en', 'fa']) {
+    if (language === 'fa') await page.getByRole('button', { name: 'فارسی' }).click();
+    for (const width of [320, 390, 768, 1024, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      const clipped = await page.locator('.panel-title').evaluateAll((headers) => headers.flatMap((header) => {
+        const bounds = header.getBoundingClientRect();
+        return [...header.querySelectorAll('button, input, select')].flatMap((control) => {
+          const rect = control.getBoundingClientRect();
+          return rect.left < bounds.left - 1 || rect.right > bounds.right + 1
+            || rect.top < bounds.top - 1 || rect.bottom > bounds.bottom + 1
+            ? [control.getAttribute('aria-label') ?? control.textContent?.trim()] : [];
+        });
+      }));
+      expect(clipped, `${language} at ${width}px`).toEqual([]);
+    }
+  }
+});
+
+test('selected policy drives the rendered Markdown preview', async ({ page }) => {
+  await page.goto(DEMO_ORIGIN);
+  await page.getByLabel('Load a mixed-direction preset').selectOption('flagship');
+  const paragraph = page.locator('.markdown-body p');
+  await expect(paragraph).toHaveCSS('direction', 'rtl');
+  await page.getByLabel('Direction policy').selectOption('first-strong');
+  await expect(paragraph).toHaveCSS('direction', 'ltr');
+  await page.getByLabel('Direction policy').selectOption('content-majority');
+  await expect(paragraph).toHaveCSS('direction', 'rtl');
+});
+
+test('English content stays LTR inside the Persian-language UI', async ({ page }) => {
+  await page.goto(DEMO_ORIGIN);
+  await page.getByLabel('Input Markdown').fill('Ordinary English prose.');
+  await page.getByRole('button', { name: 'فارسی' }).click();
+  await expect(page.locator('main')).toHaveAttribute('dir', 'rtl');
+  await expect(page.locator('[data-case="toolkit-live"]')).toHaveCSS('direction', 'ltr');
+  await expect(page.locator('.markdown-body p')).toHaveCSS('direction', 'ltr');
+});
+
+test('completed streams reconcile direction and the demo renders without app errors', async ({ page }, testInfo) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  const source = `Ordinary English ${'این جمله فارسی است و باید راست به چپ باشد. '.repeat(3)}`;
+  await page.goto(DEMO_ORIGIN);
+  await expect(page).toHaveTitle(/BidiLens/);
+  await expect(page.locator('.hero h1')).toBeVisible();
+  await expect(page.locator('vite-error-overlay')).toHaveCount(0);
+  await page.getByLabel('Input Markdown').fill(source);
+  await page.getByRole('slider', { name: 'Chunk size' }).fill('4');
+  await page.getByRole('slider', { name: 'Delay (ms)' }).fill('1');
+  await page.getByRole('button', { name: 'Simulate stream' }).click();
+  await expect(page.getByRole('button', { name: 'Simulate stream' })).toBeEnabled();
+  await expect(page.locator('.stream-output')).toHaveText(source);
+  await expect(page.locator('.stream-output')).toHaveCSS('direction', 'rtl');
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: resolve(tmpdir(), `bidilens-demo-audit-${testInfo.project.name}-desktop.png`) });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(page.locator('.hero h1')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: resolve(tmpdir(), `bidilens-demo-audit-${testInfo.project.name}-mobile.png`) });
+  expect(errors).toEqual([]);
+});
 
 test('falls back when the browser clipboard API never settles', async ({ page }) => {
   // This case intentionally waits for two clipboard timeout paths. Leave room

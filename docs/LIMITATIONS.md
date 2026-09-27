@@ -56,6 +56,10 @@ The core live stream is also provisional: adversarial overlaps between `$`,
 environment identifiers, escapes, and incomplete math can differ from the batch
 policy before `finish()`. Repeated ambiguity can trigger exact rescans and
 quadratic behavior; there is no universal linear-time streaming guarantee.
+An open `\[...\]` display span uses exact analysis at observable push
+boundaries because its unfinished contents can contain independent URLs,
+paths, or acronyms. Long unclosed spans with character-sized chunks can incur
+quadratic total work too. Recognition is not a TeX parser or math renderer.
 Use completed paragraph results for authoritative classification and bound or
 batch untrusted streams. See the [external-review record](EXTERNAL_REVIEW_2026_09.md).
 
@@ -66,6 +70,26 @@ Native-speaker-authored mixed-language examples and review are still needed;
 inventing translations or relabeling existing examples would not close that gap.
 
 ## Validation boundaries
+
+The current audit branch is not a production certification. The JavaScript
+core now validates full extended-grapheme rules against pinned Unicode 17
+vectors; native engines currently retain combining marks but do not yet share
+those full rules. Do not infer equivalent native cluster boundaries from the
+common direction corpus. UIKit multi-paragraph bases/restoration and marked
+composition remain open audit repairs. Plain Android Views and WPF
+`TextBlock`/`TextBox` adapters use a whole-control base; independent paragraph
+policies require a supported paragraph renderer (Compose or WPF documents).
+
+Rich-text isolation spans eligible formatting nodes only when their boundaries
+are representable without cloning a partial formatting element. Authored bidi,
+code, explicit-direction, and block boundaries are kept separate. An unsupported
+partial cross-element token remains unwrapped instead of changing source or
+extending the isolate over unrelated prose.
+
+SARIF output rejects symlink/junction parents and replaces the destination
+atomically, avoiding truncation through an existing hard link. Portable
+pathname APIs cannot eliminate a race against a hostile process concurrently
+replacing parent directories; use a trusted workspace for Action outputs.
 
 - the corpus contains broad authored template matrices, but currently records
   zero native-speaker-certified templates;

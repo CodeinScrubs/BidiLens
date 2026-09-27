@@ -9,18 +9,20 @@ public static partial class BidiAnalyzer
     // Forward-only math heuristic, matching the core dollar-boundary policy.
     private static void AddMathRanges(string text, List<TechnicalTokenRange> ranges)
     {
-        var scanned = new Dictionary<string, int> { ["$"] = -1, ["$$"] = -1, [@"\)"] = -1 };
+        var scanned = new Dictionary<string, int> { ["$"] = -1, ["$$"] = -1, [@"\)"] = -1, [@"\]"] = -1 };
         var i = 0;
         bool At(string delimiter, int index) => text.AsSpan(index).StartsWith(delimiter, StringComparison.Ordinal);
         while (i < text.Length)
         {
             var paren = At(@"\(", i);
-            if (text[i] == '\\' && !paren) { i += 2; continue; }
-            var delimiter = text[i] == '$' ? (At("$$", i) ? "$$" : "$") : paren ? @"\)" : "";
+            var bracket = At(@"\[", i);
+            if (text[i] == '\\' && !paren && !bracket) { i += 2; continue; }
+            var delimiter = text[i] == '$' ? (At("$$", i) ? "$$" : "$") : paren ? @"\)" : bracket ? @"\]" : "";
             if (delimiter.Length == 0 || i < scanned[delimiter]) { i++; continue; }
             if (delimiter == "$" && (i + 1 == text.Length || IsMathWhitespace(text[i + 1]))) { i++; continue; }
-            var end = i + (paren ? 2 : delimiter.Length);
-            while (end < text.Length && text[end] is not ('\r' or '\n') && !At(delimiter, end))
+            var display = delimiter == "$$" || bracket;
+            var end = i + (paren || bracket ? 2 : delimiter.Length);
+            while (end < text.Length && (display || text[end] is not ('\r' or '\n')) && !At(delimiter, end))
                 end += text[end] == '\\' && end + 1 < text.Length && text[end + 1] is not ('\r' or '\n') ? 2 : 1;
             if (At(delimiter, end) && (delimiter != "$" || end > i + 1))
             {

@@ -7,6 +7,12 @@
 
 **Current-tree evidence date:** 2026-09-07
 
+**Later audit-branch update (2026-09-27):** the canonical source corpus now has
+941 cases, including nine new numeric/display-math fixtures. The 0.4.0 and
+Android 0.1.2 publication evidence below remains historical; it does not include
+the unpublished audit-branch repairs. See the [latest repair ledger](audit-repair-status.md)
+and [27-claim review](EXTERNAL_REVIEW_27_CLAIMS_2026_09.md) for current gates.
+
 ## Current 0.4.0 release evidence — 2026-09-07
 
 All 12 npm `0.4.0` packages are public from protected source commit

@@ -1,8 +1,10 @@
 # Third-party notices
 
-This package contains generated bidi-class and natural-letter range data
+This package contains generated bidi-class, natural-letter, and extended
+grapheme-break range data
 derived from Unicode Character Database `DerivedBidiClass-17.0.0.txt` and
-`DerivedGeneralCategory-17.0.0.txt`.
+`DerivedGeneralCategory-17.0.0.txt`, `GraphemeBreakProperty-17.0.0.txt`,
+`DerivedCoreProperties-17.0.0.txt`, and `emoji-data-17.0.0.txt`.
 
 Copyright © 1991–2025 Unicode, Inc. All rights reserved. Distributed under the
 Unicode Terms of Use: https://www.unicode.org/terms_of_use.html

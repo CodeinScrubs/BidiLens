@@ -16,7 +16,8 @@ implementation or adoption claim.
   packages;
 - real typed framework/renderer integrations, SSR tests, examples, and
   package-local assertion depth;
-- 932 schema-validated fixtures and native-review metadata, including 196
+- 932 schema-validated fixtures in published 0.4.0; the unpublished audit branch
+  now contains 941, with native-review metadata, including 196
   attributed comparison-project seeds awaiting native review;
 - Chromium, Firefox, and WebKit visual/geometry/selection tests, structured
   Markdown snapshots, Chromium clipboard verification, and real standalone
@@ -30,7 +31,8 @@ implementation or adoption claim.
 - public npm packages with SLSA provenance, registry-integrity verification,
   an annotated source tag, and a protected human-approved release workflow.
 - native Android Kotlin core, Views and Compose adapters, photographed-case
-  sample, generated 932-case corpus, JVM/Robolectric tests, lint/AAR/APK gates,
+  sample, generated source corpus (941 audit-branch cases; published-source
+  evidence remains at 932), JVM/Robolectric tests, lint/AAR/APK gates,
   API 35 plus local API 36.1 UI tests, signed Maven Central `0.1.2`
   publication with combining-mark parity and host-state ownership fixes, and
   independently verified public-consumer resolution.
@@ -42,13 +44,13 @@ implementation or adoption claim.
   differential fixtures supplement hand-authored native regressions;
 - Swift Package core, UIKit adapters, and a UIKit-backed SwiftUI `BidiText`
   renderer with generated Unicode 17 data, independent direction/alignment
-  policy, shared 932-case corpus tests, a runnable core example, macOS
+  policy, shared 941-case corpus tests, a runnable core example, macOS
   verification, and iOS Simulator adapter tests;
 - .NET 8 core and WPF adapters with generated Unicode 17 data, independent
-  direction/alignment policy, shared 932-case executable verification, a
+  direction/alignment policy, shared 941-case executable verification, a
   runnable WPF sample, package builds, and a Windows compiler gate;
 - native Rust core with generated Unicode 17 data, byte/UTF-16/code-point
-  ranges, shared 932-case direction conformance, declared isolation/security
+  ranges, shared 941-case direction conformance, declared isolation/security
   conformance, a runnable example, and Linux/macOS/Windows compiler gates.
 
 These are not yet registry releases or downstream production/accessibility
@@ -85,6 +87,12 @@ The complete specification-to-evidence audit lives in
 
 ## Planned native work
 
+- full pinned Unicode 17 extended-grapheme rules and conformance vectors in
+  native engines, plus dedicated offset/scanner complexity review;
+- independent UIKit paragraph bases, ownership-aware restoration of authored
+  paragraph properties, and safe marked-text composition handling; current
+  source gaps and validation gates are tracked in the
+  [audit repair ledger](audit-repair-status.md);
 - physical-device/OEM/IME and TalkBack validation for the published Android
   libraries;
 - Flutter package and golden tests;

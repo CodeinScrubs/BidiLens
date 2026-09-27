@@ -128,6 +128,10 @@ function collectBlocks(
 ): BidiMarkdownBlock[] {
   const offsets = lineOffsets(source);
   const blocks: BidiMarkdownBlock[] = [];
+  // Container and child paragraph blocks often have identical visible text.
+  // Retain classifications only for this parse. Public analyses are mutable,
+  // so a cache hit must return an independent deep copy, not a sibling alias.
+  const analyses = new Map<string, ReturnType<typeof analyzeBlock>>();
   for (let tokenIndex = 0; tokenIndex < tokens.length; tokenIndex += 1) {
     const token = tokens[tokenIndex];
     if (!token) continue;
@@ -136,7 +140,11 @@ function collectBlocks(
     if (!open && !standaloneCode) continue;
     const kind = standaloneCode ? 'code' : open!.kind;
     const text = standaloneCode ? token.content : textForBlock(tokens, tokenIndex, open!.close);
-    const analysis = analyzeBlock(text, blockAnalysisOptions(options));
+    let analysis = analyses.get(text);
+    if (!analysis) {
+      analysis = analyzeBlock(text, blockAnalysisOptions(options));
+      analyses.set(text, analysis);
+    } else analysis = structuredClone(analysis);
     const sourceMap = sourceMapForToken(tokens, tokenIndex);
     blocks.push({
       index: blocks.length,

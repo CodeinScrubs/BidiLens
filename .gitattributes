@@ -9,3 +9,8 @@
 *.woff binary
 *.woff2 binary
 *.pdf binary
+
+# Hash-pinned upstream Unicode data must remain byte-for-byte intact, including
+# whitespace in its original comments. Keep normal checks for our source files.
+unicode/GraphemeBreakTest-17.0.0.txt -whitespace
+unicode/emoji-data-17.0.0.txt -whitespace

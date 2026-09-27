@@ -43,6 +43,11 @@ internal static class UnicodeClassifier
     internal static bool IsCombiningMark(int value) =>
         Contains(GeneratedBidiRanges.CombiningMarks, value);
 
+    // Mirror EnumerateRunes: malformed UTF-16 is one neutral replacement scalar
+    // for classification, without replacing any code units in the source string.
+    internal static Rune RuneAt(string text, int index) =>
+        Rune.TryGetRuneAt(text, index, out var rune) ? rune : Rune.ReplacementChar;
+
     internal static IEnumerable<(Rune Rune, int Utf16Index, int CodePointIndex)> Enumerate(string text)
     {
         var utf16 = 0;

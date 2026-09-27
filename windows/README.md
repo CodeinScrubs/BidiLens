@@ -20,6 +20,35 @@ adopts observable host changes made while a control is managed. Call
 `BidiWpf.Restore(control)` before intentionally handing off a property with the
 same value BidiLens is currently rendering.
 
+## Independent document paragraphs (next source release)
+
+Use a `RichTextBox`/`FlowDocument` when English and Persian paragraphs share
+one control:
+
+```csharp
+var paragraphs = BidiWpf.Apply(messageRichTextBox,
+    alignment: BidiAlignment.PhysicalLeft);
+// Also supported: BidiWpf.Apply(oneParagraph, ...).
+BidiWpf.Restore(messageRichTextBox);
+```
+
+Each `Paragraph` gets its own base direction, including paragraphs inside
+sections, lists, and table cells. The control's shell direction, logical runs,
+and selection pointers are not rewritten. Default options use the current
+authored/inherited host direction; explicit `BidiOptions` remain authoritative.
+Originally inherited paragraph properties return to inheritance on restoration,
+and observable host binding/property changes are adopted. As with other
+controls, call `Restore` before a deliberate same-value scalar ownership handoff.
+
+`TextBlock` and plain `TextBox` integrations still apply one whole-control
+direction. They cannot express an independent content-majority base for each
+paragraph; BidiLens does not silently replace these controls. Windows Forms,
+WinUI, and MAUI remain separate integrations, not WPF-compatible adapters.
+
+Native isolation currently retains combining marks, not the complete pinned
+extended-grapheme implementation added to the JavaScript core. Do not treat
+native and JavaScript grapheme handling as fully equivalent yet.
+
 Run:
 
 ```powershell

@@ -59,6 +59,11 @@ or a project-wide RTL migration.
 Maven Central (`0.1.2`). Swift/iOS, .NET/Windows, and Rust remain source-level
 integrations with separate validation limits; they are not registry releases.
 
+The [current audit repair ledger](docs/audit-repair-status.md) separates newer
+source fixes from those published artifacts and records the remaining native
+paragraph, grapheme, and platform-validation gaps. Audit-branch source changes
+must not be assumed present in npm `0.4.0` or Maven `0.1.2`.
+
 <details>
 <summary>Release provenance and platform validation details</summary>
 
@@ -184,16 +189,16 @@ reordering and shaping; BidiLens supplies the application structure they need.
 - safe HTML, DOM, unified/remark/rehype, markdown-it, React, Vue, Svelte, and
   Web Component adapters;
 - a conservative terminal adapter and a scriptable CLI;
-- 932 schema-validated direction fixtures plus property-based random chunking;
+- 941 schema-validated direction fixtures plus property-based random chunking;
 - native Android pure-Kotlin core, non-destructive Views adapter, Compose
   display/editable components, and a runnable photographed-case sample;
 - Android JVM, Robolectric, lint, APK/AAR, and API 35/36 device gates using the
-  same generated 932-case corpus;
+  same generated 941-case corpus;
 - a Swift Package with UIKit `UILabel`, `UITextView`, and `UITextField`
   adapters, a UIKit-backed SwiftUI `BidiText` view, and a .NET 8 core with WPF
   `TextBlock`/`TextBox` adapters;
 - a native Rust core with generated Unicode 17 tables, byte/UTF-16/code-point
-  ranges, all 932 direction fixtures, declared isolation/security conformance,
+  ranges, all 941 direction fixtures, declared isolation/security conformance,
   and Linux/macOS/Windows CI;
 - explicit alignment policy on native adapters, allowing an RTL paragraph to
   remain physically left-aligned without changing its base direction;

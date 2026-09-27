@@ -1,5 +1,7 @@
 import { classifyBidiStrongCharacter, classifyCharacter } from './classify.js';
 import { boundedNumberOption } from './options.js';
+import { isCommandArgument } from './commands.js';
+import { isolateScope } from './isolate-scope.js';
 import { DEFAULT_PARAGRAPH_SEPARATOR_SOURCE } from './paragraph.js';
 import type {
   DetectionOptions,
@@ -39,8 +41,10 @@ export const DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
 ] as const);
 const KNOWN_TECHNICAL_TOKENS = new Set<string>(DEFAULT_TECHNICAL_IDENTIFIERS);
 const NUMERIC_VALUE = '[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*';
-const CURRENCY_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\p{Sc})(?![\\p{L}\\p{N}_])`, 'gu');
-const NUMBER_RANGE_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}[-–][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, 'gu');
+const NUMERIC_CANDIDATE = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}`, 'gu');
+const NUMBER_RANGE_SUFFIX = new RegExp(`[-–][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, 'uy');
+const NUMERIC_BOUNDARY = /[\p{L}\p{N}_]/u;
+const NUMERIC_SYMBOL = /[\p{Sc}%\u066A]/u;
 const CUSTOM_TECHNICAL_IDENTIFIER_CACHE = new WeakMap<readonly string[], ReadonlySet<string>>();
 
 function normalizeOptions(options: DetectionOptions = {}): Required<DetectionOptions> {
@@ -100,28 +104,71 @@ function addMatches(
   }
 }
 
+/** Scan each numeric candidate once; required suffixes must not restart at
+ * every group separator of a long number without a currency/percent/range. */
+function addCompactNumericRanges(text: string, ranges: TechnicalTokenRange[]): TechnicalTokenRange[] {
+  const plain: TechnicalTokenRange[] = [];
+  const characterAt = (index: number): string => {
+    const point = text.codePointAt(index);
+    return point === undefined ? '' : String.fromCodePoint(point);
+  };
+  const characterBefore = (index: number): string => {
+    const previous = text.charCodeAt(index - 1);
+    const high = text.charCodeAt(index - 2);
+    const paired = previous >= 0xdc00 && previous <= 0xdfff && high >= 0xd800 && high <= 0xdbff;
+    return characterAt(paired ? index - 2 : index - 1);
+  };
+  for (const match of text.matchAll(NUMERIC_CANDIDATE)) {
+    const start = match.index;
+    const end = start + match[0].length;
+    // Preserve the old partial-number boundary behavior before a letter:
+    // `1,000x` recognizes `1`, not the invalid trailing group `000x`.
+    const separator = Math.max(...['.', ',', '\u066B', '\u066C'].map((value) => match[0].lastIndexOf(value)));
+    const plainEnd = NUMERIC_BOUNDARY.test(characterAt(end)) ? (separator < 0 ? start : start + separator) : end;
+    if (plainEnd > start) {
+      addRange(plain, text, start, plainEnd, 'number');
+      const before = characterBefore(start);
+      if (NUMERIC_SYMBOL.test(before) && !NUMERIC_BOUNDARY.test(characterBefore(start - before.length))) {
+        addRange(ranges, text, start - before.length, plainEnd, 'number');
+      }
+    }
+    const after = characterAt(end);
+    if (NUMERIC_SYMBOL.test(after) && !NUMERIC_BOUNDARY.test(characterAt(end + after.length))) {
+      addRange(ranges, text, start, end + after.length, 'number');
+    }
+    if (after === '-' || after === '–') {
+      NUMBER_RANGE_SUFFIX.lastIndex = end;
+      const suffix = NUMBER_RANGE_SUFFIX.exec(text);
+      if (suffix) addRange(ranges, text, start, end + suffix[0].length, 'number');
+    }
+  }
+  return plain;
+}
+
 /**
- * Adds `$...$`, `$$...$$`, and `\(...\)` math ranges in one forward pass.
+ * Adds inline `$...$` / `\(...\)` and display `$$...$$` / `\[...\]`
+ * math ranges in one forward pass. Only display math may span CR/LF.
  * A combined lazy regular expression restarts its search after every unmatched
  * `\(` opener, which makes adversarial input quadratic.
  */
 function addMathRanges(text: string, ranges: TechnicalTokenRange[]): void {
   let i = 0;
-  const scanned: Record<string, number> = { '$': -1, '$$': -1, '\\)': -1 };
+  const scanned: Record<string, number> = { '$': -1, '$$': -1, '\\)': -1, '\\]': -1 };
   while (i < text.length) {
     const p = text[i] === '\\' && text[i + 1] === '(';
+    const b = text[i] === '\\' && text[i + 1] === '[';
     // Consume escaped characters in pairs, including escaped dollar signs.
-    if (text[i] === '\\' && !p) { i += 2; continue; }
+    if (text[i] === '\\' && !p && !b) { i += 2; continue; }
     const d = text[i] === '$'
       ? (text[i + 1] === '$' ? '$$' : '$')
-      : (p ? '\\)' : '');
+      : (p ? '\\)' : b ? '\\]' : '');
     if (!d || i < scanned[d]!) { i++; continue; }
     if (d === '$' && (i + 1 === text.length || /\s/u.test(text[i + 1]!))) { i++; continue; }
 
-    let e = i + (p ? 2 : d.length);
+    const display = d === '$$' || b;
+    let e = i + (p || b ? 2 : d.length);
     while (e < text.length
-      && text[e] !== '\r'
-      && text[e] !== '\n'
+      && (display || (text[e] !== '\r' && text[e] !== '\n'))
       && !text.startsWith(d, e)) {
       e += text[e] === '\\' && e + 1 < text.length && !/[\r\n]/u.test(text[e + 1]!) ? 2 : 1;
     }
@@ -148,6 +195,81 @@ function trimTechnicalPunctuation(value: string): string {
   let end = value.length;
   while (end > 0 && /[.,;:!?،؛؟。।۔]/u.test(value[end - 1]!)) end -= 1;
   return end === value.length ? value : value.slice(0, end);
+}
+
+function trimUrlSuffix(value: string): string {
+  const balance: Record<string, number> = { ')': 0, ']': 0, '}': 0 };
+  const closer: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
+  for (const character of value) {
+    if (closer[character]) balance[closer[character]!]! += 1;
+    else if (character in balance) balance[character]! -= 1;
+  }
+  let end = value.length;
+  while (end > 0) {
+    const character = value[end - 1]!;
+    if (/[.,;:!?،؛؟。।۔]/u.test(character)) end -= 1;
+    else if (character in balance && balance[character]! < 0) { balance[character]! += 1; end -= 1; }
+    else break;
+  }
+  return value.slice(0, end);
+}
+
+/** Failed domain/path candidates cannot restart at every character of a lexical run. */
+function addEmailAndRelativePathRanges(text: string, ranges: TechnicalTokenRange[]): void {
+  // Retain the legacy Unicode simple-fold and word-boundary semantics without
+  // restarting a failed domain match at each character of a lexical run.
+  const emailWord = /[A-Za-z0-9_]/iu;
+  for (const match of text.matchAll(/[A-Za-z0-9._%+@-]+/giu)) {
+    const value = match[0];
+    let localStart = 0;
+    for (let at = 0; at < value.length; at += 1) {
+      if (value[at] !== '@') continue;
+      while (localStart < at) {
+        const before = localStart > 0 ? value[localStart - 1] : text[match.index - 1];
+        if (emailWord.test(before ?? '') !== emailWord.test(value[localStart]!)) break;
+        localStart += 1;
+      }
+      let cursor = at + 1;
+      let dot = -1;
+      let candidate = -1;
+      let alphabetic = false;
+      while (cursor < value.length && /[A-Za-z0-9.-]/iu.test(value[cursor]!)) {
+        const character = value[cursor]!;
+        if (character === '.') { dot = cursor; alphabetic = true; }
+        else if (!/[A-Za-z]/iu.test(character)) alphabetic = false;
+        cursor += 1;
+        if (alphabetic && dot > at + 1 && cursor - dot - 1 >= 2 && !emailWord.test(value[cursor] ?? '')) candidate = cursor;
+      }
+      const matched = localStart < at && candidate > 0;
+      if (matched) addRange(ranges, text, match.index + localStart, match.index + candidate, 'email');
+      // A matched domain is already consumed. Reusing it as the next local
+      // part creates overlapping emails and widens a@b.com@c.de into one token.
+      localStart = matched ? candidate : at + 1;
+      at = cursor - 1;
+    }
+  }
+  for (const match of text.matchAll(/[A-Za-z0-9_.\\/-]+/gu)) {
+    const value = match[0];
+    let start = 0;
+    const append = (end: number): void => {
+      while (start < end && !/[A-Za-z0-9_]/u.test(value[start]!)) start += 1;
+      while (end > start && !/[A-Za-z0-9_]/u.test(value[end - 1]!)) end -= 1;
+      // Leading non-word components such as `.\` are outside the legacy
+      // word-boundary match. Look for a separator within the trimmed segment,
+      // not one remembered before its first word. Segments are disjoint, so
+      // this additional scan remains linear across the whole lexical run.
+      let separator = start;
+      while (separator < end && value[separator] !== '/' && value[separator] !== '\\') separator += 1;
+      if (separator < end) addRange(ranges, text, match.index + start, match.index + end, 'path');
+    };
+    for (let index = 0; index < value.length; index += 1) {
+      if (value[index] !== '/' && value[index] !== '\\') continue;
+      if (index === start || value[index - 1] === '/' || value[index - 1] === '\\') {
+        append(index); start = index + 1;
+      }
+    }
+    append(value.length);
+  }
 }
 
 function addValidatedMatches(
@@ -404,26 +526,10 @@ export function findTechnicalTokenRanges(
   const urls = /\b(?:https?|ftp):\/\/[^\s<>{}"']+/giu;
   let urlMatch: RegExpExecArray | null;
   while ((urlMatch = urls.exec(text)) !== null) {
-    let value = urlMatch[0];
-    value = trimTechnicalPunctuation(value);
-    for (const [open, close] of [['(', ')'], ['[', ']'], ['{', '}']] as const) {
-      if (!value.endsWith(close)) continue;
-      let balance = 0;
-      for (const character of value) {
-        if (character === open) balance += 1;
-        else if (character === close) balance -= 1;
-      }
-      if (balance >= 0) continue;
-      let end = value.length;
-      while (balance < 0 && end > 0 && value[end - 1] === close) {
-        balance += 1;
-        end -= 1;
-      }
-      if (end !== value.length) value = value.slice(0, end);
-    }
+    const value = trimUrlSuffix(urlMatch[0]);
     addRange(ranges, text, urlMatch.index, urlMatch.index + value.length, 'url');
   }
-  addMatches(text, ranges, /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/giu, 'email');
+  addEmailAndRelativePathRanges(text, ranges);
   addNormalizedMatches(
     text,
     ranges,
@@ -431,10 +537,12 @@ export function findTechnicalTokenRanges(
     'path',
     trimTechnicalPunctuation
   );
-  addMatches(text, ranges, /\b(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)\b/gu, 'path');
   addMatches(text, ranges, /(?<![\w@])@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*/giu, 'identifier');
   addMatches(text, ranges, /(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)/gu, 'identifier');
-  addMatches(text, ranges, /\b(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+/gu, 'command');
+  for (const match of text.matchAll(/\b(npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)((?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|"[^"\r\n]*"))+)/gu)) {
+    const argument = /^[ \t]+('[^']*'|"[^"]*"|[^ \t]+)/u.exec(match[2]!)?.[1] ?? '';
+    if (isCommandArgument(match[1]!, argument)) addRange(ranges, text, match.index, match.index + match[0].length, 'command');
+  }
   addValidatedMatches(text, ranges, /\b(?:\d{1,3}\.){3}\d{1,3}\b/gu, 'number', isIpv4);
   addValidatedMatches(
     text,
@@ -448,11 +556,10 @@ export function findTechnicalTokenRanges(
   addMatches(text, ranges, /\b\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?\b/giu, 'number');
   // Preserve compact amounts and ranges as units; do not merge arbitrary
   // punctuation between unrelated numeric tokens or prose.
-  addMatches(text, ranges, CURRENCY_TOKEN, 'number');
-  addMatches(text, ranges, NUMBER_RANGE_TOKEN, 'number');
+  const numericRanges = addCompactNumericRanges(text, ranges);
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, 'version');
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, 'hash');
-  addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, 'number');
+  for (const range of numericRanges) ranges.push(range);
 
   // Compact labels in technical prose are often written as an acronym plus a
   // Roman-numeral/number designator (`CN X`, `CN IX`, `API 2`). Treat the
@@ -511,6 +618,7 @@ function countStrongCharactersNormalized(
   const classify = normalized.strategy === 'first-strong' || normalized.strategy === 'strict-uax9'
     ? classifyBidiStrongCharacter
     : classifyCharacter;
+  const outsideIsolate = isolateScope();
 
   for (const character of text) {
     // Technical ranges are sorted and merged, so advance one cursor instead
@@ -523,7 +631,8 @@ function countStrongCharactersNormalized(
     const isTechnical = technicalRange !== undefined
       && index >= technicalRange.start
       && index < technicalRange.end;
-    if (!isTechnical) {
+    const included = normalized.strategy !== 'strict-uax9' || outsideIsolate(character);
+    if (!isTechnical && included) {
       const direction = classify(character);
       if (direction === 'ltr') ltr += 1;
       if (direction === 'rtl') rtl += 1;

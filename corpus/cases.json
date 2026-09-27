@@ -440,6 +440,202 @@
     ]
   },
   {
+    "id": "compact-numeric-unit-1",
+    "description": "Grouped numbers and percentage signs remain one semantic numeric unit.",
+    "text": "مقدار 1,000,000 است.",
+    "words": [
+      "مقدار",
+      "1,000,000",
+      "است",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "number"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "1,000,000",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ]
+  },
+  {
+    "id": "compact-numeric-unit-2",
+    "description": "Grouped numbers and percentage signs remain one semantic numeric unit.",
+    "text": "مقدار ۱٬۰۰۰٬۰۰۰ است.",
+    "words": [
+      "مقدار",
+      "۱٬۰۰۰٬۰۰۰",
+      "است",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "number"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "۱٬۰۰۰٬۰۰۰",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ]
+  },
+  {
+    "id": "compact-numeric-unit-3",
+    "description": "Grouped numbers and percentage signs remain one semantic numeric unit.",
+    "text": "مقدار ١٬٠٠٠٬٠٠٠ است.",
+    "words": [
+      "مقدار",
+      "١٬٠٠٠٬٠٠٠",
+      "است",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "number"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "١٬٠٠٠٬٠٠٠",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ]
+  },
+  {
+    "id": "compact-numeric-unit-4",
+    "description": "Grouped numbers and percentage signs remain one semantic numeric unit.",
+    "text": "مقدار 50% است.",
+    "words": [
+      "مقدار",
+      "50%",
+      "است",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "number"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "50%",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ]
+  },
+  {
+    "id": "compact-numeric-unit-5",
+    "description": "Grouped numbers and percentage signs remain one semantic numeric unit.",
+    "text": "مقدار ۵۰٪ است.",
+    "words": [
+      "مقدار",
+      "۵۰٪",
+      "است",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "number"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "۵۰٪",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ]
+  },
+  {
+    "id": "bracket-display-math-inline",
+    "description": "Closed bracketed display math remains one LTR technical atom.",
+    "text": "سلام \\[x = y\\] تمام",
+    "words": [
+      "سلام",
+      "\\[x = y\\]",
+      "تمام"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3
+    ],
+    "tags": [
+      "fa",
+      "mixed",
+      "rtl-adjacent-technical",
+      "math"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "\\[x = y\\]",
+        "direction": "ltr",
+        "kind": "math"
+      }
+    ]
+  },
+  {
     "id": "fa-number-latin-adjacency-001",
     "description": "Digits immediately followed by Latin letters are not misclassified as a standalone number.",
     "text": "سلام 123abc",
@@ -27651,9 +27847,7 @@
     "text": "نسخه ۲٫۱ در تاریخ ۱۴۰۵/۰۴/۲۷ آماده شد.",
     "words": [
       "نسخه",
-      "۲",
-      "٫",
-      "۱",
+      "۲٫۱",
       "در",
       "تاریخ",
       "۱۴۰۵",
@@ -27678,9 +27872,7 @@
       9,
       10,
       11,
-      12,
-      13,
-      14
+      12
     ],
     "tags": [
       "fa",
@@ -27712,6 +27904,76 @@
     "tags": [
       "ar",
       "arabic-indic-digits"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false
+  },
+  {
+    "id": "display-math-dollar-lf",
+    "description": "Curated fa, math, multiline regression case.",
+    "text": "سلام $$\nx = y\n$$ تمام",
+    "words": [
+      "سلام",
+      "$$\nx = y\n$$",
+      "تمام"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3
+    ],
+    "tags": [
+      "fa",
+      "math",
+      "multiline"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false
+  },
+  {
+    "id": "display-math-dollar-crlf",
+    "description": "Curated fa, math, multiline, crlf regression case.",
+    "text": "سلام $$\r\nx = y\r\n$$ تمام",
+    "words": [
+      "سلام",
+      "$$\r\nx = y\r\n$$",
+      "تمام"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3
+    ],
+    "tags": [
+      "fa",
+      "math",
+      "multiline",
+      "crlf"
+    ],
+    "curation": "authored-template-matrix",
+    "nativeSpeakerReviewed": false
+  },
+  {
+    "id": "display-math-bracket-lf",
+    "description": "Curated fa, math, multiline regression case.",
+    "text": "سلام \\[\nx = y\n\\] تمام",
+    "words": [
+      "سلام",
+      "\\[\nx = y\n\\]",
+      "تمام"
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3
+    ],
+    "tags": [
+      "fa",
+      "math",
+      "multiline"
     ],
     "curation": "authored-template-matrix",
     "nativeSpeakerReviewed": false
@@ -29940,15 +30202,13 @@
     "words": [
       "نسبة",
       "الإكمال",
-      "٧٥",
-      "٪"
+      "٧٥٪"
     ],
     "expected": "rtl",
     "expectedVisualOrderRightToLeft": [
       1,
       2,
-      3,
-      4
+      3
     ],
     "tags": [
       "ar",
@@ -29959,7 +30219,7 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "٧٥",
+        "text": "٧٥٪",
         "direction": "ltr",
         "kind": "number"
       }
@@ -33374,7 +33634,8 @@
       "برای",
       "نصب",
       "از",
-      "npm package",
+      "npm",
+      "package",
       "با",
       "آدرس",
       "https://npmjs.com/package/foo",
@@ -33393,7 +33654,8 @@
       7,
       8,
       9,
-      10
+      10,
+      11
     ],
     "tags": [
       "fa",
@@ -33407,7 +33669,7 @@
       {
         "text": "npm package",
         "direction": "ltr",
-        "kind": "command"
+        "kind": "opposite-direction-run"
       },
       {
         "text": "https://npmjs.com/package/foo",
@@ -33656,11 +33918,47 @@
     "text": "تخفیف ۲۰٪ ارائه شده است.",
     "words": [
       "تخفیف",
-      "۲۰",
-      "٪",
+      "۲۰٪",
       "ارائه",
       "شده",
       "است",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tags": [
+      "fa",
+      "numerals",
+      "v1.3-her-review"
+    ],
+    "curation": "imported-comparison-corpus",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "۲۰٪",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ]
+  },
+  {
+    "id": "v13-fa-persian-numeral-004",
+    "description": "Reviewed v1.3-Her seed: Large number",
+    "text": "این محصول ۹۹٬۰۰۰ تومان قیمت دارد.",
+    "words": [
+      "این",
+      "محصول",
+      "۹۹٬۰۰۰",
+      "تومان",
+      "قیمت",
+      "دارد",
       "."
     ],
     "expected": "rtl",
@@ -33682,54 +33980,7 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "۲۰",
-        "direction": "ltr",
-        "kind": "number"
-      }
-    ]
-  },
-  {
-    "id": "v13-fa-persian-numeral-004",
-    "description": "Reviewed v1.3-Her seed: Large number",
-    "text": "این محصول ۹۹٬۰۰۰ تومان قیمت دارد.",
-    "words": [
-      "این",
-      "محصول",
-      "۹۹",
-      "٬",
-      "۰۰۰",
-      "تومان",
-      "قیمت",
-      "دارد",
-      "."
-    ],
-    "expected": "rtl",
-    "expectedVisualOrderRightToLeft": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9
-    ],
-    "tags": [
-      "fa",
-      "numerals",
-      "v1.3-her-review"
-    ],
-    "curation": "imported-comparison-corpus",
-    "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "۹۹",
-        "direction": "ltr",
-        "kind": "number"
-      },
-      {
-        "text": "۰۰۰",
+        "text": "۹۹٬۰۰۰",
         "direction": "ltr",
         "kind": "number"
       }

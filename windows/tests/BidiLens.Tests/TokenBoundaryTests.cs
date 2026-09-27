@@ -10,7 +10,7 @@ internal static class TokenBoundaryTests
             assertions++;
             if (!actual.SequenceEqual(expected)) throw new InvalidOperationException($"Token boundaries: {string.Join(", ", actual)} != {string.Join(", ", expected)}");
         }
-        foreach (var token in new[] { "$10", "€12.50", "£25", "۱۰€", "10-20", "10–20", "-10--2", "۱۰-۲۰", "١٠-٢٠" })
+        foreach (var token in new[] { "$10", "€12.50", "£25", "۱۰€", "10-20", "10–20", "-10--2", "۱۰-۲۰", "١٠-٢٠", "1,000,000", "۱٬۰۰۰٬۰۰۰", "۱۲۳٫۴۵", "50%", "۵۰٪", "%50", "٪۵۰" })
         {
             var source = $"👋 مقدار {token} است.";
             var ranges = BidiAnalyzer.Analyze(source).Isolations;
@@ -19,6 +19,18 @@ internal static class TokenBoundaryTests
         }
         foreach (var quote in new[] { "\"", "'", "“", "”", "«", "»" })
             Equal(BidiAnalyzer.FindTechnicalTokenRanges($"مسیر {quote}/usr/local/bin{quote} است.").Select(range => range.Text), "/usr/local/bin");
+        foreach (var math in new[] { "$$\nx = y\n$$", "$$\r\nx = y\r\n$$", "\\[\nx = y\n\\]", "\\[x = y\\]" })
+        {
+            var source = $"سلام {math} تمام";
+            Equal(BidiAnalyzer.FindTechnicalTokenRanges(source).Where(range => range.Kind == TechnicalTokenKind.Math).Select(range => range.Text), math);
+            foreach (var isolation in BidiAnalyzer.Analyze(source).Isolations)
+            {
+                Equal(new[] { source[isolation.Utf16Start..isolation.Utf16End] }, isolation.Text);
+                Equal(isolation.Text.Where(character => character is '\r' or '\n').Select(character => character.ToString()));
+            }
+        }
+        foreach (var source in new[] { "$x\ny$", "\\(x\ny\\)", "\\\\[x\\]", "\\[x", "$$\nx" })
+            Equal(BidiAnalyzer.FindTechnicalTokenRanges(source).Where(range => range.Kind == TechnicalTokenKind.Math).Select(range => range.Text));
         foreach (var source in new[] { "$ x$", "$x $", "$10 and $20", "\\$x\\$" })
             Equal(BidiAnalyzer.FindTechnicalTokenRanges(source).Where(range => range.Kind == TechnicalTokenKind.Math).Select(range => range.Text));
         foreach (var space in new[] { "\ufeff", "\u00a0", "\u202f" })

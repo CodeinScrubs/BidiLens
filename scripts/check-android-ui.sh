@@ -26,18 +26,15 @@ collect_failure_evidence() {
 }
 trap collect_failure_evidence EXIT
 
-for attempt in $(seq 1 60); do
-  if adb -s "$ANDROID_SERIAL" shell cmd package list packages >/dev/null 2>&1; then
-    break
-  fi
-  if (( attempt == 60 )); then
-    echo '::error::Android package service did not become ready.' >&2
-    exit 1
-  fi
-  sleep 2
-done
+source "$(dirname "$0")/prepare-android-ui.sh"
+prepare_android_ui "$ANDROID_SERIAL" "$report_dir/preflight-views"
 
 ./android/gradlew -p android \
   :views:connectedDebugAndroidTest \
+  --stacktrace --console=plain
+# Views activity teardown returns to HOME. Validate that foreground again before
+# Compose; do not retry or bypass any failing instrumentation test.
+prepare_android_ui "$ANDROID_SERIAL" "$report_dir/preflight-compose"
+./android/gradlew -p android \
   :compose:connectedDebugAndroidTest \
   --stacktrace --console=plain

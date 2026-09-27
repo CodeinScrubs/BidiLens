@@ -15,9 +15,16 @@ function assert(condition: unknown, message: string): asserts condition {
 
 function execute(cwd: string, env: NodeJS.ProcessEnv): Promise<{ code: number; stdout: string; stderr: string }> {
   return new Promise((resolveExecution, reject) => {
+    // Probe a consumer environment, not the check workflow's own step inputs
+    // or output file. Runner mode is covered explicitly below; otherwise its
+    // intentionally protected console output is not bare JSON.
+    const probeEnv: NodeJS.ProcessEnv = { ...process.env, GITHUB_ACTIONS: 'false' };
+    for (const key of Object.keys(probeEnv)) {
+      if (key.startsWith('INPUT_') || key === 'GITHUB_OUTPUT') delete probeEnv[key];
+    }
     const child = spawn(process.execPath, [bundle], {
       cwd,
-      env: { ...process.env, ...env },
+      env: { ...probeEnv, ...env },
       shell: false,
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -46,7 +53,9 @@ try {
   await writeFile(resolve(temporary, 'safe.ts'), 'const message = "سلام React";\n', 'utf8');
   const safe = await execute(temporary, {
     GITHUB_WORKSPACE: temporary,
-    GITHUB_ACTION_PATH: actionDirectory,
+    // A JavaScript action has no GITHUB_ACTION_PATH. Its bundled corpus must
+    // resolve from dist/index.cjs, not from the consumer's working directory.
+    GITHUB_ACTION_PATH: '',
     GITHUB_OUTPUT: output,
     INPUT_PATHS: 'safe.ts',
     INPUT_FORMAT: 'json'
@@ -54,6 +63,24 @@ try {
   assert(safe.code === 0, `Built Action safe-file probe failed: ${safe.stdout}${safe.stderr}`);
   assert(JSON.parse(safe.stdout).scanned === 1, 'Built Action safe-file JSON is invalid.');
   assert((await readFile(output, 'utf8')).includes('\n0\n'), 'Built Action did not write exit-code=0.');
+
+  const runner = await execute(temporary, {
+    GITHUB_ACTIONS: 'true',
+    GITHUB_WORKSPACE: temporary,
+    GITHUB_ACTION_PATH: '',
+    INPUT_PATHS: 'safe.ts',
+    INPUT_FORMAT: 'json'
+  });
+  assert(runner.code === 0, `Built Action runner probe failed: ${runner.stdout}${runner.stderr}`);
+  const runnerLines = runner.stdout.trimEnd().split(/\r?\n/u);
+  const stopPrefix = '::stop-commands::';
+  assert(runnerLines[0]?.startsWith(stopPrefix), 'Built Action did not suspend runner commands.');
+  const token = runnerLines[0]!.slice(stopPrefix.length);
+  assert(/^bidilens_[0-9a-f-]{36}$/u.test(token), 'Built Action runner suspension token is invalid.');
+  assert(runnerLines.at(-1) === `::${token}::`, 'Built Action did not resume runner commands with the same token.');
+  assert(JSON.parse(runnerLines.slice(1, -1).join('\n')).scanned === 1,
+    'Built Action changed the JSON payload while shielding runner logs.');
+  assert(runner.stderr === '', 'Built Action runner probe unexpectedly wrote outside its protected log block.');
 
   const dangerousSource = `const safe = "abc";${String.fromCodePoint(0x202e)}hidden${String.fromCodePoint(0x202c)}\n`;
   await writeFile(resolve(temporary, 'danger.ts'), dangerousSource, 'utf8');
@@ -69,8 +96,16 @@ try {
   assert(JSON.parse(dangerous.stdout).reports.length === 1, 'Built Action did not report the dangerous file.');
   assert(await readFile(resolve(temporary, 'danger.ts'), 'utf8') === dangerousSource,
     'Built Action mutated audited source.');
+  const corpus = await execute(temporary, {
+    GITHUB_WORKSPACE: temporary,
+    GITHUB_ACTION_PATH: '',
+    INPUT_COMMAND: 'test',
+    INPUT_FORMAT: 'json'
+  });
+  assert(corpus.code === 0, `Built Action default corpus probe failed: ${corpus.stdout}${corpus.stderr}`);
+  assert(JSON.parse(corpus.stdout).total > 0, 'Built Action could not find its bundled corpus.');
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }
 
-console.log(`GitHub Action bundle passed: ${bundleBytes} bytes, metadata/notices valid, safe and strict-failure probes executed.`);
+console.log(`GitHub Action bundle passed: ${bundleBytes} bytes, metadata/notices valid, safe, runner-shielding, and strict-failure probes executed.`);

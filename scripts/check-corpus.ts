@@ -100,19 +100,24 @@ for (const item of cases) {
       console.error(`${item.id}: numbered visual order must be the complete logical 1..N sequence`);
     }
   }
+  const isolationPlans = planInlineIsolation(item.text, actual === 'neutral' ? 'ltr' : actual);
   for (const range of findTechnicalTokenRanges(item.text)) {
     // A complete fenced block is one semantic technical region even though
     // the fixture's numbered-word view intentionally tokenizes its lines.
     if (range.kind === 'code' && /[\r\n]/u.test(range.text)) continue;
-    if (!item.words?.includes(range.text)) {
+    // A technical identifier can be part of a larger semantic LTR phrase,
+    // e.g. "npm package" is descriptive prose, not a shell command. Validate
+    // the final isolated atom against numbering instead of requiring every
+    // internal technical subrange to be a separately numbered word.
+    const numberedPhrase = isolationPlans.some((plan) => item.words?.includes(plan.text)
+      && plan.start <= range.start && plan.end >= range.end);
+    if (!item.words?.includes(range.text) && !numberedPhrase) {
       failed += 1;
       console.error(`${item.id}: technical span must be one semantic numbered token: ${range.text}`);
     }
   }
   if (item.expectedIsolations) {
-    const direction = actual === 'neutral' ? 'ltr' : actual;
-    const plans = planInlineIsolation(item.text, direction);
-    const actualIsolations = plans.map((plan) => ({
+    const actualIsolations = isolationPlans.map((plan) => ({
       text: plan.text,
       direction: plan.direction,
       kind: plan.kind

@@ -184,23 +184,27 @@ function highestFindingRisk(findings: readonly BidiSecurityFinding[]): BidiContr
   return null;
 }
 
-function sourcePosition(text: string, utf16Offset: number): { line: number; column: number } {
-  let lineNumber = 1;
-  let lineStart = 0;
-  // Include Unicode paragraph separators plus U+2028 (line separator) so
-  // SARIF locations remain line-aware for every supported Unicode boundary.
+function sourcePositions(text: string): (utf16Offset: number) => { line: number; column: number } {
+  const starts = [0];
   const newline = new RegExp(`${DEFAULT_PARAGRAPH_SEPARATOR_SOURCE}|\\u2028`, 'gu');
-  let match: RegExpExecArray | null;
-  while ((match = newline.exec(text)) !== null && match.index < utf16Offset) {
-    lineNumber += 1;
-    lineStart = match.index + match[0].length;
-  }
-  return { line: lineNumber, column: utf16Offset - lineStart + 1 };
+  for (const match of text.matchAll(newline)) starts.push(match.index + match[0].length);
+  return (utf16Offset) => {
+    let low = 0;
+    let high = starts.length;
+    while (low + 1 < high) {
+      const middle = (low + high) >>> 1;
+      if (starts[middle]! <= utf16Offset) low = middle;
+      else high = middle;
+    }
+    return { line: low + 1, column: utf16Offset - starts[low]! + 1 };
+  };
 }
 
 function artifactUri(file: string, cwd: string): string {
   const local = relative(cwd, file);
-  if (local && !local.startsWith('..') && !isAbsolute(local)) return local.replaceAll('\\', '/');
+  if (local && local !== '..' && !local.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`) && !isAbsolute(local)) {
+    return local.split(process.platform === 'win32' ? '\\' : '/').map((part) => encodeURIComponent(part)).join('/');
+  }
   return pathToFileURL(file).href;
 }
 
@@ -232,10 +236,13 @@ function sarifForReports(reports: readonly SecurityFileReport[], cwd: string): o
     $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
     runs: [{
       columnKind: 'utf16CodeUnits',
+      newlineSequences: ['\r\n', '\n', '\r', '\u0085', '\u001c', '\u001d', '\u001e', '\u2029', '\u2028'],
       tool: { driver: { name: 'BidiLens', semanticVersion: CLI_VERSION } },
-      results: reports.flatMap((report) => report.findings.map((finding) => {
-        const start = sourcePosition(report.text, finding.sourceRange.utf16.start);
-        const end = sourcePosition(report.text, finding.sourceRange.utf16.end);
+      results: reports.flatMap((report) => {
+        const position = sourcePositions(report.text);
+        return report.findings.map((finding) => {
+        const start = position(finding.sourceRange.utf16.start);
+        const end = position(finding.sourceRange.utf16.end);
         return {
           ruleId: finding.code,
           level: finding.severity === 'high' ? 'error' : finding.severity === 'warning' ? 'warning' : 'note',
@@ -252,7 +259,7 @@ function sarifForReports(reports: readonly SecurityFileReport[], cwd: string): o
             }
           }]
         };
-      }))
+      }); })
     }]
   };
 }
@@ -357,9 +364,11 @@ function createCliProgram(state: RuntimeState): Command {
       } else if (!reports.length) line(state.stdout, `No bidi security findings in ${files.length} files.`);
       else {
         for (const report of reports) {
-          line(state.stdout, `\n${report.file} (${report.highestRisk ?? 'unknown'})`);
+          const positionFor = sourcePositions(report.text);
+          const file = /[\p{Cc}\p{Cf}\u2028\u2029]/u.test(report.file) ? JSON.stringify(report.file) : report.file;
+          line(state.stdout, `\n${file} (${report.highestRisk ?? 'unknown'})`);
           for (const finding of report.findings) {
-            const position = sourcePosition(report.text, finding.sourceRange.utf16.start);
+            const position = positionFor(finding.sourceRange.utf16.start);
             line(state.stdout, `  ${finding.code} at ${position.line}:${position.column} [${riskForFinding(finding)}] ${finding.message}`);
           }
         }

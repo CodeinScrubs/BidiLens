@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { unified } from 'unified';
+import { unified, type PluggableList } from 'unified';
 import {
   analyzeBlock,
   scanBidiSecurity,
@@ -185,10 +185,14 @@ export function App() {
   const [corpus, setCorpus] = useState<CorpusFixture[]>([]);
   const [actionStatus, setActionStatus] = useState('');
   const t = COPY[uiLanguage];
+  const inheritedDirection: 'ltr' | 'rtl' = uiLanguage === 'fa' ? 'rtl' : 'ltr';
+  const markdownOptions = useMemo(() => ({ strategy: policy, inheritedDirection }), [policy, inheritedDirection]);
+  const remarkPlugins = useMemo<PluggableList>(() => [remarkGfm, [remarkBidi, markdownOptions]], [markdownOptions]);
+  const rehypePlugins = useMemo<PluggableList>(() => [[rehypeBidi, markdownOptions]], [markdownOptions]);
   const analysis = useMemo(() => analyzeBlock(markdown, {
     fallback: 'neutral',
-    strategy: policy
-  }), [markdown, policy]);
+    ...markdownOptions
+  }), [markdown, markdownOptions]);
   const security = useMemo(() => scanBidiSecurity(markdown, { mode: securityMode }), [markdown, securityMode]);
   const ast = useMemo(() => unified().use(remarkParse).use(remarkGfm).parse(markdown), [markdown]);
   const filteredCorpus = useMemo(() => {
@@ -265,7 +269,7 @@ export function App() {
   async function exportSemanticHtml(): Promise<void> {
     const { default: MarkdownIt } = await import('markdown-it');
     const renderer = new MarkdownIt({ html: false, linkify: true });
-    markdownItBidi(renderer, { strategy: policy });
+    markdownItBidi(renderer, markdownOptions);
     const html = `<!doctype html>\n<meta charset="utf-8">\n${renderer.render(markdown)}`;
     downloadText('bidilens-semantic.html', html, 'text/html;charset=utf-8');
     setActionStatus(t.htmlExported);
@@ -347,7 +351,7 @@ export function App() {
         <article className="panel preview-panel">
           <div className="panel-title"><div><span>{t.preview}</span><small>{t.previewHelp}</small></div></div>
           <div className="markdown-body">
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBidi]} rehypePlugins={[rehypeBidi]}>{markdown}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>{markdown}</ReactMarkdown>
           </div>
         </article>
       </section>
@@ -361,7 +365,7 @@ export function App() {
             <button onClick={() => setStreaming(true)} disabled={streaming}>{streaming ? t.streaming : t.streamStart}</button>
           </div>
         </div>
-        <StreamingBidiMessage className="stream-output" text={streamed || '...'} streamOptions={{ strategy: policy, fallback: 'ltr' }} />
+        <StreamingBidiMessage className="stream-output" text={streamed || '...'} completed={!streaming} inheritedDirection={inheritedDirection} streamOptions={{ strategy: policy, fallback: inheritedDirection }} />
       </section>
 
       <section className="panel analysis-panel">
@@ -389,7 +393,7 @@ export function App() {
           <Comparison label={t.browser}><p>{markdown}</p></Comparison>
           <Comparison label={t.naive}><p dir="rtl">{markdown}</p></Comparison>
           <Comparison label={t.auto}><p dir="auto">{markdown}</p></Comparison>
-          <Comparison label={t.toolkit}><BidiMessage as="p" data-case="toolkit-live" text={markdown} strategy={policy} /></Comparison>
+          <Comparison label={t.toolkit}><BidiMessage as="p" data-case="toolkit-live" text={markdown} strategy={policy} inheritedDirection={inheritedDirection} /></Comparison>
         </div>
       </section>
 

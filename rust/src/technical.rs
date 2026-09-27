@@ -4,6 +4,7 @@ use std::sync::{LazyLock, Mutex};
 
 use regex::Regex;
 
+use crate::generated::technical_commands::is_command_argument;
 use crate::{Direction, SourceRange, classify_natural};
 
 /// Technical token family used by direction evidence and isolation planning.
@@ -182,6 +183,64 @@ fn trim_technical_punctuation(value: &str) -> &str {
         '.', ',', ';', ':', '!', '?', '\u{060C}', '\u{061B}', '\u{061F}', '\u{3002}', '\u{0964}',
         '\u{06D4}',
     ])
+}
+
+/// Rust regexes do not backtrack to a previous grouped-number separator when
+/// the Unicode end boundary rejects the last group. Retain that valid prefix.
+fn add_plain_numeric_ranges(source: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
+    let expression =
+        built_in_regex(r"(?:^|[^\p{L}\p{N}_])([+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*)");
+    let unicode_word = built_in_regex(r"^[\p{L}\p{N}_]");
+    for captures in expression.captures_iter(source) {
+        let Some(found) = captures.get(1) else {
+            continue;
+        };
+        let mut end = found.end();
+        if unicode_word.is_match(&source[end..]) {
+            let Some(separator) = found.as_str().rfind(['.', ',', '٫', '٬']) else {
+                continue;
+            };
+            end = found.start() + separator;
+        }
+        add_range(ranges, found.start()..end, TechnicalTokenKind::Number);
+    }
+}
+
+fn trim_url_suffix(value: &str) -> &str {
+    let mut balance = [0_isize; 3];
+    for character in value.chars() {
+        if let Some(slot) = "([{".find(character) {
+            balance[slot] += 1;
+        }
+        if let Some(slot) = ")]}".find(character) {
+            balance[slot] -= 1;
+        }
+    }
+    let mut end = value.len();
+    while end > 0 {
+        let trimmed = trim_technical_punctuation(&value[..end]);
+        if trimmed.len() < end {
+            end = trimmed.len();
+            continue;
+        }
+        let character = value[..end].chars().next_back().expect("nonempty suffix");
+        let Some(slot) = ")]}".find(character) else {
+            break;
+        };
+        if balance[slot] >= 0 {
+            break;
+        }
+        balance[slot] += 1;
+        end -= character.len_utf8();
+    }
+    &value[..end]
+}
+
+fn recognizable_command(value: &str) -> bool {
+    let expression = built_in_regex(r#"^([a-z]+)[ \t]+('[^']*'|"[^"]*"|[^ \t]+)"#);
+    expression
+        .captures(value)
+        .is_some_and(|parts| is_command_argument(&parts[1], &parts[2]))
 }
 
 fn is_ipv4(value: &str) -> bool {
@@ -413,11 +472,11 @@ fn is_math_whitespace(ch: char) -> bool {
 }
 
 fn add_math_ranges(text: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
-    if !text.contains('$') && !text.contains("\\(") {
+    if !text.contains('$') && !text.contains("\\(") && !text.contains("\\[") {
         return;
     }
     let chars: Vec<(usize, char)> = text.char_indices().collect();
-    let mut scanned = [0; 3];
+    let mut scanned = [0; 4];
     let mut i = 0;
     let at = |index: usize, delimiter: &[char]| {
         index + delimiter.len() <= chars.len()
@@ -428,7 +487,8 @@ fn add_math_ranges(text: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
     };
     while i < chars.len() {
         let paren = at(i, &['\\', '(']);
-        if chars[i].1 == '\\' && !paren {
+        let bracket = at(i, &['\\', '[']);
+        if chars[i].1 == '\\' && !paren && !bracket {
             i += 2;
             continue;
         }
@@ -436,6 +496,8 @@ fn add_math_ranges(text: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
             if at(i, &['$', '$']) { 1 } else { 0 }
         } else if paren {
             2
+        } else if bracket {
+            3
         } else {
             i += 1;
             continue;
@@ -447,14 +509,19 @@ fn add_math_ranges(text: &str, ranges: &mut Vec<RawTechnicalTokenRange>) {
         let delimiter: &[char] = match kind {
             0 => &['$'],
             1 => &['$', '$'],
-            _ => &['\\', ')'],
+            2 => &['\\', ')'],
+            _ => &['\\', ']'],
         };
         if kind == 0 && (i + 1 == chars.len() || is_math_whitespace(chars[i + 1].1)) {
             i += 1;
             continue;
         }
         let mut end = i + delimiter.len();
-        while end < chars.len() && !matches!(chars[end].1, '\r' | '\n') && !at(end, delimiter) {
+        let display = kind == 1 || kind == 3;
+        while end < chars.len()
+            && (display || !matches!(chars[end].1, '\r' | '\n'))
+            && !at(end, delimiter)
+        {
             end += if chars[end].1 == '\\'
                 && end + 1 < chars.len()
                 && !matches!(chars[end + 1].1, '\r' | '\n')
@@ -506,20 +573,7 @@ pub fn find_technical_token_ranges(
 
     let urls = built_in_regex(r#"(?i)(?-u:\b)(?:https?|ftp)://[^\s<>{}\"']+"#);
     for found in urls.find_iter(text) {
-        let mut value = trim_technical_punctuation(found.as_str());
-        for (open, close) in [('(', ')'), ('[', ']'), ('{', '}')] {
-            if !value.ends_with(close) {
-                continue;
-            }
-            let mut balance =
-                value.matches(open).count() as isize - value.matches(close).count() as isize;
-            let mut end = value.len();
-            while balance < 0 && value[..end].ends_with(close) {
-                balance += 1;
-                end -= close.len_utf8();
-            }
-            value = &value[..end];
-        }
+        let value = trim_url_suffix(found.as_str());
         add_range(
             &mut ranges,
             found.start()..found.start() + value.len(),
@@ -575,11 +629,11 @@ pub fn find_technical_token_ranges(
     add_matches(
         text,
         &mut ranges,
-        r#"(?-u:\b)(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:\s+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|\"[^\"\r\n]*\"))+"#,
+        r#"(?-u:\b)(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|\"[^\"\r\n]*\"))+"#,
         TechnicalTokenKind::Command,
         0,
         |value| value,
-        |_| true,
+        recognizable_command,
     );
     add_matches(
         text,
@@ -643,6 +697,13 @@ pub fn find_technical_token_ranges(
     add_matches_with_unicode_end_boundary(
         text,
         &mut ranges,
+        r"(?:^|[^\p{L}\p{N}_])((?:[+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*[%٪]|[%٪][+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*))",
+        TechnicalTokenKind::Number,
+        1,
+    );
+    add_matches_with_unicode_end_boundary(
+        text,
+        &mut ranges,
         r"(?:^|[^\p{L}\p{N}_])([+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*[-–][+-]?[0-9٠-٩۰-۹]+(?:[.,٫٬][0-9٠-٩۰-۹]+)*)",
         TechnicalTokenKind::Number,
         1,
@@ -656,13 +717,7 @@ pub fn find_technical_token_ranges(
         |value| value,
         |_| true,
     );
-    add_matches_with_unicode_end_boundary(
-        text,
-        &mut ranges,
-        r"(?:^|[^\p{L}\p{N}_])([+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u{0660}-\u{0669}]+(?:[\u{066B}\u{066C}][\u{0660}-\u{0669}]+)?|[\u{06F0}-\u{06F9}]+(?:[.,][\u{06F0}-\u{06F9}]+)?))",
-        TechnicalTokenKind::Number,
-        1,
-    );
+    add_plain_numeric_ranges(text, &mut ranges);
 
     let custom: HashSet<String> = technical_identifiers
         .iter()

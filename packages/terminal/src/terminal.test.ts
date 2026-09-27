@@ -3,6 +3,24 @@ import { BIDI_CONTROLS, stripBidiControls } from '@bidilens/core';
 import { formatTerminalText, maskAnsiForAnalysis } from './index.js';
 
 describe('terminal adapter', () => {
+  it.each(['\n', '\r', '\r\n', '\u0085', '\u001c', '\u001d', '\u001e', '\u2029'])(
+    'keeps paragraph scopes independent across %j', (separator) => {
+      const source = `سلام${separator}Hello world.`;
+      expect(formatTerminalText(source, { mode: 'unicode-isolates' }).text).toBe(
+        `${BIDI_CONTROLS.RLI}سلام${BIDI_CONTROLS.PDI}${separator}${BIDI_CONTROLS.LRI}Hello world.${BIDI_CONTROLS.PDI}`
+      );
+    }
+  );
+
+  it.each(['\u001b]unfinished', '\u009dunfinished', '\u001bPunfinished', '\u001b[31', '\u001b'])(
+    'does not put generated controls into an unfinished ANSI payload %j', (control) => {
+      const source = `سلام${control}`;
+      const result = formatTerminalText(source, { mode: 'unicode-isolates' });
+      expect(result.text).toBe(source);
+      expect(result.controlsInserted).toBe(false);
+      expect(result.warnings.some((warning) => warning.includes('unterminated'))).toBe(true);
+    }
+  );
   it('is an exact plain-text no-op for LTR-only input', () => {
     const source = 'React is a very popular JavaScript library.';
     const result = formatTerminalText(source);

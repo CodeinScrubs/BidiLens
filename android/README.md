@@ -2,7 +2,7 @@
 
 BidiLens Android fixes mixed Persian/Arabic/Hebrew and English text at the
 native rendering boundary. It uses the same Unicode 17 data, content-majority
-policy, technical-token rules, security scanner, and 932-case canonical corpus
+policy, technical-token rules, security scanner, and 941-case canonical corpus
 as the JavaScript packages.
 
 The Android implementation has three small libraries:
@@ -130,6 +130,28 @@ BidiText(
 )
 ```
 
+### Multiple paragraphs (next source release)
+
+The source implementation analyzes each paragraph independently and applies
+its resolved base through Compose `ParagraphStyle` ranges. This also works
+with `isolateRuns = false`: the displayed string stays exactly equal to the
+logical source, while a Persian paragraph followed by an English paragraph
+receives RTL and LTR bases respectively. Neutral paragraphs use the configured
+fallback or inherited direction. LF, CRLF, CR, NEL, U+001C–U+001E and U+2029
+are paragraph separators; U+2028 is a line separator, not a new base paragraph.
+
+Authored paragraph styles are split at those boundaries. Direction is managed;
+other style fields, including physical-left alignment, are retained. Span,
+link, TTS and custom annotations retain their payloads and mapped ranges.
+Paragraph ranges include generated boundary controls to avoid phantom empty
+layout paragraphs. No-op LTR input retains the exact `AnnotatedString` instance.
+
+These changes are not in Maven `0.1.2`. Unit tests and compilation are separate
+from native rendering, IME and clipboard acceptance; run the instrumentation
+suite before releasing a new Android artifact. Native isolation currently
+retains combining marks but is not yet equivalent to the JavaScript core's
+complete pinned Unicode 17 extended-grapheme implementation.
+
 ## Use with Android Views
 
 Android Views require the normal application-level RTL capability flag. Add
@@ -202,6 +224,21 @@ First-strong, strict UAX #9 base selection, inherited, explicit LTR/RTL,
 threshold, fallback, and caller-specific identifier options are also exposed
 through `BidiOptions`.
 
+Kotlin data-class `copy()` preserves every existing field value. When changing
+strategy on an existing options instance, choose the token-exclusion policy
+explicitly rather than assuming its constructor default is recalculated:
+
+```kotlin
+val firstStrong = options.copy(
+    strategy = BidiDetectionStrategy.FIRST_STRONG,
+    excludeTechnicalTokens = false,
+)
+```
+
+Constructing a fresh `BidiOptions(strategy = ...)` applies the strategy's
+constructor default. An automatic tri-state override for `copy()` is not yet
+part of the Android API.
+
 ## Verification
 
 ```bash
@@ -212,10 +249,30 @@ pnpm run android:check
   :compose:connectedDebugAndroidTest
 ```
 
-Current executable evidence includes:
+Current audit-branch evidence includes:
 
-- all 932 canonical direction fixtures and declared isolation plans in Kotlin;
-- 31 core, 13 Views/Robolectric, and 9 Compose JVM tests;
+- all 941 canonical direction fixtures and declared isolation plans in Kotlin;
+- 39 core, 13 Views/Robolectric, and 13 Compose JVM tests;
+- compilation of the independent-paragraph/physical-left Compose layout tests;
+- hosted API 35 execution of all 7 Compose and 4 Views UI tests at audit source
+  `4a22ece`, including real clipboard copying, with no failures or skips on the
+  fresh-runner rerun. The initial Quickstep startup ANR and evidence are recorded
+  in the [repair ledger](../docs/audit-repair-status.md).
+
+The disposable CI emulator additionally uses a bounded launcher-readiness
+preflight. It can restart only the evidenced cold-boot launcher ANR once;
+unrelated/persistent ANRs and test failures are never suppressed or retried.
+Its command-failure contracts can be checked without an Android device:
+
+```bash
+bash scripts/check-android-ui-readiness.sh
+```
+
+These mocked command probes do not replace the real instrumentation tests.
+
+Earlier published-source validation included the following gates; it does not
+establish that the newer audit-branch paragraph changes pass them:
+
 - 3 Views and 3 Compose UI tests on an Android 16/API 36.1 emulator;
 - release AAR assembly, sample APK assembly, and Android lint;
 - an isolated consumer build against the generated Maven-local coordinates;

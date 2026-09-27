@@ -29,7 +29,7 @@ Status vocabulary:
 | Every public package has implementation, ≥25 package-local assertions, README/install, and example | Complete and executable | `pnpm run packages:depth` enforces this for all 12 packages; packed examples are also exercised by `pnpm run release:check` |
 | Full source lives in Git; annotated milestone tag after every gate | Partial | Reviewed source is committed to the canonical public Git repository, but only historical tags `m0` and `m1` exist. Missing history is not retroactively fabricated |
 | No fabricated badges, counts, adoption, or publication | Complete for the current tree | Publication is tied to registry/release evidence; the [outreach log](OUTREACH_LOG.md) distinguishes submitted proposals from the verified Streamdown native-patch merge. Neither is presented as an audit, pilot, BidiLens dependency adoption, or company endorsement |
-| ≥300 corpus fixtures | Complete as a technical corpus; external review incomplete | 932 schema-valid entries; 735 authored template-matrix cases, 196 attributed sibling-project seeds, one user fixture; zero are marked native-speaker-reviewed |
+| ≥300 corpus fixtures | Complete as a technical corpus; external review incomplete | 941 schema-valid entries; 744 authored template-matrix cases, 196 attributed sibling-project seeds, one user fixture; zero are marked native-speaker-reviewed |
 | Automated wrong-versus-correct visual proof | Complete and tested | `tests/visual/flagship.spec.ts` and committed Windows/Arial baselines; Chromium, Firefox, and WebKit gate |
 
 ## Mission and platform scope

@@ -1,5 +1,33 @@
 package io.github.codeinscrubs.bidilens.core
 
+import io.github.codeinscrubs.bidilens.core.generated.TechnicalCommands
+
+private val commandPrefix = Regex("""^([a-z]+)[ \t]+('[^']*'|"[^"]*"|[^ \t]+)""")
+private fun isRecognizableCommand(value: String): Boolean {
+    val match = commandPrefix.find(value) ?: return false
+    return TechnicalCommands.isCommandArgument(match.groupValues[1], match.groupValues[2])
+}
+
+private fun trimUrlSuffix(value: String): String {
+    val balance = IntArray(3)
+    for (character in value) {
+        val opening = "([{".indexOf(character)
+        val closing = ")]}".indexOf(character)
+        if (opening >= 0) balance[opening]++
+        if (closing >= 0) balance[closing]--
+    }
+    var end = value.length
+    while (end > 0) {
+        val character = value[end - 1]
+        if (character in technicalTrailingPunctuation) { end--; continue }
+        val closing = ")]}".indexOf(character)
+        if (closing < 0 || balance[closing] >= 0) break
+        balance[closing]++
+        end--
+    }
+    return value.substring(0, end)
+}
+
 private val DEFAULT_TECHNICAL_IDENTIFIERS = setOf(
     "ai", "api", "anthropic", "chatgpt", "claude", "cli", "codex", "copilot", "cursor",
     "deepseek", "electron", "gemini", "github", "gitlab", "grok", "huggingface",
@@ -235,21 +263,24 @@ private fun isMathWhitespace(char: Char): Boolean = char in '\u0009'..'\u000d' |
     char in " \u00a0\u1680\u2028\u2029\u202f\u205f\u3000\ufeff"
 
 private fun addMathRanges(text: String, ranges: MutableList<TechnicalTokenRange>) {
-    val scanned = mutableMapOf("$" to -1, "$$" to -1, "\\)" to -1)
+    val scanned = mutableMapOf("$" to -1, "$$" to -1, "\\)" to -1, "\\]" to -1)
     var i = 0
     while (i < text.length) {
         val paren = text.startsWith("\\(", i)
-        if (text[i] == '\\' && !paren) { i += 2; continue }
+        val bracket = text.startsWith("\\[", i)
+        if (text[i] == '\\' && !paren && !bracket) { i += 2; continue }
         val delimiter = when {
             text.startsWith("$$", i) -> "$$"
             text[i] == '$' -> "$"
             paren -> "\\)"
+            bracket -> "\\]"
             else -> ""
         }
         if (delimiter.isEmpty() || i < scanned.getValue(delimiter)) { i++; continue }
         if (delimiter == "$" && (i + 1 == text.length || isMathWhitespace(text[i + 1]))) { i++; continue }
-        var end = i + if (paren) 2 else delimiter.length
-        while (end < text.length && text[end] != '\r' && text[end] != '\n' && !text.startsWith(delimiter, end)) {
+        val display = delimiter == "$$" || bracket
+        var end = i + if (paren || bracket) 2 else delimiter.length
+        while (end < text.length && (display || (text[end] != '\r' && text[end] != '\n')) && !text.startsWith(delimiter, end)) {
             end += if (text[end] == '\\' && end + 1 < text.length && text[end + 1] != '\r' && text[end + 1] != '\n') 2 else 1
         }
         if (text.startsWith(delimiter, end) && (delimiter != "$" || end > i + 1)) {
@@ -278,17 +309,7 @@ fun findTechnicalTokenRanges(
     addMathRanges(text, ranges)
 
     for (match in Regex("\\b(?:https?|ftp)://[^\\s<>{}\"']+", RegexOption.IGNORE_CASE).findAll(text)) {
-        var value = trimTechnicalPunctuation(match.value)
-        for ((open, close) in listOf('(' to ')', '[' to ']', '{' to '}')) {
-            if (!value.endsWith(close)) continue
-            var balance = value.count { it == open } - value.count { it == close }
-            var end = value.length
-            while (balance < 0 && end > 0 && value[end - 1] == close) {
-                balance += 1
-                end -= 1
-            }
-            value = value.substring(0, end)
-        }
+        val value = trimUrlSuffix(match.value)
         ranges.addRange(text, match.range.first, match.range.first + value.length, TechnicalTokenKind.URL)
     }
 
@@ -322,9 +343,10 @@ fun findTechnicalTokenRanges(
         text,
         Regex(
             "\\b(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)" +
-                "(?:\\s+(?:--?[A-Za-z0-9_-]+|[@./\\\\A-Za-z0-9_:=+-]+|'[^'\\r\\n]*'|\"[^\"\\r\\n]*\"))+",
+                "(?:[ \\t]+(?:--?[A-Za-z0-9_-]+|[@./\\\\A-Za-z0-9_:=+-]+|'[^'\\r\\n]*'|\"[^\"\\r\\n]*\"))+",
         ),
         TechnicalTokenKind.COMMAND,
+        validate = ::isRecognizableCommand,
     )
     ranges.addMatches(
         text,
@@ -355,6 +377,7 @@ fun findTechnicalTokenRanges(
     )
     val numericValue = "[0-9\u0660-\u0669\u06F0-\u06F9]+(?:[.,\u066B\u066C][0-9\u0660-\u0669\u06F0-\u06F9]+)*"
     ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?$numericValue|[+-]?$numericValue\\p{Sc})(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
+    ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])(?:[+-]?$numericValue[%٪]|[%٪][+-]?$numericValue)(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
     ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])[+-]?$numericValue[-–][+-]?$numericValue(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
     ranges.addMatches(text, Regex("\\bv?\\d+(?:\\.\\d+){1,}\\b"), TechnicalTokenKind.VERSION)
     ranges.addMatches(
@@ -364,11 +387,7 @@ fun findTechnicalTokenRanges(
     )
     ranges.addMatches(
         text,
-        Regex(
-            "(?<![\\p{L}\\p{N}_])[+-]?(?:\\d+(?:[.,]\\d+)?|" +
-                "[\\u0660-\\u0669]+(?:[\\u066B\\u066C][\\u0660-\\u0669]+)?|" +
-                "[\\u06F0-\\u06F9]+(?:[.,][\\u06F0-\\u06F9]+)?)(?![\\p{L}\\p{N}_])",
-        ),
+        Regex("(?<![\\p{L}\\p{N}_])[+-]?$numericValue(?![\\p{L}\\p{N}_])"),
         TechnicalTokenKind.NUMBER,
     )
 

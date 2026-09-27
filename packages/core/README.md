@@ -68,7 +68,10 @@ behavior is required.
 
 Raw-text token recognition is a heuristic, not a TeX/Markdown parser. Compact
 currency amounts (`$10`, `€12.50`, `۱۰€`) and signed numeric ranges (`10-20`,
-`10–20`, `-10--2`) are single technical units. Paths stop at surrounding quote
+`10–20`, `-10--2`), grouped numbers (`1,000,000`, `۱٬۰۰۰٬۰۰۰`), and compact
+percentages (`50%`, `۵۰٪`) are single technical units. Recognition accepts
+numeric separators heuristically; it does not validate locale-specific number
+formatting or convert numeric values. Paths stop at surrounding quote
 characters; put paths containing literal quotes in explicit code nodes/spans.
 Single-dollar math requires non-whitespace inner boundaries and a closing `$`
 not immediately followed by an ASCII, Arabic-Indic, or Persian digit. Escaped
@@ -76,7 +79,10 @@ dollars are literal. Invalid candidate closers are reconsidered as new openers,
 so a price followed by `$x+1$` does not consume the intervening prose. These
 checks use a pinned ECMAScript whitespace set on every core; they are inspired
 by [Pandoc's dollar-math boundaries](https://pandoc.org/MANUAL.html#math), not a
-claim of full Pandoc compatibility. Raw math ranges never cross CR/LF.
+claim of full Pandoc compatibility. Inline `$...$` and `\(...\)` remain
+CR/LF-limited. Closed display `$$...$$` and `\[...\]` may span CR/LF;
+generated isolates still stop at Unicode paragraph boundaries. This only
+recognizes raw spans: use your host's math parser/renderer for TeX layout.
 
 Built-in recognition covers conservative, unambiguous tool and product names.
 Add private or domain-specific single-token identifiers without changing global
@@ -99,6 +105,9 @@ than correcting a misleading prefix before completion.
 
 Dense, ambiguous combinations of environment variables and math delimiters can
 still produce transient stream/batch differences and repeated exact rescans.
+Open bracketed display math also reconciles exactly at each push boundary to
+preserve independent token semantics until its closer arrives; character-sized
+chunks in a long unclosed span can therefore cause quadratic total work.
 Do not use provisional direction as a persisted classification or assume a
 worst-case linear stream. Call `finish()` and use completed paragraph results;
 see the [review limitations](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/EXTERNAL_REVIEW_2026_09.md).

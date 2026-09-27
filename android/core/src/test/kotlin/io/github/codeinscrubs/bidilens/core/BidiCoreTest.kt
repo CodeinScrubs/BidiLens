@@ -9,6 +9,18 @@ import org.junit.Test
 
 class BidiCoreTest {
     @Test
+    fun strictUax9SkipsNestedAndUnclosedIsolatesAndResetsAtParagraphs() {
+        val options = BidiOptions(strategy = BidiDetectionStrategy.STRICT_UAX9)
+        assertEquals(BidiDirection.LTR, detectDirection("\u2067עברית\u2069 ordinary", options))
+        assertEquals(BidiDirection.LTR, detectDirection("\u2067א\u2066ABC\u2069ב\u2069 ordinary", options))
+        assertEquals(BidiDirection.NEUTRAL, detectDirection("\u2067עברית ordinary", options))
+        for (separator in listOf("\n", "\r\n", "\r", "\u0085", "\u001c", "\u001d", "\u001e", "\u2029")) {
+            assertEquals(BidiDirection.LTR, detectDirection("\u2067עברית${separator}ordinary", options))
+        }
+        assertEquals(BidiDirection.RTL, detectDirection("\u2067עברית\u2069 ordinary", BidiOptions(strategy = BidiDetectionStrategy.FIRST_STRONG)))
+    }
+
+    @Test
     fun generatedIsolationsStayInsideEachParagraph() {
         for (separator in listOf("\n", "\r\n", "\r", "\u0085", "\u001c", "\u001d", "\u001e", "\u2029")) {
             val source = "سلام React${separator}JavaScript"

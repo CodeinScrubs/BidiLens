@@ -11,6 +11,66 @@ const bundle = buildSync({
   globalName: 'BidiLensDom'
 }).outputFiles[0]!.text;
 
+test('rich inline isolation retains fragment order, backward selection, identity, and stable reapplication', async ({ page }) => {
+  await page.setContent('<main style="width:1200px"><p style="text-align:left">لینک https://<strong>example</strong>.com را باز کنید.</p></main>');
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const root = document.querySelector('main')!;
+    const strong = root.querySelector('strong')!;
+    const source = root.textContent;
+    const selection = window.getSelection()!;
+    selection.setBaseAndExtent(strong.firstChild!, 7, strong.firstChild!, 0);
+    api.applyBidi(root);
+    const selectedAfterApply = selection.toString();
+    const logicalOffset = (node: Node, offset: number): number => {
+      const range = document.createRange();
+      range.selectNodeContents(root); range.setEnd(node, offset);
+      return range.toString().length;
+    };
+    const backward = logicalOffset(selection.anchorNode!, selection.anchorOffset) > logicalOffset(selection.focusNode!, selection.focusOffset);
+    const wrapper = root.querySelector('bdi')!;
+    const walker = document.createTreeWalker(wrapper, NodeFilter.SHOW_TEXT);
+    const texts: Text[] = [];
+    let node: Node | null;
+    while ((node = walker.nextNode())) if (node.textContent) texts.push(node as Text);
+    const range = document.createRange();
+    range.setStart(texts[0]!, 0); range.setEnd(texts[0]!, 1);
+    const first = range.getBoundingClientRect().left;
+    const lastText = texts.at(-1)!;
+    range.setStart(lastText, lastText.length - 1); range.setEnd(lastText, lastText.length);
+    const last = range.getBoundingClientRect().left;
+    const repeated = api.applyBidi(root);
+    const stable = root.querySelector('bdi') === wrapper;
+    api.restoreBidi(root);
+    return { first, last, selectedAfterApply, selectedAfterRestore: selection.toString(), backward,
+      stable, repeated: repeated.isolated, identity: root.querySelector('strong') === strong,
+      sourcePreserved: root.textContent === source };
+  });
+  expect(evidence.first).toBeLessThan(evidence.last);
+  expect(evidence).toMatchObject({ selectedAfterApply: 'example', selectedAfterRestore: 'example', backward: true,
+    stable: true, repeated: 0, identity: true, sourcePreserved: true });
+});
+
+test('an omitted partial-format range cannot cause a generated-wrapper observer loop', async ({ page }) => {
+  await page.setContent('<main><p>سلام <strong>سلام https://</strong>example.com و React دنیا.</p></main>');
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(async () => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const root = document.querySelector<HTMLElement>('main')!;
+    const observed = api.observeBidi(root, { debounceMs: 0 });
+    const wrapper = root.querySelector('bdi');
+    let mutations = 0;
+    const probe = new MutationObserver((records) => mutations += records.length);
+    probe.observe(root, { childList: true, subtree: true, characterData: true });
+    observed.flush();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    observed.disconnect(); probe.disconnect();
+    return { stable: root.querySelector('bdi') === wrapper, mutations };
+  });
+  expect(evidence).toEqual({ stable: true, mutations: 0 });
+});
+
 test('restoration preserves excluded editor selection and unowned marker-like HTML', async ({ page }) => {
   await page.setContent('<main><p id="message" style="text-align:left">سلام page 97</p><div id="editor" contenteditable="true"></div><aside><bdi data-bidilens-dom-generated dir="ltr">author content</bdi></aside></main>');
   await page.addScriptTag({ content: bundle });
@@ -94,10 +154,12 @@ test('incremental DOM isolation preserves phrase order and left alignment', asyn
     api.applyBidi(document.body);
     const isolate = paragraph.querySelector('bdi')!;
     const text = isolate.firstChild!;
+    const lastText = isolate.lastChild!;
     const range = document.createRange();
     range.setStart(text, 0); range.setEnd(text, 4);
     const pageLeft = range.getBoundingClientRect().left;
-    range.setStart(text, 5); range.setEnd(text, 7);
+    const lastLength = lastText.textContent!.length;
+    range.setStart(lastText, lastLength - 2); range.setEnd(lastText, lastLength);
     const numberLeft = range.getBoundingClientRect().left;
     api.applyBidi(document.body);
     return { phrase: isolate.textContent, pageLeft, numberLeft,
@@ -110,6 +172,35 @@ test('incremental DOM isolation preserves phrase order and left alignment', asyn
   expect(evidence.source).toBe('سلام page 97');
   await expect(page.locator('#stream')).toHaveCSS('text-align', 'left');
   await expect(page.locator('#css')).toHaveCSS('direction', 'ltr');
+});
+
+test('grouped numbers and percentages retain visual order, logical copy, and left alignment', async ({ page }) => {
+  const source = 'مقدار 1,000,000 و ۱٬۰۰۰٬۰۰۰ و 50% و ۵۰٪ است.';
+  await page.setContent('<main dir="ltr"><p style="width:900px;text-align:left"></p></main>');
+  await page.locator('p').evaluate((paragraph, text) => { paragraph.textContent = text; }, source);
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const paragraph = document.querySelector('p')!;
+    api.applyBidi(document.body);
+    const tokens = [...paragraph.querySelectorAll('bdi')].map((element) => {
+      const node = element.firstChild!;
+      const range = document.createRange();
+      range.setStart(node, 0); range.setEnd(node, 1);
+      const first = range.getBoundingClientRect().left;
+      const end = node.textContent!.length;
+      range.setStart(node, end - 1); range.setEnd(node, end);
+      return { text: element.textContent, first, last: range.getBoundingClientRect().left };
+    });
+    const selection = window.getSelection()!;
+    selection.selectAllChildren(paragraph);
+    const copied = selection.toString();
+    api.restoreBidi(document.body);
+    return { tokens, copied, restored: paragraph.textContent, alignment: paragraph.style.textAlign };
+  });
+  expect(evidence.tokens.map((token) => token.text)).toEqual(['1,000,000', '۱٬۰۰۰٬۰۰۰', '50%', '۵۰٪']);
+  for (const token of evidence.tokens) expect(token.first).toBeLessThan(token.last);
+  expect(evidence).toMatchObject({ copied: source, restored: source, alignment: 'left' });
 });
 
 test('honors changed author dir without losing real stylesheet precedence', async ({ page }) => {

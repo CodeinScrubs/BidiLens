@@ -15,6 +15,22 @@ describe('BidiMessageElement', () => {
     expect(customElements.get('bidi-message')).toBe(BidiMessageElement);
   });
 
+  it('preserves authored child nodes when computed LTR overrides an RTL attribute', () => {
+    const parent = document.createElement('div');
+    parent.dir = 'rtl';
+    parent.style.direction = 'ltr';
+    const element = document.createElement('bidi-message');
+    const child = document.createElement('em');
+    child.textContent = 'Hello world!';
+    element.append(child);
+    parent.append(element);
+    document.body.append(parent);
+    expect(element.hasAttribute('data-bidilens-block')).toBe(false);
+    expect(element.firstChild).toBe(child);
+    expect(element.hasAttribute('dir')).toBe(false);
+    parent.remove();
+  });
+
   it('renders the flagship paragraph RTL', () => {
     const element = document.createElement('bidi-message') as BidiMessageElement;
     element.textContent = 'React یک کتابخانه جاوااسکریپت بسیار محبوب است.';

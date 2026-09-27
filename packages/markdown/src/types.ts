@@ -64,6 +64,7 @@ export interface MarkdownItRenderer {
   readonly rules: Record<string, MarkdownItRenderRule | undefined>;
   renderToken(tokens: MarkdownItToken[], index: number, options: unknown): string;
   render(tokens: MarkdownItToken[], options: unknown, environment?: unknown): string;
+  renderInline(tokens: MarkdownItToken[], options: unknown, environment?: unknown): string;
 }
 
 export interface MarkdownItRenderRule {

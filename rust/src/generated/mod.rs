@@ -1,4 +1,5 @@
 mod bidi_ranges;
+pub(crate) mod technical_commands;
 
 pub(crate) use bidi_ranges::{
     COMBINING_MARK_RANGES, NATURAL_LETTER_RANGES, NON_STRONG_BIDI_RANGES, RTL_BIDI_RANGES,

@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
 import process from 'node:process';
+import { gzipSync } from 'node:zlib';
 
 interface PackageManifest {
   name: string;
@@ -32,17 +33,20 @@ const DIST_BUDGETS = new Map<string, number>([
   // Unicode 17 tables plus auditable evidence, invisible-character security,
   // atomic control sanitization, fenced-code detection, configurable token
   // policy, block-scoped natural-language evidence (hyphenated compounds and
-  // uppercase prose), and the chunk-invariant streaming classifier remain
-  // below a 124 KiB unminified ceiling (the current artifact is ~25 KiB gzip).
-  ['@bidilens/core', 124 * 1024],
+  // uppercase prose), and the streaming classifier. Full pinned Unicode 17
+  // extended-grapheme data/rules add ~14 KiB to the
+  // previous facade; retain bounded unminified and compressed ceilings.
+  ['@bidilens/core', 145 * 1024],
   // Ownership-aware live direction/style restoration adds deliberate DOM
   // integration code; keep a tight but realistic unminified ceiling.
-  ['@bidilens/dom', 20 * 1024],
+  // Cross-format isolation, source-selection retention and fresh CSS cascade
+  // probes: ~25 KiB raw / 5.6 KiB gzip in the audit build.
+  ['@bidilens/dom', 28 * 1024],
   ['@bidilens/html', 12 * 1024],
   // Includes batch adapters plus the grammar-aware checkpointed Markdown
-  // stream. The current ESM artifact remains below 15 KiB gzip and the
+  // stream plus cross-format projection. The audit build is ~16.4 KiB gzip and the
   // side-effect-free entry stays tree-shakeable.
-  ['@bidilens/markdown', 80 * 1024],
+  ['@bidilens/markdown', 88 * 1024],
   ['@bidilens/playwright', 16 * 1024],
   ['@bidilens/react', 16 * 1024],
   ['@bidilens/spec', 24 * 1024],
@@ -51,6 +55,12 @@ const DIST_BUDGETS = new Map<string, number>([
   ['@bidilens/vue', 12 * 1024],
   ['@bidilens/web-component', 80 * 1024],
   ['@bidilens/cli', 32 * 1024]
+]);
+
+const GZIP_BUDGETS = new Map<string, number>([
+  ['@bidilens/core', 32 * 1024],
+  ['@bidilens/dom', 7 * 1024],
+  ['@bidilens/markdown', 18 * 1024]
 ]);
 
 function pnpmInvocation(args: string[]): { program: string; args: string[]; shell: boolean } {
@@ -208,6 +218,15 @@ async function validateBuiltSizes(packages: Awaited<ReturnType<typeof packageMan
     const budget = DIST_BUDGETS.get(manifest.name);
     assert(budget !== undefined, `${manifest.name}: missing JavaScript size budget.`);
     assert(bytes <= budget, `${manifest.name}: emitted JavaScript is ${bytes} bytes; budget is ${budget} bytes.`);
+    const gzipBudget = GZIP_BUDGETS.get(manifest.name);
+    if (gzipBudget !== undefined) {
+      const compressed = await Promise.all(javascriptFiles.map(async (file) =>
+        gzipSync(await readFile(resolve(distDirectory, file))).length));
+      const gzipBytes = compressed.reduce((total, size) => total + size, 0);
+      assert(gzipBytes <= gzipBudget,
+        `${manifest.name}: emitted gzip JavaScript is ${gzipBytes} bytes; budget is ${gzipBudget} bytes.`);
+      console.log(`Gzip JavaScript ${manifest.name}: ${gzipBytes} bytes (budget ${gzipBudget}).`);
+    }
     console.log(`Built JavaScript ${manifest.name}: ${bytes} bytes across ${javascriptFiles.length} file(s) (budget ${budget}).`);
   }
 }
