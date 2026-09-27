@@ -73,7 +73,23 @@ environment-relative, while the UIKit paragraph model can keep exact
 physical-left alignment independent from RTL direction. A generic editable
 SwiftUI wrapper is not claimed yet: marked-text composition, dictation,
 selection, and third-party IMEs require dedicated validation. Use the UIKit
-`UITextView` and `UITextField` adapters for editable integration today.
+`UITextView` and `UITextField` adapters only within those same validation
+boundaries. In particular, the current UIKit adapters resolve one base for the
+whole control; they do not independently resolve mixed-direction paragraphs or
+fully restore distinct authored input paragraph styles. For read-only chat
+output, render separate blocks in separate controls until that gap is repaired.
+
+Do not apply or restore BidiLens while an editable control has a non-nil
+`markedTextRange`; defer that work until the host observes composition has
+finished. This caller-side precaution is not an IME compatibility guarantee.
+Third-party keyboard, dictation, VoiceOver, and physical-device validation
+remain required before a broad production recommendation.
+
+Native isolation currently preserves combining marks, but does not implement
+the JavaScript core's full pinned Unicode 17 extended-grapheme rules. Shared
+direction fixtures must not be interpreted as full cluster-boundary parity.
+See the [audit repair status](../docs/audit-repair-status.md) for the remaining
+source repairs and release gates.
 
 The source core exposes `BidiAnalyzer.scanSecurity(text, mode: .warn)` for
 control inventory, paragraph-scoped balance checks, hidden-character

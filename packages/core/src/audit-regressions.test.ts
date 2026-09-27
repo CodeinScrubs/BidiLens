@@ -75,6 +75,33 @@ describe('direction and recognition audit regressions', () => {
       expect(performance.now() - started).toBeLessThan(250);
     });
 
+  it.each([
+    ['.\\folder\\file', 'folder\\file'],
+    ['..\\folder\\file', 'folder\\file'],
+    ['-\\folder\\file', 'folder\\file'],
+    ['.\\folder/file', 'folder/file'],
+    ['-\\a\\Aa-', 'a\\Aa'],
+    ['.\\single', undefined]
+  ] as const)('retains relative paths after non-word prefix components: %s', (source, expected) => {
+    const paths = findTechnicalTokenRanges(source).filter((range) => range.kind === 'path');
+    expect(paths.map((range) => range.text)).toEqual(expected ? [expected] : []);
+    for (const range of paths) expect(source.slice(range.start, range.end)).toBe(range.text);
+  });
+
+  it.each([
+    ['a@b.com@c.de', ['a@b.com']],
+    ['a@b.com@c.de@e.co', ['a@b.com', 'c.de@e.co']],
+    ['ſ@domain.co', ['ſ@domain.co']],
+    ['a@K.co', ['a@K.co']],
+    ['a@b.ſſ', ['a@b.ſſ']],
+    ['K@x.co', ['K@x.co']],
+    ['a@b.co-@d.de', ['a@b.co-@d.de']]
+  ] as const)('preserves non-overlapping legacy email recognition: %s', (source, expected) => {
+    const emails = findTechnicalTokenRanges(source).filter((range) => range.kind === 'email');
+    expect(emails.map((range) => range.text)).toEqual(expected);
+    for (const range of emails) expect(source.slice(range.start, range.end)).toBe(range.text);
+  });
+
   it('trims mixed unmatched URL closers repeatedly while retaining balanced closers', () => {
     expect(findTechnicalTokenRanges('سلام ([https://example.com)]').map((range) => range.text)).toEqual(['https://example.com']);
     expect(findTechnicalTokenRanges('سلام https://example.com/a(b)').map((range) => range.text)).toEqual(['https://example.com/a(b)']);

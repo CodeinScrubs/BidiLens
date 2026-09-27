@@ -171,42 +171,57 @@ function trimUrlSuffix(value: string): string {
 
 /** Failed domain/path candidates cannot restart at every character of a lexical run. */
 function addEmailAndRelativePathRanges(text: string, ranges: TechnicalTokenRange[]): void {
-  for (const match of text.matchAll(/[A-Za-z0-9._%+@-]+/gu)) {
+  // Retain the legacy Unicode simple-fold and word-boundary semantics without
+  // restarting a failed domain match at each character of a lexical run.
+  const emailWord = /[A-Za-z0-9_]/iu;
+  for (const match of text.matchAll(/[A-Za-z0-9._%+@-]+/giu)) {
     const value = match[0];
     let localStart = 0;
     for (let at = 0; at < value.length; at += 1) {
       if (value[at] !== '@') continue;
-      while (localStart < at && !/[A-Za-z0-9_]/u.test(value[localStart]!)) localStart += 1;
+      while (localStart < at) {
+        const before = localStart > 0 ? value[localStart - 1] : text[match.index - 1];
+        if (emailWord.test(before ?? '') !== emailWord.test(value[localStart]!)) break;
+        localStart += 1;
+      }
       let cursor = at + 1;
       let dot = -1;
       let candidate = -1;
       let alphabetic = false;
-      while (cursor < value.length && /[A-Za-z0-9.-]/u.test(value[cursor]!)) {
+      while (cursor < value.length && /[A-Za-z0-9.-]/iu.test(value[cursor]!)) {
         const character = value[cursor]!;
         if (character === '.') { dot = cursor; alphabetic = true; }
-        else if (!/[A-Za-z]/u.test(character)) alphabetic = false;
+        else if (!/[A-Za-z]/iu.test(character)) alphabetic = false;
         cursor += 1;
-        if (alphabetic && dot > at + 1 && cursor - dot - 1 >= 2 && !/[A-Za-z0-9_]/u.test(value[cursor] ?? '')) candidate = cursor;
+        if (alphabetic && dot > at + 1 && cursor - dot - 1 >= 2 && !emailWord.test(value[cursor] ?? '')) candidate = cursor;
       }
-      if (localStart < at && candidate > 0) addRange(ranges, text, match.index + localStart, match.index + candidate, 'email');
-      localStart = at + 1;
+      const matched = localStart < at && candidate > 0;
+      if (matched) addRange(ranges, text, match.index + localStart, match.index + candidate, 'email');
+      // A matched domain is already consumed. Reusing it as the next local
+      // part creates overlapping emails and widens a@b.com@c.de into one token.
+      localStart = matched ? candidate : at + 1;
       at = cursor - 1;
     }
   }
   for (const match of text.matchAll(/[A-Za-z0-9_.\\/-]+/gu)) {
     const value = match[0];
     let start = 0;
-    let firstSeparator = -1;
     const append = (end: number): void => {
       while (start < end && !/[A-Za-z0-9_]/u.test(value[start]!)) start += 1;
       while (end > start && !/[A-Za-z0-9_]/u.test(value[end - 1]!)) end -= 1;
-      if (firstSeparator >= start && firstSeparator < end) addRange(ranges, text, match.index + start, match.index + end, 'path');
+      // Leading non-word components such as `.\` are outside the legacy
+      // word-boundary match. Look for a separator within the trimmed segment,
+      // not one remembered before its first word. Segments are disjoint, so
+      // this additional scan remains linear across the whole lexical run.
+      let separator = start;
+      while (separator < end && value[separator] !== '/' && value[separator] !== '\\') separator += 1;
+      if (separator < end) addRange(ranges, text, match.index + start, match.index + end, 'path');
     };
     for (let index = 0; index < value.length; index += 1) {
       if (value[index] !== '/' && value[index] !== '\\') continue;
       if (index === start || value[index - 1] === '/' || value[index - 1] === '\\') {
-        append(index); start = index + 1; firstSeparator = -1;
-      } else if (firstSeparator < 0) firstSeparator = index;
+        append(index); start = index + 1;
+      }
     }
     append(value.length);
   }
