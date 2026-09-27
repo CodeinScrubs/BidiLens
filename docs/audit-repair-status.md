@@ -35,7 +35,7 @@ Local Windows checks completed against the repaired source:
 | `pnpm packages:types` | Packed declarations and supported ESM/bundler resolution passed for all 12 JavaScript packages. CommonJS remains dynamic-import-only. |
 | `pnpm markdown-it:compat` | Packed strict TypeScript consumers, 932 canonical cases, and 9 host-structure cases passed on Markdown-It 13.0.2, 14.3.1, and 15.0.1 after the final Markdown repairs. |
 | `pnpm deps:audit` | No known locked npm dependency vulnerabilities reported. This is not an independent security audit. |
-| `pnpm sbom` / `pnpm sbom:check` | CycloneDX 1.7 validated: 531 components, 545 dependency relationships. |
+| `pnpm sbom` / `pnpm sbom:check` | CycloneDX 1.7 validated after incorporating current `main`: 532 components, 546 dependency relationships. |
 | `pnpm release:check --allow-dirty` | All 12 tarballs inspected; clean strict TypeScript/runtime/CLI consumer passed; four integration guides compiled and exercised; all 12 packed examples executed; raw and gzip size budgets passed. Development-only validation, not a publish decision. |
 | Windows native verification | 5,728 assertions and 932 canonical cases passed using local .NET 10 with runtime roll-forward; pinned .NET 8.0.423 verification is still required. |
 | Android | 38 core, 13 Compose, and 13 Views JVM tests passed; new Compose instrumentation tests compiled. No device was connected for execution of these new layout tests. |
@@ -44,6 +44,12 @@ Local Windows checks completed against the repaired source:
 Local JavaScript toolchain: Node 25.2.1 / pnpm 10.27.0. Declared Node 22.12
 support still needs the hosted minimum-version gate for this branch. Prior
 platform evidence does not validate changes introduced by this audit.
+
+The draft [audit PR #162](https://github.com/CodeinScrubs/BidiLens/pull/162)
+incorporates `main`'s current dependency lockfile and CodeQL action pins. The
+conflict resolution preserves those upstream versions rather than reverting
+them to the older audit baseline. Hosted checks, not draft status or local
+test counts, determine whether that combined branch can be merged.
 
 Release-artifact checks executed the clean packed consumer, CLI, guides, and
 examples. `--allow-dirty` is a development-only probe; it
