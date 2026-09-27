@@ -33,9 +33,40 @@ Fresh local follow-up evidence against source commit `7825d65`:
 | `pnpm release:check` | Clean committed source, without `--allow-dirty`: all 12 tarballs and packed examples, strict TypeScript/runtime/CLI consumer, four compiled/exercised integration guides, and every raw/gzip size budget passed. Core measured 144,748 raw bytes and 30,608 gzip bytes. |
 
 The local packed consumer/type/parser and clean-tree artifact gates are now
-complete for this follow-up. Apple/iOS source changed and cannot be compiled
-on this Windows host; fresh macOS/iOS simulator and all hosted CI/CodeQL gates
-are required. Earlier green native jobs do not certify the new Swift code.
+complete for this follow-up. Source snapshot `4a22ece` also completed
+[functional CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36305445694)
+and all five language jobs in
+[CodeQL](https://github.com/CodeinScrubs/BidiLens/actions/runs/36305445718).
+Hosted Apple verification passed 23 Swift core tests and 35 simulator tests
+(including 12 adapter tests), with zero failures, followed by the iOS build.
+Windows pinned .NET 8 verification passed 5,786 assertions and 941 cases plus
+WPF builds and NuGet packing. This Windows host did not compile Swift locally.
+Later source/workflow revisions still require their own hosted gates.
+
+### Android launcher failure and readiness repair
+
+The first API 35 attempt failed only the Compose clipboard test, at its initial
+window-focus wait before selection or copying. Retained `window.txt` identifies
+`Application Not Responding: com.android.launcher3` as the current focus, and
+the screenshot shows the Quickstep ANR dialog. On a fresh-runner rerun, all
+7 Compose and 4 Views instrumentation tests passed with zero failures, errors,
+or skips. This is measured infrastructure evidence, not an inference that all
+clipboard or device paths are safe.
+
+The CI-only readiness follow-up checks completed boot/package services,
+wakes/unlocks the disposable emulator, and requires five consecutive foreground
+launcher samples before each suite. It retains and permits one restart only
+for the observed launcher ANR. Persistent or unrelated ANRs, failed ADB
+commands, or missing foreground focus remain failures. Tests are not retried,
+ANR dialogs are not globally hidden, and clipboard/layout assertions are
+unchanged. Separate phase directories preserve preflight evidence.
+
+The standalone Bash contract harness passed 12 probes. Independent review
+reproduced a failed boot command printing `1` that was initially accepted;
+a regression test failed before the status-check repair and passed after it.
+Bash syntax, workflow actionlint, and diff checks passed. Fresh hosted
+verification is required for this readiness revision; the successful rerun
+above used the earlier script, not the new guard.
 
 Before this follow-up, source snapshot `07f3c8b` completed both
 [CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36284399401) and

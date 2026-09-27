@@ -24,6 +24,8 @@ jobs:
           go-version: '1.26.5'
           cache: false
       - run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - name: Check Android UI readiness failure contracts
+        run: bash scripts/check-android-ui-readiness.sh
       - uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
   quality:

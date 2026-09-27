@@ -249,12 +249,26 @@ pnpm run android:check
   :compose:connectedDebugAndroidTest
 ```
 
-Current audit-branch local evidence includes:
+Current audit-branch evidence includes:
 
 - all 941 canonical direction fixtures and declared isolation plans in Kotlin;
 - 39 core, 13 Views/Robolectric, and 13 Compose JVM tests;
-- compilation of the new independent-paragraph/physical-left Compose layout
-  tests; these new tests have not yet executed on a connected device locally.
+- compilation of the independent-paragraph/physical-left Compose layout tests;
+- hosted API 35 execution of all 7 Compose and 4 Views UI tests at audit source
+  `4a22ece`, including real clipboard copying, with no failures or skips on the
+  fresh-runner rerun. The initial Quickstep startup ANR and evidence are recorded
+  in the [repair ledger](../docs/audit-repair-status.md).
+
+The disposable CI emulator additionally uses a bounded launcher-readiness
+preflight. It can restart only the evidenced cold-boot launcher ANR once;
+unrelated/persistent ANRs and test failures are never suppressed or retried.
+Its command-failure contracts can be checked without an Android device:
+
+```bash
+bash scripts/check-android-ui-readiness.sh
+```
+
+These mocked command probes do not replace the real instrumentation tests.
 
 Earlier published-source validation included the following gates; it does not
 establish that the newer audit-branch paragraph changes pass them:
