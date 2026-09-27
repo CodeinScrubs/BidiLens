@@ -2,9 +2,13 @@
 
 **Initial outreach evidence date:** 2026-07-30
 
-**Last response audit:** 2026-09-06 (focused project-mail search)
+**Last response audit:** 2026-09-27 (focused project-mail and GitHub search)
 
 **Last code-PR audit:** 2026-09-06; **last publication audit:** 2026-09-02
+
+**Latest targeted outreach/publication refresh:** 2026-09-27. Historical tables
+retain their original evidence dates; the dated sections below record later
+changes, not a fresh audit of every previously contacted project.
 
 This log records public requests for review and bounded organizational
 role-address outreach. Public routes are independently link-verifiable; email
@@ -452,3 +456,60 @@ appending Persian after `Hello` does not change `dir=auto` away from LTR, and
 Persian-first RTL text can retain physical left alignment. This focused check is
 not a full-platform validation. No bulk submission script or repeat email blast
 was run.
+
+## 2026-09-27: targeted international renderer introductions
+
+GitHub reported **11 stars and 1 fork** during this check. Public counts do not
+identify where a star came from, and no new star is attributed to these messages.
+The [awesome-i18n listing PR #59](https://github.com/oh-jon-paul/awesome-i18n/pull/59)
+merged on September 17. This is a discoverability result, not package adoption.
+
+The following messages were submitted individually after checking contribution
+channels, existing BidiLens threads and relevant renderer source. The returned
+public URLs and bodies were read back through GitHub's API. The four new
+introductions use each project's **Show and tell** category instead of opening
+unreproduced bug reports or generic promotional issues.
+
+| Project / language boundary | Public message | Specific reason and scope |
+|---|---|---|
+| Open WebUI / Svelte frontend, Python backend | [Discussion #31470](https://github.com/open-webui/open-webui/discussions/31470) | Acknowledges the existing `dir="auto"` Markdown blocks; offers Latin-name-first RTL fixtures and one optional paragraph/list-item pilot. No backend/model change or reproduced host bug is claimed. |
+| NiceGUI / Python, Vue/Quasar frontend | [Discussion #6360](https://github.com/zauberzeug/nicegui/discussions/6360) | Offers native HTML or fixtures at `ChatMessage`/`Markdown`, preserving sanitization and source text. Explicitly states that BidiLens has no Python package and this is not a tested NiceGUI integration. |
+| Translate You / Kotlin, Jetpack Compose | [Discussion #603](https://github.com/you-apps/TranslateYou/discussions/603) | Acknowledges `TextDirection.Content`; offers editable/read-only/history fixtures and source-copy checks. Known translation language may be preferable to inference. No device, OEM keyboard, IME or TalkBack validation is claimed. |
+| Chats / React frontend, .NET gateway | [Discussion #145](https://github.com/sdcb/chats/discussions/145) | Proposes one opt-in React Markdown message pilot, not a gateway change. Checks the npm Node floor, preserves code/math/Markdown, and distinguishes source-only WPF from a NuGet or Avalonia package. |
+| Chatbox / TypeScript, CSS | [Review comment on PR #3865](https://github.com/chatboxai/chatbox/pull/3865#issuecomment-5854751087) | Identifies invalid `direction: auto` CSS and overly broad alignment overrides in the actual diff. Offers native fixes and mixed-language acceptance fixtures without claiming a full Chatbox build/run. |
+| Hermes Agent / TypeScript TUI | [Reply on issue #101606](https://github.com/NousResearch/hermes-agent/issues/101606#issuecomment-5854750493) | Answers a new contributor's L4 mirroring analysis with the retained implementation/test history, preserving the distinction between glyph mirroring, paragraph policy, Arabic shaping and logical source-copy. No duplicate PR or fresh test run is claimed. |
+
+Exact submitted bodies are retained in [the dated message folder](outreach/2026-09-27/).
+They disclose authorship/AI assistance and link the immutable `v0.4.0` source
+where making web release claims. That release has 932 direction fixtures; newer
+audit-branch fixes are not advertised as part of npm 0.4.0 or Android 0.1.2.
+These messages are **submitted**, not maintainer acceptance, integrations or
+endorsements. Future follow-up needs an actual question or materially new evidence.
+
+### Mail and deliberately deferred routes
+
+A focused authenticated Gmail search covered incoming BidiLens/project-related
+messages after September 6, excluding our own messages, GitHub notifications and
+npm notices. No new human technical reply was identified in that search. It was
+not a complete inbox audit. The n8n post-approval/account-restoration notices
+from September 6 were observed, but the public post URL was not verified here;
+neither notice establishes maintainer acceptance or integration. No new email
+was sent and no repeat cold-email wave was run.
+
+- **FluffyChat / Dart:** an existing mixed-direction report is relevant, but its
+  contribution rules prohibit LLM-generated code/documentation. No generated
+  contribution or outreach was submitted. Human-led participation is required.
+- **Avalonia / C#:** its contribution guide distinguishes reviewed AI assistance
+  from autonomous agent contributions and tells autonomous agents to stop. No
+  autonomous submission was made. BidiLens's WPF source is not an Avalonia adapter.
+- **Enchanted / Swift:** source review found a MarkdownUI message boundary, but
+  no matching reproduced defect or suitable existing public proposal was
+  established. A listed personal email address was not scraped for promotion.
+- **Previously declined or unchanged proposals:** Gemini CLI and Sentry were
+  not bumped, nor were existing Codex, Lexical, assistant-ui, ADK Web and Agent
+  Framework introductions duplicated.
+
+The next useful result is an invited, host-specific fixture contribution or
+bounded pilot, not a larger message count. Keep direction separate from physical
+alignment, preserve author intent and logical source, and retain native-language,
+security, accessibility and host-runtime review gates.
