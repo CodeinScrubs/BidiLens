@@ -138,7 +138,7 @@ final class BidiLensTests: XCTestCase {
         }
         let url = try XCTUnwrap(Bundle.module.url(forResource: "cases", withExtension: "json"))
         let cases = try JSONDecoder().decode([CorpusCase].self, from: Data(contentsOf: url))
-        XCTAssertEqual(cases.count, 932)
+        XCTAssertEqual(cases.count, 941)
         for item in cases {
             let expected: BidiDirection = switch item.expected {
             case "rtl": .rightToLeft

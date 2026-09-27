@@ -176,6 +176,7 @@ export class BidiStream {
   #policyDormantBacktickDirection: Direction = 'ltr';
   #policyBacktickAmbiguousDelimiter = 0;
   #policyPreviousWasSlash = false;
+  #policyMathCloser: ')' | ']' = ')';
   #policyCommandQuote: "'" | '"' | null = null;
   #quotedCommandDefaultTrieNode: IdentifierTrieNode | null = DEFAULT_TECHNICAL_TRIE;
   #quotedCommandCustomTrieNode: IdentifierTrieNode | null;
@@ -830,8 +831,12 @@ export class BidiStream {
             || range.kind === 'path'
             || (range.kind === 'identifier' && range.text.includes('/'))));
         const stableKind = stableRange?.kind;
+        // The slashes of an incomplete URL can look like a path. Its cached
+        // prose counts are not stable: the first domain character turns the
+        // complete scheme into excluded URL evidence.
+        const pendingUrl = stableKind === 'path' && /\b(?:https?|ftp):\/\/$/iu.test(this.#policyToken);
         if (stableKind === 'url' || stableKind === 'email'
-          || stableKind === 'path' || stableKind === 'identifier') {
+          || (stableKind === 'path' && !pendingUrl) || stableKind === 'identifier') {
           this.#policyTokenStableTechnical = stableKind;
           this.#policyTokenStableLtr = exact.ltr;
           this.#policyTokenStableRtl = exact.rtl;
@@ -1072,10 +1077,16 @@ export class BidiStream {
       if (this.#policyDormantBacktickDelimiter > 0) {
         this.#policyDormantBacktickClosingRun = 0;
       }
-      if (/^[()]$/u.test(character) && this.#policyCharacterEscaped && this.#policyToken.endsWith('\\')) {
+      const bracketInsideUrl = (character === '[' || character === ']') && /\b(?:https?|ftp):\/\//iu.test(this.#policyToken);
+      if (/^[()[\]]$/u.test(character) && !bracketInsideUrl
+        && this.#policyCharacterEscaped && this.#policyToken.endsWith('\\')) {
         this.#completePolicyToken();
         this.#resetPolicyStructure();
-        if (character === '(') this.#policyMode = 'paren';
+        if (character === '(' || character === '[') {
+          this.#policyMathCloser = character === '(' ? ')' : ']';
+          this.#policyMode = 'paren';
+          if (character === '[') this.#exactLiveAnalysisDue = true;
+        }
         return;
       }
       if (/^[()[\]{},;!?"'“”‘’«»،؛؟。।۔]$/u.test(character)) {
@@ -1199,9 +1210,11 @@ export class BidiStream {
         this.#commitProvisionalPolicyStructure();
         return;
       }
-      if (this.#policyCommandPreviousWasBackslash && character === '(') {
+      if (this.#policyCommandPreviousWasBackslash && (character === '(' || character === '[')) {
         this.#resetPolicyStructure();
+        this.#policyMathCloser = character === '(' ? ')' : ']';
         this.#policyMode = 'paren';
+        if (character === '[') this.#exactLiveAnalysisDue = true;
         return;
       }
       this.#policyCommandPreviousWasBackslash = false;
@@ -1484,10 +1497,14 @@ export class BidiStream {
     }
 
     if (this.#policyMode === 'paren') {
+      // Until a display closer arrives, its contents retain independent
+      // token semantics (URLs, acronyms, paths, etc.). Reconcile at observable
+      // push boundaries rather than treating every provisional letter as prose.
+      if (this.#policyMathCloser === ']') this.#exactLiveAnalysisDue = true;
       if (character === '$' && !this.#policyCharacterEscaped && (this.#policyStructureLtr > 0 || this.#policyStructureRtl > 0)) {
         this.#exactLiveAnalysisDue = true;
       }
-      if (this.#policyPreviousWasSlash && character === ')') {
+      if (this.#policyPreviousWasSlash && character === this.#policyMathCloser) {
         this.#discardTechnicalPolicyStructure();
       } else {
         this.#recordPolicyCharacter(character, 'structure');

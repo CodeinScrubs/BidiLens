@@ -75,6 +75,10 @@ character-by-character streams of `$A$1 ` repetitions. Such ambiguous
 environment/math overlaps remain a worst-case limitation even though ordinary
 price prose and dense delimiter regression tests pass. Batch input where
 possible, limit untrusted response length, and reconcile at `finish()`.
+Open bracketed display math also requires exact analysis at push boundaries
+until it closes. Long unclosed spans with tiny chunks can therefore perform
+quadratic total work. This correctness-first fallback is not active for
+ordinary plain-text streams.
 An external 11.8x BMP lookup microbenchmark targets a different implementation;
 it is not an end-to-end BidiLens speedup and is not used as a product claim.
 
@@ -97,6 +101,12 @@ it is not an end-to-end BidiLens speedup and is not used as a product claim.
   planning to finish within three seconds on the CI machine;
 - an adversarial unit alarm scans 128,000 UTF-16 units of repeated unmatched
   `\(` delimiters within the batch budget, guarding the linear math scanner;
+- the external-claims regressions scan 32,000 unmatched `\[` openers and
+  16,000-group numbers with each supported separator, including rejected
+  final word boundaries. Currency/percentage/range suffix recognition in the
+  JavaScript core reuses a bounded numeric-candidate scan instead of restarting
+  at every separator. These measured alarms do not establish native regex
+  complexity parity or an unconditional whole-engine complexity guarantee;
 - release checks enforce aggregate emitted-JavaScript budgets, including
   code-split chunks.
 

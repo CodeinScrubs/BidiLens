@@ -1,5 +1,10 @@
 # External AI review verification — 2026-09-09
 
+This dated assessment preserves its original evidence counts. For the later
+27-claim reports and 941-case audit-branch corpus, see the
+[2026-09-27 review](EXTERNAL_REVIEW_27_CLAIMS_2026_09.md) and
+[current repair ledger](audit-repair-status.md).
+
 ## Scope and conclusion
 
 The supplied **BidiKit AI vs. Upstream BidiLens** report primarily describes a

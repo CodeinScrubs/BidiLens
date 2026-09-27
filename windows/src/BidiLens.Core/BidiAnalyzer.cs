@@ -34,10 +34,11 @@ public static partial class BidiAnalyzer
         (Pattern(@"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Number),
         (Pattern(@"(?<![\p{L}\p{N}_])(?:\p{Sc}[+-]?" + NumericValue + @"|[+-]?" + NumericValue + @"\p{Sc})(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![\p{L}\p{N}_])(?:[+-]?" + NumericValue + @"[%٪]|[%٪][+-]?" + NumericValue + @")(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![\p{L}\p{N}_])[+-]?" + NumericValue + "[-–][+-]?" + NumericValue + @"(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
         (Pattern(@"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"), TechnicalTokenKind.Version),
         (Pattern(@"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Hash),
-        (Pattern(@"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
+        (Pattern(@"(?<![\p{L}\p{N}_])[+-]?" + NumericValue + @"(?![\p{L}\p{N}_])"), TechnicalTokenKind.Number),
     ];
 
     private static Regex Pattern(string value, RegexOptions options = RegexOptions.None) =>

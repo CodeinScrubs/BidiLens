@@ -172,7 +172,7 @@ String
 ```
 
 `:core` is independent of Compose and Android widgets. Its Unicode 17 range
-tables and 932-case fixtures are generated from the same canonical inputs as
+tables and 941-case fixtures are generated from the same canonical inputs as
 the TypeScript core. Kotlin APIs report both UTF-16 and code-point offsets so
 editable/selection integrations do not reinterpret Java string indices.
 The generated general-category mark ranges keep `Mn`, `Mc`, and `Me` code
@@ -260,7 +260,7 @@ Generated copies of the canonical Unicode 17 tables drive binary-search
 classification, including the `Mn`, `Mc`, and `Me` mark categories used to
 anchor isolation boundaries. Public ranges report Rust byte offsets, UTF-16
 code units, and Unicode scalar-value offsets so hosts can map results without
-guessing index semantics. The crate validates the same 932 direction fixtures
+guessing index semantics. The crate validates the same 941 direction fixtures
 and all declared isolation/security fixtures as the other native cores.
 
 Direction and alignment remain separate. The Rust core returns semantic text

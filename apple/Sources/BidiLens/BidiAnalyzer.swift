@@ -27,10 +27,11 @@ public enum BidiAnalyzer {
         (#"(?<![A-Za-z0-9_])[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}(?:[T ][0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:Z|[+-][0-9]{2}:?[0-9]{2})?)?(?![A-Za-z0-9_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s?[AP]M)?(?![A-Za-z0-9_])"#, .number, [.caseInsensitive]),
         (#"(?<![\p{L}\p{N}_])(?:\p{Sc}[+-]?"# + numericValue + "|[+-]?" + numericValue + #"\p{Sc})(?![\p{L}\p{N}_])"#, .number, []),
+        (#"(?<![\p{L}\p{N}_])(?:[+-]?"# + numericValue + "[%٪]|[%٪][+-]?" + numericValue + #")(?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![\p{L}\p{N}_])[+-]?"# + numericValue + "[-–][+-]?" + numericValue + #"(?![\p{L}\p{N}_])"#, .number, []),
         (#"(?<![A-Za-z0-9_])v?[0-9]+(?:\.[0-9]+){1,}(?![A-Za-z0-9_])"#, .version, []),
         (#"(?<![A-Za-z0-9_])[0-9a-f]{7,40}(?![A-Za-z0-9_])"#, .hash, [.caseInsensitive]),
-        (#"(?<![\p{L}\p{N}_])[+-]?(?:[0-9]+(?:[.,][0-9]+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])"#, .number, []),
+        (#"(?<![\p{L}\p{N}_])[+-]?"# + numericValue + #"(?![\p{L}\p{N}_])"#, .number, []),
     ]
 
     private static let commandPrefix = try? NSRegularExpression(pattern: #"^([a-z]+)[ \t]+('[^']*'|"[^"]*"|[^ \t]+)"#)

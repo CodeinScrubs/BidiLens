@@ -15,7 +15,7 @@ final class TokenBoundaryTests: XCTestCase {
     }
 
     func testAmountsRangesAndQuotesStayIntact() {
-        for token in ["$10", "€12.50", "£25", "۱۰€", "10-20", "10–20", "-10--2", "۱۰-۲۰", "١٠-٢٠"] {
+        for token in ["$10", "€12.50", "£25", "۱۰€", "10-20", "10–20", "-10--2", "۱۰-۲۰", "١٠-٢٠", "1,000,000", "۱٬۰۰۰٬۰۰۰", "۱۲۳٫۴۵", "50%", "۵۰٪", "%50", "٪۵۰"] {
             let source = "👋 مقدار \(token) است."
             let ranges = BidiAnalyzer.analyze(source).isolations
             XCTAssertEqual(ranges.map(\.text), [token], token)
@@ -25,6 +25,20 @@ final class TokenBoundaryTests: XCTestCase {
         }
         for quote in ["\"", "'", "“", "”", "«", "»"] {
             XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges("مسیر \(quote)/usr/local/bin\(quote) است.").map(\.text), ["/usr/local/bin"])
+        }
+    }
+
+    func testDisplayMathPreservesParagraphSafeIsolation() {
+        for math in ["$$\nx = y\n$$", "$$\r\nx = y\r\n$$", "\\[\nx = y\n\\]", "\\[x = y\\]"] {
+            let source = "سلام \(math) تمام"
+            XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges(source).filter { $0.kind == .math }.map(\.text), [math])
+            for isolation in BidiAnalyzer.analyze(source).isolations {
+                XCTAssertFalse(isolation.text.contains("\n") || isolation.text.contains("\r"))
+                XCTAssertEqual(UnicodeClassifier.substring(source, utf16Range: isolation.utf16Range), isolation.text)
+            }
+        }
+        for source in ["$x\ny$", "\\(x\ny\\)", "\\\\[x\\]", "\\[x", "$$\nx"] {
+            XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges(source).filter { $0.kind == .math }.map(\.text), [])
         }
     }
 

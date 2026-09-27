@@ -128,6 +128,54 @@ internal val generatedCorpusFixtures = listOf(
             ),
         ),
         CorpusFixture(
+            id = "compact-numeric-unit-1",
+            text = "مقدار 1,000,000 است.",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("1,000,000", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ),
+        ),
+        CorpusFixture(
+            id = "compact-numeric-unit-2",
+            text = "مقدار ۱٬۰۰۰٬۰۰۰ است.",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("۱٬۰۰۰٬۰۰۰", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ),
+        ),
+        CorpusFixture(
+            id = "compact-numeric-unit-3",
+            text = "مقدار ١٬٠٠٠٬٠٠٠ است.",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("١٬٠٠٠٬٠٠٠", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ),
+        ),
+        CorpusFixture(
+            id = "compact-numeric-unit-4",
+            text = "مقدار 50% است.",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("50%", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ),
+        ),
+        CorpusFixture(
+            id = "compact-numeric-unit-5",
+            text = "مقدار ۵۰٪ است.",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("۵۰٪", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ),
+        ),
+        CorpusFixture(
+            id = "bracket-display-math-inline",
+            text = "سلام \\[x = y\\] تمام",
+            expected = BidiDirection.RTL,
+            isolations = listOf(
+            ExpectedIsolation("\\[x = y\\]", BidiDirection.LTR, BidiIsolationKind.MATH)
+            ),
+        ),
+        CorpusFixture(
             id = "fa-number-latin-adjacency-001",
             text = "سلام 123abc",
             expected = BidiDirection.RTL,
@@ -4210,6 +4258,24 @@ internal val generatedCorpusFixtures = listOf(
             isolations = null,
         ),
         CorpusFixture(
+            id = "display-math-dollar-lf",
+            text = "سلام \$\$\nx = y\n\$\$ تمام",
+            expected = BidiDirection.RTL,
+            isolations = null,
+        ),
+        CorpusFixture(
+            id = "display-math-dollar-crlf",
+            text = "سلام \$\$\r\nx = y\r\n\$\$ تمام",
+            expected = BidiDirection.RTL,
+            isolations = null,
+        ),
+        CorpusFixture(
+            id = "display-math-bracket-lf",
+            text = "سلام \\[\nx = y\n\\] تمام",
+            expected = BidiDirection.RTL,
+            isolations = null,
+        ),
+        CorpusFixture(
             id = "digits-latin-en",
             text = "Version 2.1 is ready on 2026-07-18.",
             expected = BidiDirection.LTR,
@@ -4337,7 +4403,7 @@ internal val generatedCorpusFixtures = listOf(
             text = "نسبة الإكمال ٧٥٪",
             expected = BidiDirection.RTL,
             isolations = listOf(
-            ExpectedIsolation("٧٥", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ExpectedIsolation("٧٥٪", BidiDirection.LTR, BidiIsolationKind.NUMBER)
             ),
         ),
         CorpusFixture(
@@ -5308,7 +5374,7 @@ internal val generatedCorpusFixtures = listOf(
             text = "تخفیف ۲۰٪ ارائه شده است.",
             expected = BidiDirection.RTL,
             isolations = listOf(
-            ExpectedIsolation("۲۰", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ExpectedIsolation("۲۰٪", BidiDirection.LTR, BidiIsolationKind.NUMBER)
             ),
         ),
         CorpusFixture(
@@ -5316,8 +5382,7 @@ internal val generatedCorpusFixtures = listOf(
             text = "این محصول ۹۹٬۰۰۰ تومان قیمت دارد.",
             expected = BidiDirection.RTL,
             isolations = listOf(
-            ExpectedIsolation("۹۹", BidiDirection.LTR, BidiIsolationKind.NUMBER),
-            ExpectedIsolation("۰۰۰", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ExpectedIsolation("۹۹٬۰۰۰", BidiDirection.LTR, BidiIsolationKind.NUMBER)
             ),
         ),
         CorpusFixture(

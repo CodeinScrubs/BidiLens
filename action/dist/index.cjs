@@ -3589,8 +3589,10 @@ var DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
 ]);
 var KNOWN_TECHNICAL_TOKENS = new Set(DEFAULT_TECHNICAL_IDENTIFIERS);
 var NUMERIC_VALUE = "[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*";
-var CURRENCY_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\p{Sc})(?![\\p{L}\\p{N}_])`, "gu");
-var NUMBER_RANGE_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}[-\u2013][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, "gu");
+var NUMERIC_CANDIDATE = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}`, "gu");
+var NUMBER_RANGE_SUFFIX = new RegExp(`[-\u2013][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, "uy");
+var NUMERIC_BOUNDARY = /[\p{L}\p{N}_]/u;
+var NUMERIC_SYMBOL = /[\p{Sc}%\u066A]/u;
 var CUSTOM_TECHNICAL_IDENTIFIER_CACHE = /* @__PURE__ */ new WeakMap();
 function normalizeOptions(options = {}) {
   const strategy = options.strategy ?? DEFAULT_OPTIONS.strategy;
@@ -3632,16 +3634,53 @@ function addMatches(text, ranges, expression, kind, group = 0) {
     addRange(ranges, text, start, start + value.length, kind);
   }
 }
+function addCompactNumericRanges(text, ranges) {
+  const plain = [];
+  const characterAt = (index) => {
+    const point = text.codePointAt(index);
+    return point === void 0 ? "" : String.fromCodePoint(point);
+  };
+  const characterBefore = (index) => {
+    const previous = text.charCodeAt(index - 1);
+    const high = text.charCodeAt(index - 2);
+    const paired = previous >= 56320 && previous <= 57343 && high >= 55296 && high <= 56319;
+    return characterAt(paired ? index - 2 : index - 1);
+  };
+  for (const match of text.matchAll(NUMERIC_CANDIDATE)) {
+    const start = match.index;
+    const end = start + match[0].length;
+    const separator = Math.max(...[".", ",", "\u066B", "\u066C"].map((value) => match[0].lastIndexOf(value)));
+    const plainEnd = NUMERIC_BOUNDARY.test(characterAt(end)) ? separator < 0 ? start : start + separator : end;
+    if (plainEnd > start) {
+      addRange(plain, text, start, plainEnd, "number");
+      const before = characterBefore(start);
+      if (NUMERIC_SYMBOL.test(before) && !NUMERIC_BOUNDARY.test(characterBefore(start - before.length))) {
+        addRange(ranges, text, start - before.length, plainEnd, "number");
+      }
+    }
+    const after = characterAt(end);
+    if (NUMERIC_SYMBOL.test(after) && !NUMERIC_BOUNDARY.test(characterAt(end + after.length))) {
+      addRange(ranges, text, start, end + after.length, "number");
+    }
+    if (after === "-" || after === "\u2013") {
+      NUMBER_RANGE_SUFFIX.lastIndex = end;
+      const suffix = NUMBER_RANGE_SUFFIX.exec(text);
+      if (suffix) addRange(ranges, text, start, end + suffix[0].length, "number");
+    }
+  }
+  return plain;
+}
 function addMathRanges(text, ranges) {
   let i = 0;
-  const scanned = { "$": -1, "$$": -1, "\\)": -1 };
+  const scanned = { "$": -1, "$$": -1, "\\)": -1, "\\]": -1 };
   while (i < text.length) {
     const p = text[i] === "\\" && text[i + 1] === "(";
-    if (text[i] === "\\" && !p) {
+    const b = text[i] === "\\" && text[i + 1] === "[";
+    if (text[i] === "\\" && !p && !b) {
       i += 2;
       continue;
     }
-    const d = text[i] === "$" ? text[i + 1] === "$" ? "$$" : "$" : p ? "\\)" : "";
+    const d = text[i] === "$" ? text[i + 1] === "$" ? "$$" : "$" : p ? "\\)" : b ? "\\]" : "";
     if (!d || i < scanned[d]) {
       i++;
       continue;
@@ -3650,8 +3689,9 @@ function addMathRanges(text, ranges) {
       i++;
       continue;
     }
-    let e = i + (p ? 2 : d.length);
-    while (e < text.length && text[e] !== "\r" && text[e] !== "\n" && !text.startsWith(d, e)) {
+    const display = d === "$$" || b;
+    let e = i + (p || b ? 2 : d.length);
+    while (e < text.length && (display || text[e] !== "\r" && text[e] !== "\n") && !text.startsWith(d, e)) {
       e += text[e] === "\\" && e + 1 < text.length && !/[\r\n]/u.test(text[e + 1]) ? 2 : 1;
     }
     if (text.startsWith(d, e) && (d !== "$" || e > i + 1)) {
@@ -3953,11 +3993,10 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])\+?\d[\d ()-]{6,}\d(?![\p{L}\p{N}_])/gu, "number");
   addMatches(text, ranges, /\b\d{4}[-/]\d{1,2}[-/]\d{1,2}(?:[T ]\d{1,2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:?\d{2})?)?\b/gu, "number");
   addMatches(text, ranges, /\b\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?\b/giu, "number");
-  addMatches(text, ranges, CURRENCY_TOKEN, "number");
-  addMatches(text, ranges, NUMBER_RANGE_TOKEN, "number");
+  const numericRanges = addCompactNumericRanges(text, ranges);
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, "version");
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, "hash");
-  addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, "number");
+  for (const range of numericRanges) ranges.push(range);
   addMatches(text, ranges, /\b[A-Z]{1,4}\s+(?:[IVXLCDM]{1,8}|\d{1,3})\b/gu, "identifier");
   addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, "identifier");
   addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, "identifier");

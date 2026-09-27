@@ -5,6 +5,42 @@ Tests, native builds, browser rendering, and hosted platform validation are
 separate evidence gates. The working branch is
 `fix/audit-regressions-20260926`; these source changes are not a published release.
 
+## Latest follow-up: external 27-claim reports
+
+The [claim-by-claim review](EXTERNAL_REVIEW_27_CLAIMS_2026_09.md) separates
+wrong-checkout assertions from reproducible defects. New repairs retain grouped
+numbers and percentages in one atom in JavaScript/Kotlin/Swift/C#/Rust; recognize
+closed multiline display math while retaining paragraph-scoped controls; make
+Svelte rejected writes transactional; and repair an incomplete URL-scheme
+stream-cache transition. JavaScript numeric suffix matching is bounded, and
+open bracketed display math uses an explicitly documented exact-analysis
+fallback. The original sibling corpus seeds remain unchanged; reviewed policy
+overrides and nine new fixtures produce 941 canonical cases.
+
+Fresh local follow-up evidence:
+
+| Gate | Result |
+| --- | --- |
+| `pnpm check` | 25 suites; 737 passed, 2 existing platform skips; 941 direction/isolation fixtures and 94 security fixtures; generated data, types, lint, docs, package-depth, all builds, and bundled Action probes passed. |
+| Three-browser verification | 69 tests passed on the latest JavaScript source in Chromium, Firefox, and WebKit, including the new grouped-number/percentage geometry, source selection/restoration, and physical-left alignment case. |
+| Independent source review | Reproduced and repaired malformed UTF-16 numeric boundaries, provisional bracket-token exclusions, and URL/bracket lexical overlap. Final URL/path probes covered 81 sources and 4,286 prefix/split/exclusion checks without mismatches. This is bounded review evidence, not a universal proof. |
+| Windows | 5,786 assertions and 941 canonical cases passed with local .NET 10 and runtime roll-forward. Hosted pinned .NET 8 still requires verification of the changed native source. |
+| Android | 39 core, 13 Compose, and 13 Views JVM/Robolectric tests passed with no skips; all three debug AARs assembled. This follow-up did not execute connected-device instrumentation locally. |
+| Rust minimum 1.85 | Formatting, all-target check, denied-warning Clippy, and all-target tests passed: 34 conformance tests, including the 941-case corpus and numeric-prefix regression. |
+| Dependency/SBOM checks | No known locked npm vulnerabilities reported; unchanged dependency graph still validates as CycloneDX 1.7 with 532 components and 546 relationships. |
+
+Packed consumer/type/parser compatibility and clean-tree release
+artifact gates must finish against this follow-up before publication is
+considered. Apple/iOS source changed in this follow-up and cannot be compiled
+on this Windows host; fresh macOS/iOS simulator and all hosted CI/CodeQL gates
+are required. Earlier green native jobs do not certify the new Swift code.
+
+Before this follow-up, source snapshot `07f3c8b` completed both
+[CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36284399401) and
+[CodeQL](https://github.com/CodeinScrubs/BidiLens/actions/runs/36284399317).
+Those successes close the previous snapshot's queued gates, not the new code's
+gates. The audit PR remains draft; no release or publication was performed.
+
 ## Implemented repairs
 
 | Area | Repair and scope |

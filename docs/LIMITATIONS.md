@@ -56,6 +56,10 @@ The core live stream is also provisional: adversarial overlaps between `$`,
 environment identifiers, escapes, and incomplete math can differ from the batch
 policy before `finish()`. Repeated ambiguity can trigger exact rescans and
 quadratic behavior; there is no universal linear-time streaming guarantee.
+An open `\[...\]` display span uses exact analysis at observable push
+boundaries because its unfinished contents can contain independent URLs,
+paths, or acronyms. Long unclosed spans with character-sized chunks can incur
+quadratic total work too. Recognition is not a TeX parser or math renderer.
 Use completed paragraph results for authoritative classification and bound or
 batch untrusted streams. See the [external-review record](EXTERNAL_REVIEW_2026_09.md).
 

@@ -72,24 +72,28 @@ export function createStreamingBidiMessage(options: BidiStreamOptions = {}): Sve
   return {
     subscribe: store.subscribe,
     push(chunk) {
-      source += chunk;
-      return publish(stream.push(chunk));
+      const snapshot = stream.push(chunk);
+      source = snapshot.text;
+      return publish(snapshot);
     },
     setText(text) {
       if (text.startsWith(source)) {
         const chunk = text.slice(source.length);
-        source = text;
-        return publish(chunk ? stream.push(chunk) : stream.snapshot());
+        const snapshot = chunk ? stream.push(chunk) : stream.snapshot();
+        source = snapshot.text;
+        return publish(snapshot);
       }
-      source = text;
-      return publish(stream.reset(text));
+      const snapshot = stream.reset(text);
+      source = snapshot.text;
+      return publish(snapshot);
     },
     finish() {
       return publish(stream.finish());
     },
     reset(initialText = '') {
-      source = initialText;
-      return publish(stream.reset(initialText));
+      const snapshot = stream.reset(initialText);
+      source = snapshot.text;
+      return publish(snapshot);
     },
     getText() {
       return source;

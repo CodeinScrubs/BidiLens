@@ -2,7 +2,7 @@
 
 BidiLens Android fixes mixed Persian/Arabic/Hebrew and English text at the
 native rendering boundary. It uses the same Unicode 17 data, content-majority
-policy, technical-token rules, security scanner, and 932-case canonical corpus
+policy, technical-token rules, security scanner, and 941-case canonical corpus
 as the JavaScript packages.
 
 The Android implementation has three small libraries:
@@ -251,8 +251,8 @@ pnpm run android:check
 
 Current audit-branch local evidence includes:
 
-- all 932 canonical direction fixtures and declared isolation plans in Kotlin;
-- 38 core, 13 Views/Robolectric, and 13 Compose JVM tests;
+- all 941 canonical direction fixtures and declared isolation plans in Kotlin;
+- 39 core, 13 Views/Robolectric, and 13 Compose JVM tests;
 - compilation of the new independent-paragraph/physical-left Compose layout
   tests; these new tests have not yet executed on a connected device locally.
 

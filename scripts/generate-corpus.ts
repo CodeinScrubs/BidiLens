@@ -272,6 +272,20 @@ const rtlAdjacentTechnicalCases = [
     text: 'مسیر src/.config/file',
     token: 'src/.config/file',
     kind: 'path'
+  },
+  ...['1,000,000', '۱٬۰۰۰٬۰۰۰', '١٬٠٠٠٬٠٠٠', '50%', '۵۰٪'].map((token, index) => ({
+    id: `compact-numeric-unit-${index + 1}`,
+    description: 'Grouped numbers and percentage signs remain one semantic numeric unit.',
+    text: `مقدار ${token} است.`,
+    token,
+    kind: 'number'
+  })),
+  {
+    id: 'bracket-display-math-inline',
+    description: 'Closed bracketed display math remains one LTR technical atom.',
+    text: 'سلام \\[x = y\\] تمام',
+    token: '\\[x = y\\]',
+    kind: 'math'
   }
 ] as const;
 
@@ -359,6 +373,9 @@ const structuredCases = [
   ['quotes-he', 'ההודעה “מוכנה” לפרסום.', 'rtl', ['he', 'quotes']],
   ['digits-persian', 'نسخه ۲٫۱ در تاریخ ۱۴۰۵/۰۴/۲۷ آماده شد.', 'rtl', ['fa', 'persian-digits', 'date']],
   ['digits-arabic', 'الإصدار ٢٫١ جاهز الآن.', 'rtl', ['ar', 'arabic-indic-digits']],
+  ['display-math-dollar-lf', 'سلام $$\nx = y\n$$ تمام', 'rtl', ['fa', 'math', 'multiline']],
+  ['display-math-dollar-crlf', 'سلام $$\r\nx = y\r\n$$ تمام', 'rtl', ['fa', 'math', 'multiline', 'crlf']],
+  ['display-math-bracket-lf', 'سلام \\[\nx = y\n\\] تمام', 'rtl', ['fa', 'math', 'multiline']],
   ['digits-latin-en', 'Version 2.1 is ready on 2026-07-18.', 'ltr', ['en', 'latin-digits', 'date']],
   ['emoji-fa', '✅ عملیات با موفقیت انجام شد.', 'rtl', ['fa', 'emoji']],
   ['combining-he', 'שָׁלוֹם וברוכים הבאים.', 'rtl', ['he', 'combining-marks']],
@@ -395,6 +412,17 @@ for (const [id, text, expected, tags] of structuredCases) {
 
 const siblingSeedDirectory = resolve('corpus', 'v1.3-her-seeds');
 const importedPolicyOverrides = new Map<string, Pick<ReviewedSiblingSeed, 'expected' | 'expectedIsolations'>>([
+  // The imported expectations described older fragmented numeric isolates.
+  // Review compact numeric units explicitly; keep the original sibling seeds.
+  ['v13-ar-arabic-numeral-003', {
+    expected: 'rtl', expectedIsolations: [{ text: '٧٥٪', direction: 'ltr', kind: 'number' }]
+  }],
+  ['v13-fa-persian-numeral-003', {
+    expected: 'rtl', expectedIsolations: [{ text: '۲۰٪', direction: 'ltr', kind: 'number' }]
+  }],
+  ['v13-fa-persian-numeral-004', {
+    expected: 'rtl', expectedIsolations: [{ text: '۹۹٬۰۰۰', direction: 'ltr', kind: 'number' }]
+  }],
   // "npm package" is a descriptive LTR phrase, not a recognizable command.
   ['v13-fa-mixed-en-fa-005', {
     expected: 'rtl',

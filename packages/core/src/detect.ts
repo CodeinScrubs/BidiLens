@@ -41,8 +41,10 @@ export const DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
 ] as const);
 const KNOWN_TECHNICAL_TOKENS = new Set<string>(DEFAULT_TECHNICAL_IDENTIFIERS);
 const NUMERIC_VALUE = '[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*';
-const CURRENCY_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\p{Sc})(?![\\p{L}\\p{N}_])`, 'gu');
-const NUMBER_RANGE_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}[-–][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, 'gu');
+const NUMERIC_CANDIDATE = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}`, 'gu');
+const NUMBER_RANGE_SUFFIX = new RegExp(`[-–][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, 'uy');
+const NUMERIC_BOUNDARY = /[\p{L}\p{N}_]/u;
+const NUMERIC_SYMBOL = /[\p{Sc}%\u066A]/u;
 const CUSTOM_TECHNICAL_IDENTIFIER_CACHE = new WeakMap<readonly string[], ReadonlySet<string>>();
 
 function normalizeOptions(options: DetectionOptions = {}): Required<DetectionOptions> {
@@ -102,28 +104,71 @@ function addMatches(
   }
 }
 
+/** Scan each numeric candidate once; required suffixes must not restart at
+ * every group separator of a long number without a currency/percent/range. */
+function addCompactNumericRanges(text: string, ranges: TechnicalTokenRange[]): TechnicalTokenRange[] {
+  const plain: TechnicalTokenRange[] = [];
+  const characterAt = (index: number): string => {
+    const point = text.codePointAt(index);
+    return point === undefined ? '' : String.fromCodePoint(point);
+  };
+  const characterBefore = (index: number): string => {
+    const previous = text.charCodeAt(index - 1);
+    const high = text.charCodeAt(index - 2);
+    const paired = previous >= 0xdc00 && previous <= 0xdfff && high >= 0xd800 && high <= 0xdbff;
+    return characterAt(paired ? index - 2 : index - 1);
+  };
+  for (const match of text.matchAll(NUMERIC_CANDIDATE)) {
+    const start = match.index;
+    const end = start + match[0].length;
+    // Preserve the old partial-number boundary behavior before a letter:
+    // `1,000x` recognizes `1`, not the invalid trailing group `000x`.
+    const separator = Math.max(...['.', ',', '\u066B', '\u066C'].map((value) => match[0].lastIndexOf(value)));
+    const plainEnd = NUMERIC_BOUNDARY.test(characterAt(end)) ? (separator < 0 ? start : start + separator) : end;
+    if (plainEnd > start) {
+      addRange(plain, text, start, plainEnd, 'number');
+      const before = characterBefore(start);
+      if (NUMERIC_SYMBOL.test(before) && !NUMERIC_BOUNDARY.test(characterBefore(start - before.length))) {
+        addRange(ranges, text, start - before.length, plainEnd, 'number');
+      }
+    }
+    const after = characterAt(end);
+    if (NUMERIC_SYMBOL.test(after) && !NUMERIC_BOUNDARY.test(characterAt(end + after.length))) {
+      addRange(ranges, text, start, end + after.length, 'number');
+    }
+    if (after === '-' || after === '–') {
+      NUMBER_RANGE_SUFFIX.lastIndex = end;
+      const suffix = NUMBER_RANGE_SUFFIX.exec(text);
+      if (suffix) addRange(ranges, text, start, end + suffix[0].length, 'number');
+    }
+  }
+  return plain;
+}
+
 /**
- * Adds `$...$`, `$$...$$`, and `\(...\)` math ranges in one forward pass.
+ * Adds inline `$...$` / `\(...\)` and display `$$...$$` / `\[...\]`
+ * math ranges in one forward pass. Only display math may span CR/LF.
  * A combined lazy regular expression restarts its search after every unmatched
  * `\(` opener, which makes adversarial input quadratic.
  */
 function addMathRanges(text: string, ranges: TechnicalTokenRange[]): void {
   let i = 0;
-  const scanned: Record<string, number> = { '$': -1, '$$': -1, '\\)': -1 };
+  const scanned: Record<string, number> = { '$': -1, '$$': -1, '\\)': -1, '\\]': -1 };
   while (i < text.length) {
     const p = text[i] === '\\' && text[i + 1] === '(';
+    const b = text[i] === '\\' && text[i + 1] === '[';
     // Consume escaped characters in pairs, including escaped dollar signs.
-    if (text[i] === '\\' && !p) { i += 2; continue; }
+    if (text[i] === '\\' && !p && !b) { i += 2; continue; }
     const d = text[i] === '$'
       ? (text[i + 1] === '$' ? '$$' : '$')
-      : (p ? '\\)' : '');
+      : (p ? '\\)' : b ? '\\]' : '');
     if (!d || i < scanned[d]!) { i++; continue; }
     if (d === '$' && (i + 1 === text.length || /\s/u.test(text[i + 1]!))) { i++; continue; }
 
-    let e = i + (p ? 2 : d.length);
+    const display = d === '$$' || b;
+    let e = i + (p || b ? 2 : d.length);
     while (e < text.length
-      && text[e] !== '\r'
-      && text[e] !== '\n'
+      && (display || (text[e] !== '\r' && text[e] !== '\n'))
       && !text.startsWith(d, e)) {
       e += text[e] === '\\' && e + 1 < text.length && !/[\r\n]/u.test(text[e + 1]!) ? 2 : 1;
     }
@@ -511,11 +556,10 @@ export function findTechnicalTokenRanges(
   addMatches(text, ranges, /\b\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?\b/giu, 'number');
   // Preserve compact amounts and ranges as units; do not merge arbitrary
   // punctuation between unrelated numeric tokens or prose.
-  addMatches(text, ranges, CURRENCY_TOKEN, 'number');
-  addMatches(text, ranges, NUMBER_RANGE_TOKEN, 'number');
+  const numericRanges = addCompactNumericRanges(text, ranges);
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, 'version');
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, 'hash');
-  addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, 'number');
+  for (const range of numericRanges) ranges.push(range);
 
   // Compact labels in technical prose are often written as an acronym plus a
   // Roman-numeral/number designator (`CN X`, `CN IX`, `API 2`). Treat the

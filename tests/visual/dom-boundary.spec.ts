@@ -174,6 +174,35 @@ test('incremental DOM isolation preserves phrase order and left alignment', asyn
   await expect(page.locator('#css')).toHaveCSS('direction', 'ltr');
 });
 
+test('grouped numbers and percentages retain visual order, logical copy, and left alignment', async ({ page }) => {
+  const source = 'مقدار 1,000,000 و ۱٬۰۰۰٬۰۰۰ و 50% و ۵۰٪ است.';
+  await page.setContent('<main dir="ltr"><p style="width:900px;text-align:left"></p></main>');
+  await page.locator('p').evaluate((paragraph, text) => { paragraph.textContent = text; }, source);
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const paragraph = document.querySelector('p')!;
+    api.applyBidi(document.body);
+    const tokens = [...paragraph.querySelectorAll('bdi')].map((element) => {
+      const node = element.firstChild!;
+      const range = document.createRange();
+      range.setStart(node, 0); range.setEnd(node, 1);
+      const first = range.getBoundingClientRect().left;
+      const end = node.textContent!.length;
+      range.setStart(node, end - 1); range.setEnd(node, end);
+      return { text: element.textContent, first, last: range.getBoundingClientRect().left };
+    });
+    const selection = window.getSelection()!;
+    selection.selectAllChildren(paragraph);
+    const copied = selection.toString();
+    api.restoreBidi(document.body);
+    return { tokens, copied, restored: paragraph.textContent, alignment: paragraph.style.textAlign };
+  });
+  expect(evidence.tokens.map((token) => token.text)).toEqual(['1,000,000', '۱٬۰۰۰٬۰۰۰', '50%', '۵۰٪']);
+  for (const token of evidence.tokens) expect(token.first).toBeLessThan(token.last);
+  expect(evidence).toMatchObject({ copied: source, restored: source, alignment: 'left' });
+});
+
 test('honors changed author dir without losing real stylesheet precedence', async ({ page }) => {
   await page.setContent('<style>.host-direction { direction:rtl }</style><main dir="ltr"><p id="plain" dir="rtl">سلام دنیا</p><p id="styled" class="host-direction" dir="rtl">سلام دنیا</p></main>');
   await page.addScriptTag({ content: bundle });

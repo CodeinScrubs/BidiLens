@@ -263,21 +263,24 @@ private fun isMathWhitespace(char: Char): Boolean = char in '\u0009'..'\u000d' |
     char in " \u00a0\u1680\u2028\u2029\u202f\u205f\u3000\ufeff"
 
 private fun addMathRanges(text: String, ranges: MutableList<TechnicalTokenRange>) {
-    val scanned = mutableMapOf("$" to -1, "$$" to -1, "\\)" to -1)
+    val scanned = mutableMapOf("$" to -1, "$$" to -1, "\\)" to -1, "\\]" to -1)
     var i = 0
     while (i < text.length) {
         val paren = text.startsWith("\\(", i)
-        if (text[i] == '\\' && !paren) { i += 2; continue }
+        val bracket = text.startsWith("\\[", i)
+        if (text[i] == '\\' && !paren && !bracket) { i += 2; continue }
         val delimiter = when {
             text.startsWith("$$", i) -> "$$"
             text[i] == '$' -> "$"
             paren -> "\\)"
+            bracket -> "\\]"
             else -> ""
         }
         if (delimiter.isEmpty() || i < scanned.getValue(delimiter)) { i++; continue }
         if (delimiter == "$" && (i + 1 == text.length || isMathWhitespace(text[i + 1]))) { i++; continue }
-        var end = i + if (paren) 2 else delimiter.length
-        while (end < text.length && text[end] != '\r' && text[end] != '\n' && !text.startsWith(delimiter, end)) {
+        val display = delimiter == "$$" || bracket
+        var end = i + if (paren || bracket) 2 else delimiter.length
+        while (end < text.length && (display || (text[end] != '\r' && text[end] != '\n')) && !text.startsWith(delimiter, end)) {
             end += if (text[end] == '\\' && end + 1 < text.length && text[end + 1] != '\r' && text[end + 1] != '\n') 2 else 1
         }
         if (text.startsWith(delimiter, end) && (delimiter != "$" || end > i + 1)) {
@@ -374,6 +377,7 @@ fun findTechnicalTokenRanges(
     )
     val numericValue = "[0-9\u0660-\u0669\u06F0-\u06F9]+(?:[.,\u066B\u066C][0-9\u0660-\u0669\u06F0-\u06F9]+)*"
     ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?$numericValue|[+-]?$numericValue\\p{Sc})(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
+    ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])(?:[+-]?$numericValue[%٪]|[%٪][+-]?$numericValue)(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
     ranges.addMatches(text, Regex("(?<![\\p{L}\\p{N}_])[+-]?$numericValue[-–][+-]?$numericValue(?![\\p{L}\\p{N}_])"), TechnicalTokenKind.NUMBER)
     ranges.addMatches(text, Regex("\\bv?\\d+(?:\\.\\d+){1,}\\b"), TechnicalTokenKind.VERSION)
     ranges.addMatches(
@@ -383,11 +387,7 @@ fun findTechnicalTokenRanges(
     )
     ranges.addMatches(
         text,
-        Regex(
-            "(?<![\\p{L}\\p{N}_])[+-]?(?:\\d+(?:[.,]\\d+)?|" +
-                "[\\u0660-\\u0669]+(?:[\\u066B\\u066C][\\u0660-\\u0669]+)?|" +
-                "[\\u06F0-\\u06F9]+(?:[.,][\\u06F0-\\u06F9]+)?)(?![\\p{L}\\p{N}_])",
-        ),
+        Regex("(?<![\\p{L}\\p{N}_])[+-]?$numericValue(?![\\p{L}\\p{N}_])"),
         TechnicalTokenKind.NUMBER,
     )
 

@@ -9,6 +9,74 @@ use bidilens_core::{
 use serde::Deserialize;
 
 #[test]
+fn compact_numbers_and_percentages_remain_units() {
+    for token in [
+        "1,000,000",
+        "۱٬۰۰۰٬۰۰۰",
+        "۱۲۳٫۴۵",
+        "50%",
+        "۵۰٪",
+        "%50",
+        "٪۵۰",
+    ] {
+        let source = format!("👋 مقدار {token} است.");
+        let ranges =
+            plan_inline_isolation(&source, Direction::Rtl, &AnalysisOptions::default()).unwrap();
+        assert_eq!(
+            ranges
+                .iter()
+                .map(|range| range.text.as_str())
+                .collect::<Vec<_>>(),
+            vec![token]
+        );
+        for range in ranges {
+            assert_eq!(&source[range.source_range.bytes], token);
+        }
+    }
+    assert_eq!(
+        find_technical_token_ranges("1,000,000x", &[])
+            .iter()
+            .map(|range| range.text.as_str())
+            .collect::<Vec<_>>(),
+        vec!["1,000"]
+    );
+    assert!(find_technical_token_ranges("123x", &[]).is_empty());
+}
+
+#[test]
+fn display_math_preserves_paragraph_safe_isolation() {
+    for math in [
+        "$$\nx = y\n$$",
+        "$$\r\nx = y\r\n$$",
+        "\\[\nx = y\n\\]",
+        "\\[x = y\\]",
+    ] {
+        let source = format!("سلام {math} تمام");
+        assert_eq!(
+            find_technical_token_ranges(&source, &[])
+                .iter()
+                .filter(|range| range.kind == bidilens_core::TechnicalTokenKind::Math)
+                .map(|range| range.text.as_str())
+                .collect::<Vec<_>>(),
+            vec![math]
+        );
+        for range in
+            plan_inline_isolation(&source, Direction::Rtl, &AnalysisOptions::default()).unwrap()
+        {
+            assert!(!range.text.contains(['\r', '\n']));
+            assert_eq!(&source[range.source_range.bytes], range.text);
+        }
+    }
+    for source in ["$x\ny$", "\\(x\ny\\)", "\\\\[x\\]", "\\[x", "$$\nx"] {
+        assert!(
+            !find_technical_token_ranges(source, &[])
+                .iter()
+                .any(|range| range.kind == bidilens_core::TechnicalTokenKind::Math)
+        );
+    }
+}
+
+#[test]
 fn explicit_exclusion_is_honored_in_first_strong_modes() {
     for strategy in [
         DetectionStrategy::FirstStrong,
@@ -263,7 +331,7 @@ fn shared_corpus_direction_contract() {
     let fixtures = corpus();
     assert_eq!(
         fixtures.len(),
-        932,
+        941,
         "corpus size changed; review the Rust gate"
     );
     let options = AnalysisOptions::default();

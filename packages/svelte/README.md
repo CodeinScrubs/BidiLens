@@ -18,6 +18,10 @@ stream.reset('یک پاسخ تازه.');
 ```
 
 Both APIs implement the standard Svelte readable-store subscription contract.
+After `finish()`, `push()` and an append through `setText()` throw until reset,
+matching the core stream contract. A rejected operation does not change
+`getText()` or notify subscribers. Use `reset()` for a fresh message;
+replacement (non-prefix) `setText()` also resets the stream.
 LTR-only snapshots preserve the source and contain an empty isolation plan, so
 an idiomatic renderer has no BidiLens wrapper work to perform.
 Run `pnpm --filter @bidilens/svelte example` after building.
