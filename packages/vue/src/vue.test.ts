@@ -22,7 +22,7 @@ describe('Vue adapter', () => {
     const html = await renderToString(app);
     expect(html).toContain('dir="ltr"');
     expect(html).toContain('data-bidilens-block');
-    expect(html).toContain('text-align:start');
+    expect(html).not.toContain('text-align:');
   });
 
   it('exports real Vue component definitions', () => {
@@ -116,7 +116,7 @@ describe('Vue adapter', () => {
     expect(html).toContain('<bdi dir="ltr" data-bidilens-isolate');
     expect(html).toContain('data-bidilens-kind="identifier"');
     expect(html).toContain('>React</bdi>');
-    expect(html).toContain('text-align:start');
+    expect(html).not.toContain('text-align:');
   });
 
   it('keeps an RTL paragraph base while honoring physical-left alignment', async () => {
@@ -129,6 +129,27 @@ describe('Vue adapter', () => {
     expect(html).toContain('text-align:left');
     expect(html).not.toContain('text-align:start');
     expect(html).toContain('>React</bdi>');
+  });
+
+  it('leaves host class and inherited physical alignment available during intervention', async () => {
+    const app = createSSRApp({
+      render: () => h('section', { style: { textAlign: 'left' } }, [
+        h(BidiMessage, { text: 'React یک کتابخانه محبوب است.', class: 'author-left' })
+      ])
+    });
+    const html = await renderToString(app);
+    expect(html).toContain('<section style="text-align:left;">');
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('author-left');
+    expect(html).not.toContain('text-align:start');
+    expect(html.match(/text-align:/gu)).toHaveLength(1);
+  });
+
+  it('retains an explicit direction-relative alignment request', async () => {
+    const app = createSSRApp({
+      render: () => h(BidiMessage, { text: 'سلام دنیا', textAlign: 'start' })
+    });
+    expect(await renderToString(app)).toContain('text-align:start');
   });
 
   it('uses caller-specific identifiers for direction and isolation', async () => {

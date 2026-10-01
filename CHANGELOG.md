@@ -5,6 +5,25 @@ is published under the public `@bidilens` npm scope.
 
 ## Unreleased
 
+- Preserve host stylesheet and inherited physical alignment in React/Vue,
+  including React messages with independently directed streamed paragraphs;
+  remove alignment overrides from the optional DOM helper stylesheet.
+- Exclude unrendered DOM metadata from direction and inline-isolation evidence
+  without deleting or rewriting its source; retain authored CSS visibility overrides.
+- Replace .NET email/relative-path greedy recognizers with bounded scanners and
+  retain trailing combining marks inside technical display isolates.
+- Restore current inherited/style direction and alignment on WPF TextBlock and
+  TextBox after parent changes; refresh dynamic-resource baselines on controls
+  and paragraphs while preserving local bindings and shareable resource expressions.
+- Defer UIKit editable apply/restore mutations while marked-text composition is
+  active; keep managed state for an explicit retry after composition ends.
+- Replace coverage-sensitive performance assertions with deterministic work
+  counters and separate unchanged latency budgets in isolated PR/release checks.
+- Add a reproducible [problem gallery](docs/problem-gallery/README.md) with real
+  browser before/after captures and original encountered screenshots; record
+  [production gaps and alternatives](docs/PRODUCTION_READINESS.md).
+- Patch development-toolchain advisory overrides for `fast-uri`, `undici`,
+  `brace-expansion`, and `devalue`; keep published artifact status separate from source fixes.
 - Keep compact currency amounts and hyphen/en-dash numeric ranges together,
   exclude surrounding quotes from paths, and distinguish dollar math from
   prices/escaped delimiters in TypeScript, Kotlin, Swift, C#, and Rust.

@@ -1,5 +1,10 @@
 # Screenshot-derived mixed-direction cases
 
+Original encountered captures and controlled before/after pairs are collected
+in the [problem gallery](problem-gallery/README.md). The original screenshot
+and an exact logical source are different evidence: screenshot transcription
+alone cannot establish the model's original word order.
+
 This document turns the user-supplied ChatGPT screenshots into repeatable,
 non-clinical rendering evidence. The screenshots show Persian medical study
 notes interleaved with English labels, abbreviations, arrows, emoji, Markdown

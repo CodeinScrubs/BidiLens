@@ -11,6 +11,126 @@ const bundle = buildSync({
   globalName: 'BidiLensDom'
 }).outputFiles[0]!.text;
 
+test('unrendered metadata cannot choose a visible paragraph base or receive isolation wrappers', async ({ page }) => {
+  await page.setContent(`<style>.absent { display: none; } .force-display { display: inline !important; }</style><main style="text-align:left">
+    <p id="hidden">سلام React دنیا <span hidden>This lengthy English metadata should never determine the visible language.</span></p>
+    <p id="css">سلام React دنیا <span class="absent">This lengthy English metadata should never determine the visible language.</span></p>
+    <p id="content-visibility">سلام React دنیا <span style="display:inline-block;content-visibility:hidden">This lengthy English metadata should never determine the visible language.</span></p>
+    <p id="script">سلام React دنیا <script type="application/json">{"description":"This lengthy English metadata should never determine the visible language"}</script></p>
+    <p id="until-found">سلام React دنیا <span hidden="until-found" style="display:inline-block">This lengthy English metadata should never determine the visible language.</span></p>
+    <p id="inline-content-visibility">سلام دنیا <span style="content-visibility:hidden">Many ordinary English words describe a very long visible paragraph.</span></p>
+    <p id="inline-list-visibility">سلام دنیا <span style="display:inline list-item;content-visibility:hidden">Many ordinary English words describe a very long visible paragraph.</span></p>
+    <p id="inline-until-found">سلام دنیا <span hidden="until-found">Many ordinary English words describe a very long visible paragraph.</span></p>
+    <p id="display-override">سلام دنیا <span hidden class="force-display">Many ordinary English words describe a very long visible paragraph.</span></p>
+    <section hidden><p id="absent">سلام React دنیا</p></section>
+  </main>`);
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const root = document.querySelector('main')!;
+    const entries = ['hidden', 'css', 'script', 'until-found', 'content-visibility'].map((id) => {
+      const paragraph = document.getElementById(id)!;
+      const metadata = paragraph.lastElementChild!;
+      return { paragraph, metadata, source: paragraph.textContent, html: metadata.outerHTML, firstChild: metadata.firstChild };
+    });
+    const absent = document.querySelector('#absent')!;
+    const absentHtml = absent.outerHTML;
+    api.applyBidi(root);
+    const applied = entries.map(({ paragraph, metadata, source, html, firstChild }) => ({
+      direction: getComputedStyle(paragraph).direction,
+      alignment: getComputedStyle(paragraph).textAlign,
+      sourcePreserved: paragraph.textContent === source,
+      metadataPreserved: metadata.outerHTML === html && metadata.firstChild === firstChild,
+      isolated: [...paragraph.querySelectorAll('bdi')].map((node) => node.textContent)
+    }));
+    const untouched = absent.outerHTML === absentHtml;
+    const displayOverrideDirection = getComputedStyle(document.getElementById('display-override')!).direction;
+    const inlineDirections = ['inline-content-visibility', 'inline-until-found', 'inline-list-visibility'].map((id) =>
+      getComputedStyle(document.getElementById(id)!).direction);
+    api.restoreBidi(root);
+    return { applied, untouched, displayOverrideDirection, inlineDirections, restored: entries.every(({ paragraph, metadata, source, html }) => paragraph.textContent === source && metadata.outerHTML === html) };
+  });
+  expect(evidence.applied).toEqual(Array.from({ length: 5 }, () => ({
+    direction: 'rtl', alignment: 'left', sourcePreserved: true, metadataPreserved: true, isolated: ['React']
+  })));
+  expect(evidence.untouched).toBe(true);
+  expect(evidence.displayOverrideDirection).toBe('ltr');
+  expect(evidence.inlineDirections).toEqual(['ltr', 'ltr', 'ltr']);
+  expect(evidence.restored).toBe(true);
+});
+
+test('installed helper styles preserve inherited physical-left paragraph alignment', async ({ page }) => {
+  await page.setContent('<main style="text-align:left"><p>سلام React دنیا</p></main>');
+  await page.addScriptTag({ content: bundle });
+  await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    api.installBidiStyles(document);
+    api.applyBidi(document.querySelector('main')!);
+  });
+  await expect(page.locator('p')).toHaveCSS('direction', 'rtl');
+  await expect(page.locator('p')).toHaveCSS('text-align', 'left');
+});
+
+test('noscript evidence follows actual rendering rather than guessing the target scripting mode', async ({ page }) => {
+  await page.setContent('<main><p id="normal">سلام دنیا <noscript>Many ordinary English words describe a very long visible paragraph.</noscript></p><p id="contents">سلام دنیا <noscript style="display:contents !important">Many ordinary English words describe a very long visible paragraph.</noscript></p></main><iframe sandbox="allow-same-origin"></iframe>');
+  await page.addScriptTag({ content: bundle });
+  const evidence = await page.evaluate(async () => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const root = document.querySelector('main')!;
+    const expected = [...root.querySelectorAll('p')].map((paragraph) =>
+      paragraph.innerText.includes('Many ordinary') ? 'ltr' : 'rtl');
+    const source = root.textContent;
+    api.applyBidi(root);
+    const directions = [...root.querySelectorAll('p')].map((paragraph) => getComputedStyle(paragraph).direction);
+    api.restoreBidi(root);
+    const frame = document.querySelector('iframe')!;
+    await new Promise<void>((resolve) => {
+      frame.onload = () => resolve();
+      frame.srcdoc = '<main><p>سلام دنیا <noscript>Many ordinary English words describe a very long visible paragraph.</noscript></p></main>';
+    });
+    const fallbackRoot = frame.contentDocument!.querySelector('main')!;
+    const fallback = fallbackRoot.querySelector('p')!;
+    const fallbackVisible = fallback.innerText.includes('Many ordinary');
+    const fallbackSource = fallbackRoot.textContent;
+    api.applyBidi(fallbackRoot);
+    const fallbackDirection = frame.contentWindow!.getComputedStyle(fallback).direction;
+    api.restoreBidi(fallbackRoot);
+    return { expected, directions, sourcePreserved: root.textContent === source,
+      fallbackVisible, fallbackDirection, fallbackSourcePreserved: fallbackRoot.textContent === fallbackSource };
+  });
+  expect(evidence.directions).toEqual(evidence.expected);
+  expect(evidence).toMatchObject({ sourcePreserved: true, fallbackVisible: true,
+    fallbackDirection: 'ltr', fallbackSourcePreserved: true });
+});
+
+test('absent inline metadata cannot split a visibly continuous URL', async ({ page }) => {
+  await page.setContent('<main><p dir="rtl">سلام https://example<span hidden><bdi dir="rtl">metadata</bdi><code>code</code></span>.com/path پایان</p></main>');
+  await page.addScriptTag({ content: bundle });
+  const result = await page.evaluate(() => {
+    const api = (window as unknown as { BidiLensDom: typeof DomAdapter }).BidiLensDom;
+    const root = document.querySelector('main')!;
+    const absent = root.querySelector('[hidden]')!;
+    const source = root.textContent;
+    api.applyBidi(root, { strategy: 'rtl' });
+    const isolate = root.querySelector('bdi[data-bidilens-isolate]')!;
+    const textNodes = Array.from(isolate.childNodes).filter((node): node is Text => node.nodeType === 3);
+    const prefix = document.createRange(); prefix.selectNodeContents(textNodes[0]!);
+    const suffix = document.createRange(); suffix.selectNodeContents(textNodes.at(-1)!);
+    const prefixLeft = prefix.getBoundingClientRect().left;
+    const suffixLeft = suffix.getBoundingClientRect().left;
+    const count = root.querySelectorAll('bdi[data-bidilens-isolate]').length;
+    const repeated = api.applyBidi(root, { strategy: 'rtl' });
+    const stable = root.querySelector('bdi[data-bidilens-isolate]') === isolate;
+    const retained = isolate.contains(absent);
+    api.restoreBidi(root);
+    return { prefixLeft, suffixLeft, count, stable, retained, repeated: repeated.isolated,
+      sourcePreserved: root.textContent === source, originalAbsentNode: root.querySelector('[hidden]') === absent };
+  });
+  expect(result.prefixLeft).toBeLessThan(result.suffixLeft);
+  expect(result).toMatchObject({ count: 1, stable: true, retained: true, repeated: 0,
+    sourcePreserved: true, originalAbsentNode: true });
+});
+
 test('rich inline isolation retains fragment order, backward selection, identity, and stable reapplication', async ({ page }) => {
   await page.setContent('<main style="width:1200px"><p style="text-align:left">لینک https://<strong>example</strong>.com را باز کنید.</p></main>');
   await page.addScriptTag({ content: bundle });

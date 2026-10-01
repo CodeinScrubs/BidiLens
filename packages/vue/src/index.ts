@@ -72,7 +72,7 @@ export const BidiMessage = defineComponent({
     intervention: { type: String as PropType<BidiInterventionMode>, default: 'auto' },
     textAlign: {
       type: String as PropType<'start' | 'end' | 'left' | 'right' | 'center' | 'justify'>,
-      default: 'start'
+      default: undefined
     }
   },
   setup(props) {
@@ -117,7 +117,7 @@ export const BidiMessage = defineComponent({
         dir: direction,
         class: props.className ?? 'bidilens-block',
         'data-bidilens-block': '',
-        style: { textAlign: props.textAlign }
+        ...(props.textAlign === undefined ? {} : { style: { textAlign: props.textAlign } })
       }, children);
     };
   }

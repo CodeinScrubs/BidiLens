@@ -124,6 +124,12 @@ The Persian word کتاب means “book”.
 
 ## Visual proof
 
+Explore the [encountered problems and reproducible before/after gallery](docs/problem-gallery/README.md).
+It includes original user-supplied captures, actual browser-rendered fixes,
+logical source, physical-left alignment examples, and machine-readable evidence.
+The [production readiness review](docs/PRODUCTION_READINESS.md) records which
+platforms and releases are verified and what still needs validation.
+
 Read the practical guide: [When `dir="auto"` gets the first word right and the
 paragraph wrong](docs/MIXED_DIRECTION_TEXT.md), covering native HTML, alignment,
 inline isolation, Markdown, and regression checks.

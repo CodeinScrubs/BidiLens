@@ -19,6 +19,8 @@ JavaScript/web and Android have registry releases. Swift/iOS, .NET/Windows, and 
 
 ## Safety and validation
 
+- [Reproducible problem gallery](https://github.com/CodeinScrubs/BidiLens/tree/main/docs/problem-gallery): Original encountered symptoms, controlled before/after captures, source strings, environment, and evidence. A controlled capture is not proof of an upstream deployment.
+- [Production readiness review](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/PRODUCTION_READINESS.md): Verified scope, alternatives, release gaps, and remaining validation requirements.
 - [Limitations](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/LIMITATIONS.md): Heuristic, renderer, editor, and platform boundaries.
 - [Accessibility](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/ACCESSIBILITY.md): Source order, assistive technology, and verification limits.
 - [Security](https://github.com/CodeinScrubs/BidiLens/blob/main/docs/SECURITY.md): Bidi-control auditing and untrusted-content handling.

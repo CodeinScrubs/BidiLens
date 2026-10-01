@@ -22,9 +22,13 @@ const watcher = observeBidi(document.querySelector('#messages')!);
 Its default `auto` gate performs no DOM mutation at all for an LTR-only scope
 in an LTR context, including code elements. RTL ancestors are detected. Set
 `intervention: 'always'` only when every block must receive stable markers.
-Installed default alignment rules use `:where(...)` and therefore zero
-specificity: an authored class or inline `text-align: left`, `right`, or
-`center` wins without disabling BidiLens direction/isolation.
+In the unreleased source, the optional helper stylesheet supplies isolation
+and code direction without setting alignment. Authored class, inline, and
+inherited `text-align: left`, `right`, or `center` remain effective. Choose
+`text-align: start` in the host stylesheet when content-relative alignment is
+desired. Published `0.4.0` helper styles still set block/cell alignment to
+`start`; override that on managed blocks or omit the helper when physical
+alignment is inherited.
 `restoreBidi` restores the original direction attributes and inline
 `unicode-bidi` values remembered in the current JavaScript session. Reapplying
 after dynamic content becomes ordinary LTR removes BidiLens-owned presentation,
@@ -50,6 +54,24 @@ through the DOM. Call `restoreBidi(root)` before that handoff; subsequent author
 styles are then entirely outside BidiLens ownership.
 
 ## Cleanup boundaries (unreleased)
+
+Direction evidence and isolation omit `script`, `style`, `template`, and
+currently unrendered subtrees (`display: none`, including normal `hidden`
+elements, and `content-visibility: hidden` where layout containment applies).
+Non-atomic inline and other containment-ineligible content stays in the
+projection because the browser does not hide it. Their source and nodes remain intact. Authored CSS that makes a
+hidden element visible is respected. BidiLens does not exclude content solely
+because of `aria-hidden` or `visibility: hidden`.
+Live `noscript` fallback uses available box-visibility evidence, rather than
+assuming every target document enables scripts; visible fallback in a
+scripting-disabled frame remains evidence. Without that browser API/layout,
+the adapter does not guess the target's scripting state.
+
+The observer watches text and child mutations. After changing visibility,
+classes, or styles without a text/child mutation, call `watcher.flush()` or
+`applyBidi(root)` to refresh the projection. This is a display adapter, not a
+general rendering engine; CSS-generated text and shadow-tree content are not
+part of its light-DOM source projection.
 
 `restoreBidi` and automatic RTL-to-LTR cleanup do not normalize the root's
 text nodes. Unrelated adjacent or empty text nodes remain intact, including

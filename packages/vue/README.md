@@ -20,6 +20,9 @@ const stream = useBidiStream(answer);
 
 Use `text-align="left"` when an RTL paragraph must stay physically left
 aligned. Direction detection and inline isolation still run normally.
+In the unreleased source, alignment is omitted by default so host classes and
+inherited alignment remain effective. Use `text-align="start"` explicitly for
+content-relative alignment.
 
 The component emits semantic `dir`, block metadata, and `<bdi>`/`<code>`
 isolations when bidi handling is needed. LTR-only content emits no BidiLens

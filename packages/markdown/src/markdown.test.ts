@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -604,19 +604,34 @@ describe('rich Markdown streaming', () => {
   }, 15_000);
 
   it('coalesces dense streamed list lines instead of reparsing every item', () => {
-    const session = createBidiMarkdownStream(new MarkdownIt({ html: false }));
-    const started = process.cpuUsage();
+    const markdownIt = new MarkdownIt({ html: false });
+    const originalParse = markdownIt.parse.bind(markdownIt);
+    const parsedLengths: number[] = [];
+    const parse = vi.spyOn(markdownIt, 'parse').mockImplementation((source, environment) => {
+      parsedLengths.push(source.length);
+      return originalParse(source, environment);
+    });
+    const session = createBidiMarkdownStream(markdownIt);
+    let source = '';
     let update = session.getUpdate();
     for (let index = 0; index < 400; index += 1) {
-      session.push(`- item ${index} سلام\n`);
+      const line = `- item ${index} سلام\n`;
+      source += line;
+      session.push(line);
       update = session.getUpdate();
     }
     expect(update.parseCount).toBeLessThanOrEqual(12);
     expect(update.direction.paragraphs.length).toBeGreaterThan(1);
-    // The parse-count bound is the deterministic O(n²) alarm. Keep a separate
-    // CPU ceiling with enough headroom for V8 coverage instrumentation: an
-    // isolated instrumented run is about 1.25 seconds on the Windows gate.
-    expect(cpuMillisecondsSince(started)).toBeLessThan(2_000);
+    const final = session.finish();
+    expect(parse).toHaveBeenCalledTimes(final.parseCount);
+    // Count actual parser input, not just the exposed parse counter: geometric
+    // checkpoints plus final reconciliation must keep rich parse work linear.
+    // Snapshot reconciliation has separate latency coverage in benchmark:ci;
+    // this bound does not claim that all per-update projection work is linear.
+    expect(parsedLengths.reduce((total, length) => total + length, 0)).toBeLessThan(source.length * 3);
+    expect(final.source).toBe(source);
+    expect(final.document.html).toBe(analyzeBidiMarkdown(new MarkdownIt({ html: false }), source).html);
+    parse.mockRestore();
   }, 10_000);
 
   it('tracks a new Markdown block correctly inside a pending checkpoint gap', () => {

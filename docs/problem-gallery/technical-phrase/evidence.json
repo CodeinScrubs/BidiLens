@@ -1,0 +1,52 @@
+{
+  "id": "technical-phrase",
+  "title": "An ordered technical phrase in Persian prose",
+  "capturedAt": "2026-10-01T22:16:52.660Z",
+  "renderer": "Chromium 153.0.8010.12",
+  "artifactStatus": "unreleased source checkout; not a deployed host integration",
+  "baseline": "ltr",
+  "alignment": "left",
+  "explanation": "Domain terms are declared as technical identifiers. Caller knowledge supplies the intended Persian base where majority evidence alone is ambiguous.",
+  "technicalIdentifiers": [
+    "brainstem",
+    "localization",
+    "nuclei",
+    "medulla"
+  ],
+  "sourceSha256": "5a4fd4695c0b369fc773a670706b0141f7c2a69258460ad4a75eeddc36b51b8f",
+  "observations": {
+    "before": {
+      "text": "این قسمت برای brainstem localization nuclei of IX and X in medulla مهم می‌شود.",
+      "paragraphs": [
+        {
+          "text": "این قسمت برای brainstem localization nuclei of IX and X in medulla مهم می‌شود.",
+          "direction": "ltr",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": null,
+      "blockquoteDirection": null,
+      "cellDirections": [],
+      "isolations": []
+    },
+    "after": {
+      "text": "این قسمت برای brainstem localization nuclei of IX and X in medulla مهم می‌شود.",
+      "paragraphs": [
+        {
+          "text": "این قسمت برای brainstem localization nuclei of IX and X in medulla مهم می‌شود.",
+          "direction": "rtl",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": null,
+      "blockquoteDirection": null,
+      "cellDirections": [],
+      "isolations": [
+        {
+          "text": "brainstem localization nuclei of IX and X in medulla",
+          "direction": "ltr"
+        }
+      ]
+    }
+  }
+}

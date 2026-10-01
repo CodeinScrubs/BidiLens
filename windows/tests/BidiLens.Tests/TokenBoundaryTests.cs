@@ -19,6 +19,19 @@ internal static class TokenBoundaryTests
         }
         foreach (var quote in new[] { "\"", "'", "“", "”", "«", "»" })
             Equal(BidiAnalyzer.FindTechnicalTokenRanges($"مسیر {quote}/usr/local/bin{quote} است.").Select(range => range.Text), "/usr/local/bin");
+        foreach (var token in new[] { "1\uFE0F\u20E3", "1\u20E3", "React\u0301", "10\uFE0F\u20E3" })
+        {
+            var source = $"فارسی {token}";
+            var analysis = BidiAnalyzer.Analyze(source);
+            Equal(analysis.Isolations.Select(range => range.Text), token);
+            Equal(new[] { BidiAnalyzer.FormatForDisplay(analysis) }, $"فارسی \u2066{token}\u2069");
+            foreach (var range in analysis.Isolations)
+            {
+                Equal(new[] { source[range.Utf16Start..range.Utf16End] }, range.Text);
+                Equal(new[] { source.EnumerateRunes().Skip(range.CodePointStart).Take(range.CodePointEnd - range.CodePointStart)
+                    .Aggregate(string.Empty, (value, rune) => value + rune) }, range.Text);
+            }
+        }
         foreach (var math in new[] { "$$\nx = y\n$$", "$$\r\nx = y\r\n$$", "\\[\nx = y\n\\]", "\\[x = y\\]" })
         {
             var source = $"سلام {math} تمام";

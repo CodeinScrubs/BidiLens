@@ -10,6 +10,125 @@ import {
 } from './index.js';
 
 describe('DOM adapter', () => {
+  it.each([
+    '<span hidden>Very lengthy English prose about invisible application metadata and identifiers</span>',
+    '<span style="display:none">Very lengthy English prose about invisible application metadata and identifiers</span>',
+    '<span style="display:inline-block;content-visibility:hidden">Very lengthy English prose about invisible application metadata and identifiers</span>',
+    '<script type="application/json">{"description":"Very lengthy English prose about invisible application metadata"}</script>',
+    '<style>.metadata { content: "Very lengthy English prose about invisible application metadata"; }</style>',
+    '<template>Very lengthy English prose about invisible application metadata</template>'
+  ])('ignores unrendered direction evidence and keeps its subtree intact: %s', (metadata) => {
+    document.body.innerHTML = `<main><p>سلام React دنیا ${metadata}</p></main>`;
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    const unrendered = paragraph.lastElementChild!;
+    const markup = unrendered.outerHTML;
+    const children = [...unrendered.childNodes];
+    const source = paragraph.textContent;
+    applyBidi(root);
+    expect(paragraph.dir).toBe('rtl');
+    expect(paragraph.querySelector('bdi')?.textContent).toBe('React');
+    expect(unrendered.outerHTML).toBe(markup);
+    expect([...unrendered.childNodes]).toEqual(children);
+    expect(paragraph.textContent).toBe(source);
+    restoreBidi(root);
+    expect(paragraph.textContent).toBe(source);
+    expect(unrendered.outerHTML).toBe(markup);
+  });
+
+  it('does not isolate RTL text inside an unrendered child of visible English prose', () => {
+    document.body.innerHTML = '<main><p>Hello world. <span hidden>سلام دنیا</span></p></main>';
+    const root = document.querySelector('main')!;
+    const hidden = root.querySelector('[hidden]')!;
+    const children = [...hidden.childNodes];
+    applyBidi(root);
+    expect(hidden.querySelector('bdi')).toBeNull();
+    expect([...hidden.childNodes]).toEqual(children);
+  });
+
+  it('counts a hidden-attributed subtree when authored CSS actually displays it', () => {
+    document.head.innerHTML = '<style>.force-display { display: inline !important; }</style>';
+    document.body.innerHTML = '<main><p>سلام دنیا <span hidden class="force-display">Many ordinary English words describe a very long visible paragraph.</span></p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    expect(getComputedStyle(root.querySelector('span')!).display).toBe('inline');
+    applyBidi(root);
+    expect(paragraph.dir).toBe('ltr');
+    expect(paragraph.querySelector('bdi[dir="rtl"]')?.textContent).toBe('سلام دنیا');
+  });
+
+  it.each(['inline', 'inline list-item'])('counts %s content when content-visibility containment does not apply', (display) => {
+    document.body.innerHTML = `<main><p>سلام دنیا <span style="display:${display};content-visibility:hidden">Many ordinary English words describe a very long visible paragraph.</span></p></main>`;
+    const root = document.querySelector('main')!;
+    applyBidi(root);
+    expect(root.querySelector('p')!.dir).toBe('ltr');
+    expect(root.querySelector('bdi[dir="rtl"]')?.textContent).toBe('سلام دنیا');
+  });
+
+  it('keeps candidates below hidden ancestors untouched', () => {
+    document.body.innerHTML = '<main><section hidden><p>سلام React دنیا</p><code>سلام</code></section></main>';
+    const root = document.querySelector('main')!;
+    const original = root.innerHTML;
+    applyBidi(root);
+    expect(root.innerHTML).toBe(original);
+  });
+
+  it('keeps an owned wrapper stable when a host adds absent metadata', () => {
+    document.body.innerHTML = '<main><p>سلام React دنیا</p></main>';
+    const root = document.querySelector('main')!;
+    applyBidi(root);
+    const oldWrapper = root.querySelector('bdi')!;
+    const hidden = document.createElement('span');
+    hidden.hidden = true;
+    hidden.textContent = 'Long hidden English prose should not make nested generated wrappers';
+    oldWrapper.append(hidden);
+    const source = root.textContent;
+    applyBidi(root);
+    expect(oldWrapper.isConnected).toBe(true);
+    expect(root.querySelector('bdi bdi')).toBeNull();
+    expect(root.querySelector('bdi')?.textContent).toBe(`React${hidden.textContent}`);
+    const wrapper = root.querySelector('bdi');
+    expect(applyBidi(root).isolated).toBe(0);
+    expect(root.querySelector('bdi')).toBe(wrapper);
+    expect(root.textContent).toBe(source);
+    expect(hidden.parentElement).toBe(oldWrapper);
+  });
+
+  it.each(['<span hidden>metadata</span>', '<span style="display:none">metadata</span>',
+    '<span hidden><bdi dir="rtl">metadata</bdi><code>code</code></span>',
+    '<script type="application/json">{"value":"metadata"}</script>'])(
+    'keeps a visually continuous token together across absent metadata: %s', (metadata) => {
+      document.body.innerHTML = `<main><p>سلام https://example${metadata}.com/path پایان</p></main>`;
+      const root = document.querySelector('main')!;
+      const absent = root.querySelector('span,script')!;
+      const source = root.textContent;
+      applyBidi(root);
+      expect(root.querySelectorAll('bdi[data-bidilens-isolate]')).toHaveLength(1);
+      const wrapper = root.querySelector('bdi[data-bidilens-isolate]')!;
+      expect(wrapper.contains(absent)).toBe(true);
+      expect(wrapper.textContent).toBe(`https://example${absent.textContent}.com/path`);
+      expect(applyBidi(root).isolated).toBe(0);
+      expect(root.querySelector('bdi[data-bidilens-isolate]')).toBe(wrapper);
+      expect(root.textContent).toBe(source);
+      restoreBidi(root);
+      expect(root.querySelector('span,script')).toBe(absent);
+      expect(root.textContent).toBe(source);
+    });
+
+  it('refreshes direction and isolation after an explicit flush reveals prose', () => {
+    document.body.innerHTML = '<main><p>سلام دنیا <span hidden>Many ordinary English words describe a very long visible paragraph.</span></p></main>';
+    const root = document.querySelector('main')!;
+    const paragraph = root.querySelector('p')!;
+    const span = root.querySelector('span')!;
+    const watcher = observeBidi(root as HTMLElement);
+    expect(paragraph.dir).toBe('rtl');
+    span.removeAttribute('hidden');
+    watcher.flush();
+    watcher.disconnect();
+    expect(paragraph.dir).toBe('ltr');
+    expect(paragraph.querySelector('bdi[dir="rtl"]')?.textContent).toBe('سلام دنیا');
+  });
+
   it.each(['سلام CN <strong>IX</strong> پایان', 'لینک https://<strong>example</strong>.com را باز کنید.', 'سلام <strong>hello</strong> world پایان'])(
     'isolates complete inline phrases across formatting: %s', (html) => {
       document.body.innerHTML = `<main><p>${html}</p></main>`;
@@ -365,7 +484,7 @@ describe('DOM adapter', () => {
     expect(first.textContent).not.toContain('unicode-bidi: plaintext');
     expect(first.textContent).toContain('unicode-bidi: isolate');
     expect(first.textContent).toContain('[data-bidilens-code]');
-    expect(first.textContent).toContain(':where([data-bidilens-block])');
+    expect(first.textContent).not.toContain('text-align:');
   });
 
   it('keeps direction correction independent from authored physical-left alignment', () => {

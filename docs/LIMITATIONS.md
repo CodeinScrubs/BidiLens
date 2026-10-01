@@ -141,8 +141,11 @@ device dependent.
 
 Alignment and direction are separate policies. `physicalLeft`/`left` keeps
 Persian or other RTL text on the left side while preserving an RTL paragraph
-base. Content-relative `start` remains the default in most adapters. BidiLens
-does not mirror an entire screen or override unrelated layout containers.
+base. Defaults vary by adapter: React, Vue, and the DOM helper stylesheet
+inherit host alignment in the unreleased source repairs; native adapters can
+use content-relative `start`. Set alignment explicitly when the host contract
+requires a particular physical edge. BidiLens does not mirror an entire
+screen or override unrelated layout containers.
 
 UIKit adapters preserve the source string and editable selection. Applying
 paragraph style to a `UILabel` necessarily produces an attributed display

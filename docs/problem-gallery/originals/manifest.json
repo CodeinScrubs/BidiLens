@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "provenance": "Unmodified images supplied by the user during this project conversation; inspected before publication.",
+  "host": "ChatGPT, user-reported; app version and original logical source unavailable",
+  "captureDate": null,
+  "integrationStatus": "encountered symptoms only; no corrected ChatGPT deployment capture",
+  "images": [
+    { "file": "chatgpt-heading.png", "originalFile": "chatgpt.png", "sha256": "029fa49626d7b10519f03c8793b2efe0f3f42b96e956c218c71021306a070afb" },
+    { "file": "chatgpt-heading-context.png", "originalFile": "chatgpt2.png", "sha256": "014f0e8e4e94dc0d0d4487c0a885c0ebde23ab3cfe8832812bb70655acce570f" },
+    { "file": "chatgpt-table-quotes.png", "originalFile": "chatgpt3.png", "sha256": "d8532fc581d63c6391577547de6dd45bb9aeba43338c8b083987eb1236701f6f" },
+    { "file": "chatgpt-lists.png", "originalFile": "bidi.png", "sha256": "b92fa96ce95d98bccbb1407d3729ac7afa173ddb1144af7d19f246a9b8e5c701" }
+  ]
+}

@@ -15,6 +15,7 @@ import {
   analyzeBidiMarkdown,
   createBidiMarkdownStream
 } from '../packages/markdown/src/index.js';
+import { isolateForest, type InlineNode } from '../packages/markdown/src/inline-forest.js';
 
 const BASE = 'React یک کتابخانه جاوااسکریپت محبوب است. The API path is src/server/index.ts. سلام دنیا.\n';
 
@@ -33,100 +34,41 @@ function measure(operation: () => void, iterations: number, warmupRuns = 1): { t
   };
 }
 
-const matrix = [
-  { utf16CodeUnits: 1_024, iterations: 1_000 },
-  { utf16CodeUnits: 10_240, iterations: 100 },
-  { utf16CodeUnits: 102_400, iterations: 10 },
-  { utf16CodeUnits: 1_048_576, iterations: 1 }
-].map(({ utf16CodeUnits, iterations }) => {
-  const text = sample(utf16CodeUnits);
-  return {
-    utf16CodeUnits,
-    iterations,
-    analyze: measure(() => { analyzeText(text); }, iterations),
-    segment: measure(() => { segmentDirectionalRuns(text); }, iterations),
-    isolate: measure(() => { planInlineIsolation(text, 'rtl'); }, iterations),
-    security: measure(() => { scanBidiSecurity(text); }, iterations)
-  };
-});
-
-const streamSource = sample(100_000);
-const chunkSize = Math.ceil(streamSource.length / 1_000);
-const chunks: string[] = [];
-for (let index = 0; index < streamSource.length; index += chunkSize) {
-  chunks.push(streamSource.slice(index, index + chunkSize));
-}
-const incremental = measure(() => {
-  const stream = createBidiStream();
-  for (const chunk of chunks) stream.push(chunk);
-  stream.finish();
-}, 5);
-const naiveReparse = measure(() => {
-  let accumulated = '';
-  for (const chunk of chunks) {
-    accumulated += chunk;
-    analyzeText(accumulated);
+const performanceRegressionBudgets = {
+  inlineForestDenseSiblings: {
+    siblingGroups: 20_000,
+    maximumAverageMs: 2_000,
+    iterations: 3,
+    ...measure(() => {
+      const children: InlineNode<never>[] = Array.from({ length: 20_000 }, () =>
+        [{ text: 'React' }, { opaque: true }] as InlineNode<never>[]).flat();
+      const result = isolateForest(children, 'rtl', { intervention: 'always' });
+      if (result.length !== 40_000
+        || result.filter((node) => node.isolation).length !== 20_000) {
+        throw new Error('Dense inline-forest projection lost sibling content.');
+      }
+    }, 3)
+  },
+  markdownDenseStreamedList: {
+    listItems: 400,
+    maximumAverageMs: 2_000,
+    iterations: 3,
+    ...measure(() => {
+      const stream = createBidiMarkdownStream(new MarkdownIt({ html: false }));
+      let update = stream.getUpdate();
+      for (let index = 0; index < 400; index += 1) {
+        stream.push(`- item ${index} سلام\n`);
+        update = stream.getUpdate();
+      }
+      if (update.parseCount > 12 || update.direction.paragraphs.length <= 1) {
+        throw new Error('Dense Markdown streaming lost checkpoint or paragraph bounds.');
+      }
+    }, 3)
   }
-}, 1, 0);
+};
 
-const oneCharacterSource = sample(10_000);
-const oneCharacterStream = measure(() => {
-  const stream = createBidiStream();
-  for (const character of oneCharacterSource) stream.push(character);
-  stream.finish();
-}, 5);
-
-const markdownStreamSource = sample(20_000);
-const markdownChunkSize = Math.ceil(markdownStreamSource.length / 400);
-const markdownChunks: string[] = [];
-for (let index = 0; index < markdownStreamSource.length; index += markdownChunkSize) {
-  markdownChunks.push(markdownStreamSource.slice(index, index + markdownChunkSize));
-}
-const markdownIncremental = measure(() => {
-  const stream = createBidiMarkdownStream(new MarkdownIt({ html: false }));
-  for (const chunk of markdownChunks) {
-    stream.push(chunk);
-    stream.getUpdate();
-  }
-  stream.finish();
-}, 5);
-const markdownNaiveReparse = measure(() => {
-  const markdownIt = new MarkdownIt({ html: false });
-  let accumulated = '';
-  for (const chunk of markdownChunks) {
-    accumulated += chunk;
-    analyzeBidiMarkdown(markdownIt, accumulated);
-  }
-}, 1, 0);
-const markdownParseProbe = createBidiMarkdownStream(new MarkdownIt({ html: false }));
-for (const chunk of markdownChunks) {
-  markdownParseProbe.push(chunk);
-  markdownParseProbe.getUpdate();
-}
-const markdownParseCount = markdownParseProbe.finish().parseCount;
-
-const deepList = Array.from({ length: 500 }, (_, index) =>
-  `${'  '.repeat(index % 20)}- React یک کتابخانه محبوب است و مسیر src/app.ts را استفاده می‌کند.`
-).join('\n');
-const largeTable = [
-  '| Feature | توضیح | Path |',
-  '| --- | --- | --- |',
-  ...Array.from({ length: 1_000 }, (_, index) =>
-    `| streaming-${index} | پردازش جریانی بسیار سریع است | src/messages/${index}.ts |`
-  )
-].join('\n');
-
-function structuredMeasurement(text: string, iterations: number): object {
-  return {
-    utf16CodeUnits: text.length,
-    iterations,
-    analyze: measure(() => { analyzeText(text); }, iterations),
-    isolate: measure(() => { planInlineIsolation(text, 'rtl'); }, iterations),
-    security: measure(() => { scanBidiSecurity(text); }, iterations)
-  };
-}
-
-const report = JSON.stringify({
+const regressionsOnly = process.argv.includes('--regressions-only');
+const sharedReport = {
   environment: {
     node: process.version,
     platform: `${platform()} ${release()}`,
@@ -135,55 +77,168 @@ const report = JSON.stringify({
     logicalCpuCount: cpus().length
   },
   methodology: {
+    mode: regressionsOnly ? 'regression-budgets-only' : 'full-comparative',
     unit: 'milliseconds',
     lengthUnit: 'UTF-16 code units',
     warmupRuns: '1 per operation except the already-warmed one-pass naive reparse',
-    note: 'Local comparative measurement; not a universal latency guarantee.'
+    note: 'Local comparative measurement; not a universal latency guarantee.',
+    regressionBudgets: 'Isolated, non-coverage workloads; 1 warmup and 3 timed runs. Broad alarms, not service-level guarantees.'
   },
-  batchMatrix: matrix,
-  streaming: {
-    utf16CodeUnits: streamSource.length,
-    requestedChunks: 1_000,
-    actualChunks: chunks.length,
-    incremental,
-    naiveFullReparse: naiveReparse,
-    oneCharacter: {
-      utf16CodeUnits: oneCharacterSource.length,
-      iterations: 5,
-      ...oneCharacterStream
-    },
-    markdown: {
-      utf16CodeUnits: markdownStreamSource.length,
-      requestedChunks: 400,
-      actualChunks: markdownChunks.length,
-      richParseCount: markdownParseCount,
-      incremental: markdownIncremental,
-      naiveFullReparse: markdownNaiveReparse
-    }
-  },
-  structured: {
-    deepList: {
-      items: 500,
-      maximumIndentLevels: 20,
-      ...structuredMeasurement(deepList, 5)
-    },
-    largeTable: {
-      bodyRows: 1_000,
-      ...structuredMeasurement(largeTable, 5)
-    }
-  }
-}, null, 2);
+};
 
-console.log(report);
-
-const outputIndex = process.argv.indexOf('--output');
-if (outputIndex >= 0) {
-  const outputArgument = process.argv[outputIndex + 1];
-  if (!outputArgument || outputArgument.startsWith('-')) {
-    throw new Error('--output requires a file path.');
+async function writeReport(report: object): Promise<void> {
+  const json = JSON.stringify(report, null, 2);
+  console.log(json);
+  const outputIndex = process.argv.indexOf('--output');
+  if (outputIndex >= 0) {
+    const outputArgument = process.argv[outputIndex + 1];
+    if (!outputArgument || outputArgument.startsWith('-')) {
+      throw new Error('--output requires a file path.');
+    }
+    const outputPath = resolve(outputArgument);
+    await mkdir(dirname(outputPath), { recursive: true });
+    await writeFile(outputPath, `${json}\n`, 'utf8');
+    console.error(`Benchmark report written to ${outputPath}`);
   }
-  const outputPath = resolve(outputArgument);
-  await mkdir(dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, `${report}\n`, 'utf8');
-  console.error(`Benchmark report written to ${outputPath}`);
+}
+
+if (regressionsOnly) {
+  await writeReport({ ...sharedReport, performanceRegressionBudgets });
+} else {
+  const matrix = [
+    { utf16CodeUnits: 1_024, iterations: 1_000 },
+    { utf16CodeUnits: 10_240, iterations: 100 },
+    { utf16CodeUnits: 102_400, iterations: 10 },
+    { utf16CodeUnits: 1_048_576, iterations: 1 }
+  ].map(({ utf16CodeUnits, iterations }) => {
+    const text = sample(utf16CodeUnits);
+    return {
+      utf16CodeUnits,
+      iterations,
+      analyze: measure(() => { analyzeText(text); }, iterations),
+      segment: measure(() => { segmentDirectionalRuns(text); }, iterations),
+      isolate: measure(() => { planInlineIsolation(text, 'rtl'); }, iterations),
+      security: measure(() => { scanBidiSecurity(text); }, iterations)
+    };
+  });
+
+  const streamSource = sample(100_000);
+  const chunkSize = Math.ceil(streamSource.length / 1_000);
+  const chunks: string[] = [];
+  for (let index = 0; index < streamSource.length; index += chunkSize) {
+    chunks.push(streamSource.slice(index, index + chunkSize));
+  }
+  const incremental = measure(() => {
+    const stream = createBidiStream();
+    for (const chunk of chunks) stream.push(chunk);
+    stream.finish();
+  }, 5);
+  const naiveReparse = measure(() => {
+    let accumulated = '';
+    for (const chunk of chunks) {
+      accumulated += chunk;
+      analyzeText(accumulated);
+    }
+  }, 1, 0);
+
+  const oneCharacterSource = sample(10_000);
+  const oneCharacterStream = measure(() => {
+    const stream = createBidiStream();
+    for (const character of oneCharacterSource) stream.push(character);
+    stream.finish();
+  }, 5);
+
+  const markdownStreamSource = sample(20_000);
+  const markdownChunkSize = Math.ceil(markdownStreamSource.length / 400);
+  const markdownChunks: string[] = [];
+  for (let index = 0; index < markdownStreamSource.length; index += markdownChunkSize) {
+    markdownChunks.push(markdownStreamSource.slice(index, index + markdownChunkSize));
+  }
+  const markdownIncremental = measure(() => {
+    const stream = createBidiMarkdownStream(new MarkdownIt({ html: false }));
+    for (const chunk of markdownChunks) {
+      stream.push(chunk);
+      stream.getUpdate();
+    }
+    stream.finish();
+  }, 5);
+  const markdownNaiveReparse = measure(() => {
+    const markdownIt = new MarkdownIt({ html: false });
+    let accumulated = '';
+    for (const chunk of markdownChunks) {
+      accumulated += chunk;
+      analyzeBidiMarkdown(markdownIt, accumulated);
+    }
+  }, 1, 0);
+  const markdownParseProbe = createBidiMarkdownStream(new MarkdownIt({ html: false }));
+  for (const chunk of markdownChunks) {
+    markdownParseProbe.push(chunk);
+    markdownParseProbe.getUpdate();
+  }
+  const markdownParseCount = markdownParseProbe.finish().parseCount;
+
+  const deepList = Array.from({ length: 500 }, (_, index) =>
+    `${'  '.repeat(index % 20)}- React یک کتابخانه محبوب است و مسیر src/app.ts را استفاده می‌کند.`
+  ).join('\n');
+  const largeTable = [
+    '| Feature | توضیح | Path |',
+    '| --- | --- | --- |',
+    ...Array.from({ length: 1_000 }, (_, index) =>
+      `| streaming-${index} | پردازش جریانی بسیار سریع است | src/messages/${index}.ts |`
+    )
+  ].join('\n');
+
+  function structuredMeasurement(text: string, iterations: number): object {
+    return {
+      utf16CodeUnits: text.length,
+      iterations,
+      analyze: measure(() => { analyzeText(text); }, iterations),
+      isolate: measure(() => { planInlineIsolation(text, 'rtl'); }, iterations),
+      security: measure(() => { scanBidiSecurity(text); }, iterations)
+    };
+  }
+
+  const report = {
+    ...sharedReport,
+    performanceRegressionBudgets,
+    batchMatrix: matrix,
+    streaming: {
+      utf16CodeUnits: streamSource.length,
+      requestedChunks: 1_000,
+      actualChunks: chunks.length,
+      incremental,
+      naiveFullReparse: naiveReparse,
+      oneCharacter: {
+        utf16CodeUnits: oneCharacterSource.length,
+        iterations: 5,
+        ...oneCharacterStream
+      },
+      markdown: {
+        utf16CodeUnits: markdownStreamSource.length,
+        requestedChunks: 400,
+        actualChunks: markdownChunks.length,
+        richParseCount: markdownParseCount,
+        incremental: markdownIncremental,
+        naiveFullReparse: markdownNaiveReparse
+      }
+    },
+    structured: {
+      deepList: {
+        items: 500,
+        maximumIndentLevels: 20,
+        ...structuredMeasurement(deepList, 5)
+      },
+      largeTable: {
+        bodyRows: 1_000,
+        ...structuredMeasurement(largeTable, 5)
+      }
+    }
+  };
+  await writeReport(report);
+}
+
+for (const [name, measurement] of Object.entries(performanceRegressionBudgets)) {
+  if (measurement.averageMs >= measurement.maximumAverageMs) {
+    throw new Error(`${name} averaged ${measurement.averageMs} ms, exceeding the ${measurement.maximumAverageMs} ms regression budget. Reproduce without coverage or competing CPU-intensive jobs before diagnosing.`);
+  }
 }

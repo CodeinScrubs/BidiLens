@@ -79,9 +79,13 @@ whole control; they do not independently resolve mixed-direction paragraphs or
 fully restore distinct authored input paragraph styles. For read-only chat
 output, render separate blocks in separate controls until that gap is repaired.
 
-Do not apply or restore BidiLens while an editable control has a non-nil
-`markedTextRange`; defer that work until the host observes composition has
-finished. This caller-side precaution is not an IME compatibility guarantee.
+When an editable control has a non-nil `markedTextRange`, `apply` returns its
+analysis without changing direction, alignment, selection, or managed state;
+`restore` also leaves the control and managed state unchanged. The returned
+`interventionRequired` describes the analyzed source, not whether this call
+actually applied a change. The adapter does not schedule a retry: call `apply`
+or `restore` again after the host observes composition has finished. This
+marked-text guard is not an IME compatibility guarantee.
 Third-party keyboard, dictation, VoiceOver, and physical-device validation
 remain required before a broad production recommendation.
 

@@ -1,5 +1,6 @@
 import { planInlineIsolation, type BidiInterventionMode, type InlineIsolation } from '@bidilens/core';
 import { preserveSelection } from './selection.js';
+import { isInUnrenderedSubtree, isUnrenderedElement } from './rendered.js';
 
 interface Leaf { node: Text; start: number; end: number }
 interface Group { text: string; leaves: Leaf[]; owned: Array<{ node: HTMLElement; start: number; end: number }> }
@@ -96,6 +97,7 @@ export function isolateInlineForest(
   // wrapper before projection; it must not control the newly authored scope.
   for (const wrapper of [...element.querySelectorAll<HTMLElement>('bdi')].filter((node) => owned.has(node))) {
     if ([...wrapper.querySelectorAll<HTMLElement>('*')].some((node) => !owned.has(node)
+      && !isInUnrenderedSubtree(node)
       && (node.matches(`${blockSelector},${codeSelector},bdi,br,script,style,textarea,[dir],[data-bidilens-isolate]`)
         || /^(?:isolate|isolate-override|embed|bidi-override|plaintext)$/u.test(node.ownerDocument.defaultView?.getComputedStyle(node).unicodeBidi ?? '')))) unwrap(wrapper);
   }
@@ -116,6 +118,9 @@ export function isolateInlineForest(
       }
       if (node.nodeType !== 1) return;
       const child = node as HTMLElement;
+      // Absent content does not split the visible token/phrase. A wrapper may
+      // retain that original node between visible leaves without annotating it.
+      if (isUnrenderedElement(child)) return;
       const generated = owned.has(child);
       const bidi = child.ownerDocument.defaultView?.getComputedStyle(child).unicodeBidi;
       if (!generated && (child.matches(`${blockSelector},${codeSelector},bdi,br,script,style,textarea,[dir],[data-bidilens-isolate]`)

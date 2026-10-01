@@ -55,6 +55,33 @@ internal static class AuditRegressionTests
         foreach (var source in new[] { "npm install", "pnpm run test", "git status", "go run main.go", "python -m pip", "node script.js" })
             Check("recognizable command", () => Equal(true,
                 BidiAnalyzer.FindTechnicalTokenRanges(source).Any(range => range.Kind == TechnicalTokenKind.Command)));
+        foreach (var (source, expected) in new[] {
+            ("a@b.com@c.de", new[] { "a@b.com" }),
+            ("a@b.com@c.de@e.co", new[] { "a@b.com", "c.de@e.co" }),
+            ("a@b.co-@d.de", new[] { "a@b.co" }),
+            ("foo%bar@domain.com", new[] { "foo%bar@domain.com" }),
+            (".a@x.co", new[] { "a@x.co" }),
+            ("K@x.co a@K.co", new[] { "K@x.co", "a@K.co" }),
+            ("ſ@domain.co a@b.ſſ ı@x.co İ@x.co", Array.Empty<string>()),
+            ("a@.co a@x.co_", Array.Empty<string>()) })
+            Check("bounded email compatibility", () => Equal(string.Join("|", expected),
+                string.Join("|", BidiAnalyzer.FindTechnicalTokenRanges(source)
+                    .Where(range => range.Kind == TechnicalTokenKind.Email).Select(range => range.Text))));
+        foreach (var (source, expected) in new[] {
+            (".\\single", Array.Empty<string>()),
+            ("-\\folder\\file", new[] { "folder\\file" }),
+            (".\\folder/file", new[] { "folder/file" }),
+            ("a/b//c/d", new[] { "a/b", "/c/d" }) })
+            Check("bounded relative path compatibility", () => Equal(string.Join("|", expected),
+                string.Join("|", BidiAnalyzer.FindTechnicalTokenRanges(source)
+                    .Where(range => range.Kind == TechnicalTokenKind.Path).Select(range => range.Text))));
+        Check("long failed email and relative path candidates remain analyzable", () =>
+        {
+            var source = "فارسی " + string.Concat(Enumerable.Repeat("a.", 32_768));
+            var analysis = BidiAnalyzer.Analyze(source);
+            Equal(source, analysis.Text);
+            Equal(false, analysis.TechnicalTokens.Any(range => range.Kind is TechnicalTokenKind.Email or TechnicalTokenKind.Path));
+        });
         if (failures.Count > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, failures));
         return assertions;
     }
