@@ -297,6 +297,36 @@ function markdownItClass(token: MarkdownItToken | undefined, className: string):
   else token.attrSet('class', className);
 }
 
+function markdownItTableDirection(
+  tokens: MarkdownItToken[],
+  index: number,
+  options: MarkdownBidiOptions
+): 'ltr' | 'rtl' | 'neutral' {
+  let rtlHeaders = 0;
+  let ltrHeaders = 0;
+  let firstHeaderDir: 'ltr' | 'rtl' | 'neutral' = 'neutral';
+
+  for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
+    const token = tokens[cursor];
+    if (!token || token.type === 'table_close') break;
+    if (token.type === 'th_open') {
+      const nextToken = tokens[cursor + 1];
+      const headerText = nextToken && nextToken.type === 'inline' ? proseText(nextToken) : '';
+      const dir = detectWithOptions(headerText, options);
+      if (firstHeaderDir === 'neutral' && dir !== 'neutral') firstHeaderDir = dir;
+      if (dir === 'rtl') rtlHeaders += 1;
+      else if (dir === 'ltr') ltrHeaders += 1;
+    }
+  }
+
+  if (rtlHeaders > 0 || ltrHeaders > 0) {
+    if (rtlHeaders >= ltrHeaders) return 'rtl';
+    return firstHeaderDir === 'rtl' ? 'rtl' : 'ltr';
+  }
+
+  return detectWithOptions(markdownItBlockContent(tokens, index, 'table_close'), options);
+}
+
 function markdownItBlockContent(tokens: MarkdownItToken[], index: number, closeType: string): string {
   const openType = tokens[index]?.type;
   let nested = 0;
@@ -440,8 +470,24 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
     };
   }
 
+  const originalTableOpen = md.renderer.rules.table_open;
+  md.renderer.rules.table_open = (tokens, index, renderOptions, env, self) => {
+    if (!tokensNeedIntervention(tokens)) {
+      return originalTableOpen
+        ? originalTableOpen(tokens, index, renderOptions, env, self)
+        : self.renderToken(tokens, index, renderOptions);
+    }
+    const direction = markdownItTableDirection(tokens, index, options);
+    if (direction !== 'neutral') tokens[index]?.attrSet('dir', direction);
+    else if (options.annotateNeutral) tokens[index]?.attrSet('data-bidilens-direction', 'neutral');
+    tokens[index]?.attrSet('data-bidilens-block', '');
+    markdownItClass(tokens[index], blockClassName);
+    return originalTableOpen
+      ? originalTableOpen(tokens, index, renderOptions, env, self)
+      : self.renderToken(tokens, index, renderOptions);
+  };
+
   for (const [openRule, closeType] of [
-    ['table_open', 'table_close'],
     ['list_item_open', 'list_item_close'],
     ['blockquote_open', 'blockquote_close']
   ] as const) {

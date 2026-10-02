@@ -99,9 +99,9 @@ describe('real-world ChatGPT Persian medical fixtures', async () => {
       expect(detectDirection(text)).toBe('ltr');
     });
 
-    it('resolves RTL for checkmark callout when medical terms are declared', () => {
+    it('resolves RTL for checkmark callout out-of-the-box', () => {
       const text = '✅ واقعیت: ATP deficiency باعث کاهش بقای RBC و splenic destruction میشود.';
-      expect(detectDirection(text, { technicalIdentifiers: ['deficiency', 'splenic', 'destruction'] })).toBe('rtl');
+      expect(detectDirection(text)).toBe('rtl');
     });
   });
 
@@ -113,6 +113,44 @@ describe('real-world ChatGPT Persian medical fixtures', async () => {
 
     it('preserves RTL base for dialogue quotation', () => {
       const text = '«این آشغالِ بیبرق دیگه رد نمیشه.»';
+      expect(detectDirection(text)).toBe('rtl');
+    });
+  });
+
+  describe('complex medical prose with multi-word Latin diagnoses', () => {
+    it('resolves RTL for multi-clause autosomal recessive description', () => {
+      const text = 'این بیماری معمولاً autosomal recessive و ناشی از mutation در PKLR است. از نظر کلاسیک، شایعترین علت hereditary chronic nonspherocytic hemolytic anemia ناشی از نقص glycolysis است.';
+      expect(detectDirection(text)).toBe('rtl');
+      const isolations = planInlineIsolation(text, 'rtl');
+      expect(isolations.some((i) => i.text.includes('autosomal recessive'))).toBe(true);
+    });
+
+    it('resolves RTL for clinical findings case presentation', () => {
+      const text = 'یک کودک دارد: Hb 8.5، retic 12%، indirect bilirubin↑، haptoglobin↓، DAT−، splenomegaly، no spherocytes.';
+      expect(detectDirection(text)).toBe('rtl');
+    });
+
+    it('resolves RTL for laboratory diagnostic rule of thumb', () => {
+      const text = 'Chronic hemolysis + retic↑ + DAT− + no obvious membrane/Hb morphology → به RBC enzyme defect فکر کن.';
+      expect(detectDirection(text)).toBe('rtl');
+    });
+  });
+
+  describe('reaction chains ending in Persian verbs', () => {
+    it('resolves RTL for bacteremia cascade controlled', () => {
+      const text = 'capsulated bacterium enters blood → spleen recognizes capsule antigens → IgM / complement opsonization → splenic macrophage phagocytosis → bacteremia کنترل میشود.';
+      expect(detectDirection(text)).toBe('rtl');
+    });
+
+    it('resolves RTL for splenectomy complication warning', () => {
+      const text = 'Spleen gone → marginal-zone B-cell function ↓ → rapid IgM response to polysaccharide capsule ↓ → clearance of opsonized bacteria from blood ↓ → bacteremia میتواند خیلی سریع بالا برود → sepsis / meningitis / OPSI';
+      expect(detectDirection(text)).toBe('rtl');
+    });
+  });
+
+  describe('loanwords with Persian affixes', () => {
+    it('resolves RTL for loanword with Persian prefix', () => {
+      const text = 'Encapsulated bacteria ضد-phagocytosis هستند → به opsonization و splenic clearance بیشتر وابستهاند → بدون spleen bacteremia خیلی خطرناکتر میشود.';
       expect(detectDirection(text)).toBe('rtl');
     });
   });

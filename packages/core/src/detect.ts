@@ -39,10 +39,25 @@ export const DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
   'atp', 'adp', 'pep', 'rbc', 'wbc', 'dna', 'rna', 'g6pd', 'pklr', 'opsi',
   'cbc', 'ldh', 'mchc', 'ema', 'dat', 'aiha', 'hs', 'b12', 'igg', 'igm',
   'c3b', 'nadph', 'pk', 'spleen', 'splenectomy', 'macrophage', 'macrophages',
-  'capsule', 'encapsulated', 'phagocytosis', 'opsonin', 'opsonized', 'opsonization',
-  'bacteremia', 'sepsis', 'meningitis', 'spherocyte', 'spherocytes', 'reticulocyte',
-  'reticulocytes', 'glycolysis', 'mitochondria', 'hemolysis', 'thalassemia',
-  'echinocyte', 'echinocytes', 'deficiency', 'cell', 'cells'
+  'capsule', 'encapsulated', 'capsulated', 'phagocytosis', 'opsonin', 'opsonized',
+  'opsonization', 'bacteremia', 'sepsis', 'meningitis', 'spherocyte', 'spherocytes',
+  'reticulocyte', 'reticulocytes', 'glycolysis', 'mitochondria', 'mitochondrial',
+  'hemolysis', 'thalassemia', 'echinocyte', 'echinocytes', 'deficiency', 'cell', 'cells',
+  'autosomal', 'recessive', 'mutation', 'hereditary', 'chronic', 'nonspherocytic',
+  'hemolytic', 'anemia', 'pyruvate', 'kinase', 'glucose', 'extravascular',
+  'dissociation', 'affinity', 'asymptomatic', 'symptomatic', 'severity',
+  'neonatal', 'compensated', 'jaundice', 'splenomegaly', 'gallstones',
+  'retic', 'destruction', 'marrow', 'bilirubin', 'haptoglobin', 'coombs',
+  'normocytic', 'macrocytosis', 'morphology', 'pathognomonic', 'oxidative',
+  'oxidant', 'phenotype', 'parvovirus', 'erythropoiesis', 'bpg', 'enzyme',
+  'enzymes', 'tissue', 'assay', 'ferritin', 'aplastic', 'crisis', 'prevalence',
+  'underdiagnosis', 'prototype', 'pneumonia', 'pneumoniae', 'influenzae',
+  'meningitidis', 'streptococcus', 'strep', 'pneumo', 'hib', 'neisseria',
+  'polysaccharide', 'antigen', 'antigens', 'antibody', 'antibodies', 'complement',
+  'bacterium', 'bacteria', 'clearance', 'infection', 'organism', 'organisms',
+  'immune', 'nonimmune', 'abnormal', 'transfusion', 'infancy', 'adulthood',
+  'membrane', 'integrity', 'deformability', 'slit', 'slits', 'ion', 'pumps',
+  'retrieval', 'mnemonic', 'decoder', 'fingerprint', 'defect', 'negative', 'positive', 'hb', 'indirect', 'direct', 'obvious'
 ] as const);
 const KNOWN_TECHNICAL_TOKENS = new Set<string>(DEFAULT_TECHNICAL_IDENTIFIERS);
 const NUMERIC_VALUE = '[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*';
@@ -399,6 +414,25 @@ function isTechnicalIdentifier(
 }
 
 /** Finds ranges that should not decide the natural-language base direction. */
+function addReactionRanges(text: string, ranges: TechnicalTokenRange[]): void {
+  if (!/[→←↔⇒⇐⇌⇄]|->|<-/u.test(text)) return;
+  const lineRegex = /^[^\r\n]*(?:[→←↔⇒⇐⇌⇄]|->|<-)[^\r\n]*$/gmu;
+  const chainRegex = /(?:[A-Za-z0-9\u2070-\u209F_./+−–,-]{1,50}(?:\s+[A-Za-z0-9\u2070-\u209F_./+−–,-]{1,50}){0,6}(?:\s*[↑↓])?\s*(?:[→←↔⇒⇐⇌⇄]|->|<-)\s*)+(?:[A-Za-z0-9\u2070-\u209F_./+−–,-]{1,50}(?:\s+[A-Za-z0-9\u2070-\u209F_./+−–,-]{1,50}){0,6}(?:\s*[↑↓])?)/gu;
+
+  let lineMatch: RegExpExecArray | null;
+  while ((lineMatch = lineRegex.exec(text)) !== null) {
+    const line = lineMatch[0];
+    const lineOffset = lineMatch.index;
+    chainRegex.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = chainRegex.exec(line)) !== null) {
+      const start = lineOffset + match.index;
+      const end = start + match[0].length;
+      addRange(ranges, text, start, end, 'identifier');
+    }
+  }
+}
+
 export function findTechnicalTokenRanges(
   text: string,
   technicalIdentifiers: readonly string[] = []
@@ -470,9 +504,26 @@ export function findTechnicalTokenRanges(
   addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, 'identifier');
   addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, 'identifier');
   // Scientific binomials (e.g. S. pneumoniae, H. influenzae, N. meningitidis)
-  addMatches(text, ranges, /\b[A-Z]\.\s+[a-z]{3,}\b/gu, 'identifier');
+  addMatches(text, ranges, /\b[A-Z]\.\s+[a-z]{3,}(?:\s+type\s+[a-z0-9]+)?\b/gu, 'identifier');
   // Biochemical alphanumeric notation (e.g. 2,3-BPG, 1,3-BPG)
   addMatches(text, ranges, /\b\d+,\d+-[A-Z0-9]+(?:\s*[↑↓])?\b/gu, 'identifier');
+  // Prompt timestamps: e.g. "Worked for 31s", "Thought for 5s"
+  addMatches(text, ranges, /\b(?:Worked|Thought)\s+for\s+\d+s?\b/giu, 'identifier');
+  addReactionRanges(text, ranges);
+  // Lab trend modifiers & clinical indicators (e.g. Hb ↓, Retic ↑, MCV↑, DAT−, DAT+, Coombs-)
+  addMatches(
+    text,
+    ranges,
+    /\b[A-Za-z0-9\u2070-\u209F_.-]+\s*[↑↓]|\b(?:[A-Z0-9]{2,}|Coombs|Rh)\s*[+−-](?!\w)|\b[A-Za-z0-9\u2070-\u209F_.-]+[+−](?!\S)/gu,
+    'identifier'
+  );
+  // Persian prefixes on Latin terms: e.g. ضد-phagocytosis, غیر-immune, پیش-glycolysis
+  addMatches(
+    text,
+    ranges,
+    /(?<=(?:ضد|پیش|پس|زیر|ابر|نیمه|بی|نا|غیر)[\u200C-])[A-Za-z][A-Za-z0-9_.-]*/gu,
+    'identifier'
+  );
 
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
@@ -481,7 +532,7 @@ export function findTechnicalTokenRanges(
   while ((match = words.exec(text)) !== null) {
     const token = match[0];
     const tail = text.slice(match.index + token.length, match.index + token.length + 8);
-    const hasAffix = /^[\u200C]?(?:ها|هایی|های|ای|اش|مان|تان|شان|تر|ترین)(?![\p{L}\p{N}])/u.test(tail);
+    const hasAffix = /^[\u200C]?(?:ها|هایی|های|ای|اش|مان|تان|شان|تر|ترین|ات|ت|م|ی|یی|یها)(?![\p{L}\p{N}])/u.test(tail);
     if (hasAffix || isTechnicalIdentifier(token, customIdentifiers, uppercaseProse)) {
       addRange(ranges, text, match.index, match.index + token.length, 'identifier');
     }

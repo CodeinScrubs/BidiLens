@@ -73,6 +73,24 @@ describe('Markdown plugins', () => {
     expect(html).toContain('<th dir="rtl"');
   });
 
+  it('assigns RTL base direction to table with Persian headers despite English clinical descriptions', () => {
+    const md = new MarkdownIt({ html: true });
+    markdownItBidi(md);
+    const table = [
+      '| بیماری | سرنخ |',
+      '| --- | --- |',
+      '| PK deficiency | chronic DAT− hemolysis، معمولاً no spherocytes، گاهی echinocytes |',
+      '| HS | spherocytes + MCHC↑ + EMA abnormal |',
+      '| Warm AIHA | spherocytes ولی DAT+ |',
+      '| G6PD deficiency | bite cells / Heinz bodies + episodic oxidant trigger |',
+      '| Thalassemia | microcytosis شدید + target cells |',
+      '| Sickle cell disease | sickled cells / Hb electrophoresis |'
+    ].join('\n');
+    const html = md.render(table);
+    expect(html).toContain('<table dir="rtl" data-bidilens-block="" class="bidilens-block">');
+    expect(html).toContain('<th dir="rtl"');
+  });
+
   it('keeps block intervention consistent with RTL inline code rendering', () => {
     const md = new MarkdownIt();
     const result = analyzeBidiMarkdown(md, 'Hello `سلام`');

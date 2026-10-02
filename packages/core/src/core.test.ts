@@ -86,6 +86,26 @@ describe('direction detection', () => {
     expect(detectDirection('Pyruvate kinase یکی از آن enzymeهایی است که برای RBC حیاتی است')).toBe('rtl');
   });
 
+  it('recognizes chemical reaction chains, lab trend modifiers, and Persian prefixes as technical units', () => {
+    const reaction = findTechnicalTokenRanges('PEP + ADP → Pyruvate + ATP');
+    expect(reaction).toContainEqual(expect.objectContaining({ text: 'PEP + ADP → Pyruvate + ATP', kind: 'identifier' }));
+
+    const trends = findTechnicalTokenRanges('بررسی آزمایش: Hb ↓ و Retic ↑ همراه با DAT−');
+    expect(trends).toContainEqual(expect.objectContaining({ text: 'Hb ↓' }));
+    expect(trends).toContainEqual(expect.objectContaining({ text: 'Retic ↑' }));
+    expect(trends).toContainEqual(expect.objectContaining({ text: 'DAT−' }));
+
+    const prefix = findTechnicalTokenRanges('باکتریهای ضد-phagocytosis');
+    expect(prefix).toContainEqual(expect.objectContaining({ text: 'phagocytosis' }));
+  });
+
+  it('resolves RTL base direction for complex Persian medical prose and reaction cascades', () => {
+    expect(detectDirection('این بیماری معمولاً autosomal recessive و ناشی از mutation در PKLR است. از نظر کلاسیک، شایعترین علت hereditary chronic nonspherocytic hemolytic anemia ناشی از نقص glycolysis است.')).toBe('rtl');
+    expect(detectDirection('capsulated bacterium enters blood → spleen recognizes capsule antigens → IgM / complement opsonization → splenic macrophage phagocytosis → bacteremia کنترل میشود.')).toBe('rtl');
+    expect(detectDirection('یک کودک دارد: Hb 8.5، retic 12%، indirect bilirubin↑، haptoglobin↓، DAT−، splenomegaly، no spherocytes.')).toBe('rtl');
+    expect(detectDirection('Chronic hemolysis + retic↑ + DAT− + no obvious membrane/Hb morphology → به RBC enzyme defect فکر کن.')).toBe('rtl');
+  });
+
   it('reports bidi-strong formatting marks in literal first-strong evidence', () => {
     const analysis = analyzeText('\u200fHello world');
     expect(analysis.rawFirstStrong).toBe('rtl');
