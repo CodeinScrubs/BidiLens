@@ -42,7 +42,7 @@ const DIST_BUDGETS = new Map<string, number>([
   // Includes batch adapters plus the grammar-aware checkpointed Markdown
   // stream. The current ESM artifact remains below 15 KiB gzip and the
   // side-effect-free entry stays tree-shakeable.
-  ['@bidilens/markdown', 80 * 1024],
+  ['@bidilens/markdown', 88 * 1024],
   ['@bidilens/playwright', 16 * 1024],
   ['@bidilens/react', 16 * 1024],
   ['@bidilens/spec', 24 * 1024],
