@@ -3449,10 +3449,70 @@ function classifyBidiStrongCharacter(character) {
   if (codePoint === void 0 || containsCodePoint(NON_STRONG_BIDI_RANGES, codePoint)) return "neutral";
   return isRtlCodePoint(codePoint) ? "rtl" : "ltr";
 }
-function classifyCharacter(character) {
-  const codePoint = character.codePointAt(0);
+function getCharacterClassification(codePoint) {
+  const isStrongR = isRtlCodePoint(codePoint);
+  const isStrongL = !containsCodePoint(NON_STRONG_BIDI_RANGES, codePoint) && !isStrongR;
+  const isStrong = isStrongR || isStrongL;
+  const isMark = containsCodePoint(COMBINING_MARK_RANGES, codePoint);
+  const isArabicNumber = codePoint >= 1632 && codePoint <= 1641 || codePoint === 1643 || codePoint === 1644;
+  const isEuropeanNumber = codePoint >= 48 && codePoint <= 57;
+  const isParagraphSeparator = codePoint === 10 || codePoint === 13 || codePoint === 133 || codePoint === 8233;
+  const isSegmentSeparator = codePoint === 9 || codePoint === 31;
+  const isBoundaryNeutral = codePoint >= 0 && codePoint <= 8 || codePoint >= 14 && codePoint <= 27 || codePoint >= 127 && codePoint <= 132 || codePoint >= 134 && codePoint <= 159 || codePoint === 173 || codePoint >= 8203 && codePoint <= 8205 || codePoint >= 8288 && codePoint <= 8292;
+  let bidiClass;
+  let isWeak = false;
+  let isNeutral = false;
+  const isControl = codePoint >= 8234 && codePoint <= 8238 || codePoint >= 8294 && codePoint <= 8297;
+  if (isStrongR) {
+    bidiClass = "AL";
+  } else if (isStrongL) {
+    bidiClass = "L";
+  } else if (isMark) {
+    bidiClass = "NSM";
+    isWeak = true;
+  } else if (isArabicNumber) {
+    bidiClass = "AN";
+    isWeak = true;
+  } else if (isEuropeanNumber) {
+    bidiClass = "EN";
+    isWeak = true;
+  } else if (isBoundaryNeutral) {
+    bidiClass = "BN";
+    isWeak = true;
+  } else if (isParagraphSeparator) {
+    bidiClass = "B";
+    isNeutral = true;
+  } else if (isSegmentSeparator) {
+    bidiClass = "S";
+    isNeutral = true;
+  } else if (codePoint === 32 || codePoint === 160 || codePoint === 5760 || codePoint >= 8192 && codePoint <= 8202 || codePoint === 8239 || codePoint === 8287 || codePoint === 12288) {
+    bidiClass = "WS";
+    isNeutral = true;
+  } else {
+    bidiClass = "ON";
+    isNeutral = true;
+  }
+  let direction = "neutral";
+  if (isStrongR) direction = "rtl";
+  else if (isStrongL) direction = "ltr";
+  return {
+    codePoint,
+    bidiClass,
+    direction,
+    isStrong,
+    isWeak,
+    isNeutral,
+    isControl,
+    isMark
+  };
+}
+function classifyCharacter(input2) {
+  if (typeof input2 === "number") {
+    return getCharacterClassification(input2);
+  }
+  const codePoint = input2.codePointAt(0);
   if (codePoint === void 0) return "neutral";
-  return containsCodePoint(NATURAL_LETTER_RANGES, codePoint) ? classifyBidiStrongCharacter(character) : "neutral";
+  return containsCodePoint(NATURAL_LETTER_RANGES, codePoint) ? classifyBidiStrongCharacter(input2) : "neutral";
 }
 
 // packages/core/src/options.ts
@@ -3684,8 +3744,15 @@ var DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
 ]);
 var KNOWN_TECHNICAL_TOKENS = new Set(DEFAULT_TECHNICAL_IDENTIFIERS);
 var NUMERIC_VALUE = "[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*";
-var CURRENCY_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\p{Sc})(?![\\p{L}\\p{N}_])`, "gu");
-var NUMBER_RANGE_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}[-\u2013][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, "gu");
+var NUMBER_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, "gu");
+var CURRENCY_PERCENT_TOKEN = new RegExp(
+  `(?<![\\p{L}\\p{N}_])(?:(?:\\p{Sc}|[%\u066A])\\s*[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\s*(?:\\p{Sc}|[%\u066A]))(?![\\p{L}\\p{N}_])`,
+  "gu"
+);
+var NUMBER_RANGE_TOKEN = new RegExp(
+  `(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}\\s*[-\u2013\u2014]\\s*[+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`,
+  "gu"
+);
 var CUSTOM_TECHNICAL_IDENTIFIER_CACHE = /* @__PURE__ */ new WeakMap();
 function normalizeOptions(options = {}) {
   const strategy = options.strategy ?? DEFAULT_OPTIONS.strategy;
@@ -3729,36 +3796,68 @@ function addMatches(text, ranges, expression, kind, group = 0) {
 }
 function addMathRanges(text, ranges) {
   let i = 0;
-  const scanned = { "$": -1, "$$": -1, "\\)": -1 };
+  const scanned = { "$": -1, "$$": -1, "\\)": -1, "\\]": -1 };
   while (i < text.length) {
-    const p = text[i] === "\\" && text[i + 1] === "(";
-    if (text[i] === "\\" && !p) {
+    const isParen = text[i] === "\\" && text[i + 1] === "(";
+    const isBracket = text[i] === "\\" && text[i + 1] === "[";
+    if (text[i] === "\\" && !isParen && !isBracket) {
       i += 2;
       continue;
     }
-    const d = text[i] === "$" ? text[i + 1] === "$" ? "$$" : "$" : p ? "\\)" : "";
-    if (!d || i < scanned[d]) {
+    let opener = "";
+    let closer = "";
+    let isMultiline = false;
+    if (text[i] === "$") {
+      if (text[i + 1] === "$") {
+        opener = "$$";
+        closer = "$$";
+        isMultiline = true;
+      } else {
+        opener = "$";
+        closer = "$";
+        isMultiline = false;
+      }
+    } else if (isParen) {
+      opener = "\\(";
+      closer = "\\)";
+      isMultiline = false;
+    } else if (isBracket) {
+      opener = "\\[";
+      closer = "\\]";
+      isMultiline = true;
+    }
+    if (!opener || i < (scanned[closer] ?? -1)) {
       i++;
       continue;
     }
-    if (d === "$" && (i + 1 === text.length || /\s/u.test(text[i + 1]))) {
+    if (opener === "$" && (i + 1 === text.length || /\s/u.test(text[i + 1]))) {
       i++;
       continue;
     }
-    let e = i + (p ? 2 : d.length);
-    while (e < text.length && text[e] !== "\r" && text[e] !== "\n" && !text.startsWith(d, e)) {
-      e += text[e] === "\\" && e + 1 < text.length && !/[\r\n]/u.test(text[e + 1]) ? 2 : 1;
+    let e = i + opener.length;
+    while (e < text.length && !text.startsWith(closer, e)) {
+      if (!isMultiline && (text[e] === "\r" || text[e] === "\n")) {
+        break;
+      }
+      if (text[e] === "\\" && e + 1 < text.length) {
+        if (!isMultiline && (text[e + 1] === "\r" || text[e + 1] === "\n")) {
+          break;
+        }
+        e += 2;
+      } else {
+        e += 1;
+      }
     }
-    if (text.startsWith(d, e) && (d !== "$" || e > i + 1)) {
-      if (d === "$" && (/\s/u.test(text[e - 1]) || /[0-9\u0660-\u0669\u06F0-\u06F9]/u.test(text[e + 1] ?? ""))) {
+    if (text.startsWith(closer, e) && (closer !== "$" || e > i + 1)) {
+      if (closer === "$" && (/\s/u.test(text[e - 1]) || /[0-9\u0660-\u0669\u06F0-\u06F9]/u.test(text[e + 1] ?? ""))) {
         i = e;
         continue;
       }
-      addRange(ranges, text, i, e + d.length, "math");
-      i = e + d.length;
+      addRange(ranges, text, i, e + closer.length, "math");
+      i = e + closer.length;
     } else {
-      scanned[d] = e;
-      i++;
+      scanned[closer] = e;
+      i += opener.length;
     }
   }
 }
@@ -3991,7 +4090,7 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addNormalizedMatches(
     text,
     ranges,
-    /(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}\/|~\/)[^\s<>()\x5B\x5D{}"'“”‘’«»]+/gu,
+    /(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}\/|\.{1,2}\\|~[\\/])[^\s<>()\x5B\x5D{}"'“”‘’«»]+/gu,
     "path",
     trimTechnicalPunctuation
   );
@@ -4010,11 +4109,11 @@ function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   addMatches(text, ranges, /(?<![\p{L}\p{N}_])\+?\d[\d ()-]{6,}\d(?![\p{L}\p{N}_])/gu, "number");
   addMatches(text, ranges, /\b\d{4}[-/]\d{1,2}[-/]\d{1,2}(?:[T ]\d{1,2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:?\d{2})?)?\b/gu, "number");
   addMatches(text, ranges, /\b\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?\b/giu, "number");
-  addMatches(text, ranges, CURRENCY_TOKEN, "number");
+  addMatches(text, ranges, CURRENCY_PERCENT_TOKEN, "number");
   addMatches(text, ranges, NUMBER_RANGE_TOKEN, "number");
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, "version");
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, "hash");
-  addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, "number");
+  addMatches(text, ranges, NUMBER_TOKEN, "number");
   addMatches(text, ranges, /\b[A-Z]{1,4}\s+(?:[IVXLCDM]{1,8}|\d{1,3})\b/gu, "identifier");
   addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, "identifier");
   addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, "identifier");
@@ -4406,14 +4505,86 @@ function invisibleCharacterFindings(text) {
   }
   return findings;
 }
+var SI_METRIC_UNITS = /* @__PURE__ */ new Set([
+  "\u03BCm",
+  "\u03BCs",
+  "\u03BCg",
+  "\u03BCL",
+  "\u03BCl",
+  "\u03BCmol",
+  "\u03BCV",
+  "\u03BCA",
+  "\u03BCF",
+  "\u03BCW",
+  "\u03BCH",
+  "\u03BCM",
+  "\u03BCrad",
+  "\u03BCcd",
+  "\u03BCbar",
+  "\u03BCSv",
+  "\u03BCGy",
+  "\xB5m",
+  "\xB5s",
+  "\xB5g",
+  "\xB5L",
+  "\xB5l",
+  "\xB5mol",
+  "\xB5V",
+  "\xB5A",
+  "\xB5F",
+  "\xB5W",
+  "\xB5H",
+  "\xB5M",
+  "\xB5rad",
+  "\xB5cd",
+  "\xB5bar",
+  "\xB5Sv",
+  "\xB5Gy"
+]);
+function scanConfusableFindings(text) {
+  const findings = [];
+  const wordRegex = /[\p{L}\p{N}]+/gu;
+  let wordMatch;
+  while ((wordMatch = wordRegex.exec(text)) !== null) {
+    const word = wordMatch[0];
+    if (SI_METRIC_UNITS.has(word)) continue;
+    let hasLatin = false;
+    let hasGreek = false;
+    let hasCyrillic = false;
+    for (const char of word) {
+      const cp = char.codePointAt(0) ?? 0;
+      if (cp >= 65 && cp <= 90 || cp >= 97 && cp <= 122) hasLatin = true;
+      else if (cp >= 880 && cp <= 1023) hasGreek = true;
+      else if (cp >= 1024 && cp <= 1279) hasCyrillic = true;
+    }
+    if (hasLatin && hasGreek || hasLatin && hasCyrillic) {
+      findings.push({
+        code: "MIXED_SCRIPT_CONFUSABLE",
+        severity: "high",
+        message: `Mixed-script identifier spoofing risk detected. Word "${word}" mixes Latin and ${hasCyrillic ? "Cyrillic" : "Greek"} characters.`,
+        sourceRange: {
+          utf16: { start: wordMatch.index, end: wordMatch.index + word.length },
+          codePoint: {
+            start: [...text.slice(0, wordMatch.index)].length,
+            end: [...text.slice(0, wordMatch.index + word.length)].length
+          }
+        },
+        remediation: "Use single-script identifiers or enforce strict Unicode script validation."
+      });
+    }
+  }
+  return findings;
+}
 function scanBidiSecurity(text, options = {}) {
   const mode = options.mode ?? "audit";
   if (mode === "off") return { mode, safe: true, shouldBlock: false, controls: [], findings: [] };
   const controls = findBidiControls(text);
+  const confusableFindings = options.scanConfusables ? scanConfusableFindings(text) : [];
   const findings = [
     ...controls.map(controlFinding),
     ...balanceFindings(text, controls),
-    ...invisibleCharacterFindings(text)
+    ...invisibleCharacterFindings(text),
+    ...confusableFindings
   ].sort((a, b) => a.sourceRange.utf16.start - b.sourceRange.utf16.start || a.code.localeCompare(b.code));
   const hasHigh = findings.some((finding) => finding.severity === "high");
   return {
@@ -4659,7 +4830,7 @@ function segmentDirectionalRuns(text) {
 function planInlineIsolation(text, blockDirection, options = {}) {
   if (!needsBidiIntervention(text, {
     intervention: options.intervention,
-    inheritedDirection: blockDirection
+    inheritedDirection: options.inheritedDirection ?? blockDirection
   })) return [];
   const technical = options.excludeTechnicalTokens === false ? [] : findTechnicalTokenRanges(text, options.technicalIdentifiers);
   const isolations = technical.map((range) => ({
@@ -5192,10 +5363,60 @@ function line(writer, value = "") {
   writer(`${value}
 `);
 }
+function patternToRegex(pattern) {
+  let p = pattern.trim();
+  if (!p || p.startsWith("#")) return /(?!)/;
+  let anchored = false;
+  if (p.startsWith("/")) {
+    anchored = true;
+    p = p.slice(1);
+  }
+  const isDir = p.endsWith("/");
+  if (isDir) p = p.slice(0, -1);
+  let re = p.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "___GLOBSTAR___").replace(/\*/g, "[^/]*").replace(/___GLOBSTAR___/g, ".*");
+  if (anchored) {
+    re = `^${re}(?:/.*)?$`;
+  } else {
+    re = `(?:^|/)${re}(?:/.*)?$`;
+  }
+  return new RegExp(re);
+}
+async function loadGitignore(rootDirs) {
+  const dirs = Array.isArray(rootDirs) ? rootDirs : [rootDirs];
+  const patterns = [];
+  const visited = /* @__PURE__ */ new Set();
+  for (const startDir of dirs) {
+    let dir = startDir;
+    for (let i = 0; i < 8; i++) {
+      if (visited.has(dir)) break;
+      visited.add(dir);
+      try {
+        const content = await (0, import_promises.readFile)((0, import_node_path2.resolve)(dir, ".gitignore"), "utf8");
+        for (const rawLine of content.split(/\r?\n/u)) {
+          const trimmed = rawLine.trim();
+          if (!trimmed || trimmed.startsWith("#")) continue;
+          patterns.push(trimmed);
+        }
+      } catch {
+      }
+      const parent = (0, import_node_path2.dirname)(dir);
+      if (parent === dir || !parent) break;
+      dir = parent;
+    }
+  }
+  const regexes = patterns.map(patternToRegex);
+  return (relPath) => {
+    const norm = relPath.replaceAll("\\", "/");
+    return regexes.some((re) => re.test(norm));
+  };
+}
 async function collectFiles(inputs, cwd) {
   const files = [];
+  const isIgnored = await loadGitignore([cwd, ...inputs.map((inp) => (0, import_node_path2.resolve)(cwd, inp))]);
   async function visitPath(input2, explicitlyNamed) {
     const absolute = (0, import_node_path2.resolve)(cwd, input2);
+    const rel = (0, import_node_path2.relative)(cwd, absolute);
+    if (!explicitlyNamed && rel && isIgnored(rel)) return;
     const info = await (0, import_promises.lstat)(absolute);
     if (info.isSymbolicLink()) return;
     if (info.isDirectory()) {
@@ -5204,7 +5425,10 @@ async function collectFiles(inputs, cwd) {
       for (const entry of entries) {
         if (IGNORED_DIRECTORIES.has(entry.name.toLowerCase())) continue;
         if (entry.isSymbolicLink()) continue;
-        await visitPath((0, import_node_path2.resolve)(absolute, entry.name), false);
+        const childPath = (0, import_node_path2.resolve)(absolute, entry.name);
+        const childRel = (0, import_node_path2.relative)(cwd, childPath);
+        if (isIgnored(childRel) || isIgnored(entry.name)) continue;
+        await visitPath(childPath, false);
       }
       return;
     }

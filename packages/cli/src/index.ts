@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { lstat, readFile, readdir, writeFile } from 'node:fs/promises';
-import { basename, extname, isAbsolute, relative, resolve } from 'node:path';
+import { basename, dirname, extname, isAbsolute, relative, resolve } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { Command, CommanderError } from 'commander';
@@ -75,10 +75,66 @@ function line(writer: (value: string) => void, value = ''): void {
   writer(`${value}\n`);
 }
 
+function patternToRegex(pattern: string): RegExp {
+  let p = pattern.trim();
+  if (!p || p.startsWith('#')) return /(?!)/;
+  let anchored = false;
+  if (p.startsWith('/')) {
+    anchored = true;
+    p = p.slice(1);
+  }
+  const isDir = p.endsWith('/');
+  if (isDir) p = p.slice(0, -1);
+  let re = p
+    .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*\*/g, '___GLOBSTAR___')
+    .replace(/\*/g, '[^/]*')
+    .replace(/___GLOBSTAR___/g, '.*');
+  if (anchored) {
+    re = `^${re}(?:/.*)?$`;
+  } else {
+    re = `(?:^|/)${re}(?:/.*)?$`;
+  }
+  return new RegExp(re);
+}
+
+async function loadGitignore(rootDirs: string | string[]): Promise<(relPath: string) => boolean> {
+  const dirs = Array.isArray(rootDirs) ? rootDirs : [rootDirs];
+  const patterns: string[] = [];
+  const visited = new Set<string>();
+  for (const startDir of dirs) {
+    let dir = startDir;
+    for (let i = 0; i < 8; i++) {
+      if (visited.has(dir)) break;
+      visited.add(dir);
+      try {
+        const content = await readFile(resolve(dir, '.gitignore'), 'utf8');
+        for (const rawLine of content.split(/\r?\n/u)) {
+          const trimmed = rawLine.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          patterns.push(trimmed);
+        }
+      } catch {
+        // no .gitignore
+      }
+      const parent = dirname(dir);
+      if (parent === dir || !parent) break;
+      dir = parent;
+    }
+  }
+  const regexes = patterns.map(patternToRegex);
+  return (relPath: string) => {
+    const norm = relPath.replaceAll('\\', '/');
+    return regexes.some((re) => re.test(norm));
+  };
+}
 async function collectFiles(inputs: string[], cwd: string): Promise<string[]> {
   const files: string[] = [];
+  const isIgnored = await loadGitignore([cwd, ...inputs.map((inp) => resolve(cwd, inp))]);
   async function visitPath(input: string, explicitlyNamed: boolean): Promise<void> {
     const absolute = resolve(cwd, input);
+    const rel = relative(cwd, absolute);
+    if (!explicitlyNamed && rel && isIgnored(rel)) return;
     const info = await lstat(absolute);
     if (info.isSymbolicLink()) return;
     if (info.isDirectory()) {
@@ -87,7 +143,10 @@ async function collectFiles(inputs: string[], cwd: string): Promise<string[]> {
       for (const entry of entries) {
         if (IGNORED_DIRECTORIES.has(entry.name.toLowerCase())) continue;
         if (entry.isSymbolicLink()) continue;
-        await visitPath(resolve(absolute, entry.name), false);
+        const childPath = resolve(absolute, entry.name);
+        const childRel = relative(cwd, childPath);
+        if (isIgnored(childRel) || isIgnored(entry.name)) continue;
+        await visitPath(childPath, false);
       }
       return;
     }

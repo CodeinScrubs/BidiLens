@@ -9,6 +9,7 @@ import {
   measureLogicalToken,
   readLogicalSelection,
   validateBidiSnapshot,
+  expectTextOrder,
   type BidiBlockSnapshot
 } from './index.js';
 
@@ -273,5 +274,39 @@ describe('Playwright bidi assertions', () => {
     await expectLogicalClipboard(page as never, locatorFor(document.querySelector('p')!), source, 'Control+C');
     expect(pressed).toEqual(['Control+C']);
     expect(window.getSelection()?.toString()).toBe(source);
+  });
+
+  it('verifies horizontal visual text order with expectTextOrder', async () => {
+    document.body.innerHTML = '<p><span class="first">First</span> <span class="second">Second</span></p>';
+    const element = document.querySelector('p')!;
+    
+    // Mock getBoundingClientRect for tokens
+    let callCount = 0;
+    Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => {
+        callCount++;
+        // First token at x=10, second at x=50
+        return callCount === 1 ? rectangle(10, 40) : rectangle(50, 90);
+      }
+    });
+
+    const locator = locatorFor(element);
+    await expect(expectTextOrder(locator, ['First', 'Second'], undefined, 'ltr')).resolves.toBeUndefined();
+  });
+
+  it('verifies RTL text order and page fallback with expectTextOrder', async () => {
+    document.body.innerHTML = '<p><span class="first">????</span> <span class="second">????</span></p>';
+    const element = document.querySelector('p')!;
+    let callCount = 0;
+    Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => {
+        callCount++;
+        return callCount === 1 ? rectangle(100, 140) : rectangle(40, 80);
+      }
+    });
+    const page = { locator: () => locatorFor(element) };
+    await expect(expectTextOrder(page as never, ['????', '????'], undefined, 'rtl')).resolves.toBeUndefined();
   });
 });

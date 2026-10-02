@@ -4,6 +4,8 @@ import { scanBidiSecurity } from './security.js';
 import { planInlineIsolation } from './segments.js';
 import type { BidiInterventionMode } from './intervention.js';
 import type {
+  BidiSecurityFinding,
+  BidiSecurityReport,
   BlockAnalysis,
   DetectionOptions,
   DirectionEvidence,
@@ -14,6 +16,8 @@ import type {
 export interface AnalyzeBlockOptions extends DetectionOptions {
   /** `auto` avoids isolation plans for ordinary LTR content; `always` retains explicit plans. */
   intervention?: BidiInterventionMode;
+  /** Optional custom security scanner callback. Supports both BidiSecurityReport and BidiSecurityFinding[]. */
+  securityScanner?: (text: string) => BidiSecurityReport | BidiSecurityFinding[];
 }
 
 function excludesTechnical(options: DetectionOptions): boolean {
@@ -83,17 +87,36 @@ export function analyzeBlock(text: string, options: AnalyzeBlockOptions = {}): B
     excludeTechnicalTokens?: boolean;
     intervention?: BidiInterventionMode;
     technicalIdentifiers?: readonly string[];
+    inheritedDirection?: ResolvedDirection;
   } = {};
   if (options.excludeTechnicalTokens !== undefined) isolationOptions.excludeTechnicalTokens = options.excludeTechnicalTokens;
   if (options.intervention !== undefined) isolationOptions.intervention = options.intervention;
   if (options.technicalIdentifiers !== undefined) {
     isolationOptions.technicalIdentifiers = options.technicalIdentifiers;
   }
+  if (options.inheritedDirection !== undefined) {
+    isolationOptions.inheritedDirection = options.inheritedDirection;
+  }
+
+  let warnings: BidiSecurityFinding[];
+  if (options.securityScanner) {
+    const scanResult = options.securityScanner(text);
+    if (Array.isArray(scanResult)) {
+      warnings = scanResult;
+    } else if (scanResult && typeof scanResult === 'object' && Array.isArray((scanResult as BidiSecurityReport).findings)) {
+      warnings = (scanResult as BidiSecurityReport).findings;
+    } else {
+      warnings = [];
+    }
+  } else {
+    warnings = scanBidiSecurity(text).findings;
+  }
+
   return {
     ...analysis,
     policy: options.strategy ?? 'content-majority',
     evidence: collectDirectionEvidence(text, options),
     isolations: planInlineIsolation(text, resolved, isolationOptions),
-    warnings: scanBidiSecurity(text).findings
+    warnings
   };
 }

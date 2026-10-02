@@ -4,7 +4,7 @@ import { findTechnicalTokenRanges } from './detect.js';
 import { COMBINING_MARK_RANGES } from './generated/bidi-ranges.js';
 import { needsBidiIntervention } from './intervention.js';
 import type { BidiInterventionMode } from './intervention.js';
-import type { Direction, DirectionalRun, InlineIsolation } from './types.js';
+import type { Direction, DirectionalRun, InlineIsolation, ResolvedDirection } from './types.js';
 import { containsCodePoint } from './unicode-ranges.js';
 
 type PlannedIsolation = Omit<InlineIsolation, 'sourceRange'>;
@@ -243,11 +243,12 @@ export function planInlineIsolation(
     isolateOppositeRuns?: boolean;
     intervention?: BidiInterventionMode | undefined;
     technicalIdentifiers?: readonly string[] | undefined;
+    inheritedDirection?: ResolvedDirection | undefined;
   } = {}
 ): InlineIsolation[] {
   if (!needsBidiIntervention(text, {
     intervention: options.intervention,
-    inheritedDirection: blockDirection
+    inheritedDirection: options.inheritedDirection ?? blockDirection
   })) return [];
   const technical = options.excludeTechnicalTokens === false
     ? []

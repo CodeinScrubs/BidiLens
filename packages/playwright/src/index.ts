@@ -304,3 +304,48 @@ export async function expectTokenAtBaseStart(
     .toBeLessThan(oppositeDistance);
   return geometry;
 }
+
+/**
+ * Asserts that text fragments appear in the expected visual horizontal order
+ * using actual rendered coordinates via getBoundingClientRect().
+ */
+export async function expectTextOrder(
+  target: Page | Locator,
+  selectorOrOrder: string | string[],
+  expectedOrder?: string[],
+  direction: TestDirection = 'ltr'
+): Promise<void> {
+  let locator: Locator;
+  let tokens: string[];
+  if (typeof selectorOrOrder === 'string') {
+    locator = 'locator' in target ? (target as Page).locator(selectorOrOrder) : (target as Locator);
+    tokens = expectedOrder ?? [];
+  } else {
+    locator = 'locator' in target ? (target as Page).locator('body') : (target as Locator);
+    tokens = selectorOrOrder;
+  }
+  if (tokens.length < 2) return;
+
+  const positions = await Promise.all(
+    tokens.map(async (tok) => {
+      const geom = await measureLogicalToken(locator, tok);
+      return { token: tok, x: geom.token.left };
+    })
+  );
+
+  for (let i = 1; i < positions.length; i++) {
+    const prev = positions[i - 1]!;
+    const curr = positions[i]!;
+    if (direction === 'ltr') {
+      expect(
+        curr.x,
+        `Expected "${curr.token}" (x=${curr.x}) to visually appear to the right of "${prev.token}" (x=${prev.x})`
+      ).toBeGreaterThanOrEqual(prev.x);
+    } else {
+      expect(
+        curr.x,
+        `Expected "${curr.token}" (x=${curr.x}) to visually appear to the left of "${prev.token}" (x=${prev.x}) in RTL`
+      ).toBeLessThanOrEqual(prev.x);
+    }
+  }
+}

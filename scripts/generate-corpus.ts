@@ -423,6 +423,24 @@ const importedPolicyOverrides = new Map<string, Pick<ReviewedSiblingSeed, 'expec
     expectedIsolations: [
       { text: 'React 19', direction: 'ltr', kind: 'opposite-direction-run' }
     ]
+  }],
+  ['v13-ar-arabic-numeral-003', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: '٧٥٪', direction: 'ltr', kind: 'number' }
+    ]
+  }],
+  ['v13-fa-persian-numeral-003', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: '۲۰٪', direction: 'ltr', kind: 'number' }
+    ]
+  }],
+  ['v13-fa-persian-numeral-004', {
+    expected: 'rtl',
+    expectedIsolations: [
+      { text: '۹۹٬۰۰۰', direction: 'ltr', kind: 'number' }
+    ]
   }]
 ]);
 const siblingSeedFiles = (await readdir(siblingSeedDirectory))

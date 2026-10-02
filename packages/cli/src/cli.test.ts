@@ -264,4 +264,22 @@ describe('BidiLens CLI', () => {
     expect(absent.code).toBe(1);
     expect(absent.stderr).toContain('bidilens:');
   });
+
+  it('respects .gitignore patterns when collecting files for audit', async () => {
+    const auditDir = join(cwd, 'gitignore-test');
+    await mkdir(auditDir, { recursive: true });
+    await writeFile(join(auditDir, '.gitignore'), 'ignored.md\n*.tmp\n', 'utf8');
+    await writeFile(join(auditDir, 'ignored.md'), 'bad content', 'utf8');
+    await writeFile(join(auditDir, 'included.md'), 'good content', 'utf8');
+
+    await writeFile(join(auditDir, 'ignored.md'), `${BIDI_CONTROLS.RLO}bad content`, 'utf8');
+
+    const result = await invoke(['audit', 'gitignore-test', '--json']);
+    await rm(auditDir, { recursive: true, force: true });
+
+    expect(result.code).toBe(0);
+    const parsed = JSON.parse(result.stdout) as { scanned: number; reports: unknown[] };
+    expect(parsed.scanned).toBe(1);
+    expect(parsed.reports).toHaveLength(0);
+  });
 });
