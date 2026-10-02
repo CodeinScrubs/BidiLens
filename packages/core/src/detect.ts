@@ -61,8 +61,15 @@ export const DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
 ] as const);
 const KNOWN_TECHNICAL_TOKENS = new Set<string>(DEFAULT_TECHNICAL_IDENTIFIERS);
 const NUMERIC_VALUE = '[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*';
-const CURRENCY_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])(?:\\p{Sc}[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\p{Sc})(?![\\p{L}\\p{N}_])`, 'gu');
-const NUMBER_RANGE_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}[-–][+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, 'gu');
+const NUMBER_TOKEN = new RegExp(`(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`, 'gu');
+const CURRENCY_PERCENT_TOKEN = new RegExp(
+  `(?<![\\p{L}\\p{N}_])(?:(?:\\p{Sc}|[%٪])\\s*[+-]?${NUMERIC_VALUE}|[+-]?${NUMERIC_VALUE}\\s*(?:\\p{Sc}|[%٪]))(?![\\p{L}\\p{N}_])`,
+  'gu'
+);
+const NUMBER_RANGE_TOKEN = new RegExp(
+  `(?<![\\p{L}\\p{N}_])[+-]?${NUMERIC_VALUE}\\s*[-–—]\\s*[+-]?${NUMERIC_VALUE}(?![\\p{L}\\p{N}_])`,
+  'gu'
+);
 const CUSTOM_TECHNICAL_IDENTIFIER_CACHE = new WeakMap<readonly string[], ReadonlySet<string>>();
 
 function normalizeOptions(options: DetectionOptions = {}): Required<DetectionOptions> {
@@ -129,39 +136,64 @@ function addMatches(
  */
 function addMathRanges(text: string, ranges: TechnicalTokenRange[]): void {
   let i = 0;
-  const scanned: Record<string, number> = { '$': -1, '$$': -1, '\\)': -1 };
+  const scanned: Record<string, number> = { '$': -1, '$$': -1, '\\)': -1, '\\]': -1 };
   while (i < text.length) {
-    const p = text[i] === '\\' && text[i + 1] === '(';
-    // Consume escaped characters in pairs, including escaped dollar signs.
-    if (text[i] === '\\' && !p) { i += 2; continue; }
-    const d = text[i] === '$'
-      ? (text[i + 1] === '$' ? '$$' : '$')
-      : (p ? '\\)' : '');
-    if (!d || i < scanned[d]!) { i++; continue; }
-    if (d === '$' && (i + 1 === text.length || /\s/u.test(text[i + 1]!))) { i++; continue; }
+    const isParen = text[i] === '\\' && text[i + 1] === '(';
+    const isBracket = text[i] === '\\' && text[i + 1] === '[';
+    if (text[i] === '\\' && !isParen && !isBracket) { i += 2; continue; }
 
-    let e = i + (p ? 2 : d.length);
-    while (e < text.length
-      && text[e] !== '\r'
-      && text[e] !== '\n'
-      && !text.startsWith(d, e)) {
-      e += text[e] === '\\' && e + 1 < text.length && !/[\r\n]/u.test(text[e + 1]!) ? 2 : 1;
+    let opener = '';
+    let closer = '';
+    let isMultiline = false;
+
+    if (text[i] === '$') {
+      if (text[i + 1] === '$') {
+        opener = '$$';
+        closer = '$$';
+        isMultiline = true;
+      } else {
+        opener = '$';
+        closer = '$';
+        isMultiline = false;
+      }
+    } else if (isParen) {
+      opener = '\\(';
+      closer = '\\)';
+      isMultiline = false;
+    } else if (isBracket) {
+      opener = '\\[';
+      closer = '\\]';
+      isMultiline = true;
     }
 
-    if (text.startsWith(d, e) && (d !== '$' || e > i + 1)) {
-      if (d === '$' && (/\s/u.test(text[e - 1]!) || /[0-9\u0660-\u0669\u06F0-\u06F9]/u.test(text[e + 1] ?? ''))) {
-        // A price or invalid closing boundary must not swallow intervening
-        // prose. Reconsider this delimiter as a new opener (e.g. $10 ... $x$).
+    if (!opener || i < (scanned[closer] ?? -1)) { i++; continue; }
+    if (opener === '$' && (i + 1 === text.length || /\s/u.test(text[i + 1]!))) { i++; continue; }
+
+    let e = i + opener.length;
+    while (e < text.length && !text.startsWith(closer, e)) {
+      if (!isMultiline && (text[e] === '\r' || text[e] === '\n')) {
+        break;
+      }
+      if (text[e] === '\\' && e + 1 < text.length) {
+        if (!isMultiline && (text[e + 1] === '\r' || text[e + 1] === '\n')) {
+          break;
+        }
+        e += 2;
+      } else {
+        e += 1;
+      }
+    }
+
+    if (text.startsWith(closer, e) && (closer !== '$' || e > i + 1)) {
+      if (closer === '$' && (/\s/u.test(text[e - 1]!) || /[0-9\u0660-\u0669\u06F0-\u06F9]/u.test(text[e + 1] ?? ''))) {
         i = e;
         continue;
       }
-      addRange(ranges, text, i, e + d.length, 'math');
-      i = e + d.length;
+      addRange(ranges, text, i, e + closer.length, 'math');
+      i = e + closer.length;
     } else {
-      // Remember failed scans per delimiter, so repeated unmatched openers
-      // cannot rescan the same suffix quadratically.
-      scanned[d] = e;
-      i++;
+      scanned[closer] = e;
+      i += opener.length;
     }
   }
 }
@@ -468,7 +500,7 @@ export function findTechnicalTokenRanges(
   addNormalizedMatches(
     text,
     ranges,
-    /(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}\/|~\/)[^\s<>()\x5B\x5D{}"'“”‘’«»]+/gu,
+    /(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}\/|\.{1,2}\\|~[\\/])[^\s<>()\x5B\x5D{}"'“”‘’«»]+/gu,
     'path',
     trimTechnicalPunctuation
   );
@@ -489,11 +521,11 @@ export function findTechnicalTokenRanges(
   addMatches(text, ranges, /\b\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?\b/giu, 'number');
   // Preserve compact amounts and ranges as units; do not merge arbitrary
   // punctuation between unrelated numeric tokens or prose.
-  addMatches(text, ranges, CURRENCY_TOKEN, 'number');
+  addMatches(text, ranges, CURRENCY_PERCENT_TOKEN, 'number');
   addMatches(text, ranges, NUMBER_RANGE_TOKEN, 'number');
   addMatches(text, ranges, /\bv?\d+(?:\.\d+){1,}\b/gu, 'version');
   addMatches(text, ranges, /\b[0-9a-f]{7,40}\b/giu, 'hash');
-  addMatches(text, ranges, /(?<![\p{L}\p{N}_])[+-]?(?:\d+(?:[.,]\d+)?|[\u0660-\u0669]+(?:[\u066B\u066C][\u0660-\u0669]+)?|[\u06F0-\u06F9]+(?:[.,][\u06F0-\u06F9]+)?)(?![\p{L}\p{N}_])/gu, 'number');
+  addMatches(text, ranges, NUMBER_TOKEN, 'number');
 
   // Compact labels in technical prose are often written as an acronym plus a
   // Roman-numeral/number designator (`CN X`, `CN IX`, `API 2`). Treat the

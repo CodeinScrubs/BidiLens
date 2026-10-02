@@ -278,18 +278,56 @@ function invisibleCharacterFindings(text: string): BidiSecurityFinding[] {
   return findings;
 }
 
+export const SI_METRIC_UNITS = new Set([
+  'μm', 'μs', 'μg', 'μL', 'μl', 'μmol', 'μV', 'μA', 'μF', 'μW', 'μH', 'μM', 'μrad', 'μcd', 'μbar', 'μSv', 'μGy'
+]);
+
+function scanConfusableFindings(text: string): BidiSecurityFinding[] {
+  const findings: BidiSecurityFinding[] = [];
+  const wordRegex = /[\p{L}\p{N}]+/gu;
+  let wordMatch: RegExpExecArray | null;
+  while ((wordMatch = wordRegex.exec(text)) !== null) {
+    const word = wordMatch[0];
+    if (SI_METRIC_UNITS.has(word)) continue;
+    let hasLatin = false;
+    let hasGreek = false;
+    let hasCyrillic = false;
+    for (const char of word) {
+      const cp = char.codePointAt(0) ?? 0;
+      if ((cp >= 0x0041 && cp <= 0x005A) || (cp >= 0x0061 && cp <= 0x007A)) hasLatin = true;
+      else if (cp >= 0x0370 && cp <= 0x03FF) hasGreek = true;
+      else if (cp >= 0x0400 && cp <= 0x04FF) hasCyrillic = true;
+    }
+    if ((hasLatin && hasGreek) || (hasLatin && hasCyrillic)) {
+      findings.push({
+        code: 'MIXED_SCRIPT_CONFUSABLE',
+        severity: 'high',
+        message: `Mixed-script identifier spoofing risk detected. Word "${word}" mixes Latin and ${hasCyrillic ? 'Cyrillic' : 'Greek'} characters.`,
+        sourceRange: {
+          utf16: { start: wordMatch.index, end: wordMatch.index + word.length },
+          codePoint: { start: wordMatch.index, end: wordMatch.index + word.length }
+        },
+        remediation: 'Use single-script identifiers or enforce strict Unicode script validation.'
+      });
+    }
+  }
+  return findings;
+}
+
 /** Audits hidden bidi formatting without mutating the source string. */
 export function scanBidiSecurity(
   text: string,
-  options: { mode?: BidiSecurityMode } = {}
+  options: { mode?: BidiSecurityMode; scanConfusables?: boolean } = {}
 ): BidiSecurityReport {
   const mode = options.mode ?? 'audit';
   if (mode === 'off') return { mode, safe: true, shouldBlock: false, controls: [], findings: [] };
   const controls = findBidiControls(text);
+  const confusableFindings = options.scanConfusables ? scanConfusableFindings(text) : [];
   const findings = [
     ...controls.map(controlFinding),
     ...balanceFindings(text, controls),
-    ...invisibleCharacterFindings(text)
+    ...invisibleCharacterFindings(text),
+    ...confusableFindings
   ].sort((a, b) => a.sourceRange.utf16.start - b.sourceRange.utf16.start || a.code.localeCompare(b.code));
   const hasHigh = findings.some((finding) => finding.severity === 'high');
   return {
