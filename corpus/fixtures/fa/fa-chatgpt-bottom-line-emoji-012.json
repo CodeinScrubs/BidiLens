@@ -1,0 +1,26 @@
+{
+  "id": "fa-chatgpt-bottom-line-emoji-012",
+  "description": "Heading with leading circle emoji and English label preceding Persian body.",
+  "text": "🔴 Bottom line:",
+  "words": [
+    "🔴",
+    "Bottom",
+    "line",
+    ":"
+  ],
+  "expected": "ltr",
+  "expectedVisualOrderLeftToRight": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "emoji-heading",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

@@ -1,0 +1,23 @@
+{
+  "id": "fa-chatgpt-mnemonic-shn-023",
+  "description": "Mnemonic list item with English organism name.",
+  "text": "Strep pneumo",
+  "words": [
+    "Strep",
+    "pneumo"
+  ],
+  "expected": "ltr",
+  "expectedVisualOrderLeftToRight": [
+    1,
+    2
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "mnemonic",
+    "english-item",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

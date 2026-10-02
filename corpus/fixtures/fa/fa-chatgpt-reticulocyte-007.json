@@ -1,0 +1,46 @@
+{
+  "id": "fa-chatgpt-reticulocyte-007",
+  "description": "Persian sentence starting with Latin cell term with Persian plural suffix (Reticulocyteها).",
+  "text": "Reticulocyteها enzyme activity بیشتری نسبت به RBC پیر دارند.",
+  "words": [
+    "Reticulocyteها",
+    "enzyme",
+    "activity",
+    "بیشتری",
+    "نسبت",
+    "به",
+    "RBC",
+    "پیر",
+    "دارند",
+    "."
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "expectedIsolations": [
+    {
+      "text": "RBC",
+      "direction": "ltr",
+      "kind": "identifier"
+    }
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "loanword-suffix",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

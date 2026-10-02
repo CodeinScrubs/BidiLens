@@ -1,0 +1,27 @@
+{
+  "id": "fa-chatgpt-table-row-aiha-020",
+  "description": "Diagnostic table cell with English condition, Persian conjunction, and DAT+ marker.",
+  "text": "spherocytes ولی DAT+",
+  "words": [
+    "spherocytes",
+    "ولی",
+    "DAT",
+    "+"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "table-cell",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

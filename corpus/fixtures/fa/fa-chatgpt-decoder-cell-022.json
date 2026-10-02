@@ -1,0 +1,29 @@
+{
+  "id": "fa-chatgpt-decoder-cell-022",
+  "description": "Memory hook decoder table cell pairing Persian clinical image with English mechanism.",
+  "text": "2,3-BPG پرتکننده O₂",
+  "words": [
+    "2,3",
+    "-",
+    "BPG",
+    "پرتکننده",
+    "O₂"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "table-cell",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

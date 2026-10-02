@@ -1,0 +1,87 @@
+{
+  "id": "fa-chatgpt-pyruvate-kinase-003",
+  "description": "Persian paragraph starting with multi-word English enzyme name (Pyruvate kinase) and embedded medical acronyms.",
+  "text": "Pyruvate kinase یکی از آن enzymeهایی است که برای RBC حیاتی است چون RBC mitochondria ندارد و تقریباً برای ATP به glycolysis وابسته است.",
+  "words": [
+    "Pyruvate",
+    "kinase",
+    "یکی",
+    "از",
+    "آن",
+    "enzymeهایی",
+    "است",
+    "که",
+    "برای",
+    "RBC",
+    "حیاتی",
+    "است",
+    "چون",
+    "RBC",
+    "mitochondria",
+    "ندارد",
+    "و",
+    "تقریباً",
+    "برای",
+    "ATP",
+    "به",
+    "glycolysis",
+    "وابسته",
+    "است",
+    "."
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25
+  ],
+  "expectedIsolations": [
+    {
+      "text": "Pyruvate kinase",
+      "direction": "ltr",
+      "kind": "opposite-direction-run"
+    },
+    {
+      "text": "RBC",
+      "direction": "ltr",
+      "kind": "identifier"
+    },
+    {
+      "text": "ATP",
+      "direction": "ltr",
+      "kind": "identifier"
+    }
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "leading-latin",
+    "enzyme",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

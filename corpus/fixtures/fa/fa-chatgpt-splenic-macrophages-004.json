@@ -1,0 +1,52 @@
+{
+  "id": "fa-chatgpt-splenic-macrophages-004",
+  "description": "Numbered Persian list item starting with English anatomical phrase and loanword suffixes.",
+  "text": "1) Splenic macrophages خون از spleen عبور میکند و macrophageها باکتریهای opsonized را میگیرند.",
+  "words": [
+    "1",
+    ")",
+    "Splenic",
+    "macrophages",
+    "خون",
+    "از",
+    "spleen",
+    "عبور",
+    "میکند",
+    "و",
+    "macrophageها",
+    "باکتریهای",
+    "opsonized",
+    "را",
+    "میگیرند",
+    "."
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "list-item",
+    "loanword-suffix",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

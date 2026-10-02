@@ -1,0 +1,29 @@
+{
+  "id": "fa-chatgpt-chronic-combo-026",
+  "description": "Diagnostic criterion blockquote with English summary inside Persian hematology text.",
+  "text": "Unexplained chronic nonimmune hemolytic anemia",
+  "words": [
+    "Unexplained",
+    "chronic",
+    "nonimmune",
+    "hemolytic",
+    "anemia"
+  ],
+  "expected": "ltr",
+  "expectedVisualOrderLeftToRight": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "english-summary",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}
