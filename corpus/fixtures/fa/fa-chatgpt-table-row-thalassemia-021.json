@@ -1,0 +1,29 @@
+{
+  "id": "fa-chatgpt-table-row-thalassemia-021",
+  "description": "Diagnostic table cell with English hematology term, Persian intensifier, and target cells.",
+  "text": "microcytosis شدید + target cells",
+  "words": [
+    "microcytosis",
+    "شدید",
+    "+",
+    "target",
+    "cells"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "table-cell",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

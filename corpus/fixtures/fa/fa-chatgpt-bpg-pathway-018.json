@@ -1,0 +1,52 @@
+{
+  "id": "fa-chatgpt-bpg-pathway-018",
+  "description": "Complex clinical explanation with 2,3-BPG alphanumeric notation and up-arrow.",
+  "text": "PK deficiency = anemia، ولی tissue oxygen delivery نسبتاً بهتر بهخاطر 2,3-BPG↑",
+  "words": [
+    "PK",
+    "deficiency",
+    "=",
+    "anemia",
+    "،",
+    "ولی",
+    "tissue",
+    "oxygen",
+    "delivery",
+    "نسبتاً",
+    "بهتر",
+    "بهخاطر",
+    "2,3",
+    "-",
+    "BPG",
+    "↑"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "alphanumeric-formula",
+    "arrow",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

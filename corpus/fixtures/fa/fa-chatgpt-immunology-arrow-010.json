@@ -1,0 +1,37 @@
+{
+  "id": "fa-chatgpt-immunology-arrow-010",
+  "description": "Immunological complex equation with plus, arrow, and upward trend symbol.",
+  "text": "IgG / IgM + C3b → phagocytosis ↑",
+  "words": [
+    "IgG",
+    "/",
+    "IgM",
+    "+",
+    "C3b",
+    "→",
+    "phagocytosis",
+    "↑"
+  ],
+  "expected": "ltr",
+  "expectedVisualOrderLeftToRight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "formula",
+    "arrow",
+    "symbols",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

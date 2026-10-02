@@ -1,0 +1,48 @@
+{
+  "id": "fa-chatgpt-capsule-001",
+  "description": "Persian paragraph starting with an English medical term (Capsule) must resolve to RTL base with the Latin word isolated LTR.",
+  "text": "Capsule مثل یک روکش لیز و ضدچسب دور باکتری است.",
+  "words": [
+    "Capsule",
+    "مثل",
+    "یک",
+    "روکش",
+    "لیز",
+    "و",
+    "ضدچسب",
+    "دور",
+    "باکتری",
+    "است",
+    "."
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "expectedIsolations": [
+    {
+      "text": "Capsule",
+      "direction": "ltr",
+      "kind": "opposite-direction-run"
+    }
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "leading-latin",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

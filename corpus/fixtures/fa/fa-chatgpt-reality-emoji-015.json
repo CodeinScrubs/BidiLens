@@ -1,0 +1,59 @@
+{
+  "id": "fa-chatgpt-reality-emoji-015",
+  "description": "Callout with green checkmark emoji and Persian text followed by English medical explanation.",
+  "text": "✅ واقعیت: ATP deficiency باعث کاهش بقای RBC و splenic destruction میشود.",
+  "words": [
+    "✅",
+    "واقعیت",
+    ":",
+    "ATP",
+    "deficiency",
+    "باعث",
+    "کاهش",
+    "بقای",
+    "RBC",
+    "و",
+    "splenic",
+    "destruction",
+    "میشود",
+    "."
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "expectedIsolations": [
+    {
+      "text": "ATP",
+      "direction": "ltr",
+      "kind": "identifier"
+    },
+    {
+      "text": "RBC",
+      "direction": "ltr",
+      "kind": "identifier"
+    }
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "emoji-heading",
+    "medical",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}
