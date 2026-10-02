@@ -1,0 +1,42 @@
+{
+  "id": "fa-chatgpt-table-row-pk-019",
+  "description": "Diagnostic table cell with mixed Persian commentary, English symptoms, and minus sign.",
+  "text": "chronic DAT− hemolysis، معمولاً no spherocytes، گاهی echinocytes",
+  "words": [
+    "chronic",
+    "DAT",
+    "−",
+    "hemolysis",
+    "،",
+    "معمولاً",
+    "no",
+    "spherocytes",
+    "،",
+    "گاهی",
+    "echinocytes"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "table-cell",
+    "differential-diagnosis",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

@@ -1,0 +1,37 @@
+{
+  "id": "fa-chatgpt-quote-persian-016",
+  "description": "Persian quotation inside guillemets questioning clinical timing.",
+  "text": "«پس قبلش چرا مشکل ایجاد نمیکنند؟»",
+  "words": [
+    "«",
+    "پس",
+    "قبلش",
+    "چرا",
+    "مشکل",
+    "ایجاد",
+    "نمیکنند",
+    "؟",
+    "»"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "quotation",
+    "guillemets",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

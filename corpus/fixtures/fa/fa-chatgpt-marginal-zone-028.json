@@ -1,0 +1,61 @@
+{
+  "id": "fa-chatgpt-marginal-zone-028",
+  "description": "Numbered Persian list item starting with English immunological cell type (Marginal-zone B cells).",
+  "text": "Marginal-zone B cells اینها به polysaccharide capsule خیلی سریع پاسخ میدهند و عمدتاً IgM تولید میکنند.",
+  "words": [
+    "Marginal-zone",
+    "B",
+    "cells",
+    "اینها",
+    "به",
+    "polysaccharide",
+    "capsule",
+    "خیلی",
+    "سریع",
+    "پاسخ",
+    "میدهند",
+    "و",
+    "عمدتاً",
+    "IgM",
+    "تولید",
+    "میکنند",
+    "."
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "expectedIsolations": [
+    {
+      "text": "IgM",
+      "direction": "ltr",
+      "kind": "identifier"
+    }
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "leading-latin",
+    "list-item",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

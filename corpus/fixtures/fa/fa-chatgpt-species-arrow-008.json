@@ -1,0 +1,30 @@
+{
+  "id": "fa-chatgpt-species-arrow-008",
+  "description": "English binomial abbreviation followed by leftwards arrow pointing to Persian importance indicator.",
+  "text": "S. pneumoniae ← مهمترین",
+  "words": [
+    "S",
+    ".",
+    "pneumoniae",
+    "←",
+    "مهمترین"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "arrow",
+    "species-name",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

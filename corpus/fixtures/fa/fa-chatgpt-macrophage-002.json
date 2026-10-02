@@ -1,0 +1,67 @@
+{
+  "id": "fa-chatgpt-macrophage-002",
+  "description": "Persian paragraph starting with English cell name (Macrophage) and containing opsonin.",
+  "text": "Macrophage برای بلعیدن باکتری خیلی بهتر عمل میکند وقتی باکتری با opsonin پوشانده شده باشد، مخصوصاً:",
+  "words": [
+    "Macrophage",
+    "برای",
+    "بلعیدن",
+    "باکتری",
+    "خیلی",
+    "بهتر",
+    "عمل",
+    "میکند",
+    "وقتی",
+    "باکتری",
+    "با",
+    "opsonin",
+    "پوشانده",
+    "شده",
+    "باشد",
+    "،",
+    "مخصوصاً",
+    ":"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "expectedIsolations": [
+    {
+      "text": "Macrophage",
+      "direction": "ltr",
+      "kind": "opposite-direction-run"
+    },
+    {
+      "text": "opsonin",
+      "direction": "ltr",
+      "kind": "opposite-direction-run"
+    }
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "leading-latin",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

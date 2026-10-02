@@ -1,0 +1,43 @@
+{
+  "id": "fa-chatgpt-bacteremia-chain-011",
+  "description": "Medical pathophysiology chain with Persian prose and English clinical outcome.",
+  "text": "bacteremia میتواند خیلی سریع بالا برود → sepsis / meningitis / OPSI",
+  "words": [
+    "bacteremia",
+    "میتواند",
+    "خیلی",
+    "سریع",
+    "بالا",
+    "برود",
+    "→",
+    "sepsis",
+    "/",
+    "meningitis",
+    "/",
+    "OPSI"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "pathway-arrow",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}
