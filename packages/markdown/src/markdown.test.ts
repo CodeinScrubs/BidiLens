@@ -64,6 +64,15 @@ describe('Markdown plugins', () => {
     expect(md.render(plain)).toBe(parser().render(plain));
   });
 
+  it('annotates table element with RTL base direction when header or cells are RTL', () => {
+    const md = new MarkdownIt({ html: true });
+    markdownItBidi(md);
+    const table = '| بیماری | سرنخ |\n| --- | --- |\n| PK deficiency | chronic hemolysis |\n| HS | spherocytes |';
+    const html = md.render(table);
+    expect(html).toContain('<table dir="rtl" data-bidilens-block="" class="bidilens-block">');
+    expect(html).toContain('<th dir="rtl"');
+  });
+
   it('keeps block intervention consistent with RTL inline code rendering', () => {
     const md = new MarkdownIt();
     const result = analyzeBidiMarkdown(md, 'Hello `سلام`');

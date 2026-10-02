@@ -441,6 +441,7 @@ export function markdownItBidi(markdownIt: MarkdownItCompatible, inputOptions: M
   }
 
   for (const [openRule, closeType] of [
+    ['table_open', 'table_close'],
     ['list_item_open', 'list_item_close'],
     ['blockquote_open', 'blockquote_close']
   ] as const) {

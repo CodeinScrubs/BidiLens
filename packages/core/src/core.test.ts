@@ -66,6 +66,26 @@ describe('direction detection', () => {
     expect(analysis.counts.ltr).toBe(0);
   });
 
+  it('recognizes scientific binomials and biochemical notation as technical tokens', () => {
+    const binomials = findTechnicalTokenRanges('بررسی باکتری S. pneumoniae و H. influenzae در آزمایشگاه');
+    expect(binomials.map((r) => r.text)).toEqual(['S. pneumoniae', 'H. influenzae']);
+
+    const biochemical = findTechnicalTokenRanges('افزایش 2,3-BPG در مسیر گلیکولیز');
+    expect(biochemical.map((r) => r.text)).toEqual(['2,3-BPG']);
+  });
+
+  it('recognizes Latin loanwords with attached Persian affixes without corrupting word boundaries', () => {
+    const loanwords = findTechnicalTokenRanges('عملکرد macrophageها و ترشح enzymeهایی برای پاسخ ایمنی');
+    expect(loanwords.map((r) => r.text)).toEqual(['macrophage', 'enzyme']);
+    expect(detectDirection('macrophageها باکتریها را میبلعند.')).toBe('rtl');
+  });
+
+  it('resolves RTL base direction for Persian medical sentences with leading English terms', () => {
+    expect(detectDirection('Capsule مثل یک روکش لیز و ضدچسب دور باکتری است.')).toBe('rtl');
+    expect(detectDirection('Macrophage برای بلعیدن باکتری خیلی بهتر عمل میکند')).toBe('rtl');
+    expect(detectDirection('Pyruvate kinase یکی از آن enzymeهایی است که برای RBC حیاتی است')).toBe('rtl');
+  });
+
   it('reports bidi-strong formatting marks in literal first-strong evidence', () => {
     const analysis = analyzeText('\u200fHello world');
     expect(analysis.rawFirstStrong).toBe('rtl');

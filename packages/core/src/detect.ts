@@ -35,7 +35,14 @@ export const DEFAULT_TECHNICAL_IDENTIFIERS = Object.freeze([
   'angular', 'astro', 'chrome', 'docker', 'esbuild', 'eslint', 'firefox',
   'kubernetes', 'kubectl', 'nuxt', 'playwright', 'pnpm', 'preact', 'remix',
   'rollup', 'safari', 'stencil', 'storybook', 'tailwind', 'turbopack', 'vite',
-  'vitest'
+  'vitest',
+  'atp', 'adp', 'pep', 'rbc', 'wbc', 'dna', 'rna', 'g6pd', 'pklr', 'opsi',
+  'cbc', 'ldh', 'mchc', 'ema', 'dat', 'aiha', 'hs', 'b12', 'igg', 'igm',
+  'c3b', 'nadph', 'pk', 'spleen', 'splenectomy', 'macrophage', 'macrophages',
+  'capsule', 'encapsulated', 'phagocytosis', 'opsonin', 'opsonized', 'opsonization',
+  'bacteremia', 'sepsis', 'meningitis', 'spherocyte', 'spherocytes', 'reticulocyte',
+  'reticulocytes', 'glycolysis', 'mitochondria', 'hemolysis', 'thalassemia',
+  'echinocyte', 'echinocytes', 'deficiency', 'cell', 'cells'
 ] as const);
 const KNOWN_TECHNICAL_TOKENS = new Set<string>(DEFAULT_TECHNICAL_IDENTIFIERS);
 const NUMERIC_VALUE = '[0-9\\u0660-\\u0669\\u06F0-\\u06F9]+(?:[.,\\u066B\\u066C][0-9\\u0660-\\u0669\\u06F0-\\u06F9]+)*';
@@ -462,6 +469,10 @@ export function findTechnicalTokenRanges(
   addMatches(text, ranges, /\b[A-Z]{1,4}\s+(?:[IVXLCDM]{1,8}|\d{1,3})\b/gu, 'identifier');
   addMatches(text, ranges, /\b[A-Z]{1,4}\/[A-Z]{1,4}\b/gu, 'identifier');
   addMatches(text, ranges, /\b[A-Z]\b(?=\s*(?:=|:|→|->))/gu, 'identifier');
+  // Scientific binomials (e.g. S. pneumoniae, H. influenzae, N. meningitidis)
+  addMatches(text, ranges, /\b[A-Z]\.\s+[a-z]{3,}\b/gu, 'identifier');
+  // Biochemical alphanumeric notation (e.g. 2,3-BPG, 1,3-BPG)
+  addMatches(text, ranges, /\b\d+,\d+-[A-Z0-9]+(?:\s*[↑↓])?\b/gu, 'identifier');
 
   const words = /\b[A-Za-z][A-Za-z0-9_.-]*\b/gu;
   const customIdentifiers = customTechnicalIdentifiers(technicalIdentifiers);
@@ -469,7 +480,9 @@ export function findTechnicalTokenRanges(
   let match: RegExpExecArray | null;
   while ((match = words.exec(text)) !== null) {
     const token = match[0];
-    if (isTechnicalIdentifier(token, customIdentifiers, uppercaseProse)) {
+    const tail = text.slice(match.index + token.length, match.index + token.length + 8);
+    const hasAffix = /^[\u200C]?(?:ها|هایی|های|ای|اش|مان|تان|شان|تر|ترین)(?![\p{L}\p{N}])/u.test(tail);
+    if (hasAffix || isTechnicalIdentifier(token, customIdentifiers, uppercaseProse)) {
       addRange(ranges, text, match.index, match.index + token.length, 'identifier');
     }
   }
