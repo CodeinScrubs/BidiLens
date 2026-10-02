@@ -4337,7 +4337,7 @@ internal val generatedCorpusFixtures = listOf(
             text = "نسبة الإكمال ٧٥٪",
             expected = BidiDirection.RTL,
             isolations = listOf(
-            ExpectedIsolation("٧٥", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ExpectedIsolation("٧٥٪", BidiDirection.LTR, BidiIsolationKind.NUMBER)
             ),
         ),
         CorpusFixture(
@@ -5308,7 +5308,7 @@ internal val generatedCorpusFixtures = listOf(
             text = "تخفیف ۲۰٪ ارائه شده است.",
             expected = BidiDirection.RTL,
             isolations = listOf(
-            ExpectedIsolation("۲۰", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ExpectedIsolation("۲۰٪", BidiDirection.LTR, BidiIsolationKind.NUMBER)
             ),
         ),
         CorpusFixture(
@@ -5316,8 +5316,7 @@ internal val generatedCorpusFixtures = listOf(
             text = "این محصول ۹۹٬۰۰۰ تومان قیمت دارد.",
             expected = BidiDirection.RTL,
             isolations = listOf(
-            ExpectedIsolation("۹۹", BidiDirection.LTR, BidiIsolationKind.NUMBER),
-            ExpectedIsolation("۰۰۰", BidiDirection.LTR, BidiIsolationKind.NUMBER)
+            ExpectedIsolation("۹۹٬۰۰۰", BidiDirection.LTR, BidiIsolationKind.NUMBER)
             ),
         ),
         CorpusFixture(

@@ -279,7 +279,8 @@ function invisibleCharacterFindings(text: string): BidiSecurityFinding[] {
 }
 
 export const SI_METRIC_UNITS = new Set([
-  'μm', 'μs', 'μg', 'μL', 'μl', 'μmol', 'μV', 'μA', 'μF', 'μW', 'μH', 'μM', 'μrad', 'μcd', 'μbar', 'μSv', 'μGy'
+  'μm', 'μs', 'μg', 'μL', 'μl', 'μmol', 'μV', 'μA', 'μF', 'μW', 'μH', 'μM', 'μrad', 'μcd', 'μbar', 'μSv', 'μGy',
+  'µm', 'µs', 'µg', 'µL', 'µl', 'µmol', 'µV', 'µA', 'µF', 'µW', 'µH', 'µM', 'µrad', 'µcd', 'µbar', 'µSv', 'µGy'
 ]);
 
 function scanConfusableFindings(text: string): BidiSecurityFinding[] {
@@ -305,7 +306,10 @@ function scanConfusableFindings(text: string): BidiSecurityFinding[] {
         message: `Mixed-script identifier spoofing risk detected. Word "${word}" mixes Latin and ${hasCyrillic ? 'Cyrillic' : 'Greek'} characters.`,
         sourceRange: {
           utf16: { start: wordMatch.index, end: wordMatch.index + word.length },
-          codePoint: { start: wordMatch.index, end: wordMatch.index + word.length }
+          codePoint: {
+            start: [...text.slice(0, wordMatch.index)].length,
+            end: [...text.slice(0, wordMatch.index + word.length)].length
+          }
         },
         remediation: 'Use single-script identifiers or enforce strict Unicode script validation.'
       });

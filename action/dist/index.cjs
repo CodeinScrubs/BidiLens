@@ -4522,7 +4522,24 @@ var SI_METRIC_UNITS = /* @__PURE__ */ new Set([
   "\u03BCcd",
   "\u03BCbar",
   "\u03BCSv",
-  "\u03BCGy"
+  "\u03BCGy",
+  "\xB5m",
+  "\xB5s",
+  "\xB5g",
+  "\xB5L",
+  "\xB5l",
+  "\xB5mol",
+  "\xB5V",
+  "\xB5A",
+  "\xB5F",
+  "\xB5W",
+  "\xB5H",
+  "\xB5M",
+  "\xB5rad",
+  "\xB5cd",
+  "\xB5bar",
+  "\xB5Sv",
+  "\xB5Gy"
 ]);
 function scanConfusableFindings(text) {
   const findings = [];
@@ -4547,7 +4564,10 @@ function scanConfusableFindings(text) {
         message: `Mixed-script identifier spoofing risk detected. Word "${word}" mixes Latin and ${hasCyrillic ? "Cyrillic" : "Greek"} characters.`,
         sourceRange: {
           utf16: { start: wordMatch.index, end: wordMatch.index + word.length },
-          codePoint: { start: wordMatch.index, end: wordMatch.index + word.length }
+          codePoint: {
+            start: [...text.slice(0, wordMatch.index)].length,
+            end: [...text.slice(0, wordMatch.index + word.length)].length
+          }
         },
         remediation: "Use single-script identifiers or enforce strict Unicode script validation."
       });

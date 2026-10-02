@@ -321,7 +321,7 @@ export async function expectTextOrder(
     locator = 'locator' in target ? (target as Page).locator(selectorOrOrder) : (target as Locator);
     tokens = expectedOrder ?? [];
   } else {
-    locator = target as Locator;
+    locator = 'locator' in target ? (target as Page).locator('body') : (target as Locator);
     tokens = selectorOrOrder;
   }
   if (tokens.length < 2) return;

@@ -157,19 +157,93 @@ describe('Engine Definitive Hardening Suite', () => {
 
   describe('SI metric units in security scanner', () => {
     it('does not flag standard SI metric units with micro symbol as confusables', () => {
-      const prose = 'اندازه‌گیری‌ها شامل 10 μm و 100 μs و 50 μg و 25 μL گزارش شدند.';
-      const report = scanBidiSecurity(prose);
-      const confusableFindings = report.findings.filter((f) => f.code.includes('confusable'));
+      const prose = '10 \u03BCm, 100 \u00B5s, 50 \u03BCg, 25 \u00B5L, 5 \u03BCV, 2 \u00B5A, 1 \u03BCmol, 10 \u00B5bar';
+      const report = scanBidiSecurity(prose, { scanConfusables: true });
+      const confusableFindings = report.findings.filter((f) => f.code.includes('CONFUSABLE'));
       expect(confusableFindings).toHaveLength(0);
+    });
+
+    it('detects mixed-script confusable spoofing attacks when enabled', () => {
+      // "p?ypal" with Cyrillic small letter a (U+0430)
+      const attack = 'Please verify your p\u0430ypal account credentials.';
+      const report = scanBidiSecurity(attack, { scanConfusables: true });
+      const confusable = report.findings.find((f) => f.code === 'MIXED_SCRIPT_CONFUSABLE');
+      expect(confusable).toBeDefined();
+      expect(confusable?.severity).toBe('high');
+      expect(confusable?.sourceRange.utf16.start).toBeGreaterThan(0);
     });
   });
 
-  describe('Inherited direction in isolation planning', () => {
+  describe('Comprehensive character classification per UAX #9', () => {
+    it('classifies European numbers as EN', () => {
+      const en = getCharacterClassification(0x0035); // '5'
+      expect(en.bidiClass).toBe('EN');
+      expect(en.isWeak).toBe(true);
+      expect(en.isNeutral).toBe(false);
+    });
+
+    it('classifies non-spacing combining marks as NSM', () => {
+      const nsm = getCharacterClassification(0x064E); // Arabic Fatha
+      expect(nsm.bidiClass).toBe('NSM');
+      expect(nsm.isMark).toBe(true);
+      expect(nsm.isWeak).toBe(true);
+    });
+
+    it('classifies whitespace as WS and punctuation as ON', () => {
+      const ws = getCharacterClassification(0x0020); // Space
+      expect(ws.bidiClass).toBe('WS');
+      expect(ws.isNeutral).toBe(true);
+
+      const on = getCharacterClassification(0x0021); // '!'
+      expect(on.bidiClass).toBe('ON');
+      expect(on.isNeutral).toBe(true);
+    });
+
+    it('classifies soft hyphen and other boundaries as BN', () => {
+      const shy = getCharacterClassification(0x00AD); // Soft Hyphen
+      expect(shy.bidiClass).toBe('BN');
+      expect(shy.isWeak).toBe(true);
+    });
+
+    it('classifies strong LTR and RTL letters', () => {
+      const l = getCharacterClassification(0x0041); // 'A'
+      expect(l.bidiClass).toBe('L');
+      expect(l.isStrong).toBe(true);
+      expect(l.direction).toBe('ltr');
+
+      const al = getCharacterClassification(0x0633); // Arabic Seen
+      expect(al.bidiClass).toBe('AL');
+      expect(al.isStrong).toBe(true);
+      expect(al.direction).toBe('rtl');
+    });
+
+    it('handles empty string classification gracefully', () => {
+      expect(classifyCharacter('')).toBe('neutral');
+    });
+  });
+
+  describe('Inherited direction in isolation planning and container analysis', () => {
     it('honors inheritedDirection option in planInlineIsolation', () => {
       const text = 'React is great';
       // In an LTR inherited container, LTR text needs no isolation
       const isolations = planInlineIsolation(text, 'ltr', { inheritedDirection: 'ltr' });
       expect(isolations).toHaveLength(0);
+    });
+
+    it('plans isolation when LTR prose is embedded in an inherited RTL container', () => {
+      const text = 'React documentation';
+      // When inheritedDirection is RTL, LTR text needs bidi intervention
+      const isolations = planInlineIsolation(text, 'ltr', { inheritedDirection: 'rtl' });
+      expect(isolations.length).toBeGreaterThan(0);
+    });
+
+    it('propagates inheritedDirection through analyzeBlock', () => {
+      const ltrContext = analyzeBlock('React documentation', { inheritedDirection: 'ltr' });
+      expect(ltrContext.isolations).toHaveLength(0);
+
+      const rtlContext = analyzeBlock('React documentation', { inheritedDirection: 'rtl' });
+      expect(rtlContext.isolations.length).toBeGreaterThan(0);
+      expect(rtlContext.isolations[0]?.text).toBe('React');
     });
   });
 });

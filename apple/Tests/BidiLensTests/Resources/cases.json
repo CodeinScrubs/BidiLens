@@ -27651,9 +27651,7 @@
     "text": "نسخه ۲٫۱ در تاریخ ۱۴۰۵/۰۴/۲۷ آماده شد.",
     "words": [
       "نسخه",
-      "۲",
-      "٫",
-      "۱",
+      "۲٫۱",
       "در",
       "تاریخ",
       "۱۴۰۵",
@@ -27678,9 +27676,7 @@
       9,
       10,
       11,
-      12,
-      13,
-      14
+      12
     ],
     "tags": [
       "fa",
@@ -29940,15 +29936,13 @@
     "words": [
       "نسبة",
       "الإكمال",
-      "٧٥",
-      "٪"
+      "٧٥٪"
     ],
     "expected": "rtl",
     "expectedVisualOrderRightToLeft": [
       1,
       2,
-      3,
-      4
+      3
     ],
     "tags": [
       "ar",
@@ -29959,7 +29953,7 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "٧٥",
+        "text": "٧٥٪",
         "direction": "ltr",
         "kind": "number"
       }
@@ -33656,11 +33650,47 @@
     "text": "تخفیف ۲۰٪ ارائه شده است.",
     "words": [
       "تخفیف",
-      "۲۰",
-      "٪",
+      "۲۰٪",
       "ارائه",
       "شده",
       "است",
+      "."
+    ],
+    "expected": "rtl",
+    "expectedVisualOrderRightToLeft": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tags": [
+      "fa",
+      "numerals",
+      "v1.3-her-review"
+    ],
+    "curation": "imported-comparison-corpus",
+    "nativeSpeakerReviewed": false,
+    "expectedIsolations": [
+      {
+        "text": "۲۰٪",
+        "direction": "ltr",
+        "kind": "number"
+      }
+    ]
+  },
+  {
+    "id": "v13-fa-persian-numeral-004",
+    "description": "Reviewed v1.3-Her seed: Large number",
+    "text": "این محصول ۹۹٬۰۰۰ تومان قیمت دارد.",
+    "words": [
+      "این",
+      "محصول",
+      "۹۹٬۰۰۰",
+      "تومان",
+      "قیمت",
+      "دارد",
       "."
     ],
     "expected": "rtl",
@@ -33682,54 +33712,7 @@
     "nativeSpeakerReviewed": false,
     "expectedIsolations": [
       {
-        "text": "۲۰",
-        "direction": "ltr",
-        "kind": "number"
-      }
-    ]
-  },
-  {
-    "id": "v13-fa-persian-numeral-004",
-    "description": "Reviewed v1.3-Her seed: Large number",
-    "text": "این محصول ۹۹٬۰۰۰ تومان قیمت دارد.",
-    "words": [
-      "این",
-      "محصول",
-      "۹۹",
-      "٬",
-      "۰۰۰",
-      "تومان",
-      "قیمت",
-      "دارد",
-      "."
-    ],
-    "expected": "rtl",
-    "expectedVisualOrderRightToLeft": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9
-    ],
-    "tags": [
-      "fa",
-      "numerals",
-      "v1.3-her-review"
-    ],
-    "curation": "imported-comparison-corpus",
-    "nativeSpeakerReviewed": false,
-    "expectedIsolations": [
-      {
-        "text": "۹۹",
-        "direction": "ltr",
-        "kind": "number"
-      },
-      {
-        "text": "۰۰۰",
+        "text": "۹۹٬۰۰۰",
         "direction": "ltr",
         "kind": "number"
       }
