@@ -139,7 +139,6 @@ export const BidiText = forwardRef<HTMLElement, PropsWithChildren<BidiTextProps>
     : children ?? text;
   const mergedStyle: CSSProperties | undefined = intervene
     ? {
-        textAlign: 'start',
         ...(isolate ? { unicodeBidi: 'isolate' as const } : {}),
         ...style
       }

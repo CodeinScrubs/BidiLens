@@ -13,12 +13,22 @@ var analysis = BidiWpf.Apply(
 `FlowDirection` remains `RightToLeft` for Persian-majority text while
 `TextAlignment` can remain physically left. The WPF adapter does not change
 `TextBlock.Text` or `TextBox.Text`, and preserves `TextBox` selection.
+Apply and restore on the control's owning UI thread, as with other WPF property changes.
 Unicode combining marks remain attached to their neighboring grapheme when
 mixed-direction runs are isolated.
 It applies dependency properties without detaching existing WPF bindings and
 adopts observable host changes made while a control is managed. Call
 `BidiWpf.Restore(control)` before intentionally handing off a property with the
 same value BidiLens is currently rendering.
+
+Originally inherited or styled control properties use reversible local overrides;
+restoration removes those overrides rather than pinning an old parent value.
+The next source release refreshes changed parent/style baselines and dynamic
+resources before analysis or restoration, while retaining local bindings and
+the original shareable resource expressions. A same-valued literal host write
+to an already local managed override cannot identify a new owner: call `Restore`
+before that intentional handoff. Tests do not establish real editor/IME or
+Windows screen-reader acceptance.
 
 ## Independent document paragraphs (next source release)
 

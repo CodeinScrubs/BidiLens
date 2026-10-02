@@ -1,0 +1,82 @@
+{
+  "id": "mixed-markdown",
+  "title": "AI-style Markdown with lists, quotes, and code",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
+  "renderer": "Chromium 153.0.8010.12",
+  "artifactStatus": "unreleased source checkout; not a deployed host integration",
+  "baseline": "ltr",
+  "alignment": "left",
+  "explanation": "Markdown-It is rendered with and without the actual BidiLens plugin. Heading, list, quote, cell, and code boundaries retain their own direction.",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "sourceSha256": "70bbb5bf968f19566cdf9bea983d32ff317818550f031baae5323db69fb95d68",
+  "observations": {
+    "before": {
+      "text": "React یک کتابخانه بسیار محبوب است.\n\nAPI یک رابط برنامه‌نویسی کاربردی است.\nThe Persian word کتاب means book.\n\n\nReact یک کتابخانه بسیار محبوب است.\n\n\n\n\nFeature\nتوضیح\n\n\n\n\nstreaming\nپردازش جریانی بسیار سریع است\n\n\n\nمسیر فایل src/app.ts در پروژه قرار دارد.\nconst message = \"سلام\";\n\n",
+      "paragraphs": [
+        {
+          "text": "React یک کتابخانه بسیار محبوب است.",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "مسیر فایل src/app.ts در پروژه قرار دارد.",
+          "direction": "ltr",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": "ltr",
+      "blockquoteDirection": "ltr",
+      "cellDirections": [
+        "ltr",
+        "ltr",
+        "ltr",
+        "ltr"
+      ],
+      "isolations": []
+    },
+    "after": {
+      "text": "React یک کتابخانه بسیار محبوب است.\n\nAPI یک رابط برنامه‌نویسی کاربردی است.\nThe Persian word کتاب means book.\n\n\nReact یک کتابخانه بسیار محبوب است.\n\n\n\n\nFeature\nتوضیح\n\n\n\n\nstreaming\nپردازش جریانی بسیار سریع است\n\n\n\nمسیر فایل src/app.ts در پروژه قرار دارد.\nconst message = \"سلام\";\n\n",
+      "paragraphs": [
+        {
+          "text": "React یک کتابخانه بسیار محبوب است.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "مسیر فایل src/app.ts در پروژه قرار دارد.",
+          "direction": "rtl",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": "rtl",
+      "blockquoteDirection": "rtl",
+      "cellDirections": [
+        "ltr",
+        "rtl",
+        "ltr",
+        "rtl"
+      ],
+      "isolations": [
+        {
+          "text": "React",
+          "direction": "ltr"
+        },
+        {
+          "text": "API",
+          "direction": "ltr"
+        },
+        {
+          "text": "کتاب",
+          "direction": "rtl"
+        },
+        {
+          "text": "React",
+          "direction": "ltr"
+        }
+      ]
+    }
+  }
+}

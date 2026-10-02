@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import process from 'node:process';
 import { CHATGPT_MIXED_DIRECTION_MARKDOWN } from './fixtures/chatgpt-mixed-direction.js';
+import { MOBILE_MEDICAL_MARKDOWN, MOBILE_QUERY_MARKDOWN } from './fixtures/chatgpt-mobile-oct2.js';
 
 interface CorpusFixture {
   id: string;
@@ -72,6 +73,14 @@ const structuralFixtures: CorpusFixture[] = [
   {
     id: 'compat-chatgpt-medical-mixed-blocks',
     text: CHATGPT_MIXED_DIRECTION_MARKDOWN
+  },
+  {
+    id: 'compat-mobile-study-mixed-blocks',
+    text: MOBILE_MEDICAL_MARKDOWN
+  },
+  {
+    id: 'compat-mobile-query-literals',
+    text: MOBILE_QUERY_MARKDOWN
   }
 ];
 

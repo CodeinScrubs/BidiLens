@@ -130,6 +130,8 @@ public enum BidiUIKit {
 
 
     /// Uses UITextInput's native paragraph direction API and preserves selection.
+    /// During marked-text composition this only returns analysis; it does not
+    /// change the input or its managed state. Reapply after composition ends.
     @discardableResult
     public static func apply(
         to textView: UITextView,
@@ -137,8 +139,9 @@ public enum BidiUIKit {
         alignment: BidiAlignment = .contentStart
     ) -> BidiAnalysis {
         let source = textView.text ?? ""
-        let selection = textView.selectedRange
         let analysis = BidiAnalyzer.analyze(source, options: options)
+        guard textView.markedTextRange == nil else { return analysis }
+        let selection = textView.selectedRange
         if !analysis.interventionRequired {
             restore(textView)
             return analysis
@@ -175,7 +178,10 @@ public enum BidiUIKit {
 
     /// Restores authored input properties and ends the managed session.
     /// Call before an intentional same-value property ownership handoff.
+    /// Marked-text composition defers restoration without discarding state;
+    /// call again after the host observes composition has ended.
     public static func restore(_ textView: UITextView) {
+        guard textView.markedTextRange == nil else { return }
         guard let state = objc_getAssociatedObject(
             textView,
             &textViewStateKey
@@ -200,6 +206,8 @@ public enum BidiUIKit {
     }
 
     /// Applies input direction and alignment without changing text or selection.
+    /// During marked-text composition this only returns analysis; it does not
+    /// change the input or its managed state. Reapply after composition ends.
     @discardableResult
     public static func apply(
         to textField: UITextField,
@@ -207,8 +215,9 @@ public enum BidiUIKit {
         alignment: BidiAlignment = .contentStart
     ) -> BidiAnalysis {
         let source = textField.text ?? ""
-        let selection = textField.selectedTextRange
         let analysis = BidiAnalyzer.analyze(source, options: options)
+        guard textField.markedTextRange == nil else { return analysis }
+        let selection = textField.selectedTextRange
         if !analysis.interventionRequired {
             restore(textField)
             return analysis
@@ -245,7 +254,10 @@ public enum BidiUIKit {
 
     /// Restores authored input properties and ends the managed session.
     /// Call before an intentional same-value property ownership handoff.
+    /// Marked-text composition defers restoration without discarding state;
+    /// call again after the host observes composition has ended.
     public static func restore(_ textField: UITextField) {
+        guard textField.markedTextRange == nil else { return }
         guard let state = objc_getAssociatedObject(
             textField,
             &textFieldStateKey

@@ -197,6 +197,13 @@ val controller = BidiEditTextController.attach(editText)
 controller.detach()
 ```
 
+`applyBidiLens()` sets one paragraph-base heuristic on the whole View. It does
+not assign independent bases to multiple paragraphs, and it does not add inline
+isolation controls. For a mixed prose/formula/code response, use one read-only
+`TextView` per structural block or the source Compose paragraph renderer above.
+Use a dedicated LTR code view for arbitrary query syntax. Do not force the
+whole application layout RTL to solve a message's text direction.
+
 `applyBidiLens()` never changes `TextView.text`. When a display-only string
 needs explicit inline isolation, use `setBidiDisplayText(source)` and continue
 to persist/search the original `source`.

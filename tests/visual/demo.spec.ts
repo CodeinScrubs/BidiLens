@@ -49,6 +49,9 @@ test('English content stays LTR inside the Persian-language UI', async ({ page }
 });
 
 test('completed streams reconcile direction and the demo renders without app errors', async ({ page }, testInfo) => {
+  // Exercise every real interval callback without relying on foreground-tab
+  // timer scheduling. Browser throttling is not a rendering correctness gate.
+  await page.clock.install();
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -60,10 +63,20 @@ test('completed streams reconcile direction and the demo renders without app err
   await page.getByLabel('Input Markdown').fill(source);
   await page.getByRole('slider', { name: 'Chunk size' }).fill('4');
   await page.getByRole('slider', { name: 'Delay (ms)' }).fill('1');
-  await page.getByRole('button', { name: 'Simulate stream' }).click();
-  await expect(page.getByRole('button', { name: 'Simulate stream' })).toBeEnabled();
+  await expect(page.locator('.stream-panel output')).toHaveText(['4', '1']);
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000));
+  const streamButton = page.locator('.stream-panel button');
+  await streamButton.click();
+  await expect(streamButton).toBeDisabled();
+  // A committed disabled button does not guarantee React's passive effect
+  // has registered its interval yet. Advance all ticks as that effect settles.
+  await expect.poll(async () => {
+    await page.clock.runFor(source.length * 2);
+    return streamButton.isEnabled();
+  }).toBe(true);
   await expect(page.locator('.stream-output')).toHaveText(source);
   await expect(page.locator('.stream-output')).toHaveCSS('direction', 'rtl');
+  await page.clock.resume();
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: resolve(tmpdir(), `bidilens-demo-audit-${testInfo.project.name}-desktop.png`) });
@@ -76,9 +89,10 @@ test('completed streams reconcile direction and the demo renders without app err
 });
 
 test('falls back when the browser clipboard API never settles', async ({ page }) => {
-  // This case intentionally waits for two clipboard timeout paths. Leave room
-  // for a cold Vite startup on slower hosted Windows/browser combinations.
+  // Drive the real timeout callbacks with the browser clock rather than
+  // trusting background-tab timers to complete within an assertion deadline.
   test.setTimeout(60_000);
+  await page.clock.install();
 
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
@@ -91,14 +105,17 @@ test('falls back when the browser clipboard API never settles', async ({ page })
   });
   await page.goto(DEMO_ORIGIN);
   await page.getByLabel('Load a mixed-direction preset').selectOption('flagship');
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1_000));
 
   const status = page.locator('.action-status');
   await page.getByRole('button', { name: 'Copy share link' }).click();
+  await page.clock.runFor(2_001);
   await expect(status).toHaveText('Share state added to the address bar; copy the URL manually.', {
     timeout: 5_000
   });
 
   await page.getByRole('button', { name: 'Verify logical copy' }).click();
+  await page.clock.runFor(2_001);
   await expect(status).toHaveText(
     'Logical selection matches the immutable source; clipboard readback is unavailable.',
     { timeout: 5_000 }

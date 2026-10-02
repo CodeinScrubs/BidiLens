@@ -1,0 +1,50 @@
+{
+  "id": "english-in-rtl-host",
+  "title": "English prose inside an RTL container",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
+  "renderer": "Chromium 153.0.8010.12",
+  "artifactStatus": "unreleased source checkout; not a deployed host integration",
+  "baseline": "rtl",
+  "alignment": "left",
+  "explanation": "An inherited RTL base is inappropriate for this English sentence. BidiLens supplies an LTR block and isolates the Persian word.",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "sourceSha256": "7de94f7dbaac1d759cc57641045c61103acb09b2326fca67dd078dfe16b90839",
+  "observations": {
+    "before": {
+      "text": "The Persian word کتاب means “book”.",
+      "paragraphs": [
+        {
+          "text": "The Persian word کتاب means “book”.",
+          "direction": "rtl",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": null,
+      "blockquoteDirection": null,
+      "cellDirections": [],
+      "isolations": []
+    },
+    "after": {
+      "text": "The Persian word کتاب means “book”.",
+      "paragraphs": [
+        {
+          "text": "The Persian word کتاب means “book”.",
+          "direction": "ltr",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": null,
+      "blockquoteDirection": null,
+      "cellDirections": [],
+      "isolations": [
+        {
+          "text": "کتاب",
+          "direction": "rtl"
+        }
+      ]
+    }
+  }
+}

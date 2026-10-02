@@ -560,6 +560,33 @@ pub fn find_technical_token_ranges(
 ) -> Vec<TechnicalTokenRange> {
     let mut ranges = Vec::new();
     add_code_ranges(text, &mut ranges);
+    // Only complete ASCII boundary-query literals. Boundary checks are kept
+    // outside the regex because Rust's linear-time engine has no lookarounds.
+    let query_boundary = built_in_regex(r"^[\\\p{L}\p{N}_]$");
+    for pattern in [
+        r"\\b[A-Za-z0-9_-]+\\b",
+        r"\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\]",
+    ] {
+        for found in built_in_regex(pattern).find_iter(text) {
+            let attached = |character: char| {
+                let mut buffer = [0; 4];
+                query_boundary.is_match(character.encode_utf8(&mut buffer))
+            };
+            if text[..found.start()]
+                .chars()
+                .next_back()
+                .is_some_and(attached)
+                || text[found.end()..].chars().next().is_some_and(attached)
+            {
+                continue;
+            }
+            add_range(
+                &mut ranges,
+                found.start()..found.end(),
+                TechnicalTokenKind::Code,
+            );
+        }
+    }
     add_matches(
         text,
         &mut ranges,

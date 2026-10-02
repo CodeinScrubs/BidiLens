@@ -21,11 +21,11 @@ public static partial class BidiAnalyzer
     private static readonly (Regex Regex, TechnicalTokenKind Kind)[] TechnicalPatterns =
     [
         (Pattern(@"```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\r\n]+`+"), TechnicalTokenKind.Code),
+        (Pattern(@"(?<![\\\p{L}\p{N}_])\\b[A-Za-z0-9_-]+\\b(?![\\\p{L}\p{N}_])"), TechnicalTokenKind.Code),
+        (Pattern(@"(?<![\\\p{L}\p{N}_])\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\](?![\\\p{L}\p{N}_])"), TechnicalTokenKind.Code),
         (Pattern(@"</?[A-Za-z][^<>\r\n]*>"), TechnicalTokenKind.Html),
         (Pattern(@"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}""']+", RegexOptions.IgnoreCase), TechnicalTokenKind.Url),
-        (Pattern(@"(?<![A-Za-z0-9_])[A-Z0-9_][A-Z0-9._%+-]*@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])", RegexOptions.IgnoreCase), TechnicalTokenKind.Email),
         (Pattern(@"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}""'“”‘’«»]+"), TechnicalTokenKind.Path),
-        (Pattern(@"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])(?:[A-Za-z0-9_.-]+[\\/])+(?:[A-Za-z0-9_.-]+)(?<=[A-Za-z0-9_])(?![A-Za-z0-9_])"), TechnicalTokenKind.Path),
         (Pattern(@"(?<![A-Za-z0-9_@])@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*", RegexOptions.IgnoreCase), TechnicalTokenKind.Identifier),
         (Pattern(@"(?:\$\{?[A-Z_][A-Z0-9_]*\}?|%[A-Z_][A-Z0-9_]*%)"), TechnicalTokenKind.Identifier),
         (Pattern(@"(?<![A-Za-z0-9_])(?:npm|pnpm|yarn|npx|git|pip|python|node|cargo|go|docker|kubectl)(?:[ \t]+(?:--?[A-Za-z0-9_-]+|[@./\\A-Za-z0-9_:=+-]+|'[^'\r\n]*'|""[^""\r\n]*""))+"), TechnicalTokenKind.Command),
@@ -112,6 +112,7 @@ public static partial class BidiAnalyzer
     {
         var ranges = new List<TechnicalTokenRange>();
         AddMathRanges(text, ranges);
+        AddEmailAndRelativePathRanges(text, ranges);
         var normalizedCustomIdentifiers = customIdentifiers is null
             ? null
             : new HashSet<string>(customIdentifiers, StringComparer.OrdinalIgnoreCase);
@@ -119,6 +120,15 @@ public static partial class BidiAnalyzer
         {
             foreach (Match match in regex.Matches(text))
             {
+                // .NET regex Unicode classes operate on UTF-16 code units.
+                // Check full adjacent scalars for these ASCII query forms so
+                // astral letters/numbers cannot masquerade as word boundaries.
+                if (kind == TechnicalTokenKind.Code
+                    && (match.Value.StartsWith(@"\b", StringComparison.Ordinal)
+                        || match.Value.StartsWith("[[:<:]]", StringComparison.Ordinal))
+                    && (HasAttachedQueryBoundary(text, match.Index, before: true)
+                        || HasAttachedQueryBoundary(text, match.Index + match.Length, before: false)))
+                    continue;
                 if (kind == TechnicalTokenKind.Command)
                 {
                     var prefix = CommandPrefix.Match(match.Value);
@@ -181,6 +191,104 @@ public static partial class BidiAnalyzer
             else merged.Add(range);
         }
         return merged;
+    }
+
+    private static bool HasAttachedQueryBoundary(string text, int index, bool before)
+    {
+        if (before)
+        {
+            if (index == 0) return false;
+            index--;
+            if (index > 0 && char.IsLowSurrogate(text[index]) && char.IsHighSurrogate(text[index - 1]))
+                index--;
+        }
+        else if (index >= text.Length) return false;
+        var rune = UnicodeClassifier.RuneAt(text, index);
+        return rune.Value is '\\' or '_'
+            || Rune.GetUnicodeCategory(rune) is UnicodeCategory.UppercaseLetter
+                or UnicodeCategory.LowercaseLetter or UnicodeCategory.TitlecaseLetter
+                or UnicodeCategory.ModifierLetter or UnicodeCategory.OtherLetter
+                or UnicodeCategory.DecimalDigitNumber or UnicodeCategory.LetterNumber
+                or UnicodeCategory.OtherNumber;
+    }
+
+    private static bool IsAsciiWord(char value) => value is >= 'A' and <= 'Z' or >= 'a' and <= 'z'
+        or >= '0' and <= '9' or '_';
+
+    // .NET's invariant ASCII ignore-case ranges also include Kelvin sign, but
+    // do not include long s. Keep the former regex's native compatibility.
+    private static bool IsEmailLetter(char value) => value is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '\u212a';
+    private static bool IsEmailWord(char value) => IsEmailLetter(value) || value is >= '0' and <= '9' or '_';
+    private static bool IsEmailLocal(char value) => IsEmailWord(value) || value is '.' or '%' or '+' or '-';
+    private static bool IsEmailDomain(char value) => IsEmailLetter(value) || value is >= '0' and <= '9' or '.' or '-';
+    private static bool IsRelativePathCharacter(char value) => IsAsciiWord(value) || value is '.' or '-' or '/' or '\\';
+
+    private static void AddEmailAndRelativePathRanges(string text, List<TechnicalTokenRange> ranges)
+    {
+        // Consume each lexical run once. A missing @ or path separator must not
+        // restart a greedy failed suffix search at every dot in untrusted prose.
+        var runStart = 0;
+        while (runStart < text.Length)
+        {
+            if (!IsEmailLocal(text[runStart]) && text[runStart] != '@') { runStart++; continue; }
+            var runEnd = runStart + 1;
+            while (runEnd < text.Length && (IsEmailLocal(text[runEnd]) || text[runEnd] == '@')) runEnd++;
+            var localStart = runStart;
+            for (var at = runStart; at < runEnd; at++)
+            {
+                if (text[at] != '@') continue;
+                while (localStart < at && (!IsEmailWord(text[localStart])
+                    || localStart > 0 && IsEmailWord(text[localStart - 1]))) localStart++;
+                var cursor = at + 1;
+                var dot = -1;
+                var candidate = -1;
+                var alphabetic = false;
+                while (cursor < runEnd && IsEmailDomain(text[cursor]))
+                {
+                    var character = text[cursor];
+                    if (character == '.') { dot = cursor; alphabetic = true; }
+                    else if (!IsEmailLetter(character)) alphabetic = false;
+                    cursor++;
+                    if (alphabetic && dot > at + 1 && cursor - dot - 1 >= 2
+                        && (cursor == text.Length || !IsEmailWord(text[cursor]))) candidate = cursor;
+                }
+                var matched = localStart < at && candidate > 0;
+                if (matched) ranges.Add(new(text[localStart..candidate], localStart, candidate, TechnicalTokenKind.Email));
+                // A successful domain is already consumed. Failed candidates
+                // may become a later local part, matching legacy non-overlap.
+                localStart = matched ? candidate : at + 1;
+                at = cursor - 1;
+            }
+            runStart = runEnd;
+        }
+
+        runStart = 0;
+        while (runStart < text.Length)
+        {
+            if (!IsRelativePathCharacter(text[runStart])) { runStart++; continue; }
+            var runEnd = runStart + 1;
+            while (runEnd < text.Length && IsRelativePathCharacter(text[runEnd])) runEnd++;
+            var start = runStart;
+            void Append(int end)
+            {
+                while (start < end && !IsAsciiWord(text[start])) start++;
+                while (end > start && !IsAsciiWord(text[end - 1])) end--;
+                var separator = start;
+                while (separator < end && text[separator] is not ('/' or '\\')) separator++;
+                if (separator < end) ranges.Add(new(text[start..end], start, end, TechnicalTokenKind.Path));
+            }
+            for (var index = runStart; index < runEnd; index++)
+            {
+                if (text[index] is not ('/' or '\\')) continue;
+                if (index == start || text[index - 1] is '/' or '\\')
+                {
+                    Append(index);
+                    start = index + 1;
+                }
+            }
+            Append(runEnd);
+            runStart = runEnd;
+        }
     }
 
     private static int TrimTechnicalSuffix(string value, bool trimUnmatchedClosers)
@@ -332,7 +440,22 @@ public static partial class BidiAnalyzer
         BidiOptions options,
         IReadOnlyList<TechnicalTokenRange> technical)
     {
-        var result = technical.Select(range => new BidiIsolation(
+        // Technical recognizers end at their lexical token, which may be
+        // followed by combining marks (including an emoji keycap's VS16/Me).
+        // Keep those marks inside the display isolate and subtract the same
+        // extended ranges when planning opposite runs to avoid overlaps.
+        var displayTechnical = technical.Select(range =>
+        {
+            var end = range.End;
+            while (end < text.Length)
+            {
+                var rune = UnicodeClassifier.RuneAt(text, end);
+                if (!UnicodeClassifier.IsCombiningMark(rune.Value)) break;
+                end += rune.Utf16SequenceLength;
+            }
+            return end == range.End ? range : range with { Text = text[range.Start..end], End = end };
+        }).ToArray();
+        var result = displayTechnical.Select(range => new BidiIsolation(
             range.Text,
             BidiDirection.LeftToRight,
             range.Start,
@@ -346,13 +469,13 @@ public static partial class BidiAnalyzer
         foreach (var run in SegmentDirectionalRuns(text))
         {
             if (run.Direction is BidiDirection.Neutral || run.Direction == blockDirection) continue;
-            while (technicalIndex < technical.Count && technical[technicalIndex].End <= run.Start)
+            while (technicalIndex < displayTechnical.Length && displayTechnical[technicalIndex].End <= run.Start)
                 technicalIndex++;
             var cursor = run.Start;
             var index = technicalIndex;
-            while (index < technical.Count)
+            while (index < displayTechnical.Length)
             {
-                var range = technical[index];
+                var range = displayTechnical[index];
                 if (range.End <= cursor)
                 {
                     index++;
@@ -519,10 +642,11 @@ public static partial class BidiAnalyzer
         foreach (var isolation in split.OrderBy(value => value.Utf16Start).ThenBy(value => value.Utf16End))
         {
             var previous = merged.LastOrDefault();
-            var whitespaceGap = previous is not null
-                && previous.Utf16End <= isolation.Utf16Start
-                && text[previous.Utf16End..isolation.Utf16Start].All(char.IsWhiteSpace);
-            if (previous is not null && previous.Direction == isolation.Direction && whitespaceGap)
+            var gap = previous is not null && previous.Utf16End <= isolation.Utf16Start
+                ? text[previous.Utf16End..isolation.Utf16Start] : null;
+            var orderedGap = gap is not null && (gap.All(char.IsWhiteSpace)
+                || (previous?.Direction == BidiDirection.LeftToRight && gap.Trim(' ', '\t') == "+"));
+            if (previous is not null && previous.Direction == isolation.Direction && orderedGap)
             {
                 var kind = previous.Kind == isolation.Kind
                     ? previous.Kind

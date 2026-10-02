@@ -21,6 +21,9 @@ const requiredDocuments = [
   'docs/LIMITATIONS.md',
   'docs/MIGRATION.md',
   'docs/PERFORMANCE.md',
+  'docs/PRODUCTION_READINESS.md',
+  'docs/problem-gallery/README.md',
+  'docs/problem-gallery/CASE_TEMPLATE.md',
   'docs/PUBLISHING.md',
   'docs/ROADMAP.md',
   'docs/SECURITY.md',
@@ -63,7 +66,7 @@ for (const document of requiredDocuments) await access(resolve(root, document));
 const files = (await markdownFiles(root)).sort((a, b) => a.localeCompare(b));
 const failures: string[] = [];
 let localLinkCount = 0;
-const markdownLink = /(?<!!)\[[^\]]*\]\(([^)]+)\)/gu;
+const markdownLink = /!?\[[^\]]*\]\(([^)]+)\)/gu;
 const rootManifest = JSON.parse(
   await readFile(resolve(root, 'package.json'), 'utf8')
 ) as { version?: unknown };

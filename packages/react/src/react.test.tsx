@@ -49,7 +49,7 @@ describe('React adapter', () => {
     expect(inherited).toContain('data-bidilens-block');
     expect(inheritedNeutral).toContain('dir="rtl"');
     expect(explicit).toContain('dir="ltr"');
-    expect(explicit).toContain('text-align:start');
+    expect(explicit).not.toContain('text-align:');
   });
 
   it('renders the flagship Persian-majority paragraph RTL', () => {
@@ -95,6 +95,29 @@ describe('React adapter', () => {
     expect(html).toContain('text-align:left');
     expect(html).not.toContain('text-align:start');
     expect(html).toContain('>React</bdi>');
+  });
+
+  it('inherits caller alignment across independently directed streaming paragraphs', () => {
+    const source = 'Hello world\nReact یک کتابخانه بسیار محبوب است.';
+    const html = renderToStaticMarkup(
+      <StreamingBidiMessage text={source} completed style={{ textAlign: 'left' }} />
+    );
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    expect(container.querySelector('article')?.style.textAlign).toBe('left');
+    const paragraphs = Array.from(container.querySelectorAll('article > span'));
+    expect(paragraphs.map((paragraph) => paragraph.getAttribute('dir'))).toEqual(['ltr', 'rtl']);
+    expect(paragraphs.every((paragraph) => (paragraph as HTMLElement).style.textAlign === '')).toBe(true);
+    expect(container.textContent).toBe(source);
+  });
+
+  it('leaves alignment to caller stylesheets when mixed text requires intervention', () => {
+    const html = renderToStaticMarkup(
+      <BidiMessage text="React یک کتابخانه بسیار محبوب است." className="align-left" />
+    );
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain('class="align-left"');
+    expect(html).not.toContain('text-align:');
   });
 
   it('isolates code and identifiers', () => {

@@ -452,3 +452,30 @@ appending Persian after `Hello` does not change `dir=auto` away from LTR, and
 Persian-first RTL text can retain physical left alignment. This focused check is
 not a full-platform validation. No bulk submission script or repeat email blast
 was run.
+
+## 2026-10-02: mobile rendering evidence and focused OpenAI follow-up
+
+- **OpenAI Codex app:** added one substantive
+  [follow-up to issue #21563](https://github.com/openai/codex/issues/21563#issuecomment-5947996822)
+  after checking the open issue and all existing comments. It adds independent
+  paragraph/formula bases, physical-left alignment, additive LTR phrase and
+  complete query-literal cases, plus the explicit author-intent limit of
+  character-majority inference. The comment links commit-pinned fixtures and
+  was read back after posting. It offers reusable native regression material,
+  not a dependency demand, application-file patch or claim of Codex reproduction.
+- **ChatGPT:** a separate
+  [support report draft](MIXED_DIRECTION_ENGINEERING_BRIEF.md) is prepared.
+  The official support page/chat is open, but the user is not logged in there
+  and exact copied source, device/OS/app versions and capture time are pending.
+  No ChatGPT support ticket, escalation, attachment upload or maintainer reply
+  is claimed. The Codex issue is not a substitute for that report.
+- **Evidence:** nine controlled before/after gallery pairs now include three
+  390 px mobile reconstructions. Five new original captures remain private in
+  the local gallery inbox; they were not published or uploaded to third parties.
+  Fresh local browser checks passed 90/90; hosted CI passed 20/20 jobs on runtime
+  revision `967201d`. Fixtures and tests do not establish proprietary deployment.
+
+This is a verified public submission, not OpenAI review, acceptance, endorsement,
+adoption or evidence of new stars. No duplicate promotional issue or bulk email
+was sent. Follow up on an actual response or a materially new result, respecting
+the cadence above.

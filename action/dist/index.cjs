@@ -3960,6 +3960,8 @@ function isTechnicalIdentifier(token, custom, uppercaseProse) {
 function findTechnicalTokenRanges(text, technicalIdentifiers = []) {
   const ranges = [];
   addCodeRanges(text, ranges);
+  addMatches(text, ranges, /(?<![\\\p{L}\p{N}_])\\b[A-Za-z0-9_-]+\\b(?![\\\p{L}\p{N}_])/gu, "code");
+  addMatches(text, ranges, /(?<![\\\p{L}\p{N}_])\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\](?![\\\p{L}\p{N}_])/gu, "code");
   addMatches(text, ranges, /<\/?[A-Za-z][^<>\r\n]*>/gu, "html");
   addMathRanges(text, ranges);
   const urls = /\b(?:https?|ftp):\/\/[^\s<>{}"']+/giu;
@@ -4717,7 +4719,7 @@ function normalizeIsolationPlan(text, isolations) {
   const merged = [];
   for (const isolation of ordered) {
     const previous = merged.at(-1);
-    if (previous && previous.direction === isolation.direction && previous.end <= isolation.start && /^\s*$/u.test(text.slice(previous.end, isolation.start))) {
+    if (previous && previous.direction === isolation.direction && previous.end <= isolation.start && (/^\s*$/u.test(text.slice(previous.end, isolation.start)) || previous.direction === "ltr" && /^[ \t]*\+[ \t]*$/u.test(text.slice(previous.end, isolation.start)))) {
       previous.end = isolation.end;
       previous.text = text.slice(previous.start, previous.end);
       if (previous.kind !== isolation.kind) previous.kind = "opposite-direction-run";

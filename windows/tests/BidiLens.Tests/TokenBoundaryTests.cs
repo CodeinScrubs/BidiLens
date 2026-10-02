@@ -10,6 +10,22 @@ internal static class TokenBoundaryTests
             assertions++;
             if (!actual.SequenceEqual(expected)) throw new InvalidOperationException($"Token boundaries: {string.Join(", ", actual)} != {string.Join(", ", expected)}");
         }
+        foreach (var literal in new[] { @"\bTB\b", "[[:<:]]TB[[:>:]]" })
+        {
+            var source = $"برای جستجوی واژه، {literal} را وارد کنید.";
+            Equal(BidiAnalyzer.FindTechnicalTokenRanges(source).Where(range => range.Kind == TechnicalTokenKind.Code).Select(range => range.Text), literal);
+            Equal(BidiAnalyzer.Analyze(source).Isolations.Select(range => range.Text), literal);
+        }
+        foreach (var literal in new[] { @"\bTB", @"\bTB\bSuffix", @"prefix\bTB\b", @"\\bTB\b", "[[:<:]]TB", "[[:<:]]TB[[:>:]]Suffix" })
+            Equal(BidiAnalyzer.FindTechnicalTokenRanges(literal).Where(range => range.Kind == TechnicalTokenKind.Code).Select(range => range.Text));
+        Equal(BidiAnalyzer.Analyze("دفاع IgM + complement مهم است.").Isolations.Select(range => range.Text), "IgM + complement");
+        foreach (var literal in new[] { @"\bTB\b", "[[:<:]]TB[[:>:]]" })
+            foreach (var word in new[] { "é", "ش", "²", "Ⅳ", "𝒜", "𐒠" })
+                foreach (var source in new[] { word + literal, literal + word })
+                    Equal(BidiAnalyzer.FindTechnicalTokenRanges(source).Where(range => range.Kind == TechnicalTokenKind.Code).Select(range => range.Text));
+        foreach (var separator in new[] { ": ", ", ", " → ", "\n+ ", "\u2029+ " })
+            Equal(BidiAnalyzer.Analyze($"دفاع IgM{separator}complement مهم است.").Isolations.Where(range => range.Text.Contains(separator)).Select(range => range.Text));
+        Equal(BidiAnalyzer.Analyze(@"Use \bTB\b + complement").Isolations.Select(range => range.Text));
         foreach (var token in new[] { "$10", "€12.50", "£25", "۱۰€", "10-20", "10–20", "-10--2", "۱۰-۲۰", "١٠-٢٠", "1,000,000", "۱٬۰۰۰٬۰۰۰", "۱۲۳٫۴۵", "50%", "۵۰٪", "%50", "٪۵۰" })
         {
             var source = $"👋 مقدار {token} است.";
@@ -19,6 +35,19 @@ internal static class TokenBoundaryTests
         }
         foreach (var quote in new[] { "\"", "'", "“", "”", "«", "»" })
             Equal(BidiAnalyzer.FindTechnicalTokenRanges($"مسیر {quote}/usr/local/bin{quote} است.").Select(range => range.Text), "/usr/local/bin");
+        foreach (var token in new[] { "1\uFE0F\u20E3", "1\u20E3", "React\u0301", "10\uFE0F\u20E3" })
+        {
+            var source = $"فارسی {token}";
+            var analysis = BidiAnalyzer.Analyze(source);
+            Equal(analysis.Isolations.Select(range => range.Text), token);
+            Equal(new[] { BidiAnalyzer.FormatForDisplay(analysis) }, $"فارسی \u2066{token}\u2069");
+            foreach (var range in analysis.Isolations)
+            {
+                Equal(new[] { source[range.Utf16Start..range.Utf16End] }, range.Text);
+                Equal(new[] { source.EnumerateRunes().Skip(range.CodePointStart).Take(range.CodePointEnd - range.CodePointStart)
+                    .Aggregate(string.Empty, (value, rune) => value + rune) }, range.Text);
+            }
+        }
         foreach (var math in new[] { "$$\nx = y\n$$", "$$\r\nx = y\r\n$$", "\\[\nx = y\n\\]", "\\[x = y\\]" })
         {
             var source = $"سلام {math} تمام";

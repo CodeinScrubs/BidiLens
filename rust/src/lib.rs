@@ -679,7 +679,9 @@ fn normalize_isolations(text: &str, isolations: Vec<InlineIsolation>) -> Vec<Inl
             let gap = previous.source_range.bytes.end..isolation.source_range.bytes.start;
             if previous.direction == isolation.direction
                 && gap.start <= gap.end
-                && text[gap].chars().all(char::is_whitespace)
+                && (text[gap.clone()].chars().all(char::is_whitespace)
+                    || (previous.direction == Direction::Ltr
+                        && text[gap].trim_matches([' ', '\t']) == "+"))
             {
                 let start = previous.source_range.bytes.start;
                 let kind = if previous.kind == isolation.kind {

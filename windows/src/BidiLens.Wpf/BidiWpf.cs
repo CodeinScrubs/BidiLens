@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Data;
 
 namespace BidiLens.Wpf;
 
@@ -17,6 +18,8 @@ public static class BidiWpf
         public object OriginalAlignmentLocalValue { get; set; } = DependencyProperty.UnsetValue;
         public object? RenderedFlowLocalValue { get; set; }
         public object? RenderedAlignmentLocalValue { get; set; }
+        public ValueSource? RenderedFlowValueSource { get; set; }
+        public ValueSource? RenderedAlignmentValueSource { get; set; }
     }
 
     private static readonly ConditionalWeakTable<FrameworkElement, ManagedState> ManagedStates = new();
@@ -100,6 +103,8 @@ public static class BidiWpf
         state.RenderedFlowDirection = paragraph.FlowDirection;
         state.RenderedAlignmentLocalValue = paragraph.ReadLocalValue(Paragraph.TextAlignmentProperty);
         state.RenderedFlowLocalValue = paragraph.ReadLocalValue(Paragraph.FlowDirectionProperty);
+        state.RenderedFlowValueSource = DependencyPropertyHelper.GetValueSource(paragraph, Paragraph.FlowDirectionProperty);
+        state.RenderedAlignmentValueSource = DependencyPropertyHelper.GetValueSource(paragraph, Paragraph.TextAlignmentProperty);
         return analysis;
     }
 
@@ -152,6 +157,7 @@ public static class BidiWpf
     {
         if (state.RenderedTextAlignment is { } alignment
             && (paragraph.TextAlignment != alignment
+                || DependencyPropertyHelper.GetValueSource(paragraph, Paragraph.TextAlignmentProperty) != state.RenderedAlignmentValueSource
                 || !Equals(paragraph.ReadLocalValue(Paragraph.TextAlignmentProperty), state.RenderedAlignmentLocalValue)))
         {
             state.OriginalTextAlignment = paragraph.TextAlignment;
@@ -159,6 +165,7 @@ public static class BidiWpf
         }
         if (state.RenderedFlowDirection is { } direction
             && (paragraph.FlowDirection != direction
+                || DependencyPropertyHelper.GetValueSource(paragraph, Paragraph.FlowDirectionProperty) != state.RenderedFlowValueSource
                 || !Equals(paragraph.ReadLocalValue(Paragraph.FlowDirectionProperty), state.RenderedFlowLocalValue)))
         {
             state.OriginalFlowDirection = paragraph.FlowDirection;
@@ -187,6 +194,15 @@ public static class BidiWpf
             state.OriginalFlowDirection = paragraph.FlowDirection;
             paragraph.SetValue(Paragraph.FlowDirectionProperty, rendered);
         }
+        else
+        {
+            var rendered = paragraph.FlowDirection;
+            if (RefreshResourceReference(paragraph, Paragraph.FlowDirectionProperty, state.OriginalFlowLocalValue))
+            {
+                state.OriginalFlowDirection = paragraph.FlowDirection;
+                paragraph.SetCurrentValue(Paragraph.FlowDirectionProperty, rendered);
+            }
+        }
         if (state.OriginalAlignmentLocalValue == DependencyProperty.UnsetValue)
         {
             var rendered = paragraph.TextAlignment;
@@ -194,19 +210,32 @@ public static class BidiWpf
             state.OriginalTextAlignment = paragraph.TextAlignment;
             paragraph.SetValue(Paragraph.TextAlignmentProperty, rendered);
         }
+        else
+        {
+            var rendered = paragraph.TextAlignment;
+            if (RefreshResourceReference(paragraph, Paragraph.TextAlignmentProperty, state.OriginalAlignmentLocalValue))
+            {
+                state.OriginalTextAlignment = paragraph.TextAlignment;
+                paragraph.SetCurrentValue(Paragraph.TextAlignmentProperty, rendered);
+            }
+        }
     }
 
     private static void RestoreParagraphValue(Paragraph paragraph, DependencyProperty property, object value, object originalLocal)
     {
         if (originalLocal == DependencyProperty.UnsetValue) paragraph.ClearValue(property);
-        else paragraph.SetCurrentValue(property, value);
+        else if (!RefreshResourceReference(paragraph, property, originalLocal)) paragraph.SetCurrentValue(property, value);
     }
 
     private static BidiOptions OptionsFor(FrameworkElement control, BidiOptions? options)
     {
         if (options is not null) return options;
         ManagedStates.TryGetValue(control, out var state);
-        if (state is not null) ReconcileHostChanges(control, state);
+        if (state is not null)
+        {
+            ReconcileHostChanges(control, state);
+            RefreshInheritedControlState(control, state);
+        }
         return new BidiOptions { InheritedDirection = Direction(state?.OriginalFlowDirection ?? control.FlowDirection) };
     }
 
@@ -239,10 +268,16 @@ public static class BidiWpf
         if (!ManagedStates.TryGetValue(control, out var state))
         {
             state = new(control.FlowDirection, GetAlignment(control));
+            state.OriginalFlowLocalValue = control.ReadLocalValue(FrameworkElement.FlowDirectionProperty);
+            state.OriginalAlignmentLocalValue = control.ReadLocalValue(AlignmentProperty(control));
             ManagedStates.Add(control, state);
         }
-        else ReconcileHostChanges(control, state);
-        setAlignment(alignment switch
+        else
+        {
+            ReconcileHostChanges(control, state);
+            RefreshInheritedControlState(control, state);
+        }
+        var resolvedAlignment = alignment switch
         {
             BidiAlignment.Preserve => state.OriginalTextAlignment,
             BidiAlignment.ContentStart => analysis.ResolvedDirection == BidiDirection.RightToLeft
@@ -253,22 +288,33 @@ public static class BidiWpf
             BidiAlignment.Center => TextAlignment.Center,
             BidiAlignment.Justify => TextAlignment.Justify,
             _ => state.OriginalTextAlignment,
-        });
-        control.SetCurrentValue(
+        };
+        SetControlValue(control, AlignmentProperty(control), resolvedAlignment, state.OriginalAlignmentLocalValue);
+        SetControlValue(control,
             FrameworkElement.FlowDirectionProperty,
             analysis.ResolvedDirection == BidiDirection.RightToLeft
                 ? FlowDirection.RightToLeft
-                : FlowDirection.LeftToRight);
+                : FlowDirection.LeftToRight, state.OriginalFlowLocalValue);
         state.RenderedTextAlignment = GetAlignment(control);
         state.RenderedFlowDirection = control.FlowDirection;
+        state.RenderedAlignmentLocalValue = control.ReadLocalValue(AlignmentProperty(control));
+        state.RenderedFlowLocalValue = control.ReadLocalValue(FrameworkElement.FlowDirectionProperty);
+        state.RenderedFlowValueSource = DependencyPropertyHelper.GetValueSource(control, FrameworkElement.FlowDirectionProperty);
+        state.RenderedAlignmentValueSource = DependencyPropertyHelper.GetValueSource(control, AlignmentProperty(control));
     }
 
     private static void Restore(FrameworkElement control, Action<TextAlignment> setAlignment)
     {
         if (!ManagedStates.TryGetValue(control, out var state)) return;
         ReconcileHostChanges(control, state);
-        setAlignment(state.OriginalTextAlignment);
-        control.SetCurrentValue(FrameworkElement.FlowDirectionProperty, state.OriginalFlowDirection);
+        if (state.OriginalAlignmentLocalValue == DependencyProperty.UnsetValue)
+            control.ClearValue(AlignmentProperty(control));
+        else if (!RefreshResourceReference(control, AlignmentProperty(control), state.OriginalAlignmentLocalValue))
+            setAlignment(state.OriginalTextAlignment);
+        if (state.OriginalFlowLocalValue == DependencyProperty.UnsetValue)
+            control.ClearValue(FrameworkElement.FlowDirectionProperty);
+        else if (!RefreshResourceReference(control, FrameworkElement.FlowDirectionProperty, state.OriginalFlowLocalValue))
+            control.SetCurrentValue(FrameworkElement.FlowDirectionProperty, state.OriginalFlowDirection);
         ManagedStates.Remove(control);
     }
 
@@ -279,14 +325,89 @@ public static class BidiWpf
         _ => TextAlignment.Left,
     };
 
+    private static DependencyProperty AlignmentProperty(FrameworkElement control) =>
+        control is TextBox ? TextBox.TextAlignmentProperty : TextBlock.TextAlignmentProperty;
+
+    private static void SetControlValue(FrameworkElement control, DependencyProperty property, object value, object originalLocal)
+    {
+        // A reversible local override avoids stale current-value masks on
+        // inherited properties. Existing local expressions/bindings are retained.
+        if (originalLocal == DependencyProperty.UnsetValue) control.SetValue(property, value);
+        else control.SetCurrentValue(property, value);
+    }
+
+    private static bool RefreshResourceReference(DependencyObject target, DependencyProperty property, object originalLocal)
+    {
+        // SetCurrentValue can keep a DynamicResource's cached baseline stale.
+        // Reattaching the same shareable resource expression invalidates that
+        // cache. Never detach a non-shareable binding expression or a literal.
+        if (originalLocal == DependencyProperty.UnsetValue
+            || property.PropertyType.IsInstanceOfType(originalLocal)
+            || !DependencyPropertyHelper.GetValueSource(target, property).IsExpression
+            || BindingOperations.IsDataBound(target, property)) return false;
+        target.ClearValue(property);
+        target.SetValue(property, originalLocal);
+        return true;
+    }
+
+    private static void RefreshInheritedControlState(FrameworkElement control, ManagedState state)
+    {
+        // Managed overrides mask new inherited/style values. Read the current
+        // baseline without clearing any host-installed local value or binding.
+        if (state.OriginalFlowLocalValue == DependencyProperty.UnsetValue)
+        {
+            var rendered = control.FlowDirection;
+            control.ClearValue(FrameworkElement.FlowDirectionProperty);
+            state.OriginalFlowDirection = control.FlowDirection;
+            control.SetValue(FrameworkElement.FlowDirectionProperty, rendered);
+        }
+        else
+        {
+            var rendered = control.FlowDirection;
+            if (RefreshResourceReference(control, FrameworkElement.FlowDirectionProperty, state.OriginalFlowLocalValue))
+            {
+                state.OriginalFlowDirection = control.FlowDirection;
+                control.SetCurrentValue(FrameworkElement.FlowDirectionProperty, rendered);
+            }
+        }
+        if (state.OriginalAlignmentLocalValue == DependencyProperty.UnsetValue)
+        {
+            var property = AlignmentProperty(control);
+            var rendered = GetAlignment(control);
+            control.ClearValue(property);
+            state.OriginalTextAlignment = GetAlignment(control);
+            control.SetValue(property, rendered);
+        }
+        else
+        {
+            var property = AlignmentProperty(control);
+            var rendered = GetAlignment(control);
+            if (RefreshResourceReference(control, property, state.OriginalAlignmentLocalValue))
+            {
+                state.OriginalTextAlignment = GetAlignment(control);
+                control.SetCurrentValue(property, rendered);
+            }
+        }
+    }
+
     private static void ReconcileHostChanges(FrameworkElement control, ManagedState state)
     {
         var currentAlignment = GetAlignment(control);
         if (state.RenderedTextAlignment is { } renderedAlignment
-            && currentAlignment != renderedAlignment)
+            && (currentAlignment != renderedAlignment
+                || DependencyPropertyHelper.GetValueSource(control, AlignmentProperty(control)) != state.RenderedAlignmentValueSource
+                || !Equals(control.ReadLocalValue(AlignmentProperty(control)), state.RenderedAlignmentLocalValue)))
+        {
             state.OriginalTextAlignment = currentAlignment;
+            state.OriginalAlignmentLocalValue = control.ReadLocalValue(AlignmentProperty(control));
+        }
         if (state.RenderedFlowDirection is { } renderedDirection
-            && control.FlowDirection != renderedDirection)
+            && (control.FlowDirection != renderedDirection
+                || DependencyPropertyHelper.GetValueSource(control, FrameworkElement.FlowDirectionProperty) != state.RenderedFlowValueSource
+                || !Equals(control.ReadLocalValue(FrameworkElement.FlowDirectionProperty), state.RenderedFlowLocalValue)))
+        {
             state.OriginalFlowDirection = control.FlowDirection;
+            state.OriginalFlowLocalValue = control.ReadLocalValue(FrameworkElement.FlowDirectionProperty);
+        }
     }
 }

@@ -86,6 +86,135 @@ internal static class ParagraphTests
         Check(changingParagraph.FlowDirection == FlowDirection.RightToLeft, "Restore must follow current inherited host");
         Check(changingParagraph.ReadLocalValue(Paragraph.FlowDirectionProperty) == DependencyProperty.UnsetValue,
             "Restore must reinstate inheritance, not a stale local snapshot");
+        foreach (var control in new FrameworkElement[] {
+            new TextBlock { Text = "فارسی React" }, new TextBox { Text = "فارسی React" } })
+        {
+            var host = new StackPanel { FlowDirection = FlowDirection.LeftToRight };
+            TextBlock.SetTextAlignment(host, TextAlignment.Left);
+            host.Children.Add(control);
+            if (control is TextBlock textBlock) BidiWpf.Apply(textBlock, alignment: BidiAlignment.Preserve);
+            else BidiWpf.Apply((TextBox)control, alignment: BidiAlignment.Preserve);
+            host.FlowDirection = FlowDirection.RightToLeft;
+            TextBlock.SetTextAlignment(host, TextAlignment.Center);
+            BidiAnalysis updated;
+            if (control is TextBlock changedBlock)
+            {
+                changedBlock.Text = "Plain English";
+                updated = BidiWpf.Apply(changedBlock, alignment: BidiAlignment.Preserve);
+                Check(changedBlock.TextAlignment == TextAlignment.Center, "TextBlock must adopt current inherited alignment");
+                BidiWpf.Restore(changedBlock);
+            }
+            else
+            {
+                var changedBox = (TextBox)control;
+                changedBox.Text = "Plain English";
+                updated = BidiWpf.Apply(changedBox, alignment: BidiAlignment.Preserve);
+                Check(changedBox.TextAlignment == TextAlignment.Center, "TextBox must adopt current inherited alignment");
+                BidiWpf.Restore(changedBox);
+            }
+            Check(updated.InterventionRequired, "Current RTL host must still protect English after source replacement");
+            Check(control.FlowDirection == FlowDirection.RightToLeft,
+                $"{control.GetType().Name}: Restore must follow today's parent direction; actual {control.FlowDirection}, local {control.ReadLocalValue(FrameworkElement.FlowDirectionProperty)}");
+            Check(control.ReadLocalValue(FrameworkElement.FlowDirectionProperty) == DependencyProperty.UnsetValue,
+                "Restoring an inherited property must not pin a stale local direction");
+            host.FlowDirection = FlowDirection.LeftToRight;
+            Check(control.FlowDirection == FlowDirection.LeftToRight, "Restored control must continue inheriting parent updates");
+
+            // A host can install a binding with the same effective value as
+            // the managed override; ownership must still move to that binding.
+            if (control is TextBlock bindingBlock) bindingBlock.Text = "فارسی React";
+            else ((TextBox)control).Text = "فارسی React";
+            if (control is TextBlock managedBlock) BidiWpf.Apply(managedBlock);
+            else BidiWpf.Apply((TextBox)control);
+            BindingOperations.SetBinding(control, FrameworkElement.FlowDirectionProperty,
+                new Binding(nameof(DirectionSource.Direction)) { Source = new DirectionSource() });
+            if (control is TextBlock restoredBlock) BidiWpf.Restore(restoredBlock);
+            else BidiWpf.Restore((TextBox)control);
+            Check(BindingOperations.IsDataBound(control, FrameworkElement.FlowDirectionProperty),
+                "Restore must retain a host-installed control binding with the managed value");
+            Check(control.FlowDirection == FlowDirection.RightToLeft, "The host's new binding remains authoritative");
+        }
+        var styled = new TextBlock { Text = "فارسی React" };
+        var originalStyle = new Style(typeof(TextBlock));
+        originalStyle.Setters.Add(new Setter(FrameworkElement.FlowDirectionProperty, FlowDirection.LeftToRight));
+        originalStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Left));
+        styled.Style = originalStyle;
+        BidiWpf.Apply(styled, alignment: BidiAlignment.Preserve);
+        var replacementStyle = new Style(typeof(TextBlock));
+        replacementStyle.Setters.Add(new Setter(FrameworkElement.FlowDirectionProperty, FlowDirection.RightToLeft));
+        replacementStyle.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, TextAlignment.Center));
+        styled.Style = replacementStyle;
+        styled.Text = "Plain English";
+        Check(BidiWpf.Apply(styled, alignment: BidiAlignment.Preserve).InterventionRequired,
+            "A new RTL host style must be considered while a managed override is active");
+        Check(styled.TextAlignment == TextAlignment.Center, "Preserve must adopt the current host style's alignment");
+        BidiWpf.Restore(styled);
+        Check(styled.FlowDirection == FlowDirection.RightToLeft, "Restore must expose the current host style");
+        Check(styled.ReadLocalValue(FrameworkElement.FlowDirectionProperty) == DependencyProperty.UnsetValue,
+            "A style restoration must not leave a local direction override");
+        foreach (var resourceControl in new FrameworkElement[] {
+            new TextBlock { Text = "فارسی React" }, new TextBox { Text = "فارسی React" } })
+        {
+            var alignmentProperty = resourceControl is TextBox
+                ? TextBox.TextAlignmentProperty : TextBlock.TextAlignmentProperty;
+            resourceControl.Resources["flow"] = FlowDirection.LeftToRight;
+            resourceControl.Resources["alignment"] = TextAlignment.Left;
+            resourceControl.SetResourceReference(FrameworkElement.FlowDirectionProperty, "flow");
+            resourceControl.SetResourceReference(alignmentProperty, "alignment");
+            var originalResource = resourceControl.ReadLocalValue(FrameworkElement.FlowDirectionProperty);
+            if (resourceControl is TextBlock resourceBlock) BidiWpf.Apply(resourceBlock);
+            else BidiWpf.Apply((TextBox)resourceControl);
+            resourceControl.Resources["flow"] = FlowDirection.RightToLeft;
+            resourceControl.Resources["alignment"] = TextAlignment.Right;
+            BidiAnalysis resourceUpdate;
+            if (resourceControl is TextBlock updatedResourceBlock)
+            {
+                updatedResourceBlock.Text = "Plain English";
+                resourceUpdate = BidiWpf.Apply(updatedResourceBlock, alignment: BidiAlignment.Preserve);
+            }
+            else
+            {
+                var updatedResourceBox = (TextBox)resourceControl;
+                updatedResourceBox.Text = "Plain English";
+                resourceUpdate = BidiWpf.Apply(updatedResourceBox, alignment: BidiAlignment.Preserve);
+            }
+            Check(resourceUpdate.InterventionRequired, "Updated dynamic RTL host must still protect English");
+            Check(resourceControl.FlowDirection == FlowDirection.LeftToRight, "English keeps its content base in a dynamic RTL host");
+            if (resourceControl is TextBlock restoredResourceBlock) BidiWpf.Restore(restoredResourceBlock);
+            else BidiWpf.Restore((TextBox)resourceControl);
+            Check(resourceControl.FlowDirection == FlowDirection.RightToLeft,
+                "Restore must resolve today's dynamic resource, even when it matches the managed direction");
+            Check((TextAlignment)resourceControl.GetValue(alignmentProperty) == TextAlignment.Right,
+                "Restore must resolve today's alignment dynamic resource");
+            Check(ReferenceEquals(originalResource, resourceControl.ReadLocalValue(FrameworkElement.FlowDirectionProperty)),
+                "Restore must retain the original shareable resource expression");
+            resourceControl.Resources["flow"] = FlowDirection.LeftToRight;
+            resourceControl.Resources["alignment"] = TextAlignment.Center;
+            Check(resourceControl.FlowDirection == FlowDirection.LeftToRight, "Restored dynamic flow reference must remain live");
+            Check((TextAlignment)resourceControl.GetValue(alignmentProperty) == TextAlignment.Center,
+                "Restored dynamic alignment reference must remain live");
+        }
+        var resourceRun = new Run("فارسی React");
+        var resourceParagraph = new Paragraph(resourceRun);
+        resourceParagraph.Resources["flow"] = FlowDirection.LeftToRight;
+        resourceParagraph.Resources["alignment"] = TextAlignment.Left;
+        resourceParagraph.SetResourceReference(Paragraph.FlowDirectionProperty, "flow");
+        resourceParagraph.SetResourceReference(Paragraph.TextAlignmentProperty, "alignment");
+        var originalParagraphResource = resourceParagraph.ReadLocalValue(Paragraph.FlowDirectionProperty);
+        BidiWpf.Apply(resourceParagraph);
+        resourceParagraph.Resources["flow"] = FlowDirection.RightToLeft;
+        resourceParagraph.Resources["alignment"] = TextAlignment.Right;
+        resourceRun.Text = "Plain English";
+        Check(BidiWpf.Apply(resourceParagraph, alignment: BidiAlignment.Preserve).InterventionRequired,
+            "Paragraph analysis must use the current dynamic RTL host");
+        Check(resourceParagraph.FlowDirection == FlowDirection.LeftToRight, "Dynamic-host English paragraph base");
+        Check(resourceParagraph.TextAlignment == TextAlignment.Right, "Paragraph must adopt current dynamic alignment");
+        BidiWpf.Restore(resourceParagraph);
+        Check(resourceParagraph.FlowDirection == FlowDirection.RightToLeft, "Paragraph dynamic flow restoration");
+        Check(ReferenceEquals(originalParagraphResource, resourceParagraph.ReadLocalValue(Paragraph.FlowDirectionProperty)),
+            "Paragraph keeps its original resource expression");
+        resourceParagraph.Resources["flow"] = FlowDirection.LeftToRight;
+        Check(resourceParagraph.FlowDirection == FlowDirection.LeftToRight, "Paragraph dynamic reference remains live");
         return assertions;
     }
     private sealed class DirectionSource

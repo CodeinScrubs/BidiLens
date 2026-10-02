@@ -19,6 +19,14 @@ expected block direction. Never manually reverse the sample before sharing it.
 
 ## Supported scope
 
-The maintained public-beta scope is the JavaScript/web package set on
-Node.js 22.12+ and current standards-based browsers. Native and desktop targets
-listed in the roadmap are not supported implementations yet.
+The maintained public-beta scope includes the JavaScript/web packages on
+Node.js 22.12+ and standards-based browsers, plus the published Android
+Kotlin, Views, and Compose libraries. Swift/UIKit/SwiftUI, .NET/WPF, and Rust
+implementations are available in source with platform CI gates; they are not
+registry releases or production-certified integrations.
+
+Use the [release status](README.md), [platform limitations](docs/LIMITATIONS.md),
+and [production review](docs/PRODUCTION_READINESS.md) to distinguish published
+artifacts, unreleased fixes, supported renderer boundaries, and remaining
+device, IME, accessibility, and downstream validation. Flutter, React Native,
+WinUI, Windows Forms, MAUI, and PDF adapters remain roadmap work.

@@ -8,6 +8,7 @@ universal latency guarantee.
 ```bash
 pnpm run benchmark
 pnpm run benchmark:ci # also writes benchmarks/results/latest.json
+pnpm run benchmark:regressions # isolated budgets only, without the slow comparative controls
 pnpm run test:coverage
 pnpm run release:check
 ```
@@ -18,8 +19,40 @@ run once without an additional warmup because its analyzer/parser path is
 already exercised by the corresponding incremental workload.
 
 The manual/weekly benchmark workflow uploads that JSON for the exact commit as
-a 30-day artifact. Benchmarks remain non-gating because shared CI hardware is
-not stable enough for a universal latency threshold.
+a 30-day artifact. Comparative timings are not universal latency thresholds.
+Two explicit, broad regression budgets now fail the benchmark command when
+their warmed three-run average reaches 2,000 ms: 20,000 inline sibling groups
+and 400 streamed Markdown list items. These run outside Vitest coverage and
+parallel test-file scheduling. Run benchmarks without competing CPU-intensive
+jobs; a failure requires reproduction and diagnosis, not an automatic budget
+increase. The `--regressions-only` mode emits the same environment and budget
+metadata, supports `--output`, and retains the measurement report before a
+budget failure. The isolated per-PR CI job and `verify:production` command run
+this shorter guard; the scheduled/manual workflow retains the full comparative
+matrix. Neither provides a universal latency certification.
+
+## Current audit measurement (2026-10-01)
+
+An isolated run on Windows 10.0.19045 x64, Node.js 24.19.0, and an Intel Core
+i7-4810MQ at 2.80 GHz (eight logical CPUs) completed both unchanged 2,000 ms
+regression budgets. Each budget used one warmup and three timed iterations,
+without V8 coverage or concurrent test/build jobs:
+
+| Workload | Average | Regression budget |
+| --- | ---: | ---: |
+| 20,000 inline sibling groups, projection and content assertions | 414.3181 ms | 2,000 ms |
+| 400 dense streamed list items with `getUpdate()` after every item | 378.2398 ms | 2,000 ms |
+| 100,000 core units / 1,000 chunks | 642.2235 ms | Comparative only |
+| Same core input, full accumulated reparse on every chunk | 51,612.8049 ms | Comparative only |
+| 20,000 Markdown units / 400 chunks, checkpointed rich updates | 8,706.2715 ms | Comparative only |
+| Same Markdown input, full rich reparse on every chunk | 17,917.7596 ms | Comparative only |
+
+The general rich Markdown workload therefore demonstrates about a 2.06x
+advantage on this audit revision, not the much larger ratio in the historical
+July table below. Its 8.7-second aggregate cost is a remaining limitation, not
+a fast-rendering guarantee: rich parse counts alone do not bound repeated
+snapshot projection and reconciliation. The runtime and implementation have
+also changed since July, so these snapshots do not isolate a causal regression.
 
 ## Environment
 
@@ -97,6 +130,16 @@ it is not an end-to-end BidiLens speedup and is not used as a product claim.
   reconciliation at `finish()`;
 - a rich-stream unit alarm pushes 8,192 individual characters while asserting
   at most 14 live Markdown parses;
+- dense inline projection retains a 20,000-group correctness workload, while
+  an instrumented child array directly bounds reads to at most 12 per group
+  at two input sizes. Reintroducing repeated `indexOf` scans fails this
+  deterministic bound independently of machine speed or coverage;
+- a 400-item streaming test counts actual Markdown-It parser calls and total
+  parsed source lengths. Geometric checkpoints plus final reconciliation must
+  parse less than three times the final source length and produce exact batch
+  HTML. This bounds rich parsing, not all per-update work: snapshot projection
+  and paragraph reconciliation can still accumulate quadratic work on dense
+  growing lists. The separate benchmark times the complete live-update workload;
 - a unit alarm permits 8,000 single-character pushes and dense isolation
   planning to finish within three seconds on the CI machine;
 - an adversarial unit alarm scans 128,000 UTF-16 units of repeated unmatched

@@ -5,6 +5,24 @@ import XCTest
 @testable import BidiLens
 
 final class AppleAdapterTests: XCTestCase {
+    // These stand-ins exercise the adapter's marked-text gate deterministically.
+    // They do not simulate a real IME or claim keyboard compatibility.
+    private final class CompositionTextView: UITextView {
+        var compositionActive = false
+
+        override var markedTextRange: UITextRange? {
+            compositionActive ? selectedTextRange : super.markedTextRange
+        }
+    }
+
+    private final class CompositionTextField: UITextField {
+        var compositionActive = false
+
+        override var markedTextRange: UITextRange? {
+            compositionActive ? selectedTextRange : super.markedTextRange
+        }
+    }
+
     @MainActor
     func testImperativeLabelSourceReplacementRestoresOwnedAlignment() {
         let label = UILabel()
@@ -327,6 +345,174 @@ final class AppleAdapterTests: XCTestCase {
         XCTAssertEqual(textField.text, rtl)
         XCTAssertEqual(textField.textAlignment, .left)
         XCTAssertEqual(textField.selectedTextRange, selection)
+    }
+
+    @MainActor
+    func testMarkedTextDefersInitialApplyForBothInputTypes() throws {
+        let textView = CompositionTextView()
+        textView.text = rtl
+        textView.textAlignment = .center
+        textView.selectedRange = NSRange(location: 5, length: 3)
+        let viewSource = NSAttributedString(
+            attributedString: try XCTUnwrap(textView.attributedText)
+        )
+        let viewDirection = textView.baseWritingDirection(
+            for: textView.beginningOfDocument, in: .forward
+        )
+        textView.compositionActive = true
+        XCTAssertNotNil(textView.markedTextRange)
+
+        let viewAnalysis = BidiUIKit.apply(to: textView, alignment: .physicalRight)
+
+        XCTAssertTrue(viewAnalysis.interventionRequired)
+        XCTAssertEqual(textView.text, rtl)
+        XCTAssertEqual(textView.textAlignment, .center)
+        XCTAssertEqual(textView.selectedRange, NSRange(location: 5, length: 3))
+        XCTAssertEqual(textView.baseWritingDirection(
+            for: textView.beginningOfDocument, in: .forward
+        ), viewDirection)
+        XCTAssertTrue(try XCTUnwrap(textView.attributedText).isEqual(to: viewSource))
+
+        textView.compositionActive = false
+        BidiUIKit.apply(to: textView, alignment: .physicalRight)
+        XCTAssertEqual(textView.textAlignment, .right)
+
+        let textField = CompositionTextField()
+        textField.text = rtl
+        textField.textAlignment = .center
+        let caret = try XCTUnwrap(textField.position(
+            from: textField.beginningOfDocument, offset: 5
+        ))
+        let fieldSelection = try XCTUnwrap(textField.textRange(from: caret, to: caret))
+        textField.selectedTextRange = fieldSelection
+        let fieldDirection = textField.baseWritingDirection(
+            for: textField.beginningOfDocument, in: .forward
+        )
+        textField.compositionActive = true
+        XCTAssertNotNil(textField.markedTextRange)
+
+        let fieldAnalysis = BidiUIKit.apply(to: textField, alignment: .physicalRight)
+
+        XCTAssertTrue(fieldAnalysis.interventionRequired)
+        XCTAssertEqual(textField.text, rtl)
+        XCTAssertEqual(textField.textAlignment, .center)
+        XCTAssertEqual(textField.selectedTextRange, fieldSelection)
+        XCTAssertEqual(textField.baseWritingDirection(
+            for: textField.beginningOfDocument, in: .forward
+        ), fieldDirection)
+
+        textField.compositionActive = false
+        BidiUIKit.apply(to: textField, alignment: .physicalRight)
+        XCTAssertEqual(textField.textAlignment, .right)
+    }
+
+    @MainActor
+    func testMarkedTextDefersRestoreWithoutDiscardingManagedState() throws {
+        let textView = CompositionTextView()
+        textView.text = rtl
+        textView.textAlignment = .center
+        BidiUIKit.apply(to: textView, alignment: .physicalLeft)
+        textView.selectedRange = NSRange(location: 5, length: 3)
+        let viewSource = NSAttributedString(
+            attributedString: try XCTUnwrap(textView.attributedText)
+        )
+        let viewDirection = textView.baseWritingDirection(
+            for: textView.beginningOfDocument, in: .forward
+        )
+        textView.compositionActive = true
+        XCTAssertNotNil(textView.markedTextRange)
+
+        BidiUIKit.restore(textView)
+
+        XCTAssertEqual(textView.textAlignment, .left)
+        XCTAssertEqual(textView.selectedRange, NSRange(location: 5, length: 3))
+        XCTAssertEqual(textView.baseWritingDirection(
+            for: textView.beginningOfDocument, in: .forward
+        ), viewDirection)
+        XCTAssertTrue(try XCTUnwrap(textView.attributedText).isEqual(to: viewSource))
+
+        textView.compositionActive = false
+        BidiUIKit.restore(textView)
+        XCTAssertEqual(textView.textAlignment, .center)
+
+        let textField = CompositionTextField()
+        textField.text = rtl
+        textField.textAlignment = .center
+        BidiUIKit.apply(to: textField, alignment: .physicalLeft)
+        let caret = try XCTUnwrap(textField.position(
+            from: textField.beginningOfDocument, offset: 5
+        ))
+        let fieldSelection = try XCTUnwrap(textField.textRange(from: caret, to: caret))
+        textField.selectedTextRange = fieldSelection
+        let fieldDirection = textField.baseWritingDirection(
+            for: textField.beginningOfDocument, in: .forward
+        )
+        textField.compositionActive = true
+        XCTAssertNotNil(textField.markedTextRange)
+
+        BidiUIKit.restore(textField)
+
+        XCTAssertEqual(textField.text, rtl)
+        XCTAssertEqual(textField.textAlignment, .left)
+        XCTAssertEqual(textField.selectedTextRange, fieldSelection)
+        XCTAssertEqual(textField.baseWritingDirection(
+            for: textField.beginningOfDocument, in: .forward
+        ), fieldDirection)
+
+        textField.compositionActive = false
+        BidiUIKit.restore(textField)
+        XCTAssertEqual(textField.textAlignment, .center)
+    }
+
+    @MainActor
+    func testMarkedTextDefersPureLTRCleanupForBothInputTypes() throws {
+        let textView = CompositionTextView()
+        textView.text = rtl
+        textView.textAlignment = .center
+        BidiUIKit.apply(to: textView, alignment: .physicalLeft)
+        textView.text = ltr
+        textView.selectedRange = NSRange(location: 5, length: 3)
+        let viewSource = NSAttributedString(
+            attributedString: try XCTUnwrap(textView.attributedText)
+        )
+        textView.compositionActive = true
+        XCTAssertNotNil(textView.markedTextRange)
+
+        let viewAnalysis = BidiUIKit.apply(to: textView)
+
+        XCTAssertFalse(viewAnalysis.interventionRequired)
+        XCTAssertEqual(textView.textAlignment, .left)
+        XCTAssertEqual(textView.selectedRange, NSRange(location: 5, length: 3))
+        XCTAssertTrue(try XCTUnwrap(textView.attributedText).isEqual(to: viewSource))
+
+        textView.compositionActive = false
+        BidiUIKit.apply(to: textView)
+        XCTAssertEqual(textView.textAlignment, .center)
+        XCTAssertEqual(textView.text, ltr)
+
+        let textField = CompositionTextField()
+        textField.text = rtl
+        textField.textAlignment = .center
+        BidiUIKit.apply(to: textField, alignment: .physicalLeft)
+        textField.text = ltr
+        let caret = try XCTUnwrap(textField.position(
+            from: textField.beginningOfDocument, offset: 5
+        ))
+        let fieldSelection = try XCTUnwrap(textField.textRange(from: caret, to: caret))
+        textField.selectedTextRange = fieldSelection
+        textField.compositionActive = true
+        XCTAssertNotNil(textField.markedTextRange)
+
+        let fieldAnalysis = BidiUIKit.apply(to: textField)
+
+        XCTAssertFalse(fieldAnalysis.interventionRequired)
+        XCTAssertEqual(textField.textAlignment, .left)
+        XCTAssertEqual(textField.selectedTextRange, fieldSelection)
+
+        textField.compositionActive = false
+        BidiUIKit.apply(to: textField)
+        XCTAssertEqual(textField.textAlignment, .center)
+        XCTAssertEqual(textField.text, ltr)
     }
 
     @MainActor

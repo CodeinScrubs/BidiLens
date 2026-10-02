@@ -1,0 +1,2 @@
+The Persian word کتاب means “book”.
+React یک کتابخانه جاوااسکریپت بسیار محبوب است.

@@ -8,26 +8,19 @@ import {
 } from '@bidilens/core';
 import { isolateInlineForest } from './inline.js';
 import { preserveSelection } from './selection.js';
+import { isInUnrenderedSubtree, renderedText } from './rendered.js';
 
 export const BIDILENS_CSS = `
-:where([data-bidilens-block]) {
-  text-align: start;
-}
 [data-bidilens-isolate],
 bdi {
   unicode-bidi: isolate;
 }
 [data-bidilens-code] {
   direction: ltr;
-  text-align: left;
   unicode-bidi: isolate;
 }
 [data-bidilens-block] table {
   direction: inherit;
-}
-:where([data-bidilens-block]) th,
-:where([data-bidilens-block]) td {
-  text-align: start;
 }
 `;
 
@@ -310,10 +303,7 @@ function rememberOriginalDirection(element: HTMLElement, direction: ResolvedDire
 }
 
 function textForDirection(element: HTMLElement, codeSelector: string): string {
-  if (element.matches(codeSelector)) return element.textContent ?? '';
-  const clone = element.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll(codeSelector).forEach((node) => node.remove());
-  return clone.textContent ?? element.textContent ?? '';
+  return renderedText(element, element.matches(codeSelector) ? undefined : codeSelector);
 }
 
 function annotateCode(element: HTMLElement, hostDirection = inheritedDirection(element)): void {
@@ -387,6 +377,7 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
     // Do not change an ancestor's direction or walk through its inline text
     // when it contains a region whose DOM belongs to the host/editor.
     if (isSkipped(candidate)) continue;
+    if (isInUnrenderedSubtree(candidate)) continue;
     if (candidate.matches(codeSelector)) continue;
 
     result.scanned += 1;
@@ -402,7 +393,7 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
     if (options.technicalIdentifiers !== undefined) detection.technicalIdentifiers = options.technicalIdentifiers;
     const directionalText = textForDirection(candidate, codeSelector);
     const direction = detectDirection(directionalText, detection);
-    const shouldIntervene = direction === 'rtl' || needsBidiIntervention(candidate.textContent ?? '', {
+    const shouldIntervene = direction === 'rtl' || needsBidiIntervention(renderedText(candidate), {
       intervention: options.intervention,
       inheritedDirection: hostDirection
     });
@@ -413,7 +404,7 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
 
     rememberOriginalDirection(candidate, hostDirection);
     candidate.querySelectorAll(codeSelector).forEach((node) => {
-      if (isHTMLElement(node)) annotateCode(node, hostDirection);
+      if (isHTMLElement(node) && !isInUnrenderedSubtree(node)) annotateCode(node, hostDirection);
     });
 
     rememberState(candidate, ['dir', markAttribute]);
@@ -453,10 +444,11 @@ export function applyBidi(root: ParentNode, options: ApplyBidiOptions = {}): App
   root.querySelectorAll(codeSelector).forEach((node) => {
     if (!isHTMLElement(node)) return;
     if (isSkipped(node)) return;
+    if (isInUnrenderedSubtree(node)) return;
     const owner = node.closest(blockSelector);
     if (owner && candidateSet.has(owner)) return;
     const hostDirection = options.inheritedDirection ?? inheritedDirection(node);
-    if (needsBidiIntervention(node.textContent ?? '', {
+    if (needsBidiIntervention(renderedText(node), {
       intervention: options.intervention,
       inheritedDirection: hostDirection
     })) annotateCode(node, hostDirection);

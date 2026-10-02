@@ -64,6 +64,11 @@ source fixes from those published artifacts and records the remaining native
 paragraph, grapheme, and platform-validation gaps. Audit-branch source changes
 must not be assumed present in npm `0.4.0` or Maven `0.1.2`.
 
+**Reviewing mixed Persian/English AI messages?** The
+[engineering packet](docs/MIXED_DIRECTION_ENGINEERING_BRIEF.md) includes
+mobile-width before/after fixtures, explicit-intent examples, literal query
+tests, integration recipes and a bounded pilot checklist.
+
 <details>
 <summary>Release provenance and platform validation details</summary>
 
@@ -123,6 +128,12 @@ The Persian word کتاب means “book”.
 ```
 
 ## Visual proof
+
+Explore the [encountered problems and reproducible before/after gallery](docs/problem-gallery/README.md).
+It includes original user-supplied captures, actual browser-rendered fixes,
+logical source, physical-left alignment examples, and machine-readable evidence.
+The [production readiness review](docs/PRODUCTION_READINESS.md) records which
+platforms and releases are verified and what still needs validation.
 
 Read the practical guide: [When `dir="auto"` gets the first word right and the
 paragraph wrong](docs/MIXED_DIRECTION_TEXT.md), covering native HTML, alignment,
