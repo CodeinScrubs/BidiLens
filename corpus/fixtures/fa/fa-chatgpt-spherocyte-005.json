@@ -1,0 +1,32 @@
+{
+  "id": "fa-chatgpt-spherocyte-005",
+  "description": "Short Persian sentence starting with English clinical finding (spherocyte) and negative verb.",
+  "text": "spherocyte واضح ندارد",
+  "words": [
+    "spherocyte",
+    "واضح",
+    "ندارد"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3
+  ],
+  "expectedIsolations": [
+    {
+      "text": "spherocyte",
+      "direction": "ltr",
+      "kind": "opposite-direction-run"
+    }
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "leading-latin",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

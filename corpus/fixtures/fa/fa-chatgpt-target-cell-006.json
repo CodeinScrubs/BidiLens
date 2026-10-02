@@ -1,0 +1,30 @@
+{
+  "id": "fa-chatgpt-target-cell-006",
+  "description": "Persian sentence starting with hyphenated English morphological description (target-cell pattern).",
+  "text": "target-cell pattern تیپیک thalassemia ندارد",
+  "words": [
+    "target-cell",
+    "pattern",
+    "تیپیک",
+    "thalassemia",
+    "ندارد"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "leading-latin",
+    "hyphenated",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

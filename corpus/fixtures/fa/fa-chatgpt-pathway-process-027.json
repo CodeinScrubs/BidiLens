@@ -1,0 +1,38 @@
+{
+  "id": "fa-chatgpt-pathway-process-027",
+  "description": "Metabolic process chain showing cellular respiration sequence with arrows.",
+  "text": "glucose → glycolysis → mitochondria → lots of ATP",
+  "words": [
+    "glucose",
+    "→",
+    "glycolysis",
+    "→",
+    "mitochondria",
+    "→",
+    "lots",
+    "of",
+    "ATP"
+  ],
+  "expected": "ltr",
+  "expectedVisualOrderLeftToRight": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "medical",
+    "pathway",
+    "arrows",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

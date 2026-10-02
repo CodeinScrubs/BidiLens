@@ -1,0 +1,25 @@
+{
+  "id": "fa-chatgpt-memory-hook-emoji-013",
+  "description": "Section label with brain emoji and Persian title.",
+  "text": "🧠 تصویر ذهنی",
+  "words": [
+    "🧠",
+    "تصویر",
+    "ذهنی"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "emoji-heading",
+    "persian-heading",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}

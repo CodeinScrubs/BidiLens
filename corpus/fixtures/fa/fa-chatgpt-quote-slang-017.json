@@ -1,0 +1,37 @@
+{
+  "id": "fa-chatgpt-quote-slang-017",
+  "description": "Quoted informal dialogue in Persian clinical mnemonic.",
+  "text": "«این آشغالِ بیبرق دیگه رد نمیشه.»",
+  "words": [
+    "«",
+    "این",
+    "آشغالِ",
+    "بیبرق",
+    "دیگه",
+    "رد",
+    "نمیشه",
+    ".",
+    "»"
+  ],
+  "expected": "rtl",
+  "expectedVisualOrderRightToLeft": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "tags": [
+    "fa",
+    "chatgpt",
+    "quotation",
+    "dialogue",
+    "real-world"
+  ],
+  "curation": "user-provided",
+  "nativeSpeakerReviewed": false
+}
