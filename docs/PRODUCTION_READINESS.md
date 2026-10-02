@@ -132,14 +132,27 @@ Verification of this source delta on Node 22.12.0/pnpm 10.27.0 included:
   checks on Markdown-It 13.0.2, 14.3.1 and 15.0.1: 941 canonical cases and
   11 host-structure cases per parser, including both new mobile documents.
 
-Hosted [CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36936425858)
+Fresh hosted [CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36982395852)
+passed **20/20 jobs** on mobile-source revision `967201d`, including Swift/iOS,
+.NET8/WPF, Android libraries/API35 emulator, Rust on all three OSes, packed
+consumers, three browser engines, audit/SBOM and isolated performance budgets.
+The [CodeQL run](https://github.com/CodeinScrubs/BidiLens/actions/runs/36982391670)
+had four successful language jobs and Swift still running at this snapshot.
+Its final conclusion remains a merge/release gate. The local Rust/.NET
+installations were unavailable for this rerun; the fresh hosted native results
+are the current compiler/test evidence. Neither simulator nor compiler jobs
+establish physical-device, IME, accessibility or downstream deployment acceptance.
+
+Earlier [CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36936425858)
 (20 jobs) and [CodeQL](https://github.com/CodeinScrubs/BidiLens/actions/runs/36936426301)
-(five languages) passed on prior revision `b999435`. That covers the earlier
-UIKit composition guard, not this newer mobile-source delta. The updated Swift,
-.NET/WPF and Rust code must pass fresh native jobs on the new
-[PR #167](https://github.com/CodeinScrubs/BidiLens/pull/167) head before merge or
-publication. The local Rust/.NET installations were unavailable for this rerun;
-no current native result is inferred from the previous head.
+(five languages) passed on prior revision `b999435`. Those prior-head results
+are retained as history, not used to validate this newer delta. Check the live
+[PR #167](https://github.com/CodeinScrubs/BidiLens/pull/167) head before merging.
+
+Fresh full and production-only audits again returned zero known advisories at
+the low threshold. GitHub's default branch still has open `fast-uri` alert #18;
+this unmerged branch pins patched 3.1.8. The alert was not dismissed, and a clean
+branch audit is not evidence that public `main` has received the fix.
 
 One reconstructed `Retrieval:` sentence has a Latin character majority despite
 declared Persian intent. Its fixture uses explicit `strategy: 'rtl'` on that
