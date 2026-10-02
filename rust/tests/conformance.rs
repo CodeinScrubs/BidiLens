@@ -9,6 +9,78 @@ use bidilens_core::{
 use serde::Deserialize;
 
 #[test]
+fn boundary_queries_and_additive_phrases_remain_whole() {
+    for literal in [r"\bTB\b", "[[:<:]]TB[[:>:]]"] {
+        let source = format!("برای جستجوی واژه، {literal} را وارد کنید.");
+        assert_eq!(
+            find_technical_token_ranges(&source, &[])
+                .iter()
+                .filter(|range| range.kind == bidilens_core::TechnicalTokenKind::Code)
+                .map(|range| range.text.as_str())
+                .collect::<Vec<_>>(),
+            vec![literal]
+        );
+        assert_eq!(
+            plan_inline_isolation(&source, Direction::Rtl, &AnalysisOptions::default())
+                .unwrap()
+                .iter()
+                .map(|range| range.text.as_str())
+                .collect::<Vec<_>>(),
+            vec![literal]
+        );
+    }
+    for literal in [
+        r"\bTB",
+        r"\bTB\bSuffix",
+        r"prefix\bTB\b",
+        r"\\bTB\b",
+        "[[:<:]]TB",
+        "[[:<:]]TB[[:>:]]Suffix",
+    ] {
+        assert!(
+            !find_technical_token_ranges(literal, &[])
+                .iter()
+                .any(|range| range.kind == bidilens_core::TechnicalTokenKind::Code)
+        );
+    }
+    let options = AnalysisOptions::default();
+    for literal in [r"\bTB\b", "[[:<:]]TB[[:>:]]"] {
+        for word in ["é", "ش", "²", "Ⅳ"] {
+            for source in [format!("{word}{literal}"), format!("{literal}{word}")] {
+                assert!(
+                    !find_technical_token_ranges(&source, &[])
+                        .iter()
+                        .any(|range| range.kind == bidilens_core::TechnicalTokenKind::Code),
+                    "{source}"
+                );
+            }
+        }
+    }
+    assert_eq!(
+        plan_inline_isolation("دفاع IgM + complement مهم است.", Direction::Rtl, &options)
+            .unwrap()
+            .iter()
+            .map(|range| range.text.as_str())
+            .collect::<Vec<_>>(),
+        vec!["IgM + complement"]
+    );
+    for separator in [": ", ", ", " → ", "\n+ ", "\u{2029}+ "] {
+        let source = format!("دفاع IgM{separator}complement مهم است.");
+        assert!(
+            !plan_inline_isolation(&source, Direction::Rtl, &options)
+                .unwrap()
+                .iter()
+                .any(|range| range.text.contains(separator))
+        );
+    }
+    assert!(
+        plan_inline_isolation(r"Use \bTB\b + complement", Direction::Ltr, &options)
+            .unwrap()
+            .is_empty()
+    );
+}
+
+#[test]
 fn compact_numbers_and_percentages_remain_units() {
     for token in [
         "1,000,000",

@@ -1,7 +1,7 @@
 {
   "id": "technical-phrase",
   "title": "An ordered technical phrase in Persian prose",
-  "capturedAt": "2026-10-01T22:16:52.660Z",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
   "renderer": "Chromium 153.0.8010.12",
   "artifactStatus": "unreleased source checkout; not a deployed host integration",
   "baseline": "ltr",
@@ -13,6 +13,10 @@
     "nuclei",
     "medulla"
   ],
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
   "sourceSha256": "5a4fd4695c0b369fc773a670706b0141f7c2a69258460ad4a75eeddc36b51b8f",
   "observations": {
     "before": {

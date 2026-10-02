@@ -64,6 +64,11 @@ source fixes from those published artifacts and records the remaining native
 paragraph, grapheme, and platform-validation gaps. Audit-branch source changes
 must not be assumed present in npm `0.4.0` or Maven `0.1.2`.
 
+**Reviewing mixed Persian/English AI messages?** The
+[engineering packet](docs/MIXED_DIRECTION_ENGINEERING_BRIEF.md) includes
+mobile-width before/after fixtures, explicit-intent examples, literal query
+tests, integration recipes and a bounded pilot checklist.
+
 <details>
 <summary>Release provenance and platform validation details</summary>
 

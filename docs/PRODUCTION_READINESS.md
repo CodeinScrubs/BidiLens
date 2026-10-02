@@ -72,7 +72,7 @@ Original ChatGPT captures illustrate user-reported symptoms. Neither set
 establishes deployment in a proprietary application or how frequently its
 users encounter the problem.
 
-## Current local verification boundary
+## Earlier October 2 verification snapshot
 
 On October 2, the minimum-runtime `pnpm run check` completed successfully on
 Windows with Node 22.12.0: 25 test files, 760 passed tests and two Windows-specific
@@ -96,6 +96,57 @@ final browser, packed-consumer, SBOM and isolated-budget checks, and hosted
 native/security jobs must be evaluated on the final reviewed head before
 merging or releasing. See the pull request's actual check status rather than
 inferring success from this dated snapshot.
+
+## October 2 mobile-case update
+
+The five newly supplied mobile captures prompted nine curated logical
+paragraph cases and three additional mobile-width before/after gallery pairs.
+These are reconstructions, not recovered ChatGPT source or modified ChatGPT
+screens. The [engineering packet](MIXED_DIRECTION_ENGINEERING_BRIEF.md) records
+the distinctions, intended bases, reproducible fixtures and a bounded pilot.
+
+Three defects were reproduced before their repairs: a bare `\bTB\b` could lose
+its leading backslash from the protected unit; `[[:<:]]TB[[:>:]]` could protect
+only its middle word; and adjacent LTR spans could reorder around the neutral
+plus in `IgM + complement`. The five core implementations now recognize the
+two complete ASCII boundary-query forms as code and bridge only a single
+horizontal plus between adjacent LTR spans. Negative cases cover incomplete,
+escaped and embedded candidates, neighboring Unicode letters/numbers, arrows,
+commas, colons, intervening RTL text and paragraph boundaries. Arbitrary query
+syntax still requires explicit code boundaries.
+
+Verification of this source delta on Node 22.12.0/pnpm 10.27.0 included:
+
+- Full `pnpm run check`: 27 files, 779 passing tests and two Windows-specific
+  skips; generated data, 941 corpus cases, 94 native security fixtures, types,
+  lint, documentation/gallery integrity, builds and Action probes passed.
+- Complete browser matrix: **90/90 passed**, 30 each in Chromium, Firefox and
+  WebKit, one worker. This includes the nine new mobile browser checks.
+- Android core: **40 tests**, zero failures/errors; the boundary test was
+  rerun after adding Unicode-neighbor negatives.
+- Isolated unchanged 2,000 ms performance alarms: dense inline forest
+  724.46 ms average; dense streamed Markdown list 513.89 ms average. These are
+  measurements on one Windows machine, not universal latency promises.
+- The new 19 core/Markdown tests passed again after the added boundary negatives.
+- Packed Markdown adapter consumers passed strict TypeScript and peer-resolution
+  checks on Markdown-It 13.0.2, 14.3.1 and 15.0.1: 941 canonical cases and
+  11 host-structure cases per parser, including both new mobile documents.
+
+Hosted [CI](https://github.com/CodeinScrubs/BidiLens/actions/runs/36936425858)
+(20 jobs) and [CodeQL](https://github.com/CodeinScrubs/BidiLens/actions/runs/36936426301)
+(five languages) passed on prior revision `b999435`. That covers the earlier
+UIKit composition guard, not this newer mobile-source delta. The updated Swift,
+.NET/WPF and Rust code must pass fresh native jobs on the new
+[PR #167](https://github.com/CodeinScrubs/BidiLens/pull/167) head before merge or
+publication. The local Rust/.NET installations were unavailable for this rerun;
+no current native result is inferred from the previous head.
+
+One reconstructed `Retrieval:` sentence has a Latin character majority despite
+declared Persian intent. Its fixture uses explicit `strategy: 'rtl'` on that
+paragraph; the default heuristic is not advertised as a perfect intent detector.
+Every mobile fixture preserves physical-left alignment and logical source.
+No new npm/Maven/native release or proprietary-app integration is established
+by these results.
 
 ## Remaining blockers and acceptance work
 

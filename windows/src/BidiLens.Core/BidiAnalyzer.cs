@@ -21,6 +21,8 @@ public static partial class BidiAnalyzer
     private static readonly (Regex Regex, TechnicalTokenKind Kind)[] TechnicalPatterns =
     [
         (Pattern(@"```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\r\n]+`+"), TechnicalTokenKind.Code),
+        (Pattern(@"(?<![\\\p{L}\p{N}_])\\b[A-Za-z0-9_-]+\\b(?![\\\p{L}\p{N}_])"), TechnicalTokenKind.Code),
+        (Pattern(@"(?<![\\\p{L}\p{N}_])\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\](?![\\\p{L}\p{N}_])"), TechnicalTokenKind.Code),
         (Pattern(@"</?[A-Za-z][^<>\r\n]*>"), TechnicalTokenKind.Html),
         (Pattern(@"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}""']+", RegexOptions.IgnoreCase), TechnicalTokenKind.Url),
         (Pattern(@"(?<![\p{L}\p{N}_])(?:[A-Za-z]:[\\/]|\.{0,2}/|~/)[^\s<>()\[\]{}""'“”‘’«»]+"), TechnicalTokenKind.Path),
@@ -612,10 +614,11 @@ public static partial class BidiAnalyzer
         foreach (var isolation in split.OrderBy(value => value.Utf16Start).ThenBy(value => value.Utf16End))
         {
             var previous = merged.LastOrDefault();
-            var whitespaceGap = previous is not null
-                && previous.Utf16End <= isolation.Utf16Start
-                && text[previous.Utf16End..isolation.Utf16Start].All(char.IsWhiteSpace);
-            if (previous is not null && previous.Direction == isolation.Direction && whitespaceGap)
+            var gap = previous is not null && previous.Utf16End <= isolation.Utf16Start
+                ? text[previous.Utf16End..isolation.Utf16Start] : null;
+            var orderedGap = gap is not null && (gap.All(char.IsWhiteSpace)
+                || (previous?.Direction == BidiDirection.LeftToRight && gap.Trim(' ', '\t') == "+"));
+            if (previous is not null && previous.Direction == isolation.Direction && orderedGap)
             {
                 var kind = previous.Kind == isolation.Kind
                     ? previous.Kind

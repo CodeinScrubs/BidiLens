@@ -14,6 +14,8 @@ public enum BidiAnalyzer {
     private static let numericValue = #"[0-9\u0660-\u0669\u06F0-\u06F9]+(?:[.,\u066B\u066C][0-9\u0660-\u0669\u06F0-\u06F9]+)*"#
     private static let technicalPatterns: [(String, TechnicalTokenKind, NSRegularExpression.Options)] = [
         (#"```[\s\S]*?```|~~~[\s\S]*?~~~|`+[^`\r\n]+`+"#, .code, []),
+        (#"(?<![\\\p{L}\p{N}_])\\b[A-Za-z0-9_-]+\\b(?![\\\p{L}\p{N}_])"#, .code, []),
+        (#"(?<![\\\p{L}\p{N}_])\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\](?![\\\p{L}\p{N}_])"#, .code, []),
         (#"</?[A-Za-z][^<>\r\n]*>"#, .html, []),
         (#"(?<![A-Za-z0-9_])(?:https?|ftp)://[^\s<>{}"']+"#, .url, [.caseInsensitive]),
         (#"(?<![A-Za-z0-9_])(?=[A-Za-z0-9_])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![A-Za-z0-9_])"#, .email, [.caseInsensitive]),
@@ -622,12 +624,15 @@ public enum BidiAnalyzer {
         }) {
             if let previous = merged.last {
                 let nonOverlapping = previous.utf16Range.upperBound <= isolation.utf16Range.lowerBound
-                let whitespaceGap = nonOverlapping
-                    && UnicodeClassifier.substring(
-                        text,
-                        utf16Range: previous.utf16Range.upperBound..<isolation.utf16Range.lowerBound
-                    ).allSatisfy(\.isWhitespace)
-                if previous.direction == isolation.direction && whitespaceGap {
+                let gap: String? = nonOverlapping ? UnicodeClassifier.substring(
+                    text,
+                    utf16Range: previous.utf16Range.upperBound..<isolation.utf16Range.lowerBound
+                ) : nil
+                let orderedGap = gap.map {
+                    $0.allSatisfy(\.isWhitespace) || (previous.direction == .leftToRight
+                        && $0.trimmingCharacters(in: CharacterSet(charactersIn: " \t")) == "+")
+                } ?? false
+                if previous.direction == isolation.direction && orderedGap {
                     let range = previous.utf16Range.lowerBound..<isolation.utf16Range.upperBound
                     merged[merged.count - 1] = BidiIsolation(
                         text: UnicodeClassifier.substring(text, utf16Range: range),

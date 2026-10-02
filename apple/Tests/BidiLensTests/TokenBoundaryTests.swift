@@ -2,6 +2,29 @@ import XCTest
 @testable import BidiLens
 
 final class TokenBoundaryTests: XCTestCase {
+    func testBoundaryQueriesAndAdditivePhrasesRemainWhole() {
+        for literal in [#"\bTB\b"#, "[[:<:]]TB[[:>:]]"] {
+            let source = "برای جستجوی واژه، \(literal) را وارد کنید."
+            XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges(source).filter { $0.kind == .code }.map(\.text), [literal])
+            XCTAssertEqual(BidiAnalyzer.analyze(source).isolations.map(\.text), [literal])
+        }
+        for literal in [#"\bTB"#, #"\bTB\bSuffix"#, #"prefix\bTB\b"#, #"\\bTB\b"#, "[[:<:]]TB", "[[:<:]]TB[[:>:]]Suffix"] {
+            XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges(literal).filter { $0.kind == .code }.map(\.text), [])
+        }
+        XCTAssertEqual(BidiAnalyzer.analyze("دفاع IgM + complement مهم است.").isolations.map(\.text), ["IgM + complement"])
+        for literal in [#"\bTB\b"#, "[[:<:]]TB[[:>:]]"] {
+            for word in ["é", "ش", "²", "Ⅳ"] {
+                for source in [word + literal, literal + word] {
+                    XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges(source).filter { $0.kind == .code }.map(\.text), [], source)
+                }
+            }
+        }
+        for separator in [": ", ", ", " → ", "\n+ ", "\u{2029}+ "] {
+            XCTAssertFalse(BidiAnalyzer.analyze("دفاع IgM\(separator)complement مهم است.").isolations.contains { $0.text.contains(separator) })
+        }
+        XCTAssertEqual(BidiAnalyzer.analyze(#"Use \bTB\b + complement"#).isolations.count, 0)
+    }
+
     func testMathWhitespaceMatchesOtherCores() {
         for space in ["\u{feff}", "\u{a0}", "\u{202f}"] {
             for source in ["$\(space)x$", "$x\(space)$"] {

@@ -5,6 +5,30 @@ import org.junit.Test
 
 class TokenBoundaryTest {
     @Test
+    fun boundaryQueriesAndAdditivePhrasesRemainWhole() {
+        for (literal in listOf("""\bTB\b""", "[[:<:]]TB[[:>:]]")) {
+            val source = "برای جستجوی واژه، $literal را وارد کنید."
+            assertEquals(listOf(literal), findTechnicalTokenRanges(source).filter { it.kind == TechnicalTokenKind.CODE }.map { it.text })
+            assertEquals(listOf(literal), planInlineIsolation(source, BidiDirection.RTL).map { it.text })
+        }
+        for (literal in listOf("""\bTB""", """\bTB\bSuffix""", """prefix\bTB\b""", """\\bTB\b""", "[[:<:]]TB", "[[:<:]]TB[[:>:]]Suffix")) {
+            assertEquals(emptyList<String>(), findTechnicalTokenRanges(literal).filter { it.kind == TechnicalTokenKind.CODE }.map { it.text })
+        }
+        assertEquals(listOf("IgM + complement"), planInlineIsolation("دفاع IgM + complement مهم است.", BidiDirection.RTL).map { it.text })
+        for (literal in listOf("""\bTB\b""", "[[:<:]]TB[[:>:]]")) {
+            for (word in listOf("é", "ش", "²", "Ⅳ")) {
+                for (source in listOf(word + literal, literal + word)) {
+                    assertEquals(source, emptyList<String>(), findTechnicalTokenRanges(source).filter { it.kind == TechnicalTokenKind.CODE }.map { it.text })
+                }
+            }
+        }
+        for (separator in listOf(": ", ", ", " → ", "\n+ ", "\u2029+ ")) {
+            assertEquals(false, planInlineIsolation("دفاع IgM${separator}complement مهم است.", BidiDirection.RTL).any { it.text.contains(separator) })
+        }
+        assertEquals(emptyList<BidiIsolation>(), planInlineIsolation("""Use \bTB\b + complement""", BidiDirection.LTR))
+    }
+
+    @Test
     fun conservativeCommandsAndMixedUrlClosers() {
         for (source in listOf("go is a verb that means رفتن.", "python is a language for humans زبان.", "git is a great tool ابزار.")) {
             assertEquals(false, findTechnicalTokenRanges(source).any { it.kind == TechnicalTokenKind.COMMAND })

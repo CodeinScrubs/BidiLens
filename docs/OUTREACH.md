@@ -1,6 +1,6 @@
 # Maintainer outreach kit
 
-BidiLens web `0.3.3` and signed Android `0.1.2` are published for source review
+BidiLens web `0.4.0` and signed Android `0.1.2` are published for source review
 and bounded pilots. Android has emulator and public-consumer evidence;
 physical-device/OEM/IME/TalkBack and production validation remain pending.
 Neither availability is evidence of adoption. Contact maintainers with one
@@ -30,10 +30,14 @@ wrappers, styles, or source changes.
 The repository includes Unicode 17-derived classification, per-block direction,
 semantic isolation, streaming reconciliation, bidi-control auditing, adapters
 for major web renderers, native Kotlin/Views/Compose modules, compiler-tested
-SwiftUI/UIKit and .NET/WPF adapters, 932 direction fixtures, three-browser
+SwiftUI/UIKit and .NET/WPF adapters, 941 direction fixtures, three-browser
 tests, and Android/iOS simulator tests. Twelve public npm packages include provenance;
 three signed Maven Central modules, source-only Apple/Windows distribution, and
 missing external validation are documented explicitly.
+
+The newer [mobile rendering packet](MIXED_DIRECTION_ENGINEERING_BRIEF.md) and
+[problem gallery](problem-gallery/README.md) include unreleased source-branch
+repairs; do not describe those repairs as already present in registry artifacts.
 
 Would you be open to reviewing a small, reversible pilot in [specific renderer
 or component]? I can provide a focused integration patch and host-specific
@@ -46,7 +50,7 @@ Thank you,
 
 - Problem and quick start: [README](../README.md)
 - Published packages: [`@bidilens` on npm](https://www.npmjs.com/org/bidilens)
-- Versioned web release: [`v0.3.3` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.3.3)
+- Versioned web release: [`v0.4.0` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/v0.4.0)
 - Versioned Android release: [`android-v0.1.2` on GitHub](https://github.com/CodeinScrubs/BidiLens/releases/tag/android-v0.1.2)
 - Native Android integration: [Android guide](../android/README.md)
 - Apple integration: [SwiftUI/UIKit guide](../apple/README.md)
@@ -69,7 +73,7 @@ pnpm run test:visual
 pnpm run release:check
 ```
 
-For an initial web review, install `@bidilens/core@0.3.3`; for Android, use one
+For an initial web review, install `@bidilens/core@0.4.0`; for Android, use one
 exact `io.github.codeinscrubs.bidilens:*:0.1.2` coordinate. Ask for confirmation
 of the host bug, feedback on the API boundary, or permission to prepare a small
 draft pull request. Do not claim universal rendering, zero defects,

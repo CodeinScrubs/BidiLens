@@ -1,0 +1,80 @@
+{
+  "id": "mobile-query-literals",
+  "title": "Literal search syntax inside Persian prose",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
+  "renderer": "Chromium 153.0.8010.12",
+  "artifactStatus": "unreleased source checkout; not a deployed host integration",
+  "baseline": "rtl",
+  "alignment": "left",
+  "explanation": "Curated query examples, not recovered ChatGPT source. Explicit Markdown code boundaries preserve backslashes, brackets, percentages and line breaks. This tests presentation, not search-engine semantics.",
+  "viewport": {
+    "width": 390,
+    "height": 1000
+  },
+  "sourceSha256": "c3afa1f054dc87992fd667bb75bcd915bbdb46f856f0adea0235cdb94831d447",
+  "observations": {
+    "before": {
+      "text": "Search این الگوها را دقیق وارد کنید.\nبرای جستجوی واژه، \\bTB\\b را وارد کنید.\nالگوی دیگر %TB% است.\nاین نمونهٔ نحوی [[:<:]]TB[[:>:]] را نیز بدون تغییر نگه دارید.\n\nنتیجه‌ها را مقایسه کنید؛ جهت نمایش نباید رشتهٔ جستجو را تغییر دهد.\n\n\\bTB\\b\n%TB%\n[[:<:]]TB[[:>:]]\n\n",
+      "paragraphs": [
+        {
+          "text": "برای جستجوی واژه، \\bTB\\b را وارد کنید.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "الگوی دیگر %TB% است.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "این نمونهٔ نحوی [[:<:]]TB[[:>:]] را نیز بدون تغییر نگه دارید.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "نتیجه‌ها را مقایسه کنید؛ جهت نمایش نباید رشتهٔ جستجو را تغییر دهد.",
+          "direction": "rtl",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": "rtl",
+      "blockquoteDirection": "rtl",
+      "cellDirections": [],
+      "isolations": []
+    },
+    "after": {
+      "text": "Search این الگوها را دقیق وارد کنید.\nبرای جستجوی واژه، \\bTB\\b را وارد کنید.\nالگوی دیگر %TB% است.\nاین نمونهٔ نحوی [[:<:]]TB[[:>:]] را نیز بدون تغییر نگه دارید.\n\nنتیجه‌ها را مقایسه کنید؛ جهت نمایش نباید رشتهٔ جستجو را تغییر دهد.\n\n\\bTB\\b\n%TB%\n[[:<:]]TB[[:>:]]\n\n",
+      "paragraphs": [
+        {
+          "text": "برای جستجوی واژه، \\bTB\\b را وارد کنید.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "الگوی دیگر %TB% است.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "این نمونهٔ نحوی [[:<:]]TB[[:>:]] را نیز بدون تغییر نگه دارید.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "نتیجه‌ها را مقایسه کنید؛ جهت نمایش نباید رشتهٔ جستجو را تغییر دهد.",
+          "direction": "rtl",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": "rtl",
+      "blockquoteDirection": "rtl",
+      "cellDirections": [],
+      "isolations": [
+        {
+          "text": "Search",
+          "direction": "ltr"
+        }
+      ]
+    }
+  }
+}

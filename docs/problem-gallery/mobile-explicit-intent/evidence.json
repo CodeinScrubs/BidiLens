@@ -1,0 +1,59 @@
+{
+  "id": "mobile-explicit-intent",
+  "title": "Known Persian intent despite Latin character majority",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
+  "renderer": "Chromium 153.0.8010.12",
+  "artifactStatus": "unreleased source checkout; not a deployed host integration",
+  "baseline": "auto",
+  "alignment": "left",
+  "explanation": "The default character majority is LTR for this domain-heavy sentence. The host explicitly declares Persian paragraph intent with strategy:rtl. Inline English terms and IgM + complement remain LTR units; the host still owns alignment.",
+  "strategy": "rtl",
+  "viewport": {
+    "width": 390,
+    "height": 1000
+  },
+  "sourceSha256": "bf498c2167f606e7a297528d6784d8cbf7b1da8ba442e06ac09a29a235cf0cc8",
+  "observations": {
+    "before": {
+      "text": "Retrieval: چرا polysaccharide capsule باعث می‌شود IgM + complement در دفاع مهم‌تر شوند؟",
+      "paragraphs": [
+        {
+          "text": "Retrieval: چرا polysaccharide capsule باعث می‌شود IgM + complement در دفاع مهم‌تر شوند؟",
+          "direction": "ltr",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": null,
+      "blockquoteDirection": null,
+      "cellDirections": [],
+      "isolations": []
+    },
+    "after": {
+      "text": "Retrieval: چرا polysaccharide capsule باعث می‌شود IgM + complement در دفاع مهم‌تر شوند؟",
+      "paragraphs": [
+        {
+          "text": "Retrieval: چرا polysaccharide capsule باعث می‌شود IgM + complement در دفاع مهم‌تر شوند؟",
+          "direction": "rtl",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": null,
+      "blockquoteDirection": null,
+      "cellDirections": [],
+      "isolations": [
+        {
+          "text": "Retrieval",
+          "direction": "ltr"
+        },
+        {
+          "text": "polysaccharide capsule",
+          "direction": "ltr"
+        },
+        {
+          "text": "IgM + complement",
+          "direction": "ltr"
+        }
+      ]
+    }
+  }
+}

@@ -1,12 +1,16 @@
 {
   "id": "independent-paragraphs",
   "title": "Independent message paragraph directions",
-  "capturedAt": "2026-10-01T22:16:52.660Z",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
   "renderer": "Chromium 153.0.8010.12",
   "artifactStatus": "unreleased source checkout; not a deployed host integration",
   "baseline": "ltr",
   "alignment": "left",
   "explanation": "One global LTR setting cannot express both paragraphs. The renderer supplies separate bases while preserving physical left alignment.",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
   "sourceSha256": "02b70c24aec197e6ccd9230ec221ea64845dd766321dfe97761be7276a5dec42",
   "observations": {
     "before": {

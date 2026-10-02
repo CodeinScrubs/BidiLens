@@ -305,6 +305,9 @@ fun findTechnicalTokenRanges(
 ): List<TechnicalTokenRange> {
     val ranges = mutableListOf<TechnicalTokenRange>()
     addCodeRanges(text, ranges)
+    // Complete boundary-query literals only; never execute or rewrite them.
+    ranges.addMatches(text, Regex("""(?<![\\\p{L}\p{N}_])\\b[A-Za-z0-9_-]+\\b(?![\\\p{L}\p{N}_])"""), TechnicalTokenKind.CODE)
+    ranges.addMatches(text, Regex("""(?<![\\\p{L}\p{N}_])\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\](?![\\\p{L}\p{N}_])"""), TechnicalTokenKind.CODE)
     ranges.addMatches(text, Regex("</?[A-Za-z][^<>\\r\\n]*>"), TechnicalTokenKind.HTML)
     addMathRanges(text, ranges)
 

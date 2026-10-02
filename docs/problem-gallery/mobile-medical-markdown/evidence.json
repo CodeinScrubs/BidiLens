@@ -1,0 +1,148 @@
+{
+  "id": "mobile-medical-markdown",
+  "title": "English-leading Persian study prose at mobile width",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
+  "renderer": "Chromium 153.0.8010.12",
+  "artifactStatus": "unreleased source checkout; not a deployed host integration",
+  "baseline": "ltr",
+  "alignment": "left",
+  "explanation": "Curated logical reconstruction inspired by October 2 captures, not recovered ChatGPT source. Default block policy preserves Persian prose, English formulas, multiword terms, lists and physical left alignment.",
+  "viewport": {
+    "width": 390,
+    "height": 1000
+  },
+  "sourceSha256": "c9c15483c0899b58eed6d555cad9a7202b8581abe5f0365c253a13fcfc9024a7",
+  "observations": {
+    "before": {
+      "text": "spleen دقیقاً چه کار می‌کند؟\nCapsule مثل یک روکش لیز و ضدچسب دور باکتری است.\nMacrophage برای بلعیدن باکتری خیلی بهتر عمل می‌کند وقتی با opsonin پوشانده شده باشد.\nIgG / IgM + C3b → phagocytosis ↑\nPyruvate kinase یکی از enzymeهایی است که در RBC اهمیت دارد چون RBC تقریباً mitochondria ندارد و برای ATP وابسته به glycolysis است.\nPEP + ADP → Pyruvate + ATP\n\nSplenic macrophages در خون باکتری‌ها را می‌گیرند.\nThe Persian word طحال means spleen.\n\n\nبرای خواندن، ترتیب متن اصلی را حفظ کنید.\n\n",
+      "paragraphs": [
+        {
+          "text": "Capsule مثل یک روکش لیز و ضدچسب دور باکتری است.",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "Macrophage برای بلعیدن باکتری خیلی بهتر عمل می‌کند وقتی با opsonin پوشانده شده باشد.",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "IgG / IgM + C3b → phagocytosis ↑",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "Pyruvate kinase یکی از enzymeهایی است که در RBC اهمیت دارد چون RBC تقریباً mitochondria ندارد و برای ATP وابسته به glycolysis است.",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "PEP + ADP → Pyruvate + ATP",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "برای خواندن، ترتیب متن اصلی را حفظ کنید.",
+          "direction": "ltr",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": "ltr",
+      "blockquoteDirection": "ltr",
+      "cellDirections": [],
+      "isolations": []
+    },
+    "after": {
+      "text": "spleen دقیقاً چه کار می‌کند؟\nCapsule مثل یک روکش لیز و ضدچسب دور باکتری است.\nMacrophage برای بلعیدن باکتری خیلی بهتر عمل می‌کند وقتی با opsonin پوشانده شده باشد.\nIgG / IgM + C3b → phagocytosis ↑\nPyruvate kinase یکی از enzymeهایی است که در RBC اهمیت دارد چون RBC تقریباً mitochondria ندارد و برای ATP وابسته به glycolysis است.\nPEP + ADP → Pyruvate + ATP\n\nSplenic macrophages در خون باکتری‌ها را می‌گیرند.\nThe Persian word طحال means spleen.\n\n\nبرای خواندن، ترتیب متن اصلی را حفظ کنید.\n\n",
+      "paragraphs": [
+        {
+          "text": "Capsule مثل یک روکش لیز و ضدچسب دور باکتری است.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "Macrophage برای بلعیدن باکتری خیلی بهتر عمل می‌کند وقتی با opsonin پوشانده شده باشد.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "IgG / IgM + C3b → phagocytosis ↑",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "Pyruvate kinase یکی از enzymeهایی است که در RBC اهمیت دارد چون RBC تقریباً mitochondria ندارد و برای ATP وابسته به glycolysis است.",
+          "direction": "rtl",
+          "alignment": "left"
+        },
+        {
+          "text": "PEP + ADP → Pyruvate + ATP",
+          "direction": "ltr",
+          "alignment": "left"
+        },
+        {
+          "text": "برای خواندن، ترتیب متن اصلی را حفظ کنید.",
+          "direction": "rtl",
+          "alignment": "left"
+        }
+      ],
+      "headingDirection": "rtl",
+      "blockquoteDirection": "rtl",
+      "cellDirections": [],
+      "isolations": [
+        {
+          "text": "spleen",
+          "direction": "ltr"
+        },
+        {
+          "text": "Capsule",
+          "direction": "ltr"
+        },
+        {
+          "text": "Macrophage",
+          "direction": "ltr"
+        },
+        {
+          "text": "opsonin",
+          "direction": "ltr"
+        },
+        {
+          "text": "Pyruvate kinase",
+          "direction": "ltr"
+        },
+        {
+          "text": "enzyme",
+          "direction": "ltr"
+        },
+        {
+          "text": "RBC",
+          "direction": "ltr"
+        },
+        {
+          "text": "RBC",
+          "direction": "ltr"
+        },
+        {
+          "text": "mitochondria",
+          "direction": "ltr"
+        },
+        {
+          "text": "ATP",
+          "direction": "ltr"
+        },
+        {
+          "text": "glycolysis",
+          "direction": "ltr"
+        },
+        {
+          "text": "Splenic macrophages",
+          "direction": "ltr"
+        },
+        {
+          "text": "طحال",
+          "direction": "rtl"
+        }
+      ]
+    }
+  }
+}

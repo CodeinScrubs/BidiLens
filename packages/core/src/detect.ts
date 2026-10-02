@@ -520,6 +520,11 @@ export function findTechnicalTokenRanges(
 ): TechnicalTokenRange[] {
   const ranges: TechnicalTokenRange[] = [];
   addCodeRanges(text, ranges);
+  // Recognize only complete ASCII word-boundary query literals. Do not execute
+  // a regex, guess an arbitrary query language, or absorb adjacent identifiers.
+  // Without this boundary, a relative-path match can omit the leading slash.
+  addMatches(text, ranges, /(?<![\\\p{L}\p{N}_])\\b[A-Za-z0-9_-]+\\b(?![\\\p{L}\p{N}_])/gu, 'code');
+  addMatches(text, ranges, /(?<![\\\p{L}\p{N}_])\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\](?![\\\p{L}\p{N}_])/gu, 'code');
   addMatches(text, ranges, /<\/?[A-Za-z][^<>\r\n]*>/gu, 'html');
   addMathRanges(text, ranges);
 

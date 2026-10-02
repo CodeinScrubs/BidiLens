@@ -1,12 +1,16 @@
 {
   "id": "mixed-markdown",
   "title": "AI-style Markdown with lists, quotes, and code",
-  "capturedAt": "2026-10-01T22:16:52.660Z",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
   "renderer": "Chromium 153.0.8010.12",
   "artifactStatus": "unreleased source checkout; not a deployed host integration",
   "baseline": "ltr",
   "alignment": "left",
   "explanation": "Markdown-It is rendered with and without the actual BidiLens plugin. Heading, list, quote, cell, and code boundaries retain their own direction.",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
   "sourceSha256": "70bbb5bf968f19566cdf9bea983d32ff317818550f031baae5323db69fb95d68",
   "observations": {
     "before": {

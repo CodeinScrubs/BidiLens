@@ -1,12 +1,16 @@
 {
   "id": "persian-aligned-left",
   "title": "RTL order with physical left alignment",
-  "capturedAt": "2026-10-01T22:16:52.660Z",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
   "renderer": "Chromium 153.0.8010.12",
   "artifactStatus": "unreleased source checkout; not a deployed host integration",
   "baseline": "auto",
   "alignment": "left",
   "explanation": "The host keeps text-align:left. Direction and isolation change the reading order without moving the paragraph to the right edge.",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
   "sourceSha256": "1409bf042896764eea59811cc622fdd8a83cc72a7ff3ec57c0cde10ab4b60c9f",
   "observations": {
     "before": {

@@ -187,7 +187,11 @@ function normalizeIsolationPlan(text: string, isolations: PlannedIsolation[]): P
       previous &&
       previous.direction === isolation.direction &&
       previous.end <= isolation.start &&
-      /^\s*$/u.test(text.slice(previous.end, isolation.start))
+      (/^\s*$/u.test(text.slice(previous.end, isolation.start))
+        // Keep a compact additive LTR expression (`IgM + complement`) in
+        // source order. Commas/colons/arrows and RTL phrases remain boundaries.
+        || (previous.direction === 'ltr'
+          && /^[ \t]*\+[ \t]*$/u.test(text.slice(previous.end, isolation.start))))
     ) {
       previous.end = isolation.end;
       previous.text = text.slice(previous.start, previous.end);

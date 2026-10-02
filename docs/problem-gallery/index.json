@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-10-01T22:16:52.660Z",
+  "capturedAt": "2026-10-02T07:34:39.682Z",
   "sourceVersion": "0.4.0",
   "artifactStatus": "unreleased source checkout",
   "textHashLineEndings": "LF",
@@ -16,7 +16,7 @@
     "packages/core/src/classify.ts": "8c34aad4cfb19ec813335b31bba395e05565d8c80b936edd4933125ab20c7569",
     "packages/core/src/commands.ts": "bc28c5d1e213acf8d5becb043267fae26315baef965a10d28fb7f4e88cd9f13f",
     "packages/core/src/controls.ts": "2e71e8385818572fba148230d55680bd5b6c3e6b2c3afd048281135d71161276",
-    "packages/core/src/detect.ts": "254eed47a8d60ea3bad8a6b140a30b6580bdbaa118e8d16ea89b9e76323c5d3f",
+    "packages/core/src/detect.ts": "eb00e90390c8eede1e8b071e2549403ad322e4e47669cd97bda0c8b731c92454",
     "packages/core/src/generated/bidi-ranges.ts": "2452e8b1af1d72c18351e104cfca857c5ac5693f9b1d240ccef86fc89bc9999b",
     "packages/core/src/generated/grapheme-ranges.ts": "9f045c0f3f039b71f85e5bc7f9b6b2da37ce444dc624878830da4fba50d53b36",
     "packages/core/src/graphemes.ts": "68a20c58e0e6f4ae9546f79bb5098f4b35194ed5aec347810f6ecd901632e584",
@@ -26,7 +26,7 @@
     "packages/core/src/options.ts": "eb082e0f891c6aa7399668f1e783b67a2b979dd4301f16fa2735ca8368bf9294",
     "packages/core/src/paragraph.ts": "02032b85031bd9cd65a0a25004eaef58020733635cf927da83f72e9589ae1ab4",
     "packages/core/src/security.ts": "4bcc6f0a91a780eecd22c021fd1fc30a69ac68c5b3e7944721cd877ebebe0dbb",
-    "packages/core/src/segments.ts": "64f6384a40a61330e8186825a7238f6a22d5b5742ee3be514f12a90dcb43bd3a",
+    "packages/core/src/segments.ts": "24fd6dafb4b6211131cd2f3d56489dd2d1dd474727a58c2c5c592144a4301f65",
     "packages/core/src/stream.ts": "2b7e57cd6e2355639384a048fdaaf6b66b1d6304597cd5696a3403d926542b79",
     "packages/core/src/types.ts": "f0350b53d142c51e5a2383a57efe525eca8f4a141979a727673aca2908d05910",
     "packages/core/src/unicode-ranges.ts": "b4bb886239267f33d0492ca05fa10b2ac81793e5665f29d998b39a7a98f9d0f3",
@@ -37,7 +37,8 @@
     "packages/markdown/src/stream.ts": "b359a92965e1d81d38afff78834d65caf135e85613af171822381e5c453af5ca",
     "packages/markdown/src/types.ts": "672b704fbfe19ee40862a2ca2114e1956c204742d51d03999d8c18d653c0576d",
     "pnpm-lock.yaml": "f99c109e0267a1a45ddc757f6468b82bc7e9cb7a00b44f0ebfabeffe95c1df3e",
-    "scripts/generate-problem-gallery.ts": "323544e0a649acdba0ef30814acd98025eabc2b42d027dbe3b2cec5823770d8b"
+    "scripts/fixtures/chatgpt-mobile-oct2.ts": "7b484cf8fcca4e9a8e82c603bb65e68921b86fa0190fa3b8c9c11fe051252b17",
+    "scripts/generate-problem-gallery.ts": "42324663f4b38cca5bfcd9815ddda92f35d4d96fdfd50efb6c55b693a4a91251"
   },
   "cases": [
     {
@@ -50,7 +51,7 @@
         "after.html": "b727b085b31d3c23316c4118962087d82b6bf3f2e3f8cc5a858eb89337d43cb6",
         "after.png": "c8154ae26ccab94c25544d8fc69ed12a4f27067f32029fc76262469aa5f0d781",
         "source.txt": "1409bf042896764eea59811cc622fdd8a83cc72a7ff3ec57c0cde10ab4b60c9f",
-        "evidence.json": "7a638d4783e48e8dfc1416a6afee6e94060a8966b04d15a9b3d41cca7f4a33e0"
+        "evidence.json": "e2548530c1ae34b35281f1b0b8a50dc11f44a8bb89c1eaa9ff878f77ecc9a2fc"
       }
     },
     {
@@ -63,7 +64,7 @@
         "after.html": "f1ba3e932c3ad6d0346016791f137737d45b1241cadf4ffac2f93ec3be4c3720",
         "after.png": "93f917b6821e90a0bc183eb6e3d6133c18a8de4997cba0185f35752308a7568e",
         "source.txt": "1409bf042896764eea59811cc622fdd8a83cc72a7ff3ec57c0cde10ab4b60c9f",
-        "evidence.json": "e0f402fab1dd9d3b8346a814fc22728e6168fdb3dbbf01d6164f9d8f78dcb8c2"
+        "evidence.json": "75d0ae50c444d27d226e6c667c05f86e9b64b17d19e43b9b6855de27f4626e27"
       }
     },
     {
@@ -76,7 +77,7 @@
         "after.html": "3a3578ec2f3dfccc97bacc4a108294fe1ba3f96dcb28f748b4f314758dcc462a",
         "after.png": "adca5b8a7a17be96dcb7a24cfa18f94e62b1f2ea19302303885e4fd648fafc11",
         "source.txt": "7de94f7dbaac1d759cc57641045c61103acb09b2326fca67dd078dfe16b90839",
-        "evidence.json": "537257667089096f27847256fb93b63196f1a8b190a82edfedf626797582880d"
+        "evidence.json": "02da0af8b09d0901fa22cf23831b06c2b4bf31b4d5ee730bf474f3aeeabca931"
       }
     },
     {
@@ -89,7 +90,7 @@
         "after.html": "692c79c69a8f4a34b8e0b1ea1b1a25e6f10ac671d156dd5f176eba49b2700bd3",
         "after.png": "5f7fbc942883576a4696947ecb9d1e1c39d69e12ec507885ee8b307913c260ba",
         "source.txt": "02b70c24aec197e6ccd9230ec221ea64845dd766321dfe97761be7276a5dec42",
-        "evidence.json": "c627795517f8831d9280806eb84a18a4c354c382509c022b34a140337f9f66da"
+        "evidence.json": "199757b5a5385062e5bff3ef5da30ffd8e4243cb41ebe16d5050c7cb3de88096"
       }
     },
     {
@@ -102,7 +103,7 @@
         "after.html": "02be9022927536d1c4bc0c5b429495075a070e88bbd523f9ba53be0bc4cdf09d",
         "after.png": "19809e01dfc74bb4ca1a699ae01627267e71f0ce300efbf4d6a121023844a5f8",
         "source.txt": "5a4fd4695c0b369fc773a670706b0141f7c2a69258460ad4a75eeddc36b51b8f",
-        "evidence.json": "c6febf4d500d66f0a0c18921d7f8b57506f971603815da7d7b4ecd77978a7065"
+        "evidence.json": "b651374553a9137a0b11a7d36a1f1624a3d2bcb9ab84a533a3fc7e12a255dcad"
       }
     },
     {
@@ -115,7 +116,46 @@
         "after.html": "9d1ab63ff2e1f0dc9c6e4b9b4101e3414a2884f48bf4280bbadc8c81d76d575f",
         "after.png": "ee015636117150bd8b134580d335b5389bcb2833d4701307edb0c97a8bea3b23",
         "source.txt": "70bbb5bf968f19566cdf9bea983d32ff317818550f031baae5323db69fb95d68",
-        "evidence.json": "0d6069da07cf31988c28ce871cd714362dbf747117c90a8469f113a90c62ad14"
+        "evidence.json": "bccf136c5bc26a65600ac992394eaeea2d2ceb727df49e213e622009100a873b"
+      }
+    },
+    {
+      "id": "mobile-medical-markdown",
+      "title": "English-leading Persian study prose at mobile width",
+      "sourceSha256": "c9c15483c0899b58eed6d555cad9a7202b8581abe5f0365c253a13fcfc9024a7",
+      "artifacts": {
+        "before.html": "a4a06bd93d4d1eb7c37b4fc24868e7f111c8ac4be333b1dd65345a0a2da59dcc",
+        "before.png": "d2651f41a148d8c69be3fdbc6d4de188466946391b3c3be41d2a4ad624142cfd",
+        "after.html": "17957d332432118e444e2520f2f3aa07ad2e8069d7aab2e0cfb902fc2576ff24",
+        "after.png": "d8983ea5c3bb0de633a12f5f74272b62026fd7bd5c8400968acfeb92dfb2afea",
+        "source.txt": "c9c15483c0899b58eed6d555cad9a7202b8581abe5f0365c253a13fcfc9024a7",
+        "evidence.json": "ad706847c934fc09e52efebf2d45e5895ad56dabbf8bef72944d442826d28ed4"
+      }
+    },
+    {
+      "id": "mobile-query-literals",
+      "title": "Literal search syntax inside Persian prose",
+      "sourceSha256": "c3afa1f054dc87992fd667bb75bcd915bbdb46f856f0adea0235cdb94831d447",
+      "artifacts": {
+        "before.html": "a5dbd92cd8e6ad53c387e3434cc7802e17c67aae0a26009f445c8f671004bab8",
+        "before.png": "8179fd67710e2c2d798816613cdcfd2b3b774643d662c6cefaaa5c256c315a0d",
+        "after.html": "7a28b2e1c7fe719fe55d22a7043318868fce08761a40e72c8ea2dbb4629e06ec",
+        "after.png": "43bacc88faeb5bc2ab2ea92cc5a412c84b0d6f4237434b6eb8cc24f30aa1918d",
+        "source.txt": "c3afa1f054dc87992fd667bb75bcd915bbdb46f856f0adea0235cdb94831d447",
+        "evidence.json": "85ddb3b8dbe7d8ef66f869b90622b4d6476872a85c578a66098fbdfd4d39fb10"
+      }
+    },
+    {
+      "id": "mobile-explicit-intent",
+      "title": "Known Persian intent despite Latin character majority",
+      "sourceSha256": "bf498c2167f606e7a297528d6784d8cbf7b1da8ba442e06ac09a29a235cf0cc8",
+      "artifacts": {
+        "before.html": "d5bab7b3c3b10b92b09bca94d9bccf57bfcbafa4cf63998197f4dd3e4b29b85a",
+        "before.png": "1f643be6c1c0aae5ee86cd841cf1259954856401d6336db9b49b2e8c93f097a4",
+        "after.html": "40d89e63ef710f7b7f3fc10c3a5c7dd895b949fcf6d76add96a8982166911e7f",
+        "after.png": "4f73ab301814a86d8f46771a155a4a2f871d8feeef363039d0fc1dc667bcdd60",
+        "source.txt": "bf498c2167f606e7a297528d6784d8cbf7b1da8ba442e06ac09a29a235cf0cc8",
+        "evidence.json": "e72eee680ff4cd6f98f7d2696026d2306f52a64fbb4306f1fc915e6c319c0507"
       }
     }
   ]

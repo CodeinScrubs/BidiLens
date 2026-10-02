@@ -25,6 +25,9 @@ behavior; see the [production review](../PRODUCTION_READINESS.md).
 | [Independent paragraphs](independent-paragraphs/source.txt): an English paragraph and a Persian paragraph need different bases. | ![Before: both paragraphs inherit one LTR base](independent-paragraphs/before.png) | ![After: each paragraph has its own direction with left alignment preserved](independent-paragraphs/after.png) |
 | [Domain-specific technical phrase](technical-phrase/source.txt): the host declares its domain terms as identifiers so the surrounding Persian prose supplies the base. | ![Before: the technical phrase breaks surrounding Persian order](technical-phrase/before.png) | ![After: the English technical phrase remains ordered within Persian prose](technical-phrase/after.png) |
 | [Mixed Markdown](mixed-markdown/source.txt): headings, lists, quotes, cells, and code need their own boundaries. | ![Before: mixed Markdown uses one global LTR setting](mixed-markdown/before.png) | ![After: actual BidiLens Markdown plugin resolves each block](mixed-markdown/after.png) |
+| [Mobile study prose](mobile-medical-markdown/source.txt): English-leading Persian paragraphs, multiword terms and English formulas need independent bases at 390 px. | ![Before: mobile mixed prose inherits LTR](mobile-medical-markdown/before.png) | ![After: Persian prose and English formulas retain independent directions and left alignment](mobile-medical-markdown/after.png) |
+| [Mobile query literals](mobile-query-literals/source.txt): code boundaries must preserve backslashes and bracket syntax inside Persian prose. | ![Before: query syntax inherits RTL](mobile-query-literals/before.png) | ![After: literal query syntax remains LTR inside Persian prose](mobile-query-literals/after.png) |
+| [Explicit author intent](mobile-explicit-intent/source.txt): a domain-heavy Persian sentence has more Latin letters; its intended base cannot be inferred reliably. | ![Before: first-strong policy selects LTR](mobile-explicit-intent/before.png) | ![After: the caller declares RTL intent and English additive terms remain ordered](mobile-explicit-intent/after.png) |
 
 Content majority is a heuristic, not a language or intent detector. In the
 technical-phrase case, the gallery explicitly passes `technicalIdentifiers`;
@@ -32,6 +35,15 @@ technical-phrase case, the gallery explicitly passes `technicalIdentifiers`;
 language or author intent, an explicit direction may be simpler and more
 reliable. Native `dir="auto"` and `<bdi>` are sufficient for many other cases;
 see [native HTML or BidiLens](../NATIVE_OR_BIDILENS.md).
+
+The three mobile cases are **curated logical reconstructions inspired by five
+captures supplied on October 2, 2026**, not verbatim recovered ChatGPT messages.
+Their original images remain in the private local `incoming/2026-10-02/` inbox;
+account/chat UI is not published here. Each mobile case's evidence records its
+390 px viewport. The explicit-intent case passes `strategy: 'rtl'` for that
+single known-Persian paragraph; it does not force an entire multilingual chat RTL.
+[The engineering brief](../MIXED_DIRECTION_ENGINEERING_BRIEF.md) explains the
+policy and a bounded downstream pilot.
 
 ## Problems encountered in an actual application
 

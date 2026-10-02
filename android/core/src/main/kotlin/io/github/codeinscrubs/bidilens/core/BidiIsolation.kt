@@ -161,10 +161,12 @@ private fun normalizeIsolationPlan(
     val merged = mutableListOf<BidiIsolation>()
     for (isolation in split.sortedWith(compareBy<BidiIsolation> { it.start }.thenBy { it.end })) {
         val previous = merged.lastOrNull()
-        val whitespaceGap = previous != null &&
-            previous.end <= isolation.start &&
-            text.substring(previous.end, isolation.start).all(Char::isWhitespace)
-        if (previous != null && previous.direction == isolation.direction && whitespaceGap) {
+        val gap = if (previous != null && previous.end <= isolation.start) {
+            text.substring(previous.end, isolation.start)
+        } else null
+        val orderedGap = gap != null && (gap.all(Char::isWhitespace) ||
+            (previous?.direction == BidiDirection.LTR && gap.trim(' ', '\t') == "+"))
+        if (previous != null && previous.direction == isolation.direction && orderedGap) {
             val kind = if (previous.kind == isolation.kind) {
                 previous.kind
             } else {

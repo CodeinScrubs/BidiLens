@@ -58,6 +58,50 @@ Every adapter and host integration should preserve these invariants:
 6. Code, URLs, paths, identifiers, and user-supplied raw HTML follow their
    documented safety policies rather than being guessed as natural language.
 
+## October 2 mobile cases
+
+[`chatgpt-mobile-oct2.ts`](../scripts/fixtures/chatgpt-mobile-oct2.ts) contains
+curated logical reconstructions inspired by five newer mobile captures. It
+does not claim to recover exact original word order, medical accuracy, device
+details or the proprietary client's renderer. Original captures remain private
+in the local gallery inbox. Public browser fixtures use only the reconstructions.
+
+- English-leading Persian prose: `Capsule`, `Macrophage`, `splenectomy`, and
+  `spleen` stay at their paragraph's reading-order start, including when the
+  host chooses physical left alignment.
+- `Pyruvate kinase` remains one ordered LTR phrase; Persian suffixes, ZWNJ and
+  combining marks remain unchanged.
+- `IgG / IgM + C3b → phagocytosis ↑` and `PEP + ADP → Pyruvate + ATP` retain
+  their own LTR blocks; arrow code points are not reversed or substituted.
+- `IgM + complement` is one additive LTR unit, not two independently reordered
+  RTL atoms. Only one plus with horizontal spaces bridges adjacent LTR spans;
+  commas, colons, arrows, RTL prose and paragraph boundaries are not bridged.
+- Complete bare ASCII boundary-query literals `\bTB\b` and `[[:<:]]TB[[:>:]]`
+  are protected as code units by all five core implementations. Incomplete,
+  embedded or escaped candidates are not classified as complete code literals.
+  This is presentation recognition, not query execution or a regex validator.
+  Arbitrary regex/query syntax should still use explicit code spans.
+- A domain-heavy sentence beginning `Retrieval:` demonstrates an honest policy
+  boundary: default character majority returns LTR. The known Persian intent
+  is supplied with `strategy: 'rtl'` for that paragraph, or caller-declared
+  technical identifiers. A fallback or inherited direction is not an override.
+
+Tests compare exact raw source at the analyzer boundary and exact decoded
+visible text at the Markdown renderer boundary. Native browser selection adds
+browser-specific block separators; full-document selection is compared with
+the identically styled Markdown baseline, while individual text/code blocks
+are checked exactly. Copy buttons should use the retained logical source, not
+visual glyph order or a serialization of presentation wrappers.
+
+```bash
+pnpm exec vitest run packages/core/src/screenshot-cases.test.ts packages/markdown/src/mobile-study.test.ts
+pnpm exec playwright test tests/visual/mobile-study.spec.ts --workers=1
+```
+
+The [mobile gallery](problem-gallery/README.md) is captured by the actual
+adapters. 390 px browser fixtures are not tests of the installed ChatGPT app,
+an Android/iOS physical device, TalkBack, VoiceOver or an OEM IME.
+
 ## Verification
 
 The unit and Markdown adapter regression tests exercise the fixture directly:
