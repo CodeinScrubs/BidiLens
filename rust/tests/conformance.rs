@@ -45,7 +45,7 @@ fn boundary_queries_and_additive_phrases_remain_whole() {
     }
     let options = AnalysisOptions::default();
     for literal in [r"\bTB\b", "[[:<:]]TB[[:>:]]"] {
-        for word in ["é", "ش", "²", "Ⅳ"] {
+        for word in ["é", "ش", "²", "Ⅳ", "𝒜", "𐒠"] {
             for source in [format!("{word}{literal}"), format!("{literal}{word}")] {
                 assert!(
                     !find_technical_token_ranges(&source, &[])

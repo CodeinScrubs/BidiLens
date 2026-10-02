@@ -79,6 +79,9 @@ in the local gallery inbox. Public browser fixtures use only the reconstructions
 - Complete bare ASCII boundary-query literals `\bTB\b` and `[[:<:]]TB[[:>:]]`
   are protected as code units by all five core implementations. Incomplete,
   embedded or escaped candidates are not classified as complete code literals.
+  Adjacent Unicode letters/numbers, including supplementary-plane examples,
+  are not literal boundaries; .NET and Kotlin use full-scalar/code-point guards
+  for those neighbors instead of trusting UTF-16 regex boundaries.
   This is presentation recognition, not query execution or a regex validator.
   Arbitrary regex/query syntax should still use explicit code spans.
 - A domain-heavy sentence beginning `Retrieval:` demonstrates an honest policy
@@ -92,6 +95,10 @@ browser-specific block separators; full-document selection is compared with
 the identically styled Markdown baseline, while individual text/code blocks
 are checked exactly. Copy buttons should use the retained logical source, not
 visual glyph order or a serialization of presentation wrappers.
+
+Browser geometry checks place the first token at the first line's reading start
+and the final period/Persian question mark at the last line's reading end. Both
+are measured against actual line content, not the control's physical edges.
 
 ```bash
 pnpm exec vitest run packages/core/src/screenshot-cases.test.ts packages/markdown/src/mobile-study.test.ts

@@ -3,6 +3,33 @@ package io.github.codeinscrubs.bidilens.core
 import io.github.codeinscrubs.bidilens.core.generated.TechnicalCommands
 
 private val commandPrefix = Regex("""^([a-z]+)[ \t]+('[^']*'|"[^"]*"|[^ \t]+)""")
+private val boundaryQueryPatterns = listOf(
+    Regex("""\\b[A-Za-z0-9_-]+\\b"""),
+    Regex("""\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\]"""),
+)
+
+private fun isAttachedQueryBoundary(codePoint: Int): Boolean =
+    codePoint == '\\'.code || codePoint == '_'.code || Character.isLetter(codePoint) ||
+        when (Character.getType(codePoint)) {
+            Character.DECIMAL_DIGIT_NUMBER.toInt(), Character.LETTER_NUMBER.toInt(),
+            Character.OTHER_NUMBER.toInt() -> true
+            else -> false
+        }
+
+private fun addBoundaryQueryRanges(source: String, ranges: MutableList<TechnicalTokenRange>) {
+    // A JVM lookbehind can inspect only the low surrogate of an astral neighbor.
+    // Inspect complete adjacent code points without changing source coordinates.
+    for (pattern in boundaryQueryPatterns) {
+        for (match in pattern.findAll(source)) {
+            val start = match.range.first
+            val end = match.range.last + 1
+            if ((start > 0 && isAttachedQueryBoundary(Character.codePointBefore(source, start))) ||
+                (end < source.length && isAttachedQueryBoundary(Character.codePointAt(source, end)))) continue
+            ranges.addRange(source, start, end, TechnicalTokenKind.CODE)
+        }
+    }
+}
+
 private fun isRecognizableCommand(value: String): Boolean {
     val match = commandPrefix.find(value) ?: return false
     return TechnicalCommands.isCommandArgument(match.groupValues[1], match.groupValues[2])
@@ -305,9 +332,7 @@ fun findTechnicalTokenRanges(
 ): List<TechnicalTokenRange> {
     val ranges = mutableListOf<TechnicalTokenRange>()
     addCodeRanges(text, ranges)
-    // Complete boundary-query literals only; never execute or rewrite them.
-    ranges.addMatches(text, Regex("""(?<![\\\p{L}\p{N}_])\\b[A-Za-z0-9_-]+\\b(?![\\\p{L}\p{N}_])"""), TechnicalTokenKind.CODE)
-    ranges.addMatches(text, Regex("""(?<![\\\p{L}\p{N}_])\[\[:<:\]\][A-Za-z0-9_-]+\[\[:>:\]\](?![\\\p{L}\p{N}_])"""), TechnicalTokenKind.CODE)
+    addBoundaryQueryRanges(text, ranges)
     ranges.addMatches(text, Regex("</?[A-Za-z][^<>\\r\\n]*>"), TechnicalTokenKind.HTML)
     addMathRanges(text, ranges)
 

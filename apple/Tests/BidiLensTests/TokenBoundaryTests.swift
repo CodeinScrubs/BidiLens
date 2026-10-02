@@ -13,7 +13,7 @@ final class TokenBoundaryTests: XCTestCase {
         }
         XCTAssertEqual(BidiAnalyzer.analyze("دفاع IgM + complement مهم است.").isolations.map(\.text), ["IgM + complement"])
         for literal in [#"\bTB\b"#, "[[:<:]]TB[[:>:]]"] {
-            for word in ["é", "ش", "²", "Ⅳ"] {
+            for word in ["é", "ش", "²", "Ⅳ", "𝒜", "𐒠"] {
                 for source in [word + literal, literal + word] {
                     XCTAssertEqual(BidiAnalyzer.findTechnicalTokenRanges(source).filter { $0.kind == .code }.map(\.text), [], source)
                 }

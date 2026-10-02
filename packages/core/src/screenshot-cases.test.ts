@@ -55,7 +55,7 @@ describe('October 2 mobile screenshot-inspired logical reconstructions', () => {
       expect(findTechnicalTokenRanges(source).filter((range) => range.kind === 'code'), source).toEqual([]);
     }
     for (const literal of [QUERY_LITERALS[0]!, QUERY_LITERALS[2]!]) {
-      for (const word of ['é', 'ش', '²', 'Ⅳ']) {
+      for (const word of ['é', 'ش', '²', 'Ⅳ', '𝒜', '𐒠']) {
         for (const source of [word + literal, literal + word]) {
           expect(findTechnicalTokenRanges(source).filter((range) => range.kind === 'code'), source).toEqual([]);
         }

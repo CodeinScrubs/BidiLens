@@ -70,6 +70,31 @@ neither overrides a non-neutral majority. Caller-specific single-token
 `technicalIdentifiers` are another option when the host knows its domain.
 Do not silently remove every English word from direction evidence.
 
+## Native host boundary
+
+Porting a classifier is not enough: the host must expose the same paragraph
+structure to its layout engine. Do not send an entire multilingual Markdown
+response through one forced whole-control direction.
+
+- **Android Compose:** the current source `BidiText` supports independent
+  paragraph styles with `isolateRuns = false`. Use a separate read-only block
+  for explicit prose/formula intent and `alignToContent = false` to retain
+  authored physical alignment; see the [Android guide](../android/README.md).
+- **Android Views:** `applyBidiLens()` sets one `textDirection` on the whole
+  `TextView`/`EditText` and does not insert isolation controls. It is not an
+  independent-base multi-paragraph Markdown renderer. Use one display view per
+  block when bases differ. Arbitrary query syntax needs a dedicated LTR code
+  view, or an explicit display-only isolation path with source-safe copy.
+- **UIKit:** the current `UILabel`/`UITextView` integration still has the
+  independent-paragraph/restoration limits recorded in the
+  [Apple guide](../apple/README.md) and readiness review. Use separate read-only
+  controls for prose, formulas and code until that ownership model is repaired.
+  Do not rewrite editable or marked text to get a visual workaround.
+
+These are integration choices, not requirements to mirror an app's entire
+layout or to modify stored/model-generated strings. Compiler, emulator and
+browser passes are separate evidence; validate the actual downstream surface.
+
 ## Review and bounded pilot
 
 Use the [gallery](problem-gallery/README.md), [case documentation](SCREENSHOT_CASES.md),

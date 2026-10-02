@@ -20,7 +20,7 @@ internal static class TokenBoundaryTests
             Equal(BidiAnalyzer.FindTechnicalTokenRanges(literal).Where(range => range.Kind == TechnicalTokenKind.Code).Select(range => range.Text));
         Equal(BidiAnalyzer.Analyze("دفاع IgM + complement مهم است.").Isolations.Select(range => range.Text), "IgM + complement");
         foreach (var literal in new[] { @"\bTB\b", "[[:<:]]TB[[:>:]]" })
-            foreach (var word in new[] { "é", "ش", "²", "Ⅳ" })
+            foreach (var word in new[] { "é", "ش", "²", "Ⅳ", "𝒜", "𐒠" })
                 foreach (var source in new[] { word + literal, literal + word })
                     Equal(BidiAnalyzer.FindTechnicalTokenRanges(source).Where(range => range.Kind == TechnicalTokenKind.Code).Select(range => range.Text));
         foreach (var separator in new[] { ": ", ", ", " → ", "\n+ ", "\u2029+ " })

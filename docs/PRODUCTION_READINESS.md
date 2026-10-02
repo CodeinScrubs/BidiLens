@@ -137,8 +137,8 @@ passed **20/20 jobs** on mobile-source revision `967201d`, including Swift/iOS,
 .NET8/WPF, Android libraries/API35 emulator, Rust on all three OSes, packed
 consumers, three browser engines, audit/SBOM and isolated performance budgets.
 The [CodeQL run](https://github.com/CodeinScrubs/BidiLens/actions/runs/36982391670)
-had four successful language jobs and Swift still running at this snapshot.
-Its final conclusion remains a merge/release gate. The local Rust/.NET
+also completed successfully in **all five languages**, including Swift.
+The local Rust/.NET
 installations were unavailable for this rerun; the fresh hosted native results
 are the current compiler/test evidence. Neither simulator nor compiler jobs
 establish physical-device, IME, accessibility or downstream deployment acceptance.
@@ -161,9 +161,29 @@ Every mobile fixture preserves physical-left alignment and logical source.
 No new npm/Maven/native release or proprietary-app integration is established
 by these results.
 
+The follow-up adds direct geometry checks for the final period/Persian question
+mark at the last line's reading-order end. Chromium and WebKit passed. One
+Firefox run failed during context teardown with a `RenderCompositorSWGL` error;
+it is retained as a failed local run, not counted as green. An unchanged
+one-worker Firefox rerun passed all three mobile tests. No assertion, timeout
+or failure threshold was relaxed.
+
+It also reproduces supplementary-plane boundary defects: .NET regex Unicode
+classes and JVM lookbehind can miss adjacent astral letters/numbers (`𝒜`, `𐒠`)
+and recognize a query inside an attached identifier. The new Android negative
+test first failed on `𝒜\bTB\b`. Full-scalar/code-point boundary guards are added
+for only the two new query forms, with prefix/suffix negatives in every core
+test suite. These newer native deltas require their own hosted gates; the
+successful `967201d` run does not certify them. This is not a fix for every
+native Unicode/grapheme difference.
+
 ## Remaining blockers and acceptance work
 
-1. **UIKit correctness:** one control still supplies one whole-text paragraph
+1. **Whole-control paragraph limits:** Android Views supplies one
+   `textDirection` to the whole TextView/EditText, not a per-paragraph Markdown
+   renderer; use independent read-only Views for differing prose/formula/code
+   bases, or the current source Compose paragraph renderer. **UIKit correctness:**
+   one control still supplies one whole-text paragraph
    base; independent original paragraph directions can be flattened on
    restoration. Editable apply/restore now defers marked-text mutation, but the
    new guard requires hosted Apple validation and an explicit host retry after

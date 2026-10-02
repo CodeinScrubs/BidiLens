@@ -10,8 +10,10 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 // Reading-order start is relative to the actual first line, not the control's
 // edge: a short RTL sentence may intentionally sit at the physical left edge.
-async function expectFirstTokenAtReadingStart(block: Locator, token: string, direction: 'ltr' | 'rtl'): Promise<void> {
-  const geometry = await block.evaluate((element, length) => {
+async function expectTokenAtReadingEdge(block: Locator, token: string, direction: 'ltr' | 'rtl', edge: 'start' | 'end' = 'start'): Promise<void> {
+  const geometry = await block.evaluate((element, { length, edge }) => {
+    const start = edge === 'start' ? 0 : (element.textContent?.length ?? 0) - length;
+    const end = start + length;
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
     const rectangles: Array<{ left: number; right: number; top: number }> = [];
     let tokenStart: { node: Text; offset: number } | undefined;
@@ -19,8 +21,8 @@ async function expectFirstTokenAtReadingStart(block: Locator, token: string, dir
     let cursor = 0;
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
       const text = node as Text;
-      if (!tokenStart) tokenStart = { node: text, offset: 0 };
-      if (!tokenEnd && cursor + text.length >= length) tokenEnd = { node: text, offset: length - cursor };
+      if (!tokenStart && cursor <= start && cursor + text.length > start) tokenStart = { node: text, offset: start - cursor };
+      if (!tokenEnd && cursor < end && cursor + text.length >= end) tokenEnd = { node: text, offset: end - cursor };
       for (let offset = 0; offset < text.length; offset += 1) {
         if (/\s/u.test(text.data[offset]!)) continue;
         const range = document.createRange(); range.setStart(text, offset); range.setEnd(text, offset + 1);
@@ -29,16 +31,18 @@ async function expectFirstTokenAtReadingStart(block: Locator, token: string, dir
       }
       cursor += text.length;
     }
-    if (!tokenStart || !tokenEnd) throw new Error('Leading token not found.');
+    if (!tokenStart || !tokenEnd) throw new Error('Boundary token not found.');
     const range = document.createRange(); range.setStart(tokenStart.node, tokenStart.offset); range.setEnd(tokenEnd.node, tokenEnd.offset);
     const tokenRect = range.getClientRects()[0]!;
-    const firstLine = rectangles.filter((rectangle) => Math.abs(rectangle.top - tokenRect.top) < 2);
+    const line = rectangles.filter((rectangle) => Math.abs(rectangle.top - tokenRect.top) < 2);
     return { tokenLeft: tokenRect.left, tokenRight: tokenRect.right,
-      lineLeft: Math.min(...firstLine.map((rectangle) => rectangle.left)),
-      lineRight: Math.max(...firstLine.map((rectangle) => rectangle.right)) };
-  }, token.length);
-  expect((await block.textContent())?.startsWith(token)).toBe(true);
-  expect(Math.abs(direction === 'rtl' ? geometry.tokenRight - geometry.lineRight : geometry.tokenLeft - geometry.lineLeft)).toBeLessThan(1);
+      lineLeft: Math.min(...line.map((rectangle) => rectangle.left)),
+      lineRight: Math.max(...line.map((rectangle) => rectangle.right)) };
+  }, { length: token.length, edge });
+  const source = await block.textContent();
+  expect(edge === 'start' ? source?.startsWith(token) : source?.endsWith(token)).toBe(true);
+  const rightEdge = (direction === 'rtl') === (edge === 'start');
+  expect(Math.abs(rightEdge ? geometry.tokenRight - geometry.lineRight : geometry.tokenLeft - geometry.lineLeft)).toBeLessThan(1);
 }
 
 test('mobile study paragraphs preserve first-token position, logical selection and host alignment', async ({ page }) => {
@@ -51,7 +55,9 @@ test('mobile study paragraphs preserve first-token position, logical selection a
     expect(await block.textContent()).toBe(item.source);
     await expectLogicalSelection(block, item.source);
     for (const text of item.isolations ?? []) expect(await block.locator('bdi,code').allTextContents()).toContain(text);
-    if (item.firstToken) await expectFirstTokenAtReadingStart(block, item.firstToken, item.direction);
+    if (item.firstToken) await expectTokenAtReadingEdge(block, item.firstToken, item.direction);
+    const punctuation = item.source.match(/[.؟]$/u)?.[0];
+    if (punctuation) await expectTokenAtReadingEdge(block, punctuation, item.direction, 'end');
   }
 });
 
@@ -71,8 +77,8 @@ test('mobile Markdown separates English formulas from Persian prose without chan
   expect(await main.locator('p').evaluateAll((elements) => elements.map((element) => getComputedStyle(element).direction))).toEqual(['rtl', 'rtl', 'ltr', 'rtl', 'ltr', 'rtl']);
   expect(await main.locator('li').evaluateAll((elements) => elements.map((element) => getComputedStyle(element).direction))).toEqual(['rtl', 'ltr']);
   expect(await main.locator('p').evaluateAll((elements) => elements.every((element) => getComputedStyle(element).textAlign === 'left'))).toBe(true);
-  await expectFirstTokenAtReadingStart(main.locator('p').nth(0), 'Capsule', 'rtl');
-  await expectFirstTokenAtReadingStart(main.locator('p').nth(3), 'Pyruvate kinase', 'rtl');
+  await expectTokenAtReadingEdge(main.locator('p').nth(0), 'Capsule', 'rtl');
+  await expectTokenAtReadingEdge(main.locator('p').nth(3), 'Pyruvate kinase', 'rtl');
 });
 
 test('mobile query literals retain backslashes, brackets, character positions and copy order', async ({ page }) => {

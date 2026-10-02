@@ -120,6 +120,15 @@ public static partial class BidiAnalyzer
         {
             foreach (Match match in regex.Matches(text))
             {
+                // .NET regex Unicode classes operate on UTF-16 code units.
+                // Check full adjacent scalars for these ASCII query forms so
+                // astral letters/numbers cannot masquerade as word boundaries.
+                if (kind == TechnicalTokenKind.Code
+                    && (match.Value.StartsWith(@"\b", StringComparison.Ordinal)
+                        || match.Value.StartsWith("[[:<:]]", StringComparison.Ordinal))
+                    && (HasAttachedQueryBoundary(text, match.Index, before: true)
+                        || HasAttachedQueryBoundary(text, match.Index + match.Length, before: false)))
+                    continue;
                 if (kind == TechnicalTokenKind.Command)
                 {
                     var prefix = CommandPrefix.Match(match.Value);
@@ -182,6 +191,25 @@ public static partial class BidiAnalyzer
             else merged.Add(range);
         }
         return merged;
+    }
+
+    private static bool HasAttachedQueryBoundary(string text, int index, bool before)
+    {
+        if (before)
+        {
+            if (index == 0) return false;
+            index--;
+            if (index > 0 && char.IsLowSurrogate(text[index]) && char.IsHighSurrogate(text[index - 1]))
+                index--;
+        }
+        else if (index >= text.Length) return false;
+        var rune = UnicodeClassifier.RuneAt(text, index);
+        return rune.Value is '\\' or '_'
+            || Rune.GetUnicodeCategory(rune) is UnicodeCategory.UppercaseLetter
+                or UnicodeCategory.LowercaseLetter or UnicodeCategory.TitlecaseLetter
+                or UnicodeCategory.ModifierLetter or UnicodeCategory.OtherLetter
+                or UnicodeCategory.DecimalDigitNumber or UnicodeCategory.LetterNumber
+                or UnicodeCategory.OtherNumber;
     }
 
     private static bool IsAsciiWord(char value) => value is >= 'A' and <= 'Z' or >= 'a' and <= 'z'

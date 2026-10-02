@@ -16,7 +16,7 @@ class TokenBoundaryTest {
         }
         assertEquals(listOf("IgM + complement"), planInlineIsolation("دفاع IgM + complement مهم است.", BidiDirection.RTL).map { it.text })
         for (literal in listOf("""\bTB\b""", "[[:<:]]TB[[:>:]]")) {
-            for (word in listOf("é", "ش", "²", "Ⅳ")) {
+            for (word in listOf("é", "ش", "²", "Ⅳ", "𝒜", "𐒠")) {
                 for (source in listOf(word + literal, literal + word)) {
                     assertEquals(source, emptyList<String>(), findTechnicalTokenRanges(source).filter { it.kind == TechnicalTokenKind.CODE }.map { it.text })
                 }
