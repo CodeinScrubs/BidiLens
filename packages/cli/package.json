@@ -56,7 +56,7 @@
   "dependencies": {
     "@bidilens/core": "workspace:*",
     "@bidilens/html": "workspace:*",
-    "commander": "^15.0.0"
+    "commander": "^15.1.0"
   },
   "devDependencies": {
     "tsup": "^8.5.1"
